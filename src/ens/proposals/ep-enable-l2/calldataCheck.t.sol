@@ -40,7 +40,7 @@ contract Proposal_ENS_EP_Enable_ENSIP19_Test is ENS_Governance {
     ILineaReverseResolver lineaReverseResolver = ILineaReverseResolver(0x0Ce08a41bdb10420FB5Cac7Da8CA508EA313aeF8);
     IOptimismReverseResolver optimismReverseResolver = 
         IOptimismReverseResolver(0xF9Edb1A21867aC11b023CE34Abad916D29aBF107);
-    IScrollReverseResolver scrollReverseResolver = IScrollReverseResolver(0xd38bf7c18c25AC1b4ce2CC077cbC35b2B97f01e7);
+    IScrollReverseResolver scrollReverseResolver = IScrollReverseResolver(0xC4842814cA523E481Ca5aa85F719FEd1E9CaC614);
 
     // Variables
     address newDefaultReverseResolver = 0xA7d635c8de9a58a228AA69353a1699C7Cc240DCF;
@@ -59,7 +59,7 @@ contract Proposal_ENS_EP_Enable_ENSIP19_Test is ENS_Governance {
 
     function _selectFork() public override {
         // TODO: Update with appropriate block number for the proposal
-        vm.createSelectFork({ blockNumber: 22_879_171, urlOrAlias: "mainnet" });
+        vm.createSelectFork({ blockNumber: 22_928_808, urlOrAlias: "mainnet" });
     }
 
     function _proposer() public pure override returns (address) {
