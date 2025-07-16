@@ -85,7 +85,7 @@ abstract contract Compound_Governance is Test, IDAO {
         descriptionHash = keccak256(bytes(description));
 
         // Calculate proposalId
-        proposalId = governor.hashProposal(targets, values, calldatas, descriptionHash);
+        // proposalId = governor.hashProposal(targets, values, calldatas, descriptionHash);
         
         // Store parameters to be validated after execution
         _beforeProposal();
@@ -101,7 +101,7 @@ abstract contract Compound_Governance is Test, IDAO {
         uint256 blocksToWait = governor.votingDelay() + 1;
         vm.roll(block.number + blocksToWait);
         vm.warp(block.timestamp + blocksToWait * 12);
-        assertEq(governor.state(proposalId), 1);
+        assertEq(governor.state(proposalId), uint8(ProposalState.Active));
 
         // Delegates vote for the proposal
         for (uint256 i = 0; i < voters.length; i++) {
@@ -113,25 +113,21 @@ abstract contract Compound_Governance is Test, IDAO {
         blocksToWait = governor.votingPeriod();
         vm.roll(block.number + blocksToWait);
         vm.warp(block.timestamp + blocksToWait * 12);
-        assertEq(governor.state(proposalId), 4);
+        assertEq(governor.state(proposalId), uint8(ProposalState.Succeeded));
 
         // Queue the proposal to be executed
         governor.queue(targets, values, calldatas, descriptionHash);
-        assertEq(governor.state(proposalId), 5);
-
-        // Calculate proposalId in timelock
-        bytes32 proposalIdInTimelock = govenor.hashProposal(targets, values, calldatas, descriptionHash);
-        assertTrue(timelock.isOperationPending(proposalIdInTimelock));
+        assertEq(governor.state(proposalId), uint8(ProposalState.Queued));
 
         // Wait the operation in the DAO wallet timelock to be Ready
-        uint256 timeToWait = timelock.getMinDelay() + 1;
+        uint256 timeToWait = timelock.delay() + 1;
         vm.warp(block.timestamp + timeToWait);
         vm.roll(block.number + timeToWait * 12);
-        assertTrue(timelock.isOperationReady(proposalIdInTimelock));
+        assertEq(governor.state(proposalId), uint8(ProposalState.Queued));
 
         // Execute proposal
         governor.execute(targets, values, calldatas, descriptionHash);
-        assertTrue(timelock.isOperationDone(proposalIdInTimelock));
+        assertEq(governor.state(proposalId), uint8(ProposalState.Executed));
 
         // Assert parameters modified after execution
         _afterExecution();
@@ -142,14 +138,14 @@ abstract contract Compound_Governance is Test, IDAO {
     }
 
     function _proposer() public view virtual returns (address) {
-        return 0x9aa835bc7b8ce13b9b0c9764a52fbf71ac62ccf1; // a16z
+        return 0x9AA835Bc7b8cE13B9B0C9764A52FbF71AC62cCF1; // a16z
     }
 
     function _voters() public view virtual returns (address[] memory votersArray) {
-        votersArray = new address[](10);
-        votersArray[0] = 0x9aa835bc7b8ce13b9b0c9764a52fbf71ac62ccf1; // a16z
-        votersArray[1] = 0xb06df4dd01a5c5782f360ada9345c87e86adae3d;
-        votersArray[2] = 0x8169522c2c57883e8ef80c498aab7820da539806; // Geoffrey Hayes
+        votersArray = new address[](7);
+        votersArray[0] = 0x9AA835Bc7b8cE13B9B0C9764A52FbF71AC62cCF1; // a16z
+        votersArray[1] = 0xb06DF4dD01a5c5782f360aDA9345C87E86ADAe3D;
+        votersArray[2] = 0x8169522c2C57883E8EF80C498aAB7820dA539806; // Geoffrey Hayes
         votersArray[3] = 0x66cD62c6F8A4BB0Cd8720488BCBd1A6221B765F9; // allthecolors.eth
         votersArray[4] = 0x3FB19771947072629C8EEE7995a2eF23B72d4C8A; // pgov.eth
         votersArray[5] = 0x36cc7B13029B5DEe4034745FB4F24034f3F2ffc6; // humpy.eth
