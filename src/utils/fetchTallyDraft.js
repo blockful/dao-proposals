@@ -2,14 +2,18 @@ const fs = require('fs');
 const path = require('path');
 
 const TALLY_API_URL = 'https://api.tally.xyz/query';
+const PROPOSAL_ID = '2636017379351463232';
 
 const query = `
 query Proposal {
-    proposal(input: {id: "2636017379351463232", isLatest: true}) {
+    proposal(input: {id: "${PROPOSAL_ID}", isLatest: true}) {
         executableCalls {
             target
             calldata
             value
+        }
+        metadata {
+            description
         }
     }
 }
@@ -39,6 +43,7 @@ async function fetchCalldata() {
         }
 
         const executableCalls = data.data.proposal.executableCalls;
+        const description = data.data.proposal.metadata.description;
         
         if (!executableCalls || executableCalls.length === 0) {
             throw new Error('No executable calls found in the proposal');
@@ -46,7 +51,7 @@ async function fetchCalldata() {
 
         console.log(`Found ${executableCalls.length} executable call(s)`);
 
-        // Create the draft calldata structure
+        // Create the draft calldata structure (without description)
         const draftCalldata = {
             proposalId: "2636017379351463232",
             executableCalls: executableCalls.map(call => ({
@@ -56,14 +61,22 @@ async function fetchCalldata() {
             }))
         };
 
-        // Write to draftCalldata.json in the project root
+        // Define output paths
         const projectRoot = path.resolve(__dirname, '../../');
-        const outputPath = path.join(projectRoot, 'draftCalldata.json');
+        const outputDir = path.join(projectRoot, '');
+        const jsonOutputPath = path.join(outputDir, 'draftCalldata.json');
+        const mdOutputPath = path.join(outputDir, 'proposal.md');
         
-        fs.writeFileSync(outputPath, JSON.stringify(draftCalldata, null, 2));
+        // Write JSON file (without description)
+        fs.writeFileSync(jsonOutputPath, JSON.stringify(draftCalldata, null, 2));
+        console.log(`Successfully created ${jsonOutputPath}`);
         
-        console.log(`Successfully created ${outputPath}`);
+        // Write description as markdown file
+        fs.writeFileSync(mdOutputPath, description);
+        console.log(`Successfully created ${mdOutputPath}`);
+        
         console.log(`Executable calls:`, executableCalls.length);
+        console.log(`Description length:`, description.length);
         
         // Log each call for verification
         executableCalls.forEach((call, index) => {
