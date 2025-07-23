@@ -23,7 +23,7 @@ abstract contract NameResolver {
     function setName(bytes32 node, string memory name) public virtual;
 }
 
-contract Proposal_ENS_EP_Enable_ENSIP19_Test is ENS_Governance {
+contract Proposal_ENS_EP_Enable_L2_Test is ENS_Governance {
     // Contract addresses - Update with actual addresses
     IENSNewReverseRegistrar newReverseRegistrar = IENSNewReverseRegistrar(0x283F227c4Bd38ecE252C4Ae7ECE650B0e913f1f9);
     INewEthRegistrarController newEthRegistrarController = 
@@ -40,7 +40,7 @@ contract Proposal_ENS_EP_Enable_ENSIP19_Test is ENS_Governance {
     ILineaReverseResolver lineaReverseResolver = ILineaReverseResolver(0x0Ce08a41bdb10420FB5Cac7Da8CA508EA313aeF8);
     IOptimismReverseResolver optimismReverseResolver = 
         IOptimismReverseResolver(0xF9Edb1A21867aC11b023CE34Abad916D29aBF107);
-    IScrollReverseResolver scrollReverseResolver = IScrollReverseResolver(0xd38bf7c18c25AC1b4ce2CC077cbC35b2B97f01e7);
+    IScrollReverseResolver scrollReverseResolver = IScrollReverseResolver(0xC4842814cA523E481Ca5aa85F719FEd1E9CaC614);
 
     // Variables
     address newDefaultReverseResolver = 0xA7d635c8de9a58a228AA69353a1699C7Cc240DCF;
@@ -59,7 +59,7 @@ contract Proposal_ENS_EP_Enable_ENSIP19_Test is ENS_Governance {
 
     function _selectFork() public override {
         // TODO: Update with appropriate block number for the proposal
-        vm.createSelectFork({ blockNumber: 22_879_171, urlOrAlias: "mainnet" });
+        vm.createSelectFork({ blockNumber: 22_928_808, urlOrAlias: "mainnet" });
     }
 
     function _proposer() public pure override returns (address) {
@@ -71,7 +71,11 @@ contract Proposal_ENS_EP_Enable_ENSIP19_Test is ENS_Governance {
         // check ownership of new contracts deployed
         // newDefaultReverseResolver and newPublicResolver do not have owners
         assertEq(newReverseRegistrar.owner(), address(timelock), "newReverseRegistrar owner is not timelock");
-        assertEq(newEthRegistrarController.owner(), address(timelock), "newEthRegistrarController owner is not timelock");
+        assertEq(
+            newEthRegistrarController.owner(), 
+            address(timelock), 
+            "newEthRegistrarController owner is not timelock"
+        );
         assertEq(arbitrumReverseResolver.owner(), address(timelock), "arbitrumReverseResolver owner is not timelock");
         assertEq(baseReverseResolver.owner(), address(timelock), "baseReverseResolver owner is not timelock");
         assertEq(lineaReverseResolver.owner(), address(timelock), "lineaReverseResolver owner is not timelock");
@@ -91,7 +95,6 @@ contract Proposal_ENS_EP_Enable_ENSIP19_Test is ENS_Governance {
             string memory
         )
     {
-        // TODO: Update with actual proposal description
         uint256 numTransactions = 16;
 
         targets = new address[](numTransactions);
@@ -138,7 +141,7 @@ contract Proposal_ENS_EP_Enable_ENSIP19_Test is ENS_Governance {
             0
         );
         signatures[2] = "";
-        
+    
         // 2.3. Set the linea reverse resolver
         assertEq(lineaCoinType, "8000e708");
 
@@ -153,7 +156,7 @@ contract Proposal_ENS_EP_Enable_ENSIP19_Test is ENS_Governance {
             0
         );
         signatures[3] = "";
-        
+
         // 2.4. Set the optimism reverse resolver
         assertEq(optimismCoinType, "8000000a");
 
@@ -168,7 +171,7 @@ contract Proposal_ENS_EP_Enable_ENSIP19_Test is ENS_Governance {
             0
         );
         signatures[4] = "";
-        
+
         // 2.5. Set the scroll reverse resolver
         assertEq(scrollCoinType, "80082750");
 
@@ -183,7 +186,7 @@ contract Proposal_ENS_EP_Enable_ENSIP19_Test is ENS_Governance {
             0
         );
         signatures[5] = "";
-        
+
         // 3. Add new controller to the ETH registrar
         targets[6] = address(ensRegistrar);
         values[6] = 0;
@@ -192,7 +195,7 @@ contract Proposal_ENS_EP_Enable_ENSIP19_Test is ENS_Governance {
             newEthRegistrarController
         );
         signatures[6] = "";
-        
+
         // 4. Set new .eth registrar as controller on the reverse registrar
         targets[7] = address(reverseRegistrar);
         values[7] = 0;
@@ -202,7 +205,7 @@ contract Proposal_ENS_EP_Enable_ENSIP19_Test is ENS_Governance {
             true
         );
         signatures[7] = "";
-
+    
         // 5. Set new .eth registrar as controller on the new reverse registrar
         targets[8] = address(newReverseRegistrar);
         values[8] = 0;
@@ -235,7 +238,7 @@ contract Proposal_ENS_EP_Enable_ENSIP19_Test is ENS_Governance {
             newPublicResolver
         );
         signatures[10] = "";
-        
+    
         // 8.1
         targets[11] = address(reverseRegistrar);
         values[11] = 0;
@@ -247,7 +250,7 @@ contract Proposal_ENS_EP_Enable_ENSIP19_Test is ENS_Governance {
             "dnssec.ens.eth"
         );
         signatures[11] = "";
-
+    
         // 8.2
         targets[12] = address(reverseRegistrar);
         values[12] = 0;
@@ -259,7 +262,7 @@ contract Proposal_ENS_EP_Enable_ENSIP19_Test is ENS_Governance {
             "registrar.ens.eth"
         );
         signatures[12] = "";
-
+    
         // 8.3
         targets[13] = address(reverseRegistrar);
         values[13] = 0;
@@ -271,7 +274,7 @@ contract Proposal_ENS_EP_Enable_ENSIP19_Test is ENS_Governance {
             "root.ens.eth"
         );
         signatures[13] = "";
-
+    
         // 8.4
         targets[14] = address(reverseRegistrar);
         values[14] = 0;
@@ -283,7 +286,7 @@ contract Proposal_ENS_EP_Enable_ENSIP19_Test is ENS_Governance {
             "controller.ens.eth"
         );
         signatures[14] = "";
-
+    
         // 8.5
         targets[15] = address(reverseRegistrar);
         values[15] = 0;
@@ -420,5 +423,67 @@ contract Proposal_ENS_EP_Enable_ENSIP19_Test is ENS_Governance {
         }
         
         return string(result);
+    }
+
+    // TODO: This can be in the inherited contract
+    function testFullCallDataComparison() public {
+        // This test requires forking - uncomment _selectFork() in the function above to enable
+        // For now, we'll demonstrate how the comparison would work
+        
+        // Read JSON file
+        string memory jsonPath = "src/ens/proposals/ep-enable-l2/draftCalldata.json";
+        string memory jsonContent = vm.readFile(jsonPath);
+        
+        // Parse the executableCalls array from JSON
+        address[] memory jsonTargets = abi.decode(vm.parseJson(jsonContent, ".executableCalls[*].target"), (address[]));
+        string[] memory jsonValues = abi.decode(vm.parseJson(jsonContent, ".executableCalls[*].value"), (string[]));
+        bytes[] memory jsonCalldatas = abi.decode(vm.parseJson(jsonContent, ".executableCalls[*].calldata"), (bytes[]));
+        
+        console2.log("JSON parsed successfully with", jsonTargets.length, "operations");
+
+        // Generate calldata from the contract
+        (
+            address[] memory generatedTargets,
+            uint256[] memory generatedValues,
+            string[] memory generatedSignatures,
+            bytes[] memory generatedCalldatas,
+            string memory generatedDescription
+        ) = _generateCallData();
+        
+        // Compare lengths
+        assertEq(
+            jsonTargets.length,
+            generatedTargets.length,
+            "Number of executable calls mismatch"
+        );
+        
+        // Compare each operation
+        for (uint256 i = 0; i < jsonTargets.length; i++) {
+            // Compare target addresses
+            assertEq(
+                jsonTargets[i],
+                generatedTargets[i],
+                string(abi.encodePacked("Target mismatch at index ", vm.toString(i)))
+            );
+            
+            // Compare values
+            assertEq(
+                vm.parseUint(jsonValues[i]),
+                generatedValues[i],
+                string(abi.encodePacked("Value mismatch at index ", vm.toString(i)))
+            );
+            
+            // Compare calldata
+            assertEq(
+                jsonCalldatas[i],
+                generatedCalldatas[i],
+                string(abi.encodePacked("Calldata mismatch at index ", vm.toString(i)))
+            );
+        }
+        // For now, just verify JSON structure
+        // Get length from variable numTransactions
+        assertEq(jsonTargets.length, 16, "Expected 16 operations from JSON");
+        assertEq(jsonTargets.length, jsonValues.length, "Targets and values arrays length mismatch");
+        assertEq(jsonTargets.length, jsonCalldatas.length, "Targets and calldata arrays length mismatch");
     }
 }
