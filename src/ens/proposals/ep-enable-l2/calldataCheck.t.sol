@@ -23,7 +23,7 @@ abstract contract NameResolver {
     function setName(bytes32 node, string memory name) public virtual;
 }
 
-contract Proposal_ENS_EP_Enable_ENSIP19_Test is ENS_Governance {
+contract Proposal_ENS_EP_Enable_L2_Test is ENS_Governance {
     // Contract addresses - Update with actual addresses
     IENSNewReverseRegistrar newReverseRegistrar = IENSNewReverseRegistrar(0x283F227c4Bd38ecE252C4Ae7ECE650B0e913f1f9);
     INewEthRegistrarController newEthRegistrarController = 
@@ -71,7 +71,11 @@ contract Proposal_ENS_EP_Enable_ENSIP19_Test is ENS_Governance {
         // check ownership of new contracts deployed
         // newDefaultReverseResolver and newPublicResolver do not have owners
         assertEq(newReverseRegistrar.owner(), address(timelock), "newReverseRegistrar owner is not timelock");
-        assertEq(newEthRegistrarController.owner(), address(timelock), "newEthRegistrarController owner is not timelock");
+        assertEq(
+            newEthRegistrarController.owner(), 
+            address(timelock), 
+            "newEthRegistrarController owner is not timelock"
+        );
         assertEq(arbitrumReverseResolver.owner(), address(timelock), "arbitrumReverseResolver owner is not timelock");
         assertEq(baseReverseResolver.owner(), address(timelock), "baseReverseResolver owner is not timelock");
         assertEq(lineaReverseResolver.owner(), address(timelock), "lineaReverseResolver owner is not timelock");
