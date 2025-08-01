@@ -4,6 +4,7 @@ pragma solidity ^0.8.13;
 import { Test } from "@forge-std/src/Test.sol";
 import { console2 } from "@forge-std/src/console2.sol";
 
+import { IShutterDAO } from "@shutter/interfaces/IShutterDAO.sol";
 import { IAzorius } from "@shutter/interfaces/IAzorius.sol";
 import { ILinearERC20Voting } from "@shutter/interfaces/ILinearERC20Voting.sol";
 import { IShutterToken } from "@shutter/interfaces/IShutterToken.sol";
@@ -57,6 +58,7 @@ abstract contract Shutter_Governance is Test, IDAO {
                                    TEST CONTRACTS
     //////////////////////////////////////////////////////////////////////////*/
 
+    IShutterDAO public shutterDAO;
     IAzorius public azorius;
     ILinearERC20Voting public linearERC20VotingStrategy;
     IShutterToken public governanceToken;
@@ -69,12 +71,14 @@ abstract contract Shutter_Governance is Test, IDAO {
         _selectFork();
 
         // Governance contracts Shutter
+        shutterDAO = IShutterDAO(payable(0x36bD3044ab68f600f6d3e081056F34f2a58432c4));
         azorius = IAzorius(0xAA6BfA174d2f803b517026E93DBBEc1eBa26258e);
         linearERC20VotingStrategy = ILinearERC20Voting(0x4b29d8B250B8b442ECfCd3a4e3D91933d2db720F);
         governanceToken = IShutterToken(0xe485E2f1bab389C08721B291f6b59780feC83Fd7);
         proposer = _proposer();
         voters = _voters();
         // Label the base test contracts.
+        vm.label(address(shutterDAO), "shutterDAO");
         vm.label(address(azorius), "azorius");
         vm.label(address(linearERC20VotingStrategy), "linearERC20VotingStrategy");
         vm.label(address(governanceToken), "governanceToken");
@@ -89,14 +93,14 @@ abstract contract Shutter_Governance is Test, IDAO {
         }
         assertGt(totalVotes, _getQuorum());
 
+        // Store parameters to be validated after execution
+        _beforeProposal();
+
         // Validate if proposer has enough votes to submit a proposal
         assertGe(_getVotes(proposer), _getProposalThreshold());
 
         // Generate call data
         (targets, values, signatures, calldatas, description) = _generateCallData();
-        
-        // Store parameters to be validated after execution
-        _beforeProposal();
 
         if (!_isProposalSubmitted()) {
             // Proposal does not exists onchain, so we need to propose it
