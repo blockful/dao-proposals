@@ -9,12 +9,7 @@ import { IERC20 } from "@contracts/utils/interfaces/IERC20.sol";
 import { IENSRoot } from "@ens/interfaces/IENSRoot.sol";
 import { IENSRegistryWithFallback } from "@ens/interfaces/IENSRegistryWithFallback.sol";
 
-abstract contract NameResolver {
-    function setName(bytes32 node, string memory name) public virtual;
-}
-
 contract Proposal_ENS_EP_Locker_TLD_Test is ENS_Governance {
-    // Contract addresses - Update with actual addresses
     IENSRoot root = IENSRoot(0xaB528d626EC275E3faD363fF1393A41F581c5897);
     IENSRegistryWithFallback ensRegistry = IENSRegistryWithFallback(0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e);
 
@@ -24,21 +19,15 @@ contract Proposal_ENS_EP_Locker_TLD_Test is ENS_Governance {
     bytes32 node = namehash("locker");
 
     function _selectFork() public override {
-        // TODO: Update with appropriate block number for the proposal
         vm.createSelectFork({ blockNumber: 23_043_292, urlOrAlias: "mainnet" });
     }
 
     function _proposer() public pure override returns (address) {
-        // TODO: Update with actual proposer address
-        return 0xe52C39327FF7576bAEc3DBFeF0787bd62dB6d726; // Update with actual proposer
+        return 0x534631Bcf33BDb069fB20A93d2fdb9e4D4dD42CF; // slobo.eth
     }
 
     function _beforeProposal() public override {
         oldOwner = ensRegistry.owner(node);
-        console2.log("oldOwner", oldOwner);
-        console2.log("labelhashBytes");
-        console2.logBytes32(labelhashBytes);
-
     }
 
     function _generateCallData()
@@ -59,7 +48,7 @@ contract Proposal_ENS_EP_Locker_TLD_Test is ENS_Governance {
         calldatas = new bytes[](numTransactions);
         signatures = new string[](numTransactions);
 
-        // 1. Set the owner of the locker TLD to Orange Domains address
+        // 1. Set the owner of the .locker TLD to Orange Domains address
         targets[0] = address(root);
         calldatas[0] =
             abi.encodeWithSelector(IENSRoot.setSubnodeOwner.selector, labelhashBytes, newOwner);
@@ -69,17 +58,13 @@ contract Proposal_ENS_EP_Locker_TLD_Test is ENS_Governance {
         return (targets, values, signatures, calldatas, description);
     }
 
-    function _afterExecution() public view override {
+    function _afterExecution() public override {
         assertEq(ensRegistry.owner(node), newOwner);
-
-        vm.startPrank(newOwner);
-        ensRegistry.setResolver(node, offchainDNSResolver);
-        vm.stopPrank();
+        assertNotEq(oldOwner, newOwner);
     }
 
     function _isProposalSubmitted() public pure override returns (bool) {
-        // TODO: Set to true if proposal already exists on-chain, false if it needs to be submitted
-        return false; // Update based on proposal status
+        return false;
     }
 
     function jsonPath() public pure override returns (string memory) {
