@@ -16,7 +16,6 @@ contract Proposal_Shutter_Defense_Test is Shutter_Governance {
     }
 
     function _proposer() public view override returns (address) {
-        console2.log("proposer", _voters()[0]);
         return _voters()[0];
     }
 

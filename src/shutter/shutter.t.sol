@@ -94,37 +94,13 @@ abstract contract Shutter_Governance is Test, IDAO {
 
         // Generate call data
         (targets, values, signatures, calldatas, description) = _generateCallData();
-
-        // Calculate proposalId
         
         // Store parameters to be validated after execution
         _beforeProposal();
 
         if (!_isProposalSubmitted()) {
             // Proposal does not exists onchain, so we need to propose it
-            vm.startPrank(proposer);
-            proposalId = azorius.totalProposalCount();
-            // console bytes
-            console2.logBytes(bytes(""));
-            // console Transaction[]
-            {
-                IAzorius.Transaction[] memory transactions = _getTransactions(targets, values, calldatas);
-                for (uint256 i = 0; i < transactions.length; i++) {
-                    console2.log("Transaction", i);
-                    console2.log("  to:      %s", address(transactions[i].to));
-                    console2.log("  value:   %s", transactions[i].value);
-                    console2.logBytes(transactions[i].data);
-                    console2.log("  operation: %s", uint256(transactions[i].operation));
-                }
-            }
-            azorius.submitProposal(address(linearERC20VotingStrategy), bytes(""), _getTransactions(targets, values, calldatas), description);
-            vm.stopPrank();
-
-            console2.log("proposalId", proposalId);
-            console2.log("proposalState", _getProposalState(proposalId));
-            console2.log("ProposalState.ACTIVE", uint256(ProposalState.ACTIVE));
-
-            assertEq(_getProposalState(proposalId), uint8(ProposalState.ACTIVE));
+            _submitProposal();
         }
 
         // Make proposal ready to vote
@@ -155,6 +131,16 @@ abstract contract Shutter_Governance is Test, IDAO {
         // if (keccak256(abi.encodePacked(jsonPath())) != keccak256(abi.encodePacked(""))) {
         //     draftCallDataComparison();
         // }
+    }
+
+    function _submitProposal() internal {
+        vm.startPrank(proposer);
+        proposalId = azorius.totalProposalCount();
+
+        azorius.submitProposal(address(linearERC20VotingStrategy), bytes(""), _getTransactions(targets, values, calldatas), description);
+        vm.stopPrank();
+
+        assertEq(_getProposalState(proposalId), uint8(ProposalState.ACTIVE));
     }
 
     function _getVotes(address account) public view virtual returns (uint256) {
