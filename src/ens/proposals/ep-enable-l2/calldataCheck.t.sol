@@ -425,65 +425,7 @@ contract Proposal_ENS_EP_Enable_L2_Test is ENS_Governance {
         return string(result);
     }
 
-    // TODO: This can be in the inherited contract
-    function testFullCallDataComparison() public {
-        // This test requires forking - uncomment _selectFork() in the function above to enable
-        // For now, we'll demonstrate how the comparison would work
-        
-        // Read JSON file
-        string memory jsonPath = "src/ens/proposals/ep-enable-l2/draftCalldata.json";
-        string memory jsonContent = vm.readFile(jsonPath);
-        
-        // Parse the executableCalls array from JSON
-        address[] memory jsonTargets = abi.decode(vm.parseJson(jsonContent, ".executableCalls[*].target"), (address[]));
-        string[] memory jsonValues = abi.decode(vm.parseJson(jsonContent, ".executableCalls[*].value"), (string[]));
-        bytes[] memory jsonCalldatas = abi.decode(vm.parseJson(jsonContent, ".executableCalls[*].calldata"), (bytes[]));
-        
-        console2.log("JSON parsed successfully with", jsonTargets.length, "operations");
-
-        // Generate calldata from the contract
-        (
-            address[] memory generatedTargets,
-            uint256[] memory generatedValues,
-            string[] memory generatedSignatures,
-            bytes[] memory generatedCalldatas,
-            string memory generatedDescription
-        ) = _generateCallData();
-        
-        // Compare lengths
-        assertEq(
-            jsonTargets.length,
-            generatedTargets.length,
-            "Number of executable calls mismatch"
-        );
-        
-        // Compare each operation
-        for (uint256 i = 0; i < jsonTargets.length; i++) {
-            // Compare target addresses
-            assertEq(
-                jsonTargets[i],
-                generatedTargets[i],
-                string(abi.encodePacked("Target mismatch at index ", vm.toString(i)))
-            );
-            
-            // Compare values
-            assertEq(
-                vm.parseUint(jsonValues[i]),
-                generatedValues[i],
-                string(abi.encodePacked("Value mismatch at index ", vm.toString(i)))
-            );
-            
-            // Compare calldata
-            assertEq(
-                jsonCalldatas[i],
-                generatedCalldatas[i],
-                string(abi.encodePacked("Calldata mismatch at index ", vm.toString(i)))
-            );
-        }
-        // For now, just verify JSON structure
-        // Get length from variable numTransactions
-        assertEq(jsonTargets.length, 16, "Expected 16 operations from JSON");
-        assertEq(jsonTargets.length, jsonValues.length, "Targets and values arrays length mismatch");
-        assertEq(jsonTargets.length, jsonCalldatas.length, "Targets and calldata arrays length mismatch");
+    function jsonPath() public pure override returns (string memory) {
+        return "src/ens/proposals/ep-enable-l2/draftCalldata.json";
     }
 }
