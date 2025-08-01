@@ -1,0 +1,5 @@
+CONTRACT_ADDRESS=0x4b29d8b250b8b442ecfcd3a4e3d91933d2db720f 
+DAO=shutter
+CONTRACT_NAME=ILinearERC20Voting
+
+cast interface $CONTRACT_ADDRESS > src/$DAO/interfaces/$CONTRACT_NAME.sol
