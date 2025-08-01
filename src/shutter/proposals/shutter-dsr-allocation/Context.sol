@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.25 <0.9.0;
 
-import "../interfaces/IAzorius.sol";
-import "../interfaces/ILinearERC20Voting.sol";
+import { IAzorius } from "@shutter/interfaces/IAzorius.sol";
+import { ILinearERC20Voting } from "@shutter/interfaces/ILinearERC20Voting.sol";
+import { IShutterToken } from "@shutter/interfaces/IShutterToken.sol";
 import "@contracts/dai/interfaces/IDssPsm.sol";
 import "@contracts/dai/interfaces/ISavingsDai.sol";
 import "@contracts/utils/interfaces/IERC20.sol";
