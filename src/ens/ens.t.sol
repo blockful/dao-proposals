@@ -175,7 +175,7 @@ abstract contract ENS_Governance is Test, IDAO, ENSHelper {
         // Assert parameters modified after execution
         _afterExecution();
 
-        if (keccak256(abi.encodePacked(jsonPath())) != keccak256(abi.encodePacked(""))) {
+        if (keccak256(abi.encodePacked(dirPath())) != keccak256(abi.encodePacked(""))) {
             draftCallDataComparison();
         }
     }
@@ -219,12 +219,12 @@ abstract contract ENS_Governance is Test, IDAO, ENSHelper {
 
     function _afterExecution() public virtual;
 
-    function jsonPath() public virtual returns (string memory) {
+    function dirPath() public virtual returns (string memory) {
         return "";
     }
 
     function draftCallDataComparison() public {
-        string memory jsonContent = vm.readFile(jsonPath());
+        string memory jsonContent = vm.readFile(string.concat(dirPath(), "/draftCalldata.json"));
     
         address[] memory jsonTargets = parseJsonTargets(jsonContent);
         string[] memory jsonValues = parseJsonValues(jsonContent);
@@ -343,5 +343,13 @@ abstract contract ENS_Governance is Test, IDAO, ENSHelper {
             jsonCalldatas = new bytes[](1);
             jsonCalldatas[0] = abi.decode(ret, (bytes));
         }
+    }
+
+    function getDescriptionFromMarkdown() public returns (string memory) {
+        // Read markdown file
+        string memory markdownPath = string.concat(dirPath(), "/proposal.md");
+        string memory markdownContent = vm.readFile(markdownPath);
+        
+        return markdownContent;
     }
 }

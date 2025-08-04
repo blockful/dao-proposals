@@ -426,11 +426,7 @@ contract Proposal_ENS_EP_Enable_L2_Test is ENS_Governance {
         return string(result);
     }
 
-    function getDescriptionFromMarkdown() public view returns (string memory) {
-        // Read markdown file
-        string memory markdownPath = "src/ens/proposals/ep-enable-l2/proposal.md";
-        string memory markdownContent = vm.readFile(markdownPath);
-        
-        return markdownContent;
+    function dirPath() public pure override returns (string memory) {
+        return "src/ens/proposals/ep-enable-l2";
     }
 }
