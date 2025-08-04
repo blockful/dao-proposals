@@ -425,7 +425,7 @@ contract Proposal_ENS_EP_Enable_L2_Test is ENS_Governance {
         return string(result);
     }
 
-    function jsonPath() public pure override returns (string memory) {
-        return "src/ens/proposals/ep-enable-l2/draftCalldata.json";
+    function dirPath() public pure override returns (string memory) {
+        return "src/ens/proposals/ep-enable-l2";
     }
 }
