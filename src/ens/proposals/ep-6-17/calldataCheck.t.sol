@@ -9,7 +9,7 @@ import { IERC20 } from "@contracts/utils/interfaces/IERC20.sol";
 import { IENSRoot } from "@ens/interfaces/IENSRoot.sol";
 import { IENSRegistryWithFallback } from "@ens/interfaces/IENSRegistryWithFallback.sol";
 
-contract Proposal_ENS_EP_Locker_TLD_Test is ENS_Governance {
+contract Proposal_ENS_EP_6_17_Draft_Test is ENS_Governance {
     IENSRoot root = IENSRoot(0xaB528d626EC275E3faD363fF1393A41F581c5897);
     IENSRegistryWithFallback ensRegistry = IENSRegistryWithFallback(0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e);
 
@@ -67,7 +67,7 @@ contract Proposal_ENS_EP_Locker_TLD_Test is ENS_Governance {
         return false;
     }
 
-    function jsonPath() public pure override returns (string memory) {
-        return "src/ens/proposals/ep-locker-tld/draftCalldata.json";
+    function dirPath() public pure override returns (string memory) {
+        return "src/ens/proposals/ep-6-17";
     }
 }
