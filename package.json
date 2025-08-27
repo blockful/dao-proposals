@@ -37,6 +37,7 @@
     "test:disable-vest-as-module": "forge test --match-test disable_vest --rpc-url https://eth.llamarpc.com --fork-block-number 20512800 -vvv --via-ir",
     "calldata:claim-and-disable": "forge test --match-test claim_disable --rpc-url https://eth.llamarpc.com --fork-block-number 20512800 -vvv --via-ir",
     "test:coverage": "forge coverage",
-    "test:coverage:report": "forge coverage --report lcov && genhtml lcov.info --branch-coverage --output-dir coverage"
+    "test:coverage:report": "forge coverage --report lcov && genhtml lcov.info --branch-coverage --output-dir coverage",
+    "fetch-calldata": "node src/utils/fetchTallyDraft.js"
   }
 }
