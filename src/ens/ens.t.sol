@@ -164,8 +164,8 @@ abstract contract ENS_Governance is Test, IDAO, ENSHelper {
 
         // Wait the operation in the DAO wallet timelock to be Ready
         uint256 timeToWait = timelock.getMinDelay() + 1;
+        vm.roll(block.number + timeToWait / 12);
         vm.warp(block.timestamp + timeToWait);
-        vm.roll(block.number + timeToWait * 12);
         assertTrue(timelock.isOperationReady(proposalIdInTimelock));
 
         // Execute proposal
