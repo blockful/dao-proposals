@@ -7,16 +7,18 @@ import { ENS_Governance } from "@ens/ens.t.sol";
 import { IERC20 } from "@contracts/utils/interfaces/IERC20.sol";
 import { IUSDCx } from "@ens/interfaces/IUSDCx.sol";
 import { CFAv1Forwarder } from "@ens/interfaces/ISuperfluidCFAv1Forwarder.sol";
+import { IAutoWrapper } from "@ens/interfaces/IAutoWrapper.sol";
 
 contract ProposalENSEPReactivateStreamDraftTest is ENS_Governance {
   // Contract addresses
     IERC20 public constant USDC = IERC20(0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48);
     IUSDCx public constant USDCx = IUSDCx(0x1BA8603DA702602A8657980e825A6DAa03Dee93a);
-    CFAv1Forwarder public constant SUPERFLUID = CFAv1Forwarder(0xcfA132E353cB4E398080B9700609bb008eceB125);
+    CFAv1Forwarder public constant superfluid = CFAv1Forwarder(0xcfA132E353cB4E398080B9700609bb008eceB125);
+    IAutoWrapper public constant autowrapper = IAutoWrapper(0x30aE282CF477E2eF28B14d0125aCEAd57Fe1d7a1);
     
     // Flow parameters
     address public streamPod = 0xB162Bf7A7fD64eF32b787719335d06B2780e31D1;
-    address public autowrapper = 0x1D65c6d3AD39d454Ea8F682c49aE7744706eA96d;
+    address public autowrapperStrategy = 0x1D65c6d3AD39d454Ea8F682c49aE7744706eA96d;
     
     uint256 public constant USDC_DECIMALS = 6;
     uint256 public constant USDCX_DECIMALS = 18;
@@ -44,7 +46,7 @@ contract ProposalENSEPReactivateStreamDraftTest is ENS_Governance {
 
     function _beforeProposal() public override {
         //  Check initial flow rate (should be lower than new rate)
-        currentFlowRate = SUPERFLUID.getFlowrate(address(USDCx), address(timelock), streamPod);
+        currentFlowRate = superfluid.getFlowrate(address(USDCx), address(timelock), streamPod);
         assertEq(currentFlowRate, 0);
         
         // Check USDCx balance before upgrade
@@ -60,7 +62,7 @@ contract ProposalENSEPReactivateStreamDraftTest is ENS_Governance {
         assertEq(currentUSDCXBalanceStreamPod, 0);
 
         // current Autowrap allowance
-        currentAutowrapAllowance = USDC.allowance(address(timelock), autowrapper);
+        currentAutowrapAllowance = USDC.allowance(address(timelock), autowrapperStrategy);
         assertEq(currentAutowrapAllowance, AUTOWRAP_ALLOWANCE);
     }
 
@@ -112,7 +114,7 @@ contract ProposalENSEPReactivateStreamDraftTest is ENS_Governance {
         signatures[2] = "";
 
         // 4. Create stream from Timelock to Stream Management Pod for $4.5M/year
-        targets[3] = address(SUPERFLUID);
+        targets[3] = address(superfluid);
         calldatas[3] = abi.encodeWithSelector(
             CFAv1Forwarder.setFlowrate.selector,
             address(USDCx),
@@ -127,7 +129,7 @@ contract ProposalENSEPReactivateStreamDraftTest is ENS_Governance {
 
     function _afterExecution() public override {
         // Check that the flow rate has been set correctly
-        int96 newFlowRate = SUPERFLUID.getFlowrate(address(USDCx), address(timelock), streamPod);
+        int96 newFlowRate = superfluid.getFlowrate(address(USDCx), address(timelock), streamPod);
         assertEq(newFlowRate, NEW_FLOW_RATE);
         console2.log("new flow rate USDCX from timelock -> streamPod:", newFlowRate);
         
@@ -143,6 +145,9 @@ contract ProposalENSEPReactivateStreamDraftTest is ENS_Governance {
         // Verify USDC approval was consumed
         uint256 newUSDCApproval = USDC.allowance(address(timelock), address(USDCx));
         assertEq(newUSDCApproval, 0); // Should be consumed after upgrade
+
+        // Check that Autowrap can wrap USDCx
+        autowrapper.executeWrap(address(timelock), address(USDCx), address(USDC));
     }
 
     function _isProposalSubmitted() public pure override returns (bool) {
