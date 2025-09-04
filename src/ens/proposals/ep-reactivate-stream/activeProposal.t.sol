@@ -37,7 +37,7 @@ contract ProposalENSEPReactivateStreamDraftTest is ENS_Governance {
     uint256 internal currentAutowrapAllowance;
 
     function _selectFork() public override {
-        vm.createSelectFork({ blockNumber: 23226582, urlOrAlias: "mainnet" });
+        vm.createSelectFork({ blockNumber: 23256196, urlOrAlias: "mainnet" });
     }
 
     function _proposer() public pure override returns (address) {
@@ -123,12 +123,14 @@ contract ProposalENSEPReactivateStreamDraftTest is ENS_Governance {
         );
         values[3] = 0;
         signatures[3] = "";
-
+        
         // 5. Send eth to timelock
         targets[4] = address(timelock);
         calldatas[4] = bytes("");
         values[4] = 0;
         signatures[4] = "";
+
+        description = getDescriptionFromMarkdown();
 
         return (targets, values, signatures, calldatas, description);
     }
@@ -157,7 +159,7 @@ contract ProposalENSEPReactivateStreamDraftTest is ENS_Governance {
     }
 
     function _isProposalSubmitted() public pure override returns (bool) {
-        return false;
+        return true;
     }
 
     function dirPath() public pure override returns (string memory) {

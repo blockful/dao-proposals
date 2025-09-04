@@ -15,3 +15,4 @@ This executable proposal will:
 2. **Wrap 500,000 USDC into USDCx** to provide sufficient liquidity for operations.
 3. **Transfer 400,000 USDCx to the Stream Management Pod** as retroactive payment for the interrupted period. This transfer is done in USDCx rather than USDC to maintain complete visibility and tracking of all SPP program spending within the Superfluid dashboard, ensuring transparent monitoring of stream-related transactions.
 4. **Recreate the stream** from ENS Treasury to the Stream Management Pod at the previously approved rate of **0.142599440769357573 USDCx/sec** (~$4.5M/year), leaving approximately 100,000 USDCx in the Treasury for ongoing stream operations.
+5. Transfer 0 ETH to the timelock - This is due a bug on Tally draft feature and has no impact.
