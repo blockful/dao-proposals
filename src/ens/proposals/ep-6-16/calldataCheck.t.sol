@@ -59,11 +59,12 @@ contract Proposal_ENS_EP_Enable_L2_Test is ENS_Governance {
 
     function _selectFork() public override {
         // TODO: Update with appropriate block number for the proposal
-        vm.createSelectFork({ blockNumber: 22_982_423, urlOrAlias: "mainnet" });
+        vm.createSelectFork({ blockNumber: 22_928_808, urlOrAlias: "mainnet" });
     }
 
     function _proposer() public pure override returns (address) {
-        return 0xb8c2C29ee19D8307cb7255e1Cd9CbDE883A267d5;
+        // TODO: Update with actual proposer address
+        return 0xe52C39327FF7576bAEc3DBFeF0787bd62dB6d726; // Update with actual proposer
     }
 
     function _beforeProposal() public view override {
@@ -298,8 +299,6 @@ contract Proposal_ENS_EP_Enable_L2_Test is ENS_Governance {
         );
         signatures[15] = "";
 
-        description = getDescriptionFromMarkdown();
-
         return (targets, values, signatures, calldatas, description);
     }
 
@@ -401,7 +400,7 @@ contract Proposal_ENS_EP_Enable_L2_Test is ENS_Governance {
 
     function _isProposalSubmitted() public pure override returns (bool) {
         // TODO: Set to true if proposal already exists on-chain, false if it needs to be submitted
-        return true; // Update based on proposal status
+        return false; // Update based on proposal status
     }
 
     function calculateNewEthRegistrarControllerInterfaceId() public pure returns (bytes4) {
@@ -427,6 +426,6 @@ contract Proposal_ENS_EP_Enable_L2_Test is ENS_Governance {
     }
 
     function dirPath() public pure override returns (string memory) {
-        return "src/ens/proposals/ep-enable-l2";
+        return "src/ens/proposals/ep-6-16";
     }
 }
