@@ -17,7 +17,7 @@ contract ProposalENSEPReactivateStreamDraftTest is ENS_Governance {
     }
 
     function _proposer() public pure override returns (address) {
-        return 0x534631Bcf33BDb069fB20A93d2fdb9e4D4dD42CF; // slobo.eth
+        return 0xb8c2C29ee19D8307cb7255e1Cd9CbDE883A267d5;
     }
 
     function _beforeProposal() public override {
@@ -61,7 +61,25 @@ contract ProposalENSEPReactivateStreamDraftTest is ENS_Governance {
 
         // check that the agreement is in the safe harbor
         assertEq(safeHarbor.getAgreement(address(timelock)), address(agreement));
-  
+
+        // log the agreement details
+        IAgreement.AgreementDetailsV2 memory details = agreement.getDetails();
+        // console2.log("=== Agreement Details ===");
+        // console2.log("Protocol Name:", details.protocolName);
+        // console2.log("Agreement URI:", details.agreementURI);
+        // console2.log("=== Contact Details ===");
+        // for (uint i = 0; i < details.contactDetails.length; i++) {
+        //     console2.log("Contact", i, "- Name:", details.contactDetails[i].name);
+        //     console2.log("Contact", i, "- Contact:", details.contactDetails[i].contact);
+        // }
+        // console2.log("=== Bounty Terms ===");
+        // console2.log("Bounty Percentage:", details.bountyTerms.bountyPercentage);
+        // console2.log("Bounty Cap USD:", details.bountyTerms.bountyCapUSD);
+        // console2.log("Retainable:", details.bountyTerms.retainable);
+        // console2.log("Identity Requirements:", IAgreement.IdentityRequirements.unwrap(details.bountyTerms.identity));
+        // console2.log("Diligence Requirements:", details.bountyTerms.diligenceRequirements);
+        // console2.log("Aggregate Bounty Cap USD:", details.bountyTerms.aggregateBountyCapUSD);
+
     }
 
     function _isProposalSubmitted() public pure override returns (bool) {
