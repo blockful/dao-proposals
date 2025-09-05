@@ -175,7 +175,7 @@ abstract contract ENS_Governance is Test, IDAO, ENSHelper {
         // Assert parameters modified after execution
         _afterExecution();
 
-        if (keccak256(abi.encodePacked(dirPath())) != keccak256(abi.encodePacked(""))) {
+        if (keccak256(abi.encodePacked(dirPath())) != keccak256(abi.encodePacked("")) && !_isProposalSubmitted()) {
             draftCallDataComparison();
         }
     }
