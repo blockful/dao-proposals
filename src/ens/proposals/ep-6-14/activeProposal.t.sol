@@ -90,7 +90,6 @@ contract Proposal_ENS_EP_6_14_Test is ENS_Governance {
         vm.startPrank(karpatkey);
 
         // REVOKE FUNCTION
-
         {
             {
                 _safeExecuteTransaction(
@@ -773,6 +772,531 @@ contract Proposal_ENS_EP_6_14_Test is ENS_Governance {
                 _safeExecuteTransaction(
                     0x36cC1d791704445A5b6b9c36a667e511d4702F3f, abi.encodeWithSelector(0x2e1a7d4d, 1 ether)
                 );
+            }
+        }
+
+        // SCOPE FUNCTION
+        {
+            {
+                {
+                    vm.expectRevert(
+                        abi.encodeWithSelector(
+                            IZodiacRoles.ConditionViolation.selector, IZodiacRoles.Status.OrViolation, bytes32(0)
+                        )
+                    );
+                    _safeExecuteTransaction(
+                        0x7f39C581F595B53c5cb19bD0b3f8dA6c935E2Ca0, // wstETH
+                        abi.encodeWithSelector(
+                            0x095ea7b3, // approve
+                            0x000000000022D473030F116dDEE9F6B43aC78BA3, // spender
+                            1 ether // amount
+                        )
+                    );
+                }
+                {
+                    vm.expectRevert(
+                        abi.encodeWithSelector(
+                            IZodiacRoles.ConditionViolation.selector, IZodiacRoles.Status.OrViolation, bytes32(0)
+                        )
+                    );
+                    _safeExecuteTransaction(
+                        0x7f39C581F595B53c5cb19bD0b3f8dA6c935E2Ca0, // wstETH
+                        abi.encodeWithSelector(
+                            0x095ea7b3, // approve
+                            0xC13e21B648A5Ee794902342038FF3aDAB66BE987, // spender
+                            1 ether // amount
+                        )
+                    );
+                }
+            }
+
+            {
+                {
+                    vm.expectRevert(
+                        abi.encodeWithSelector(
+                            IZodiacRoles.ConditionViolation.selector, IZodiacRoles.Status.OrViolation, bytes32(0)
+                        )
+                    );
+                    _safeExecuteTransaction(
+                        0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2, // wstETH
+                        abi.encodeWithSelector(
+                            0x095ea7b3, // approve
+                            0x000000000022D473030F116dDEE9F6B43aC78BA3, // spender
+                            1 ether // amount
+                        )
+                    );
+                }
+                {
+                    vm.expectRevert(
+                        abi.encodeWithSelector(
+                            IZodiacRoles.ConditionViolation.selector, IZodiacRoles.Status.OrViolation, bytes32(0)
+                        )
+                    );
+                    _safeExecuteTransaction(
+                        0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2, // wstETH
+                        abi.encodeWithSelector(
+                            0x095ea7b3, // approve
+                            0x56C526b0159a258887e0d79ec3a80dfb940d0cD7, // spender
+                            1 ether // amount
+                        )
+                    );
+                }
+                {
+                    vm.expectRevert(
+                        abi.encodeWithSelector(
+                            IZodiacRoles.ConditionViolation.selector, IZodiacRoles.Status.OrViolation, bytes32(0)
+                        )
+                    );
+                    _safeExecuteTransaction(
+                        0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2, // wstETH
+                        abi.encodeWithSelector(
+                            0x095ea7b3, // approve
+                            0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb, // spender
+                            1 ether // amount
+                        )
+                    );
+                }
+                {
+                    vm.expectRevert(
+                        abi.encodeWithSelector(
+                            IZodiacRoles.ConditionViolation.selector, IZodiacRoles.Status.OrViolation, bytes32(0)
+                        )
+                    );
+                    _safeExecuteTransaction(
+                        0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2, // wstETH
+                        abi.encodeWithSelector(
+                            0x095ea7b3, // approve
+                            0xcc7d5785AD5755B6164e21495E07aDb0Ff11C2A8, // spender
+                            1 ether // amount
+                        )
+                    );
+                }
+            }
+
+            {
+                {
+                    vm.expectRevert(
+                        abi.encodeWithSelector(
+                            IZodiacRoles.ConditionViolation.selector, IZodiacRoles.Status.OrViolation, bytes32(0)
+                        )
+                    );
+                    _safeExecuteTransaction(
+                        0xae78736Cd615f374D3085123A210448E74Fc6393, // rETH Token
+                        abi.encodeWithSelector(
+                            0x095ea7b3, // approve
+                            0x56C526b0159a258887e0d79ec3a80dfb940d0cD7, // spender
+                            1 ether // amount
+                        )
+                    );
+                }
+                {
+                    vm.expectRevert(
+                        abi.encodeWithSelector(
+                            IZodiacRoles.ConditionViolation.selector, IZodiacRoles.Status.OrViolation, bytes32(0)
+                        )
+                    );
+                    _safeExecuteTransaction(
+                        0xae78736Cd615f374D3085123A210448E74Fc6393, // rETH Token
+                        abi.encodeWithSelector(
+                            0x095ea7b3, // approve
+                            0xe080027Bd47353b5D1639772b4a75E9Ed3658A0d, // spender
+                            1 ether // amount
+                        )
+                    );
+                }
+            }
+
+            {
+                {
+                    vm.expectRevert(
+                        abi.encodeWithSelector(
+                            IZodiacRoles.ConditionViolation.selector,
+                            IZodiacRoles.Status.ParameterNotAllowed,
+                            bytes32(0)
+                        )
+                    );
+                    _safeExecuteTransaction(
+                        0xC13e21B648A5Ee794902342038FF3aDAB66BE987, // target contract
+                        abi.encodeWithSelector(
+                            0x5a3b74b9, // setUserUseReserveAsCollateral
+                            0x7f39C581F595B53c5cb19bD0b3f8dA6c935E2Ca0, // asset
+                            true // useAsCollateral
+                        )
+                    );
+                }
+                {
+                    vm.expectRevert(
+                        abi.encodeWithSelector(
+                            IZodiacRoles.ConditionViolation.selector,
+                            IZodiacRoles.Status.ParameterNotAllowed,
+                            bytes32(0)
+                        )
+                    );
+                    _safeExecuteTransaction(
+                        0xC13e21B648A5Ee794902342038FF3aDAB66BE987, // target contract
+                        abi.encodeWithSelector(
+                            0x5a3b74b9, // setUserUseReserveAsCollateral
+                            0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48, // asset
+                            true // useAsCollateral
+                        )
+                    );
+                }
+                {
+                    vm.expectRevert(
+                        abi.encodeWithSelector(
+                            IZodiacRoles.ConditionViolation.selector,
+                            IZodiacRoles.Status.ParameterNotAllowed,
+                            bytes32(0)
+                        )
+                    );
+                    _safeExecuteTransaction(
+                        0xC13e21B648A5Ee794902342038FF3aDAB66BE987, // target contract
+                        abi.encodeWithSelector(
+                            0x5a3b74b9, // setUserUseReserveAsCollateral
+                            0xdAC17F958D2ee523a2206206994597C13D831ec7, // asset
+                            true // useAsCollateral
+                        )
+                    );
+                }
+                {
+                    vm.expectRevert(
+                        abi.encodeWithSelector(
+                            IZodiacRoles.ConditionViolation.selector,
+                            IZodiacRoles.Status.ParameterNotAllowed,
+                            bytes32(0)
+                        )
+                    );
+                    _safeExecuteTransaction(
+                        0xC13e21B648A5Ee794902342038FF3aDAB66BE987, // target contract
+                        abi.encodeWithSelector(
+                            0x5a3b74b9, // setUserUseReserveAsCollateral
+                            0xdC035D45d973E3EC169d2276DDab16f1e407384F, // asset
+                            true // useAsCollateral
+                        )
+                    );
+                }
+            }
+
+            {
+                {
+                    vm.expectRevert(
+                        abi.encodeWithSelector(
+                            IZodiacRoles.ConditionViolation.selector,
+                            IZodiacRoles.Status.ParameterNotAllowed,
+                            bytes32(0)
+                        )
+                    );
+                    _safeExecuteTransaction(
+                        0xC13e21B648A5Ee794902342038FF3aDAB66BE987, // target contract
+                        abi.encodeWithSelector(
+                            0x617ba037, // supply
+                            0x7f39C581F595B53c5cb19bD0b3f8dA6c935E2Ca0, // asset
+                            1 ether, // amount
+                            address(this), // onBehalfOf
+                            0 // referralCode
+                        )
+                    );
+                }
+                {
+                    vm.expectRevert(
+                        abi.encodeWithSelector(
+                            IZodiacRoles.ConditionViolation.selector,
+                            IZodiacRoles.Status.ParameterNotAllowed,
+                            bytes32(0)
+                        )
+                    );
+                    _safeExecuteTransaction(
+                        0xC13e21B648A5Ee794902342038FF3aDAB66BE987, // target contract
+                        abi.encodeWithSelector(
+                            0x617ba037, // supply
+                            0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48, // asset
+                            1 ether, // amount
+                            address(this), // onBehalfOf
+                            0 // referralCode
+                        )
+                    );
+                }
+                {
+                    vm.expectRevert(
+                        abi.encodeWithSelector(
+                            IZodiacRoles.ConditionViolation.selector,
+                            IZodiacRoles.Status.ParameterNotAllowed,
+                            bytes32(0)
+                        )
+                    );
+                    _safeExecuteTransaction(
+                        0xC13e21B648A5Ee794902342038FF3aDAB66BE987, // target contract
+                        abi.encodeWithSelector(
+                            0x617ba037, // supply
+                            0xdAC17F958D2ee523a2206206994597C13D831ec7, // asset
+                            1 ether, // amount
+                            address(this), // onBehalfOf
+                            0 // referralCode
+                        )
+                    );
+                }
+                {
+                    vm.expectRevert(
+                        abi.encodeWithSelector(
+                            IZodiacRoles.ConditionViolation.selector,
+                            IZodiacRoles.Status.ParameterNotAllowed,
+                            bytes32(0)
+                        )
+                    );
+                    _safeExecuteTransaction(
+                        0xC13e21B648A5Ee794902342038FF3aDAB66BE987, // target contract
+                        abi.encodeWithSelector(
+                            0x617ba037, // supply
+                            0xdC035D45d973E3EC169d2276DDab16f1e407384F, // asset
+                            1 ether, // amount
+                            address(this), // onBehalfOf
+                            0 // referralCode
+                        )
+                    );
+                }
+            }
+
+            {
+                {
+                    vm.expectRevert(
+                        abi.encodeWithSelector(
+                            IZodiacRoles.ConditionViolation.selector,
+                            IZodiacRoles.Status.ParameterNotAllowed,
+                            bytes32(0)
+                        )
+                    );
+                    _safeExecuteTransaction(
+                        0xC13e21B648A5Ee794902342038FF3aDAB66BE987, // target contract
+                        abi.encodeWithSelector(
+                            0x69328dec, // withdraw
+                            0x7f39C581F595B53c5cb19bD0b3f8dA6c935E2Ca0, // asset
+                            1 ether, // amount
+                            address(this) // to
+                        )
+                    );
+                }
+                {
+                    vm.expectRevert(
+                        abi.encodeWithSelector(
+                            IZodiacRoles.ConditionViolation.selector,
+                            IZodiacRoles.Status.ParameterNotAllowed,
+                            bytes32(0)
+                        )
+                    );
+                    _safeExecuteTransaction(
+                        0xC13e21B648A5Ee794902342038FF3aDAB66BE987, // target contract
+                        abi.encodeWithSelector(
+                            0x69328dec, // withdraw
+                            0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48, // asset
+                            1 ether, // amount
+                            address(this) // to
+                        )
+                    );
+                }
+                {
+                    vm.expectRevert(
+                        abi.encodeWithSelector(
+                            IZodiacRoles.ConditionViolation.selector,
+                            IZodiacRoles.Status.ParameterNotAllowed,
+                            bytes32(0)
+                        )
+                    );
+                    _safeExecuteTransaction(
+                        0xC13e21B648A5Ee794902342038FF3aDAB66BE987, // target contract
+                        abi.encodeWithSelector(
+                            0x69328dec, // withdraw
+                            0xdAC17F958D2ee523a2206206994597C13D831ec7, // asset
+                            1 ether, // amount
+                            address(this) // to
+                        )
+                    );
+                }
+                {
+                    vm.expectRevert(
+                        abi.encodeWithSelector(
+                            IZodiacRoles.ConditionViolation.selector,
+                            IZodiacRoles.Status.ParameterNotAllowed,
+                            bytes32(0)
+                        )
+                    );
+                    _safeExecuteTransaction(
+                        0xC13e21B648A5Ee794902342038FF3aDAB66BE987, // target contract
+                        abi.encodeWithSelector(
+                            0x69328dec, // withdraw
+                            0xdC035D45d973E3EC169d2276DDab16f1e407384F, // asset
+                            1 ether, // amount
+                            address(this) // to
+                        )
+                    );
+                }
+            }
+
+            {
+                {
+                    vm.expectRevert(
+                        abi.encodeWithSelector(
+                            IZodiacRoles.ConditionViolation.selector, IZodiacRoles.Status.OrViolation, bytes32(0)
+                        )
+                    );
+                    _safeExecuteTransaction(
+                        0xA35b1B31Ce002FBF2058D22F30f95D405200A15b, // ETHx Token
+                        abi.encodeWithSelector(
+                            0x095ea7b3, // approve
+                            0x22d473030f116ddee9f6b43ac78ba3, // spender
+                            1 ether // amount
+                        )
+                    );
+                }
+                {
+                    vm.expectRevert(
+                        abi.encodeWithSelector(
+                            IZodiacRoles.ConditionViolation.selector, IZodiacRoles.Status.OrViolation, bytes32(0)
+                        )
+                    );
+                    _safeExecuteTransaction(
+                        0xA35b1B31Ce002FBF2058D22F30f95D405200A15b, // ETHx Token
+                        abi.encodeWithSelector(
+                            0x095ea7b3, // approve
+                            0x56C526b0159a258887e0d79ec3a80dfb940d0cD7, // spender
+                            1 ether // amount
+                        )
+                    );
+                }
+                {
+                    vm.expectRevert(
+                        abi.encodeWithSelector(
+                            IZodiacRoles.ConditionViolation.selector, IZodiacRoles.Status.OrViolation, bytes32(0)
+                        )
+                    );
+                    _safeExecuteTransaction(
+                        0xA35b1B31Ce002FBF2058D22F30f95D405200A15b, // ETHx Token
+                        abi.encodeWithSelector(
+                            0x095ea7b3, // approve
+                            0x59Ab5a5b5d617E478a2479B0cAD80DA7e2831492, // spender
+                            1 ether // amount
+                        )
+                    );
+                }
+                {
+                    vm.expectRevert(
+                        abi.encodeWithSelector(
+                            IZodiacRoles.ConditionViolation.selector, IZodiacRoles.Status.OrViolation, bytes32(0)
+                        )
+                    );
+                    _safeExecuteTransaction(
+                        0xA35b1B31Ce002FBF2058D22F30f95D405200A15b, // ETHx Token
+                        abi.encodeWithSelector(
+                            0x095ea7b3, // approve
+                            0x87870Bca3F3fD6335C3F4ce8392D69350B4fA4E2, // spender
+                            1 ether // amount
+                        )
+                    );
+                }
+            }
+
+            {
+                {
+                    vm.expectRevert(
+                        abi.encodeWithSelector(
+                            IZodiacRoles.ConditionViolation.selector,
+                            IZodiacRoles.Status.ParameterNotAllowed,
+                            bytes32(0)
+                        )
+                    );
+                    _safeExecuteTransaction(
+                        0x1B0e765F6224C21223AeA2af16c1C46E38885a40, // Compound v3: CometRewards
+                        abi.encodeWithSelector(
+                            0xb7034f7e, // claim
+                            0x3Afdc9BCA9213A35503b077a6072F3D0d5AB0840, // comet
+                            address(this), // src
+                            true // shouldAccrue
+                        )
+                    );
+                }
+                {
+                    vm.expectRevert(
+                        abi.encodeWithSelector(
+                            IZodiacRoles.ConditionViolation.selector,
+                            IZodiacRoles.Status.ParameterNotAllowed,
+                            bytes32(0)
+                        )
+                    );
+                    _safeExecuteTransaction(
+                        0x1B0e765F6224C21223AeA2af16c1C46E38885a40, // Compound v3: CometRewards
+                        abi.encodeWithSelector(
+                            0xb7034f7e, // claim
+                            0x5D409e56D886231aDAf00c8775665AD0f9897b56, // comet
+                            address(this), // src
+                            true // shouldAccrue
+                        )
+                    );
+                }
+                {
+                    vm.expectRevert(
+                        abi.encodeWithSelector(
+                            IZodiacRoles.ConditionViolation.selector,
+                            IZodiacRoles.Status.ParameterNotAllowed,
+                            bytes32(0)
+                        )
+                    );
+                    _safeExecuteTransaction(
+                        0x1B0e765F6224C21223AeA2af16c1C46E38885a40, // Compound v3: CometRewards
+                        abi.encodeWithSelector(
+                            0xb7034f7e, // claim
+                            0xc3d688B66703497DAA19211EEdff47f25384cdc3, // comet
+                            address(this), // src
+                            true // shouldAccrue
+                        )
+                    );
+                }
+            }
+
+            {
+                {
+                    vm.expectRevert(
+                        abi.encodeWithSelector(
+                            IZodiacRoles.ConditionViolation.selector, IZodiacRoles.Status.OrViolation, bytes32(0)
+                        )
+                    );
+                    _safeExecuteTransaction(
+                        0xf1C9acDc66974dFB6dEcB12aA385b9cD01190E38, // osETH Token
+                        abi.encodeWithSelector(
+                            0x095ea7b3, // approve
+                            0x22d473030f116ddee9f6b43ac78ba3, // spender
+                            1 ether // amount
+                        )
+                    );
+                }
+                {
+                    vm.expectRevert(
+                        abi.encodeWithSelector(
+                            IZodiacRoles.ConditionViolation.selector, IZodiacRoles.Status.OrViolation, bytes32(0)
+                        )
+                    );
+                    _safeExecuteTransaction(
+                        0xf1C9acDc66974dFB6dEcB12aA385b9cD01190E38, // osETH Token
+                        abi.encodeWithSelector(
+                            0x095ea7b3, // approve
+                            0x56C526b0159a258887e0d79ec3a80dfb940d0cD7, // spender
+                            1 ether // amount
+                        )
+                    );
+                }
+                {
+                    vm.expectRevert(
+                        abi.encodeWithSelector(
+                            IZodiacRoles.ConditionViolation.selector, IZodiacRoles.Status.OrViolation, bytes32(0)
+                        )
+                    );
+                    _safeExecuteTransaction(
+                        0xf1C9acDc66974dFB6dEcB12aA385b9cD01190E38, // osETH Token
+                        abi.encodeWithSelector(
+                            0x095ea7b3, // approve
+                            0xe080027Bd47353b5D1639772b4a75E9Ed3658A0d, // spender
+                            1 ether // amount
+                        )
+                    );
+                }
             }
         }
 
