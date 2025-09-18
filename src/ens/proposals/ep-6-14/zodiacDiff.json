@@ -1,11 +1,5 @@
 [
   {
-    "name": "revokeTarget",
-    "contractInputsValues": {
-      "targetAddress": "0x893411580e590D62dDBca8a703d61Cc4A8c7b2b9"
-    }
-  },
-  {
     "name": "revokeFunction",
     "contractInputsValues": {
       "targetAddress": "0x889edC2eDab5f40e902b864aD4d7AdE8E412F9B1",
@@ -20,12 +14,6 @@
     }
   },
   {
-    "name": "revokeTarget",
-    "contractInputsValues": {
-      "targetAddress": "0xA434D495249abE33E031Fe71a969B81f3c07950D"
-    }
-  },
-  {
     "name": "revokeFunction",
     "contractInputsValues": {
       "targetAddress": "0xA434D495249abE33E031Fe71a969B81f3c07950D",
@@ -37,12 +25,6 @@
     "contractInputsValues": {
       "targetAddress": "0xA434D495249abE33E031Fe71a969B81f3c07950D",
       "selector": "0x80500d20"
-    }
-  },
-  {
-    "name": "revokeTarget",
-    "contractInputsValues": {
-      "targetAddress": "0x35Cea9e57A393ac66Aaa7E25C391D52C74B5648f"
     }
   },
   {
@@ -74,12 +56,6 @@
     }
   },
   {
-    "name": "revokeTarget",
-    "contractInputsValues": {
-      "targetAddress": "0x59D9356E565Ab3A36dD77763Fc0d87fEaf85508C"
-    }
-  },
-  {
     "name": "revokeFunction",
     "contractInputsValues": {
       "targetAddress": "0x59D9356E565Ab3A36dD77763Fc0d87fEaf85508C",
@@ -87,22 +63,10 @@
     }
   },
   {
-    "name": "revokeTarget",
-    "contractInputsValues": {
-      "targetAddress": "0x83F20F44975D03b1b09e64809B757c47f942BEeA"
-    }
-  },
-  {
     "name": "revokeFunction",
     "contractInputsValues": {
       "targetAddress": "0x83F20F44975D03b1b09e64809B757c47f942BEeA",
       "selector": "0x095ea7b3"
-    }
-  },
-  {
-    "name": "revokeTarget",
-    "contractInputsValues": {
-      "targetAddress": "0x425BfB93370F14fF525aDb6EaEAcfE1f4e3b5802"
     }
   },
   {
@@ -145,12 +109,6 @@
     "contractInputsValues": {
       "targetAddress": "0x425BfB93370F14fF525aDb6EaEAcfE1f4e3b5802",
       "selector": "0x3df02124"
-    }
-  },
-  {
-    "name": "revokeTarget",
-    "contractInputsValues": {
-      "targetAddress": "0xcF5136C67fA8A375BaBbDf13c0307EF994b5681D"
     }
   },
   {
