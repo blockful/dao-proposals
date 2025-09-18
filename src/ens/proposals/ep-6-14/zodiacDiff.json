@@ -414,12 +414,6 @@
     }
   },
   {
-    "name": "scopeTarget",
-    "contractInputsValues": {
-      "targetAddress": "0xd01607c3C5eCABa394D8be377a08590149325722"
-    }
-  },
-  {
     "name": "scopeFunction",
     "contractInputsValues": {
       "targetAddress": "0xd01607c3C5eCABa394D8be377a08590149325722",
@@ -438,12 +432,6 @@
     }
   },
   {
-    "name": "scopeTarget",
-    "contractInputsValues": {
-      "targetAddress": "0x5D409e56D886231aDAf00c8775665AD0f9897b56"
-    }
-  },
-  {
     "name": "scopeFunction",
     "contractInputsValues": {
       "targetAddress": "0x5D409e56D886231aDAf00c8775665AD0f9897b56",
@@ -459,12 +447,6 @@
       "selector": "0xf3fef3a3",
       "conditions": "[[\"0\",\"5\",\"5\",\"0x\"],[\"0\",\"1\",\"16\",\"0x000000000000000000000000dc035d45d973e3ec169d2276ddab16f1e407384f\"]]",
       "options": "0"
-    }
-  },
-  {
-    "name": "scopeTarget",
-    "contractInputsValues": {
-      "targetAddress": "0x59Ab5a5b5d617E478a2479B0cAD80DA7e2831492"
     }
   },
   {
@@ -509,24 +491,12 @@
     }
   },
   {
-    "name": "scopeTarget",
-    "contractInputsValues": {
-      "targetAddress": "0x1dF858Ae1fE8F58d6157B8Eb9f7089e62e303982"
-    }
-  },
-  {
     "name": "scopeFunction",
     "contractInputsValues": {
       "targetAddress": "0x1dF858Ae1fE8F58d6157B8Eb9f7089e62e303982",
       "selector": "0x095ea7b3",
       "conditions": "[[\"0\",\"5\",\"5\",\"0x\"],[\"0\",\"1\",\"16\",\"0x000000000000000000000000399e111c7209a741b06f8f86ef0fdd88fc198d20\"]]",
       "options": "0"
-    }
-  },
-  {
-    "name": "scopeTarget",
-    "contractInputsValues": {
-      "targetAddress": "0x399e111c7209a741B06F8F86Ef0Fdd88fC198D20"
     }
   },
   {
@@ -560,12 +530,6 @@
       "selector": "0x7050ccd9",
       "conditions": "[[\"0\",\"5\",\"5\",\"0x\"],[\"0\",\"1\",\"15\",\"0x\"]]",
       "options": "0"
-    }
-  },
-  {
-    "name": "scopeTarget",
-    "contractInputsValues": {
-      "targetAddress": "0xe080027Bd47353b5D1639772b4a75E9Ed3658A0d"
     }
   },
   {
@@ -610,24 +574,12 @@
     }
   },
   {
-    "name": "scopeTarget",
-    "contractInputsValues": {
-      "targetAddress": "0xE3eA98BD863bEF37D951973743aAC2e56edd99BC"
-    }
-  },
-  {
     "name": "scopeFunction",
     "contractInputsValues": {
       "targetAddress": "0xE3eA98BD863bEF37D951973743aAC2e56edd99BC",
       "selector": "0x095ea7b3",
       "conditions": "[[\"0\",\"5\",\"5\",\"0x\"],[\"0\",\"1\",\"16\",\"0x000000000000000000000000ba7ebdef7723e55c909ac44226fb87a93625c44e\"]]",
       "options": "0"
-    }
-  },
-  {
-    "name": "scopeTarget",
-    "contractInputsValues": {
-      "targetAddress": "0xBA7eBDEF7723e55c909Ac44226FB87a93625c44e"
     }
   },
   {
@@ -664,12 +616,6 @@
     }
   },
   {
-    "name": "scopeTarget",
-    "contractInputsValues": {
-      "targetAddress": "0x58D97B57BB95320F9a05dC918Aef65434969c2B2"
-    }
-  },
-  {
     "name": "scopeFunction",
     "contractInputsValues": {
       "targetAddress": "0x58D97B57BB95320F9a05dC918Aef65434969c2B2",
@@ -679,24 +625,12 @@
     }
   },
   {
-    "name": "scopeTarget",
-    "contractInputsValues": {
-      "targetAddress": "0xc20059e0317DE91738d13af027DfC4a50781b066"
-    }
-  },
-  {
     "name": "scopeFunction",
     "contractInputsValues": {
       "targetAddress": "0xc20059e0317DE91738d13af027DfC4a50781b066",
       "selector": "0x095ea7b3",
       "conditions": "[[\"0\",\"5\",\"5\",\"0x\"],[\"0\",\"0\",\"2\",\"0x\"],[\"1\",\"1\",\"16\",\"0x00000000000000000000000068b3465833fb72a70ecdf485e0e4c7bd8665fc45\"],[\"1\",\"1\",\"16\",\"0x000000000000000000000000c92e8bdf79f0507f65a392b0ab4667716bfe0110\"]]",
       "options": "0"
-    }
-  },
-  {
-    "name": "scopeTarget",
-    "contractInputsValues": {
-      "targetAddress": "0x4F2083f5fBede34C2714aFfb3105539775f7FE64"
     }
   },
   {
@@ -718,24 +652,12 @@
     }
   },
   {
-    "name": "scopeTarget",
-    "contractInputsValues": {
-      "targetAddress": "0xfdaFc9d1902f4e0b84f65F49f244b32b31013b74"
-    }
-  },
-  {
     "name": "scopeFunction",
     "contractInputsValues": {
       "targetAddress": "0xfdaFc9d1902f4e0b84f65F49f244b32b31013b74",
       "selector": "0x0d0d9800",
       "conditions": "[[\"0\",\"5\",\"5\",\"0x\"],[\"0\",\"3\",\"5\",\"0x\"],[\"0\",\"1\",\"16\",\"0x00000000000000000000000052ed56da04309aca4c3fecc595298d80c2f16bac\"],[\"0\",\"2\",\"16\",\"0x00000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000000\"],[\"1\",\"1\",\"16\",\"0x0000000000000000000000006cf1e9ca41f7611def408122793c358a3d11e5a5\"],[\"1\",\"1\",\"0\",\"0x\"],[\"1\",\"6\",\"5\",\"0x\"],[\"6\",\"0\",\"2\",\"0x\"],[\"6\",\"0\",\"2\",\"0x\"],[\"6\",\"0\",\"2\",\"0x\"],[\"7\",\"1\",\"16\",\"0x000000000000000000000000a0b86991c6218b36c1d19d4a2e9eb0ce3606eb48\"],[\"7\",\"1\",\"16\",\"0x000000000000000000000000c02aaa39b223fe8d0a0e5c4f27ead9083c756cc2\"],[\"7\",\"1\",\"16\",\"0x000000000000000000000000dac17f958d2ee523a2206206994597c13d831ec7\"],[\"7\",\"1\",\"16\",\"0x000000000000000000000000dc035d45d973e3ec169d2276ddab16f1e407384f\"],[\"8\",\"1\",\"16\",\"0x000000000000000000000000a0b86991c6218b36c1d19d4a2e9eb0ce3606eb48\"],[\"8\",\"1\",\"16\",\"0x000000000000000000000000dac17f958d2ee523a2206206994597c13d831ec7\"],[\"8\",\"1\",\"16\",\"0x000000000000000000000000dc035d45d973e3ec169d2276ddab16f1e407384f\"],[\"8\",\"1\",\"16\",\"0x000000000000000000000000eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee\"],[\"9\",\"1\",\"15\",\"0x\"],[\"9\",\"1\",\"16\",\"0x0000000000000000000000000000000000000000000000000000000000000000\"]]",
       "options": "0"
-    }
-  },
-  {
-    "name": "scopeTarget",
-    "contractInputsValues": {
-      "targetAddress": "0xA188EEC8F81263234dA3622A406892F3D630f98c"
     }
   },
   {
@@ -754,12 +676,6 @@
       "selector": "0x8d7ef9bb",
       "conditions": "[[\"0\",\"5\",\"5\",\"0x\"],[\"0\",\"1\",\"15\",\"0x\"]]",
       "options": "0"
-    }
-  },
-  {
-    "name": "scopeTarget",
-    "contractInputsValues": {
-      "targetAddress": "0xd0A61F2963622e992e6534bde4D52fd0a89F39E0"
     }
   },
   {
@@ -790,24 +706,12 @@
     }
   },
   {
-    "name": "scopeTarget",
-    "contractInputsValues": {
-      "targetAddress": "0xBc65ad17c5C0a2A4D159fa5a503f4992c7B545FE"
-    }
-  },
-  {
     "name": "scopeFunction",
     "contractInputsValues": {
       "targetAddress": "0xBc65ad17c5C0a2A4D159fa5a503f4992c7B545FE",
       "selector": "0x095ea7b3",
       "conditions": "[[\"0\",\"5\",\"5\",\"0x\"],[\"0\",\"1\",\"16\",\"0x000000000000000000000000d0a61f2963622e992e6534bde4d52fd0a89f39e0\"]]",
       "options": "0"
-    }
-  },
-  {
-    "name": "scopeTarget",
-    "contractInputsValues": {
-      "targetAddress": "0xc4Ce391d82D164c166dF9c8336DDF84206b2F812"
     }
   },
   {
@@ -820,12 +724,6 @@
     }
   },
   {
-    "name": "scopeTarget",
-    "contractInputsValues": {
-      "targetAddress": "0xCF370C3279452143f68e350b824714B49593a334"
-    }
-  },
-  {
     "name": "allowFunction",
     "contractInputsValues": {
       "targetAddress": "0xCF370C3279452143f68e350b824714B49593a334",
@@ -848,12 +746,6 @@
       "selector": "0x7050ccd9",
       "conditions": "[[\"0\",\"5\",\"5\",\"0x\"],[\"0\",\"1\",\"15\",\"0x\"]]",
       "options": "0"
-    }
-  },
-  {
-    "name": "scopeTarget",
-    "contractInputsValues": {
-      "targetAddress": "0x57c23c58B1D8C3292c15BEcF07c62C5c52457A42"
     }
   },
   {
@@ -866,12 +758,6 @@
     }
   },
   {
-    "name": "scopeTarget",
-    "contractInputsValues": {
-      "targetAddress": "0x994BE003de5FD6E41d37c6948f405EB0759149e6"
-    }
-  },
-  {
     "name": "allowFunction",
     "contractInputsValues": {
       "targetAddress": "0x994BE003de5FD6E41d37c6948f405EB0759149e6",
@@ -897,24 +783,12 @@
     }
   },
   {
-    "name": "scopeTarget",
-    "contractInputsValues": {
-      "targetAddress": "0x000000000022D473030F116dDEE9F6B43aC78BA3"
-    }
-  },
-  {
     "name": "scopeFunction",
     "contractInputsValues": {
       "targetAddress": "0x000000000022D473030F116dDEE9F6B43aC78BA3",
       "selector": "0x87517c45",
       "conditions": "[[\"0\",\"5\",\"5\",\"0x\"],[\"0\",\"0\",\"2\",\"0x\"],[\"0\",\"1\",\"16\",\"0x000000000000000000000000b21a277466e7db6934556a1ce12eb3f032815c8a\"],[\"1\",\"1\",\"16\",\"0x0000000000000000000000007f39c581f595b53c5cb19bd0b3f8da6c935e2ca0\"],[\"1\",\"1\",\"16\",\"0x000000000000000000000000a35b1b31ce002fbf2058d22f30f95d405200a15b\"],[\"1\",\"1\",\"16\",\"0x000000000000000000000000c02aaa39b223fe8d0a0e5c4f27ead9083c756cc2\"],[\"1\",\"1\",\"16\",\"0x000000000000000000000000f1c9acdc66974dfb6decb12aa385b9cd01190e38\"]]",
       "options": "0"
-    }
-  },
-  {
-    "name": "scopeTarget",
-    "contractInputsValues": {
-      "targetAddress": "0xb21A277466e7dB6934556a1Ce12eb3F032815c8A"
     }
   },
   {
@@ -945,12 +819,6 @@
     }
   },
   {
-    "name": "scopeTarget",
-    "contractInputsValues": {
-      "targetAddress": "0x4B891340b51889f438a03DC0e8aAAFB0Bc89e7A6"
-    }
-  },
-  {
     "name": "allowFunction",
     "contractInputsValues": {
       "targetAddress": "0x4B891340b51889f438a03DC0e8aAAFB0Bc89e7A6",
@@ -975,12 +843,6 @@
     }
   },
   {
-    "name": "scopeTarget",
-    "contractInputsValues": {
-      "targetAddress": "0x70A1c01902DAb7a45dcA1098Ca76A8314dd8aDbA"
-    }
-  },
-  {
     "name": "allowFunction",
     "contractInputsValues": {
       "targetAddress": "0x70A1c01902DAb7a45dcA1098Ca76A8314dd8aDbA",
@@ -1002,12 +864,6 @@
       "targetAddress": "0x70A1c01902DAb7a45dcA1098Ca76A8314dd8aDbA",
       "selector": "0xe6f1daf2",
       "options": "0"
-    }
-  },
-  {
-    "name": "scopeTarget",
-    "contractInputsValues": {
-      "targetAddress": "0x4AB7aB316D43345009B2140e0580B072eEc7DF16"
     }
   },
   {
@@ -1020,12 +876,6 @@
     }
   },
   {
-    "name": "scopeTarget",
-    "contractInputsValues": {
-      "targetAddress": "0x1f3A4C8115629C33A28bF2F97F22D31d256317F6"
-    }
-  },
-  {
     "name": "allowFunction",
     "contractInputsValues": {
       "targetAddress": "0x1f3A4C8115629C33A28bF2F97F22D31d256317F6",
@@ -1047,12 +897,6 @@
       "targetAddress": "0x1f3A4C8115629C33A28bF2F97F22D31d256317F6",
       "selector": "0xe6f1daf2",
       "options": "0"
-    }
-  },
-  {
-    "name": "scopeTarget",
-    "contractInputsValues": {
-      "targetAddress": "0x6c3F90f043a72FA612cbac8115EE7e52BDe6E490"
     }
   },
   {
@@ -1065,12 +909,6 @@
     }
   },
   {
-    "name": "scopeTarget",
-    "contractInputsValues": {
-      "targetAddress": "0x7671299eA7B4bbE4f3fD305A994e6443b4be680E"
-    }
-  },
-  {
     "name": "allowFunction",
     "contractInputsValues": {
       "targetAddress": "0x7671299eA7B4bbE4f3fD305A994e6443b4be680E",
@@ -1092,12 +930,6 @@
       "targetAddress": "0x7671299eA7B4bbE4f3fD305A994e6443b4be680E",
       "selector": "0xe6f1daf2",
       "options": "0"
-    }
-  },
-  {
-    "name": "scopeTarget",
-    "contractInputsValues": {
-      "targetAddress": "0x63037a4e3305d25D48BAED2022b8462b2807351c"
     }
   },
   {
@@ -1130,12 +962,6 @@
       "targetAddress": "0x63037a4e3305d25D48BAED2022b8462b2807351c",
       "selector": "0xe6f1daf2",
       "options": "0"
-    }
-  },
-  {
-    "name": "scopeTarget",
-    "contractInputsValues": {
-      "targetAddress": "0xcc7d5785AD5755B6164e21495E07aDb0Ff11C2A8"
     }
   },
   {
@@ -1180,12 +1006,6 @@
     }
   },
   {
-    "name": "scopeTarget",
-    "contractInputsValues": {
-      "targetAddress": "0x36cC1d791704445A5b6b9c36a667e511d4702F3f"
-    }
-  },
-  {
     "name": "allowFunction",
     "contractInputsValues": {
       "targetAddress": "0x36cC1d791704445A5b6b9c36a667e511d4702F3f",
@@ -1210,12 +1030,6 @@
     }
   },
   {
-    "name": "scopeTarget",
-    "contractInputsValues": {
-      "targetAddress": "0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb"
-    }
-  },
-  {
     "name": "scopeFunction",
     "contractInputsValues": {
       "targetAddress": "0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb",
@@ -1234,12 +1048,6 @@
     }
   },
   {
-    "name": "scopeTarget",
-    "contractInputsValues": {
-      "targetAddress": "0x330eefa8a787552DC5cAd3C3cA644844B1E61Ddb"
-    }
-  },
-  {
     "name": "scopeFunction",
     "contractInputsValues": {
       "targetAddress": "0x330eefa8a787552DC5cAd3C3cA644844B1E61Ddb",
@@ -1249,24 +1057,12 @@
     }
   },
   {
-    "name": "scopeTarget",
-    "contractInputsValues": {
-      "targetAddress": "0x3Ef3D8bA38EBe18DB133cEc108f4D14CE00Dd9Ae"
-    }
-  },
-  {
     "name": "scopeFunction",
     "contractInputsValues": {
       "targetAddress": "0x3Ef3D8bA38EBe18DB133cEc108f4D14CE00Dd9Ae",
       "selector": "0x71ee95c0",
       "conditions": "[[\"0\",\"5\",\"5\",\"0x\"],[\"0\",\"0\",\"2\",\"0x\"],[\"1\",\"4\",\"16\",\"0x000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000010000000000000000000000004f2083f5fbede34c2714affb3105539775f7fe64\"],[\"1\",\"4\",\"16\",\"0x000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000020000000000000000000000004f2083f5fbede34c2714affb3105539775f7fe640000000000000000000000004f2083f5fbede34c2714affb3105539775f7fe64\"],[\"1\",\"4\",\"16\",\"0x000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000030000000000000000000000004f2083f5fbede34c2714affb3105539775f7fe640000000000000000000000004f2083f5fbede34c2714affb3105539775f7fe640000000000000000000000004f2083f5fbede34c2714affb3105539775f7fe64\"],[\"1\",\"4\",\"16\",\"0x000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000040000000000000000000000004f2083f5fbede34c2714affb3105539775f7fe640000000000000000000000004f2083f5fbede34c2714affb3105539775f7fe640000000000000000000000004f2083f5fbede34c2714affb3105539775f7fe640000000000000000000000004f2083f5fbede34c2714affb3105539775f7fe64\"],[\"1\",\"4\",\"16\",\"0x000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000050000000000000000000000004f2083f5fbede34c2714affb3105539775f7fe640000000000000000000000004f2083f5fbede34c2714affb3105539775f7fe640000000000000000000000004f2083f5fbede34c2714affb3105539775f7fe640000000000000000000000004f2083f5fbede34c2714affb3105539775f7fe640000000000000000000000004f2083f5fbede34c2714affb3105539775f7fe64\"],[\"2\",\"1\",\"0\",\"0x\"],[\"3\",\"1\",\"0\",\"0x\"],[\"4\",\"1\",\"0\",\"0x\"],[\"5\",\"1\",\"0\",\"0x\"],[\"6\",\"1\",\"0\",\"0x\"]]",
       "options": "0"
-    }
-  },
-  {
-    "name": "scopeTarget",
-    "contractInputsValues": {
-      "targetAddress": "0x7ac96180C4d6b2A328D3a19ac059D0E7Fc3C6d41"
     }
   },
   {
