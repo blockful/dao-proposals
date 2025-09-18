@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.13;
+pragma solidity ^0.8.25;
 
 import { Test } from "@forge-std/src/Test.sol";
 import { console2 } from "@forge-std/src/console2.sol";
@@ -89,179 +89,691 @@ contract Proposal_ENS_EP_6_14_Test is ENS_Governance {
     function _beforeProposal() public override {
         vm.startPrank(karpatkey);
 
-        // 2
+        // REVOKE FUNCTION
+
         {
-            _safeExecuteTransaction(
-                0x889edC2eDab5f40e902b864aD4d7AdE8E412F9B1,
-                abi.encodeWithSelector(
-                    bytes4(
-                        keccak256(
-                            "requestWithdrawalsWithPermit(uint256[],address,(uint256,uint256,uint8,bytes32,bytes32))"
-                        )
-                    ),
-                    new uint256[](1),
-                    safe,
-                    PermitData({ deadline: block.timestamp + 1 days, value: 1 ether, v: 0, r: 0, s: 0 })
-                )
-            );
+            {
+                _safeExecuteTransaction(
+                    0x889edC2eDab5f40e902b864aD4d7AdE8E412F9B1,
+                    abi.encodeWithSelector(
+                        bytes4(
+                            keccak256(
+                                "requestWithdrawalsWithPermit(uint256[],address,(uint256,uint256,uint8,bytes32,bytes32))"
+                            )
+                        ),
+                        new uint256[](1),
+                        safe,
+                        PermitData({ deadline: block.timestamp + 1 days, value: 1 ether, v: 0, r: 0, s: 0 })
+                    )
+                );
+            }
+            {
+                _safeExecuteTransaction(
+                    0x889edC2eDab5f40e902b864aD4d7AdE8E412F9B1,
+                    abi.encodeWithSelector(
+                        bytes4(
+                            keccak256(
+                                "requestWithdrawalsWstETHWithPermit(uint256[],address,(uint256,uint256,uint8,bytes32,bytes32))"
+                            )
+                        ),
+                        new uint256[](1),
+                        safe,
+                        PermitData({ deadline: block.timestamp + 1 days, value: 1 ether, v: 0, r: 0, s: 0 })
+                    )
+                );
+            }
+            {
+                _safeExecuteTransaction(
+                    0xA434D495249abE33E031Fe71a969B81f3c07950D,
+                    abi.encodeWithSelector(
+                        bytes4(keccak256("depositETH(address,address,uint16)")),
+                        0x87870Bca3F3fD6335C3F4ce8392D69350B4fA4E2,
+                        safe,
+                        1 ether
+                    )
+                );
+            }
+            {
+                _safeExecuteTransaction(
+                    0xA434D495249abE33E031Fe71a969B81f3c07950D,
+                    abi.encodeWithSelector(
+                        bytes4(keccak256("withdrawETH(address,uint256,address)")),
+                        0x87870Bca3F3fD6335C3F4ce8392D69350B4fA4E2,
+                        1 ether,
+                        safe
+                    )
+                );
+            }
+            {
+                _safeExecuteTransaction(
+                    0x35Cea9e57A393ac66Aaa7E25C391D52C74B5648f,
+                    abi.encodeWithSelector(
+                        bytes4(keccak256("gaugeWithdraw(address,address,address,uint256)")),
+                        0x5C0F23A5c1be65Fa710d385814a7Fd1Bda480b1C,
+                        safe,
+                        safe,
+                        1 ether
+                    )
+                );
+            }
+            {
+                address[] memory gauges = new address[](1);
+                gauges[0] = 0x79eF6103A513951a3b25743DB509E267685726B7;
+                _safeExecuteTransaction(
+                    0x35Cea9e57A393ac66Aaa7E25C391D52C74B5648f,
+                    abi.encodeWithSelector(bytes4(keccak256("gaugeClaimRewards(address[])")), gauges)
+                );
+            }
+            {
+                address[] memory gauges = new address[](1);
+                gauges[0] = 0x79eF6103A513951a3b25743DB509E267685726B7;
+                _safeExecuteTransaction(
+                    0x35Cea9e57A393ac66Aaa7E25C391D52C74B5648f, abi.encodeWithSelector(0x3f85d390, gauges, 1 ether)
+                );
+            }
+            {
+                _safeExecuteTransaction(
+                    0xa3931d71877C0E7a3148CB7Eb4463524FEc27fbD, abi.encodeWithSelector(0x6e553f65, 1 ether, safe)
+                );
+            }
+            {
+                _safeExecuteTransaction(
+                    0x59D9356E565Ab3A36dD77763Fc0d87fEaf85508C,
+                    abi.encodeWithSelector(0x095ea7b3, 0x425BfB93370F14fF525aDb6EaEAcfE1f4e3b5802)
+                );
+            }
+            {
+                _safeExecuteTransaction(
+                    0x83F20F44975D03b1b09e64809B757c47f942BEeA,
+                    abi.encodeWithSelector(0x095ea7b3, 0x425BfB93370F14fF525aDb6EaEAcfE1f4e3b5802)
+                );
+            }
+            {
+                uint256[] memory amounts = new uint256[](1);
+                amounts[0] = 1 ether;
+                _safeExecuteTransaction(
+                    0x425BfB93370F14fF525aDb6EaEAcfE1f4e3b5802, abi.encodeWithSelector(0xb72df5de, amounts, 1 ether)
+                );
+            }
+            {
+                uint256[] memory amounts = new uint256[](1);
+                amounts[0] = 1 ether;
+                _safeExecuteTransaction(
+                    0x425BfB93370F14fF525aDb6EaEAcfE1f4e3b5802, abi.encodeWithSelector(0xd40ddb8c, 1 ether, amounts)
+                );
+            }
+            {
+                uint256[] memory amounts = new uint256[](1);
+                amounts[0] = 1 ether;
+                _safeExecuteTransaction(
+                    0x425BfB93370F14fF525aDb6EaEAcfE1f4e3b5802, abi.encodeWithSelector(0x7706db75, amounts, 1 ether)
+                );
+            }
+            {
+                _safeExecuteTransaction(
+                    0x425BfB93370F14fF525aDb6EaEAcfE1f4e3b5802,
+                    abi.encodeWithSelector(0x1a4d01d2, 1 ether, 1 ether, 1 ether)
+                );
+            }
+            {
+                _safeExecuteTransaction(
+                    0x425BfB93370F14fF525aDb6EaEAcfE1f4e3b5802,
+                    abi.encodeWithSelector(0x095ea7b3, 0xcF5136C67fA8A375BaBbDf13c0307EF994b5681D, 1 ether)
+                );
+            }
+            {
+                _safeExecuteTransaction(
+                    0x425BfB93370F14fF525aDb6EaEAcfE1f4e3b5802,
+                    abi.encodeWithSelector(0x3df02124, 1 ether, 1 ether, 1 ether, 1 ether)
+                );
+            }
+            {
+                _safeExecuteTransaction(
+                    0xcF5136C67fA8A375BaBbDf13c0307EF994b5681D, abi.encodeWithSelector(0xb6b55f25, 1 ether)
+                );
+            }
+            {
+                _safeExecuteTransaction(
+                    0xcF5136C67fA8A375BaBbDf13c0307EF994b5681D, abi.encodeWithSelector(0x2e1a7d4d, 1 ether)
+                );
+            }
+            {
+                _safeExecuteTransaction(0xcF5136C67fA8A375BaBbDf13c0307EF994b5681D, abi.encodeWithSelector(0xe6f1daf2));
+            }
+            {
+                _safeExecuteTransaction(
+                    0xBA12222222228d8Ba445958a75a0704d566BF2C8,
+                    abi.encodeWithSelector(0xfa6e671d, safe, 0x35Cea9e57A393ac66Aaa7E25C391D52C74B5648f, true)
+                );
+            }
+            {
+                _safeExecuteTransaction(
+                    0x239e55F427D44C3cc793f49bFB507ebe76638a2b,
+                    abi.encodeWithSelector(0x0de54ba0, 0x35Cea9e57A393ac66Aaa7E25C391D52C74B5648f, true)
+                );
+            }
+            {
+                _safeExecuteTransaction(
+                    0xbEbc44782C7dB0a1A60Cb6fe97d0b483032FF1C7,
+                    abi.encodeWithSelector(
+                        0x095ea7b3, 0x000000000000000000000000bfcf63294ad7105dea65aa58f8ae5be2d9d0952a, 1 ether
+                    )
+                );
+            }
         }
-        // 9
+
+        // ALLOW FUNCTION
         {
-            _safeExecuteTransaction(
-                0x889edC2eDab5f40e902b864aD4d7AdE8E412F9B1,
-                abi.encodeWithSelector(
-                    bytes4(
-                        keccak256(
-                            "requestWithdrawalsWstETHWithPermit(uint256[],address,(uint256,uint256,uint8,bytes32,bytes32))"
-                        )
-                    ),
-                    new uint256[](1),
-                    safe,
-                    PermitData({ deadline: block.timestamp + 1 days, value: 1 ether, v: 0, r: 0, s: 0 })
-                )
-            );
-        }
-        // 16
-        {
-            _safeExecuteTransaction(
-                0xA434D495249abE33E031Fe71a969B81f3c07950D,
-                abi.encodeWithSelector(
-                    bytes4(keccak256("depositETH(address,address,uint16)")),
-                    0x87870Bca3F3fD6335C3F4ce8392D69350B4fA4E2,
-                    safe,
-                    1 ether
-                )
-            );
-        }
-        // 23
-        {
-            _safeExecuteTransaction(
-                0xA434D495249abE33E031Fe71a969B81f3c07950D,
-                abi.encodeWithSelector(
-                    bytes4(keccak256("withdrawETH(address,uint256,address)")),
-                    0x87870Bca3F3fD6335C3F4ce8392D69350B4fA4E2,
-                    1 ether,
-                    safe
-                )
-            );
-        }
-        // 30
-        {
-            _safeExecuteTransaction(
-                0x35Cea9e57A393ac66Aaa7E25C391D52C74B5648f,
-                abi.encodeWithSelector(
-                    bytes4(keccak256("gaugeWithdraw(address,address,address,uint256)")),
-                    0x5C0F23A5c1be65Fa710d385814a7Fd1Bda480b1C,
-                    safe,
-                    safe,
-                    1 ether
-                )
-            );
-        }
-        // 37
-        {
-            address[] memory gauges = new address[](1);
-            gauges[0] = 0x79eF6103A513951a3b25743DB509E267685726B7;
-            _safeExecuteTransaction(
-                0x35Cea9e57A393ac66Aaa7E25C391D52C74B5648f,
-                abi.encodeWithSelector(bytes4(keccak256("gaugeClaimRewards(address[])")), gauges)
-            );
-        }
-        {
-            address[] memory gauges = new address[](1);
-            gauges[0] = 0x79eF6103A513951a3b25743DB509E267685726B7;
-            _safeExecuteTransaction(
-                0x35Cea9e57A393ac66Aaa7E25C391D52C74B5648f, abi.encodeWithSelector(0x3f85d390, gauges, 1 ether)
-            );
-        }
-        {
-            _safeExecuteTransaction(
-                0xa3931d71877C0E7a3148CB7Eb4463524FEc27fbD, abi.encodeWithSelector(0x6e553f65, 1 ether, safe)
-            );
-        }
-        {
-            _safeExecuteTransaction(
-                0x59D9356E565Ab3A36dD77763Fc0d87fEaf85508C,
-                abi.encodeWithSelector(0x095ea7b3, 0x425BfB93370F14fF525aDb6EaEAcfE1f4e3b5802)
-            );
-        }
-        {
-            _safeExecuteTransaction(
-                0x83F20F44975D03b1b09e64809B757c47f942BEeA,
-                abi.encodeWithSelector(0x095ea7b3, 0x425BfB93370F14fF525aDb6EaEAcfE1f4e3b5802)
-            );
-        }
-        {
-            uint256[] memory amounts = new uint256[](1);
-            amounts[0] = 1 ether;
-            _safeExecuteTransaction(
-                0x425BfB93370F14fF525aDb6EaEAcfE1f4e3b5802, abi.encodeWithSelector(0xb72df5de, amounts, 1 ether)
-            );
-        }
-        {
-            uint256[] memory amounts = new uint256[](1);
-            amounts[0] = 1 ether;
-            _safeExecuteTransaction(
-                0x425BfB93370F14fF525aDb6EaEAcfE1f4e3b5802, abi.encodeWithSelector(0xd40ddb8c, 1 ether, amounts)
-            );
-        }
-        {
-            uint256[] memory amounts = new uint256[](1);
-            amounts[0] = 1 ether;
-            _safeExecuteTransaction(
-                0x425BfB93370F14fF525aDb6EaEAcfE1f4e3b5802, abi.encodeWithSelector(0x7706db75, amounts, 1 ether)
-            );
-        }
-        {
-            _safeExecuteTransaction(
-                0x425BfB93370F14fF525aDb6EaEAcfE1f4e3b5802,
-                abi.encodeWithSelector(0x1a4d01d2, 1 ether, 1 ether, 1 ether)
-            );
-        }
-        {
-            _safeExecuteTransaction(
-                0x425BfB93370F14fF525aDb6EaEAcfE1f4e3b5802,
-                abi.encodeWithSelector(0x095ea7b3, 0xcF5136C67fA8A375BaBbDf13c0307EF994b5681D, 1 ether)
-            );
-        }
-        {
-            _safeExecuteTransaction(
-                0x425BfB93370F14fF525aDb6EaEAcfE1f4e3b5802,
-                abi.encodeWithSelector(0x3df02124, 1 ether, 1 ether, 1 ether, 1 ether)
-            );
-        }
-        {
-            _safeExecuteTransaction(
-                0xcF5136C67fA8A375BaBbDf13c0307EF994b5681D, abi.encodeWithSelector(0xb6b55f25, 1 ether)
-            );
-        }
-        {
-            _safeExecuteTransaction(
-                0xcF5136C67fA8A375BaBbDf13c0307EF994b5681D, abi.encodeWithSelector(0x2e1a7d4d, 1 ether)
-            );
-        }
-        {
-            _safeExecuteTransaction(0xcF5136C67fA8A375BaBbDf13c0307EF994b5681D, abi.encodeWithSelector(0xe6f1daf2));
-        }
-        {
-            _safeExecuteTransaction(
-                0xBA12222222228d8Ba445958a75a0704d566BF2C8,
-                abi.encodeWithSelector(0xfa6e671d, safe, 0x35Cea9e57A393ac66Aaa7E25C391D52C74B5648f, true)
-            );
-        }
-        {
-            _safeExecuteTransaction(
-                0x239e55F427D44C3cc793f49bFB507ebe76638a2b,
-                abi.encodeWithSelector(0x0de54ba0, 0x35Cea9e57A393ac66Aaa7E25C391D52C74B5648f, true)
-            );
-        }
-        {
-            _safeExecuteTransaction(
-                0xbEbc44782C7dB0a1A60Cb6fe97d0b483032FF1C7,
-                abi.encodeWithSelector(
-                    0x095ea7b3, 0x000000000000000000000000bfcf63294ad7105dea65aa58f8ae5be2d9d0952a, 1 ether
-                )
-            );
+            {
+                vm.expectRevert(
+                    abi.encodeWithSelector(
+                        IZodiacRoles.ConditionViolation.selector,
+                        IZodiacRoles.Status.FunctionNotAllowed,
+                        bytes32(bytes4(0xf51b0fd4))
+                    )
+                );
+                _safeExecuteTransaction(0x856c4Efb76C1D1AE02e20CEB03A2A6a08b0b8dC3, abi.encodeWithSelector(0xf51b0fd4));
+            }
+            {
+                vm.expectRevert(
+                    abi.encodeWithSelector(
+                        IZodiacRoles.ConditionViolation.selector,
+                        IZodiacRoles.Status.TargetAddressNotAllowed,
+                        bytes32(0)
+                    )
+                );
+                uint256[] memory amounts = new uint256[](2);
+                amounts[0] = 1 ether;
+                amounts[1] = 1 ether;
+                _safeExecuteTransaction(
+                    0x59Ab5a5b5d617E478a2479B0cAD80DA7e2831492, abi.encodeWithSelector(0x0b4c7e4d, amounts, 1 ether)
+                );
+            }
+            {
+                vm.expectRevert(
+                    abi.encodeWithSelector(
+                        IZodiacRoles.ConditionViolation.selector,
+                        IZodiacRoles.Status.TargetAddressNotAllowed,
+                        bytes32(0)
+                    )
+                );
+                _safeExecuteTransaction(
+                    0x59Ab5a5b5d617E478a2479B0cAD80DA7e2831492,
+                    abi.encodeWithSelector(0x5b36389c, 0x4838B106FCe9647Bdf1E7877BF73cE8B0BAD5f97, 1 ether)
+                );
+            }
+            {
+                vm.expectRevert(
+                    abi.encodeWithSelector(
+                        IZodiacRoles.ConditionViolation.selector,
+                        IZodiacRoles.Status.TargetAddressNotAllowed,
+                        bytes32(0)
+                    )
+                );
+                _safeExecuteTransaction(
+                    0x59Ab5a5b5d617E478a2479B0cAD80DA7e2831492,
+                    abi.encodeWithSelector(0xe3103273, 0x4838B106FCe9647Bdf1E7877BF73cE8B0BAD5f97, 1 ether)
+                );
+            }
+            {
+                vm.expectRevert(
+                    abi.encodeWithSelector(
+                        IZodiacRoles.ConditionViolation.selector,
+                        IZodiacRoles.Status.TargetAddressNotAllowed,
+                        bytes32(0)
+                    )
+                );
+                _safeExecuteTransaction(
+                    0x59Ab5a5b5d617E478a2479B0cAD80DA7e2831492,
+                    abi.encodeWithSelector(0x1a4d01d2, 0x4838B106FCe9647Bdf1E7877BF73cE8B0BAD5f97, 1 ether)
+                );
+            }
+            {
+                vm.expectRevert(
+                    abi.encodeWithSelector(
+                        IZodiacRoles.ConditionViolation.selector,
+                        IZodiacRoles.Status.TargetAddressNotAllowed,
+                        bytes32(0)
+                    )
+                );
+                _safeExecuteTransaction(
+                    0x399e111c7209a741B06F8F86Ef0Fdd88fC198D20, abi.encodeWithSelector(0xa694fc3a, 1 ether)
+                );
+            }
+            {
+                vm.expectRevert(
+                    abi.encodeWithSelector(
+                        IZodiacRoles.ConditionViolation.selector,
+                        IZodiacRoles.Status.TargetAddressNotAllowed,
+                        bytes32(0)
+                    )
+                );
+                _safeExecuteTransaction(
+                    0x399e111c7209a741B06F8F86Ef0Fdd88fC198D20, abi.encodeWithSelector(0x38d07436, 1 ether, 1 ether)
+                );
+            }
+            {
+                vm.expectRevert(
+                    abi.encodeWithSelector(
+                        IZodiacRoles.ConditionViolation.selector,
+                        IZodiacRoles.Status.TargetAddressNotAllowed,
+                        bytes32(0)
+                    )
+                );
+                _safeExecuteTransaction(
+                    0x399e111c7209a741B06F8F86Ef0Fdd88fC198D20,
+                    abi.encodeWithSelector(0xc32e7202, 0x4838B106FCe9647Bdf1E7877BF73cE8B0BAD5f97, 1 ether, 1 ether)
+                );
+            }
+            {
+                vm.expectRevert(
+                    abi.encodeWithSelector(
+                        IZodiacRoles.ConditionViolation.selector,
+                        IZodiacRoles.Status.TargetAddressNotAllowed,
+                        bytes32(0)
+                    )
+                );
+                _safeExecuteTransaction(
+                    0xe080027Bd47353b5D1639772b4a75E9Ed3658A0d,
+                    abi.encodeWithSelector(0xb72df5de, 0x4838B106FCe9647Bdf1E7877BF73cE8B0BAD5f97, 1 ether)
+                );
+            }
+            {
+                vm.expectRevert(
+                    abi.encodeWithSelector(
+                        IZodiacRoles.ConditionViolation.selector,
+                        IZodiacRoles.Status.TargetAddressNotAllowed,
+                        bytes32(0)
+                    )
+                );
+                _safeExecuteTransaction(
+                    0xe080027Bd47353b5D1639772b4a75E9Ed3658A0d,
+                    abi.encodeWithSelector(0xd40ddb8c, 0x4838B106FCe9647Bdf1E7877BF73cE8B0BAD5f97)
+                );
+            }
+            {
+                vm.expectRevert(
+                    abi.encodeWithSelector(
+                        IZodiacRoles.ConditionViolation.selector,
+                        IZodiacRoles.Status.TargetAddressNotAllowed,
+                        bytes32(0)
+                    )
+                );
+                _safeExecuteTransaction(
+                    0xe080027Bd47353b5D1639772b4a75E9Ed3658A0d,
+                    abi.encodeWithSelector(0x1a4d01d2, 0x4838B106FCe9647Bdf1E7877BF73cE8B0BAD5f97, 1 ether)
+                );
+            }
+            {
+                vm.expectRevert(
+                    abi.encodeWithSelector(
+                        IZodiacRoles.ConditionViolation.selector,
+                        IZodiacRoles.Status.TargetAddressNotAllowed,
+                        bytes32(0)
+                    )
+                );
+                _safeExecuteTransaction(
+                    0xe080027Bd47353b5D1639772b4a75E9Ed3658A0d,
+                    abi.encodeWithSelector(0x7706db75, 0x4838B106FCe9647Bdf1E7877BF73cE8B0BAD5f97)
+                );
+            }
+            {
+                vm.expectRevert(
+                    abi.encodeWithSelector(
+                        IZodiacRoles.ConditionViolation.selector,
+                        IZodiacRoles.Status.TargetAddressNotAllowed,
+                        bytes32(0)
+                    )
+                );
+                _safeExecuteTransaction(
+                    0xBA7eBDEF7723e55c909Ac44226FB87a93625c44e, abi.encodeWithSelector(0xa694fc3a, 1 ether)
+                );
+            }
+            {
+                vm.expectRevert(
+                    abi.encodeWithSelector(
+                        IZodiacRoles.ConditionViolation.selector,
+                        IZodiacRoles.Status.TargetAddressNotAllowed,
+                        bytes32(0)
+                    )
+                );
+                _safeExecuteTransaction(
+                    0xBA7eBDEF7723e55c909Ac44226FB87a93625c44e, abi.encodeWithSelector(0x38d07436, 1 ether, 1 ether)
+                );
+            }
+            {
+                vm.expectRevert(
+                    abi.encodeWithSelector(
+                        IZodiacRoles.ConditionViolation.selector,
+                        IZodiacRoles.Status.TargetAddressNotAllowed,
+                        bytes32(0)
+                    )
+                );
+                _safeExecuteTransaction(
+                    0xBA7eBDEF7723e55c909Ac44226FB87a93625c44e,
+                    abi.encodeWithSelector(0xc32e7202, 0x4838B106FCe9647Bdf1E7877BF73cE8B0BAD5f97, 1 ether, 1 ether)
+                );
+            }
+            {
+                vm.expectRevert(
+                    abi.encodeWithSelector(
+                        IZodiacRoles.ConditionViolation.selector,
+                        IZodiacRoles.Status.TargetAddressNotAllowed,
+                        bytes32(0)
+                    )
+                );
+                _safeExecuteTransaction(
+                    0xCF370C3279452143f68e350b824714B49593a334,
+                    abi.encodeWithSelector(0xc32e7202, 0x4838B106FCe9647Bdf1E7877BF73cE8B0BAD5f97, 1 ether, 1 ether)
+                );
+            }
+            {
+                vm.expectRevert(
+                    abi.encodeWithSelector(
+                        IZodiacRoles.ConditionViolation.selector,
+                        IZodiacRoles.Status.TargetAddressNotAllowed,
+                        bytes32(0)
+                    )
+                );
+                _safeExecuteTransaction(
+                    0xCF370C3279452143f68e350b824714B49593a334,
+                    abi.encodeWithSelector(0x3d18b912, 0x4838B106FCe9647Bdf1E7877BF73cE8B0BAD5f97)
+                );
+            }
+            {
+                vm.expectRevert(
+                    abi.encodeWithSelector(
+                        IZodiacRoles.ConditionViolation.selector,
+                        IZodiacRoles.Status.TargetAddressNotAllowed,
+                        bytes32(0)
+                    )
+                );
+                _safeExecuteTransaction(
+                    0x994BE003de5FD6E41d37c6948f405EB0759149e6,
+                    abi.encodeWithSelector(0xc32e7202, 0x4838B106FCe9647Bdf1E7877BF73cE8B0BAD5f97, 1 ether, 1 ether)
+                );
+            }
+            {
+                vm.expectRevert(
+                    abi.encodeWithSelector(
+                        IZodiacRoles.ConditionViolation.selector,
+                        IZodiacRoles.Status.TargetAddressNotAllowed,
+                        bytes32(0)
+                    )
+                );
+                _safeExecuteTransaction(
+                    0x994BE003de5FD6E41d37c6948f405EB0759149e6,
+                    abi.encodeWithSelector(0x3d18b912, 0x4838B106FCe9647Bdf1E7877BF73cE8B0BAD5f97)
+                );
+            }
+            {
+                vm.expectRevert(
+                    abi.encodeWithSelector(
+                        IZodiacRoles.ConditionViolation.selector,
+                        IZodiacRoles.Status.TargetAddressNotAllowed,
+                        bytes32(0)
+                    )
+                );
+                _safeExecuteTransaction(
+                    0x4B891340b51889f438a03DC0e8aAAFB0Bc89e7A6, abi.encodeWithSelector(0xb6b55f25, 1 ether)
+                );
+            }
+            {
+                vm.expectRevert(
+                    abi.encodeWithSelector(
+                        IZodiacRoles.ConditionViolation.selector,
+                        IZodiacRoles.Status.TargetAddressNotAllowed,
+                        bytes32(0)
+                    )
+                );
+                _safeExecuteTransaction(
+                    0x4B891340b51889f438a03DC0e8aAAFB0Bc89e7A6, abi.encodeWithSelector(0x2e1a7d4d, 1 ether)
+                );
+            }
+            {
+                vm.expectRevert(
+                    abi.encodeWithSelector(
+                        IZodiacRoles.ConditionViolation.selector,
+                        IZodiacRoles.Status.TargetAddressNotAllowed,
+                        bytes32(0)
+                    )
+                );
+                _safeExecuteTransaction(
+                    0x4B891340b51889f438a03DC0e8aAAFB0Bc89e7A6, abi.encodeWithSelector(0xe6f1daf2, 1 ether)
+                );
+            }
+            {
+                vm.expectRevert(
+                    abi.encodeWithSelector(
+                        IZodiacRoles.ConditionViolation.selector,
+                        IZodiacRoles.Status.TargetAddressNotAllowed,
+                        bytes32(0)
+                    )
+                );
+                _safeExecuteTransaction(
+                    0x70A1c01902DAb7a45dcA1098Ca76A8314dd8aDbA, abi.encodeWithSelector(0xb6b55f25, 1 ether)
+                );
+            }
+            {
+                vm.expectRevert(
+                    abi.encodeWithSelector(
+                        IZodiacRoles.ConditionViolation.selector,
+                        IZodiacRoles.Status.TargetAddressNotAllowed,
+                        bytes32(0)
+                    )
+                );
+                _safeExecuteTransaction(
+                    0x70A1c01902DAb7a45dcA1098Ca76A8314dd8aDbA, abi.encodeWithSelector(0x2e1a7d4d, 1 ether)
+                );
+            }
+            {
+                vm.expectRevert(
+                    abi.encodeWithSelector(
+                        IZodiacRoles.ConditionViolation.selector,
+                        IZodiacRoles.Status.TargetAddressNotAllowed,
+                        bytes32(0)
+                    )
+                );
+                _safeExecuteTransaction(
+                    0x70A1c01902DAb7a45dcA1098Ca76A8314dd8aDbA, abi.encodeWithSelector(0xe6f1daf2, 1 ether)
+                );
+            }
+            {
+                vm.expectRevert(
+                    abi.encodeWithSelector(
+                        IZodiacRoles.ConditionViolation.selector,
+                        IZodiacRoles.Status.TargetAddressNotAllowed,
+                        bytes32(0)
+                    )
+                );
+                _safeExecuteTransaction(
+                    0x1f3A4C8115629C33A28bF2F97F22D31d256317F6, abi.encodeWithSelector(0xb6b55f25, 1 ether)
+                );
+            }
+            {
+                vm.expectRevert(
+                    abi.encodeWithSelector(
+                        IZodiacRoles.ConditionViolation.selector,
+                        IZodiacRoles.Status.TargetAddressNotAllowed,
+                        bytes32(0)
+                    )
+                );
+                _safeExecuteTransaction(
+                    0x1f3A4C8115629C33A28bF2F97F22D31d256317F6, abi.encodeWithSelector(0x2e1a7d4d, 1 ether)
+                );
+            }
+            {
+                vm.expectRevert(
+                    abi.encodeWithSelector(
+                        IZodiacRoles.ConditionViolation.selector,
+                        IZodiacRoles.Status.TargetAddressNotAllowed,
+                        bytes32(0)
+                    )
+                );
+                _safeExecuteTransaction(
+                    0x1f3A4C8115629C33A28bF2F97F22D31d256317F6, abi.encodeWithSelector(0xe6f1daf2, 1 ether)
+                );
+            }
+            {
+                vm.expectRevert(
+                    abi.encodeWithSelector(
+                        IZodiacRoles.ConditionViolation.selector,
+                        IZodiacRoles.Status.TargetAddressNotAllowed,
+                        bytes32(0)
+                    )
+                );
+                _safeExecuteTransaction(
+                    0x7671299eA7B4bbE4f3fD305A994e6443b4be680E, abi.encodeWithSelector(0xb6b55f25, 1 ether)
+                );
+            }
+            {
+                vm.expectRevert(
+                    abi.encodeWithSelector(
+                        IZodiacRoles.ConditionViolation.selector,
+                        IZodiacRoles.Status.TargetAddressNotAllowed,
+                        bytes32(0)
+                    )
+                );
+                _safeExecuteTransaction(
+                    0x7671299eA7B4bbE4f3fD305A994e6443b4be680E, abi.encodeWithSelector(0x2e1a7d4d, 1 ether)
+                );
+            }
+            {
+                vm.expectRevert(
+                    abi.encodeWithSelector(
+                        IZodiacRoles.ConditionViolation.selector,
+                        IZodiacRoles.Status.TargetAddressNotAllowed,
+                        bytes32(0)
+                    )
+                );
+                _safeExecuteTransaction(
+                    0x7671299eA7B4bbE4f3fD305A994e6443b4be680E, abi.encodeWithSelector(0xe6f1daf2, 1 ether)
+                );
+            }
+            {
+                vm.expectRevert(
+                    abi.encodeWithSelector(
+                        IZodiacRoles.ConditionViolation.selector,
+                        IZodiacRoles.Status.TargetAddressNotAllowed,
+                        bytes32(0)
+                    )
+                );
+                _safeExecuteTransaction(
+                    0x63037a4e3305d25D48BAED2022b8462b2807351c, abi.encodeWithSelector(0xb6b55f25, 1 ether)
+                );
+            }
+            {
+                vm.expectRevert(
+                    abi.encodeWithSelector(
+                        IZodiacRoles.ConditionViolation.selector,
+                        IZodiacRoles.Status.TargetAddressNotAllowed,
+                        bytes32(0)
+                    )
+                );
+                _safeExecuteTransaction(
+                    0x63037a4e3305d25D48BAED2022b8462b2807351c, abi.encodeWithSelector(0x2e1a7d4d, 1 ether)
+                );
+            }
+            {
+                vm.expectRevert(
+                    abi.encodeWithSelector(
+                        IZodiacRoles.ConditionViolation.selector,
+                        IZodiacRoles.Status.TargetAddressNotAllowed,
+                        bytes32(0)
+                    )
+                );
+                _safeExecuteTransaction(
+                    0x63037a4e3305d25D48BAED2022b8462b2807351c, abi.encodeWithSelector(0x38d07436, 1 ether, 1 ether)
+                );
+            }
+            {
+                vm.expectRevert(
+                    abi.encodeWithSelector(
+                        IZodiacRoles.ConditionViolation.selector,
+                        IZodiacRoles.Status.TargetAddressNotAllowed,
+                        bytes32(0)
+                    )
+                );
+                _safeExecuteTransaction(
+                    0x63037a4e3305d25D48BAED2022b8462b2807351c, abi.encodeWithSelector(0xe6f1daf2, 1 ether)
+                );
+            }
+            {
+                vm.expectRevert(
+                    abi.encodeWithSelector(
+                        IZodiacRoles.ConditionViolation.selector,
+                        IZodiacRoles.Status.TargetAddressNotAllowed,
+                        bytes32(0)
+                    )
+                );
+                _safeExecuteTransaction(
+                    0xcc7d5785AD5755B6164e21495E07aDb0Ff11C2A8,
+                    abi.encodeWithSelector(0xb72df5de, 0x4838B106FCe9647Bdf1E7877BF73cE8B0BAD5f97, 1 ether)
+                );
+            }
+            {
+                vm.expectRevert(
+                    abi.encodeWithSelector(
+                        IZodiacRoles.ConditionViolation.selector,
+                        IZodiacRoles.Status.TargetAddressNotAllowed,
+                        bytes32(0)
+                    )
+                );
+                _safeExecuteTransaction(
+                    0xcc7d5785AD5755B6164e21495E07aDb0Ff11C2A8,
+                    abi.encodeWithSelector(0xd40ddb8c, 0x4838B106FCe9647Bdf1E7877BF73cE8B0BAD5f97)
+                );
+            }
+            {
+                vm.expectRevert(
+                    abi.encodeWithSelector(
+                        IZodiacRoles.ConditionViolation.selector,
+                        IZodiacRoles.Status.TargetAddressNotAllowed,
+                        bytes32(0)
+                    )
+                );
+                _safeExecuteTransaction(
+                    0xcc7d5785AD5755B6164e21495E07aDb0Ff11C2A8,
+                    abi.encodeWithSelector(0x7706db75, 0x4838B106FCe9647Bdf1E7877BF73cE8B0BAD5f97)
+                );
+            }
+            {
+                vm.expectRevert(
+                    abi.encodeWithSelector(
+                        IZodiacRoles.ConditionViolation.selector,
+                        IZodiacRoles.Status.TargetAddressNotAllowed,
+                        bytes32(0)
+                    )
+                );
+                _safeExecuteTransaction(
+                    0xcc7d5785AD5755B6164e21495E07aDb0Ff11C2A8,
+                    abi.encodeWithSelector(0x1a4d01d2, 0x4838B106FCe9647Bdf1E7877BF73cE8B0BAD5f97, 1 ether)
+                );
+            }
+            {
+                vm.expectRevert(
+                    abi.encodeWithSelector(
+                        IZodiacRoles.ConditionViolation.selector,
+                        IZodiacRoles.Status.TargetAddressNotAllowed,
+                        bytes32(0)
+                    )
+                );
+                _safeExecuteTransaction(
+                    0x36cC1d791704445A5b6b9c36a667e511d4702F3f, abi.encodeWithSelector(0xb6b55f25, 1 ether)
+                );
+            }
+            {
+                vm.expectRevert(
+                    abi.encodeWithSelector(
+                        IZodiacRoles.ConditionViolation.selector,
+                        IZodiacRoles.Status.TargetAddressNotAllowed,
+                        bytes32(0)
+                    )
+                );
+                _safeExecuteTransaction(
+                    0x36cC1d791704445A5b6b9c36a667e511d4702F3f, abi.encodeWithSelector(0x2e1a7d4d, 1 ether)
+                );
+            }
         }
 
         vm.stopPrank();
@@ -272,13 +784,11 @@ contract Proposal_ENS_EP_6_14_Test is ENS_Governance {
         // vm.pauseGasMetering();
 
         // {
-        //     vm.expectRevert(
+        //     vm.0x36cC1d791704445A5b6b9c36a667e511d4702F3f(
         //         abi.encodeWithSelector(
         //             IZodiacRoles.ConditionViolation.selector,
-        //             3,
-        //             0x474cf53d00000000000000000000000000000000000000000000000000000000
-        //         )
-        //     );
+        // /"
+
         //     _safeExecuteTransaction(
         //         0x889edC2eDab5f40e902b864aD4d7AdE8E412F9B1,
         //         abi.encodeWithSelector(
