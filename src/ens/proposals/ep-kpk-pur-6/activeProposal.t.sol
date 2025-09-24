@@ -78,7 +78,7 @@ struct MarketParams {
     uint256 lltv;
 }
 
-contract Proposal_ENS_EP_6_14_Test is ENS_Governance {
+contract Proposal_ENS_KPK_PUR_6_Test is ENS_Governance {
     address private safe = 0x4F2083f5fBede34C2714aFfb3105539775f7FE64;
     address private karpatkey = 0xb423e0f6E7430fa29500c5cC9bd83D28c8BD8978;
 
