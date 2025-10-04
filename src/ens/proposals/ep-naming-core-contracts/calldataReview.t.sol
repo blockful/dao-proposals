@@ -87,6 +87,8 @@ contract ProposalENS_EP_Naming_Core_Contracts_Test is ENS_Governance {
         values[2] = 0;
         signatures[2] = "";
 
+        description = getDescriptionFromMarkdown();
+
         return (targets, values, signatures, calldatas, description);
     }
 
@@ -98,5 +100,9 @@ contract ProposalENS_EP_Naming_Core_Contracts_Test is ENS_Governance {
 
     function _isProposalSubmitted() public pure override returns (bool) {
         return false;
+    }
+
+    function dirPath() public pure override returns (string memory) {
+        return "src/ens/proposals/ep-naming-core-contracts";
     }
 }
