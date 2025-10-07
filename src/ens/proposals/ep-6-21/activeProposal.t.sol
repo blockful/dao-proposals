@@ -17,11 +17,11 @@ contract ProposalENS_EP_Naming_Core_Contracts_Test is ENS_Governance {
     address endowment = 0x4F2083f5fBede34C2714aFfb3105539775f7FE64;
 
     function _selectFork() public override {
-        vm.createSelectFork({ blockNumber: 23484400, urlOrAlias: "mainnet" });
+        vm.createSelectFork({ blockNumber: 23520356, urlOrAlias: "mainnet" });
     }
 
     function _proposer() public pure override returns (address) {
-        return 0x5BFCB4BE4d7B43437d5A0c57E908c048a4418390;
+        return 0x534631Bcf33BDb069fB20A93d2fdb9e4D4dD42CF;
     }
 
     function _beforeProposal() public view override {
@@ -99,10 +99,10 @@ contract ProposalENS_EP_Naming_Core_Contracts_Test is ENS_Governance {
     }
 
     function _isProposalSubmitted() public pure override returns (bool) {
-        return false;
+        return true;
     }
 
     function dirPath() public pure override returns (string memory) {
-        return "src/ens/proposals/ep-naming-core-contracts";
+        return "src/ens/proposals/ep-6-21";
     }
 }
