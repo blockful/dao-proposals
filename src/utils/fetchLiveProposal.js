@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 
 const TALLY_API_URL = 'https://api.tally.xyz/query';
-const PROPOSAL_ID = '2689519495495550443';
+const PROPOSAL_ID = '2708179808130434396';
 
 const query = `
     query ProposalDetails($input: ProposalInput!, $votesInput: VotesInput!) {

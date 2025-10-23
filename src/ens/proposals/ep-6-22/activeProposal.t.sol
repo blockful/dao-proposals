@@ -26,7 +26,7 @@ contract Proposal_ENS_EP_6_22_Test is ENS_Governance {
     }
 
     function _proposer() public pure override returns (address) {
-        return 0x5BFCB4BE4d7B43437d5A0c57E908c048a4418390; // slobo.eth
+        return 0x5BFCB4BE4d7B43437d5A0c57E908c048a4418390;
     }
 
     function _beforeProposal() public override {
