@@ -4668,7 +4668,10 @@ contract Proposal_ENS_EP_6_23_Test is ENS_Governance {
                 }
             }
         }
-
+        
+        address SPK = 0xc20059e0317DE91738d13af027DfC4a50781b066;
+        console2.log("SPK Token balance of timelock: ", IERC20(SPK).balanceOf(address(timelock)));
+        console2.log("SPK Token balance of safe: ", IERC20(SPK).balanceOf(address(safe)));
         vm.stopPrank();
     }
 
