@@ -451,6 +451,269 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
                     );
                 }
             }
+            {
+                {
+                    vm.expectRevert(
+                        abi.encodeWithSelector(
+                            IZodiacRoles.ConditionViolation.selector,
+                            IZodiacRoles.Status.TargetAddressNotAllowed,
+                            bytes32(0)
+                        )
+                    );
+                    _safeExecuteTransaction(
+                        0xa877D5bb0274dcCbA8556154A30E1Ca4021a275f,
+                        abi.encodeWithSelector(
+                            0x6e553f65, // deposit(uint256,address)
+                            1 ether,
+                            safe
+                        )
+                    );
+                }
+                {
+                    vm.expectRevert(
+                        abi.encodeWithSelector(
+                            IZodiacRoles.ConditionViolation.selector,
+                            IZodiacRoles.Status.TargetAddressNotAllowed,
+                            bytes32(0)
+                        )
+                    );
+                    _safeExecuteTransaction(
+                        0xa877D5bb0274dcCbA8556154A30E1Ca4021a275f,
+                        abi.encodeWithSelector(
+                            0xb460af94, // withdraw(uint256,address,address)
+                            1 ether,
+                            safe,
+                            safe
+                        )
+                    );
+                }
+                {
+                    vm.expectRevert(
+                        abi.encodeWithSelector(
+                            IZodiacRoles.ConditionViolation.selector,
+                            IZodiacRoles.Status.TargetAddressNotAllowed,
+                            bytes32(0)
+                        )
+                    );
+                    _safeExecuteTransaction(
+                        0xa877D5bb0274dcCbA8556154A30E1Ca4021a275f,
+                        abi.encodeWithSelector(
+                            0xba087652, // redeem(uint256,address,address)
+                            1 ether,
+                            safe,
+                            safe
+                        )
+                    );
+                }
+            }
+            {
+                {
+                    vm.expectRevert(
+                        abi.encodeWithSelector(
+                            IZodiacRoles.ConditionViolation.selector,
+                            IZodiacRoles.Status.TargetAddressNotAllowed,
+                            bytes32(0)
+                        )
+                    );
+                    _safeExecuteTransaction(
+                        0xBb50A5341368751024ddf33385BA8cf61fE65FF9,
+                        abi.encodeWithSelector(
+                            0x6e553f65, // deposit(uint256,address)
+                            1 ether,
+                            safe
+                        )
+                    );
+                }
+                {
+                    vm.expectRevert(
+                        abi.encodeWithSelector(
+                            IZodiacRoles.ConditionViolation.selector,
+                            IZodiacRoles.Status.TargetAddressNotAllowed,
+                            bytes32(0)
+                        )
+                    );
+                    _safeExecuteTransaction(
+                        0xBb50A5341368751024ddf33385BA8cf61fE65FF9,
+                        abi.encodeWithSelector(
+                            0xb460af94, // withdraw(uint256,address,address)
+                            1 ether,
+                            safe,
+                            safe
+                        )
+                    );
+                }
+                {
+                    vm.expectRevert(
+                        abi.encodeWithSelector(
+                            IZodiacRoles.ConditionViolation.selector,
+                            IZodiacRoles.Status.TargetAddressNotAllowed,
+                            bytes32(0)
+                        )
+                    );
+                    _safeExecuteTransaction(
+                        0xBb50A5341368751024ddf33385BA8cf61fE65FF9,
+                        abi.encodeWithSelector(
+                            0xba087652, // redeem(uint256,address,address)
+                            1 ether,
+                            safe,
+                            safe
+                        )
+                    );
+                }
+            }
+            {
+                {
+                    vm.expectRevert(
+                        abi.encodeWithSelector(
+                            IZodiacRoles.ConditionViolation.selector,
+                            IZodiacRoles.Status.TargetAddressNotAllowed,
+                            bytes32(0)
+                        )
+                    );
+                    _safeExecuteTransaction(
+                        0xe108fbc04852B5df72f9E44d7C29F47e7A993aDd,
+                        abi.encodeWithSelector(
+                            0x6e553f65, // deposit(uint256,address)
+                            1 ether,
+                            safe
+                        )
+                    );
+                }
+                {
+                    vm.expectRevert(
+                        abi.encodeWithSelector(
+                            IZodiacRoles.ConditionViolation.selector,
+                            IZodiacRoles.Status.TargetAddressNotAllowed,
+                            bytes32(0)
+                        )
+                    );
+                    _safeExecuteTransaction(
+                        0xe108fbc04852B5df72f9E44d7C29F47e7A993aDd,
+                        abi.encodeWithSelector(
+                            0xb460af94, // withdraw(uint256,address,address)
+                            1 ether,
+                            safe,
+                            safe
+                        )
+                    );
+                }
+                {
+                    vm.expectRevert(
+                        abi.encodeWithSelector(
+                            IZodiacRoles.ConditionViolation.selector,
+                            IZodiacRoles.Status.TargetAddressNotAllowed,
+                            bytes32(0)
+                        )
+                    );
+                    _safeExecuteTransaction(
+                        0xe108fbc04852B5df72f9E44d7C29F47e7A993aDd,
+                        abi.encodeWithSelector(
+                            0xba087652, // redeem(uint256,address,address)
+                            1 ether,
+                            safe,
+                            safe
+                        )
+                    );
+                }
+            }
+            {
+                vm.expectRevert(
+                    abi.encodeWithSelector(
+                        IZodiacRoles.ConditionViolation.selector, IZodiacRoles.Status.OrViolation, bytes32(0)
+                    )
+                );
+                _safeExecuteTransaction(
+                    0xdAC17F958D2ee523a2206206994597C13D831ec7,
+                    abi.encodeWithSelector(
+                        0x095ea7b3, // approve(address, uint256)
+                        0x5C20B550819128074FD538Edf79791733ccEdd18,
+                        1 ether
+                    )
+                );
+            }
+            {
+                {
+                    vm.expectRevert(
+                        abi.encodeWithSelector(
+                            IZodiacRoles.ConditionViolation.selector,
+                            IZodiacRoles.Status.TargetAddressNotAllowed,
+                            bytes32(0)
+                        )
+                    );
+                    _safeExecuteTransaction(
+                        0xd564F765F9aD3E7d2d6cA782100795a885e8e7C8,
+                        abi.encodeWithSelector(
+                            0x6e553f65, // deposit(uint256,address)
+                            1 ether,
+                            safe
+                        )
+                    );
+                }
+                {
+                    vm.expectRevert(
+                        abi.encodeWithSelector(
+                            IZodiacRoles.ConditionViolation.selector,
+                            IZodiacRoles.Status.TargetAddressNotAllowed,
+                            bytes32(0)
+                        )
+                    );
+                    _safeExecuteTransaction(
+                        0xd564F765F9aD3E7d2d6cA782100795a885e8e7C8,
+                        abi.encodeWithSelector(
+                            0xb460af94, // withdraw(uint256,address,address)
+                            1 ether,
+                            safe,
+                            safe
+                        )
+                    );
+                }
+                {
+                    vm.expectRevert(
+                        abi.encodeWithSelector(
+                            IZodiacRoles.ConditionViolation.selector,
+                            IZodiacRoles.Status.TargetAddressNotAllowed,
+                            bytes32(0)
+                        )
+                    );
+                    _safeExecuteTransaction(
+                        0xd564F765F9aD3E7d2d6cA782100795a885e8e7C8,
+                        abi.encodeWithSelector(
+                            0xba087652, // redeem(uint256,address,address)
+                            1 ether,
+                            safe,
+                            safe
+                        )
+                    );
+                }
+            }
+            {
+                vm.expectRevert(
+                    abi.encodeWithSelector(
+                        IZodiacRoles.ConditionViolation.selector, IZodiacRoles.Status.OrViolation, bytes32(0)
+                    )
+                );
+                _safeExecuteTransaction(
+                    0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2,
+                    abi.encodeWithSelector(
+                        0x095ea7b3, // approve(address, uint256)
+                        0xBb50A5341368751024ddf33385BA8cf61fE65FF9,
+                        1 ether
+                    )
+                );
+                vm.expectRevert(
+                    abi.encodeWithSelector(
+                        IZodiacRoles.ConditionViolation.selector, IZodiacRoles.Status.OrViolation, bytes32(0)
+                    )
+                );
+                _safeExecuteTransaction(
+                    0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2,
+                    abi.encodeWithSelector(
+                        0x095ea7b3, // approve(address, uint256)
+                        0xd564F765F9aD3E7d2d6cA782100795a885e8e7C8,
+                        1 ether
+                    )
+                );
+            }
         }
 
         vm.stopPrank();
@@ -695,6 +958,170 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
                         )
                     );
                 }
+            }
+            {
+                {
+                    _safeExecuteTransaction(
+                        0xa877D5bb0274dcCbA8556154A30E1Ca4021a275f,
+                        abi.encodeWithSelector(
+                            0x6e553f65, // deposit(uint256,address)
+                            1 ether,
+                            safe
+                        )
+                    );
+                }
+                {
+                    _safeExecuteTransaction(
+                        0xa877D5bb0274dcCbA8556154A30E1Ca4021a275f,
+                        abi.encodeWithSelector(
+                            0xb460af94, // withdraw(uint256,address,address)
+                            1 ether,
+                            safe,
+                            safe
+                        )
+                    );
+                }
+                {
+                    _safeExecuteTransaction(
+                        0xa877D5bb0274dcCbA8556154A30E1Ca4021a275f,
+                        abi.encodeWithSelector(
+                            0xba087652, // redeem(uint256,address,address)
+                            1 ether,
+                            safe,
+                            safe
+                        )
+                    );
+                }
+            }
+            {
+                {
+                    _safeExecuteTransaction(
+                        0xBb50A5341368751024ddf33385BA8cf61fE65FF9,
+                        abi.encodeWithSelector(
+                            0x6e553f65, // deposit(uint256,address)
+                            1 ether,
+                            safe
+                        )
+                    );
+                }
+                {
+                    _safeExecuteTransaction(
+                        0xBb50A5341368751024ddf33385BA8cf61fE65FF9,
+                        abi.encodeWithSelector(
+                            0xb460af94, // withdraw(uint256,address,address)
+                            1 ether,
+                            safe,
+                            safe
+                        )
+                    );
+                }
+                {
+                    _safeExecuteTransaction(
+                        0xBb50A5341368751024ddf33385BA8cf61fE65FF9,
+                        abi.encodeWithSelector(
+                            0xba087652, // redeem(uint256,address,address)
+                            1 ether,
+                            safe,
+                            safe
+                        )
+                    );
+                }
+            }
+            {
+                {
+                    _safeExecuteTransaction(
+                        0xe108fbc04852B5df72f9E44d7C29F47e7A993aDd,
+                        abi.encodeWithSelector(
+                            0x6e553f65, // deposit(uint256,address)
+                            1 ether,
+                            safe
+                        )
+                    );
+                }
+                {
+                    _safeExecuteTransaction(
+                        0xe108fbc04852B5df72f9E44d7C29F47e7A993aDd,
+                        abi.encodeWithSelector(
+                            0xb460af94, // withdraw(uint256,address,address)
+                            1 ether,
+                            safe,
+                            safe
+                        )
+                    );
+                }
+                {
+                    _safeExecuteTransaction(
+                        0xe108fbc04852B5df72f9E44d7C29F47e7A993aDd,
+                        abi.encodeWithSelector(
+                            0xba087652, // redeem(uint256,address,address)
+                            1 ether,
+                            safe,
+                            safe
+                        )
+                    );
+                }
+            }
+            {
+                _safeExecuteTransaction(
+                    0xdAC17F958D2ee523a2206206994597C13D831ec7,
+                    abi.encodeWithSelector(
+                        0x095ea7b3, // approve(address, uint256)
+                        0x5C20B550819128074FD538Edf79791733ccEdd18,
+                        1 ether
+                    )
+                );
+            }
+            {
+                {
+                    _safeExecuteTransaction(
+                        0xd564F765F9aD3E7d2d6cA782100795a885e8e7C8,
+                        abi.encodeWithSelector(
+                            0x6e553f65, // deposit(uint256,address)
+                            1 ether,
+                            safe
+                        )
+                    );
+                }
+                {
+                    _safeExecuteTransaction(
+                        0xd564F765F9aD3E7d2d6cA782100795a885e8e7C8,
+                        abi.encodeWithSelector(
+                            0xb460af94, // withdraw(uint256,address,address)
+                            1 ether,
+                            safe,
+                            safe
+                        )
+                    );
+                }
+                {
+                    _safeExecuteTransaction(
+                        0xd564F765F9aD3E7d2d6cA782100795a885e8e7C8,
+                        abi.encodeWithSelector(
+                            0xba087652, // redeem(uint256,address,address)
+                            1 ether,
+                            safe,
+                            safe
+                        )
+                    );
+                }
+            }
+            {
+                _safeExecuteTransaction(
+                    0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2,
+                    abi.encodeWithSelector(
+                        0x095ea7b3, // approve(address, uint256)
+                        0xBb50A5341368751024ddf33385BA8cf61fE65FF9,
+                        1 ether
+                    )
+                );
+                _safeExecuteTransaction(
+                    0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2,
+                    abi.encodeWithSelector(
+                        0x095ea7b3, // approve(address, uint256)
+                        0xd564F765F9aD3E7d2d6cA782100795a885e8e7C8,
+                        1 ether
+                    )
+                );
             }
         }
 
