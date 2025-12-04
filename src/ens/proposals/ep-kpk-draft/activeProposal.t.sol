@@ -71,6 +71,23 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
     IZodiacRoles roles = IZodiacRoles(0x703806E61847984346d2D7DDd853049627e50A40);
     bytes32 private constant MANAGER_ROLE = 0x4d414e4147455200000000000000000000000000000000000000000000000000;
 
+    address private MetaMorphoV1 = 0x0c6aec603d48eBf1cECc7b247a2c3DA08b398DC1;
+    address private UniversalRewardsDistributor = 0x330eefa8a787552DC5cAd3C3cA644844B1E61Ddb;
+    address private USDT = 0xdAC17F958D2ee523a2206206994597C13D831ec7;
+    address private fToken = 0x5C20B550819128074FD538Edf79791733ccEdd18;
+    address private VaultV2 = 0x4Ef53d2cAa51C447fdFEEedee8F07FD1962C9ee6;
+    address private GHO = 0x40D16FC0246aD3160Ccc09B8D0D3A2cD28aE6C2f;
+    address private FiatTokenV2 = 0x1aBaEA1f7C830bD89Acc67eC4af516284b1bC33c;
+    address private fToken2 = 0x6A29A46E21C730DcA1d8b23d637c101cec605C5B;
+    address private fToken3 = 0x9Fb7b4477576Fe5B32be4C1843aFB1e55F251B33;
+    address private USDC = 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48;
+    address private VaultV2_2 = 0xa877D5bb0274dcCbA8556154A30E1Ca4021a275f;
+    address private VaultV2_3 = 0xBb50A5341368751024ddf33385BA8cf61fE65FF9;
+    address private WETH = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
+    address private MetaMorphoV1_1 = 0xd564F765F9aD3E7d2d6cA782100795a885e8e7C8;
+    address private MetaMorphoV1_2 = 0xe108fbc04852B5df72f9E44d7C29F47e7A993aDd;
+    address private FluidMerkleDistributor = 0x7060FE0Dd3E31be01EFAc6B28C8D38018fD163B0;
+
     function _beforeProposal() public override {
         vm.startPrank(karpatkey);
         vm.pauseGasMetering();
@@ -78,7 +95,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
         // REVOKE FUNCTION
         {
             _safeExecuteTransaction(
-                0x330eefa8a787552DC5cAd3C3cA644844B1E61Ddb,
+                UniversalRewardsDistributor,
                 abi.encodeWithSelector(
                     0xfabed412, safe, 0xC18360217D8F7Ab5e7c516566761Ea12Ce7F9D72, 1 ether, new bytes32[](1)
                 )
@@ -88,7 +105,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
         // REVOKE TARGET
         {
             _safeExecuteTransaction(
-                0x330eefa8a787552DC5cAd3C3cA644844B1E61Ddb,
+                UniversalRewardsDistributor,
                 abi.encodeWithSelector(
                     0xfabed412, safe, 0xC18360217D8F7Ab5e7c516566761Ea12Ce7F9D72, 1 ether, new bytes32[](1)
                 )
@@ -101,10 +118,10 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
                 {
                     vm.expectRevert();
                     _safeExecuteTransaction(
-                        0xdAC17F958D2ee523a2206206994597C13D831ec7,
+                        USDT,
                         abi.encodeWithSelector(
                             0x095ea7b3, // approve
-                            0x5C20B550819128074FD538Edf79791733ccEdd18,
+                            fToken,
                             1 ether
                         )
                     );
@@ -118,7 +135,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
                         )
                     );
                     _safeExecuteTransaction(
-                        0x4Ef53d2cAa51C447fdFEEedee8F07FD1962C9ee6,
+                        VaultV2,
                         abi.encodeWithSelector(
                             0x6e553f65, // deposit(uint256,address)
                             1 ether,
@@ -135,7 +152,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
                         )
                     );
                     _safeExecuteTransaction(
-                        0x4Ef53d2cAa51C447fdFEEedee8F07FD1962C9ee6,
+                        VaultV2,
                         abi.encodeWithSelector(
                             0xba087652, // redeem(uint256,address,address)
                             1 ether,
@@ -154,7 +171,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
                     )
                 );
                 _safeExecuteTransaction(
-                    0x4Ef53d2cAa51C447fdFEEedee8F07FD1962C9ee6,
+                    VaultV2,
                     abi.encodeWithSelector(
                         0xba087652, // withdraw(uint256,address,address)
                         1 ether,
@@ -172,10 +189,10 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
                     )
                 );
                 _safeExecuteTransaction(
-                    0x40D16FC0246aD3160Ccc09B8D0D3A2cD28aE6C2f,
+                    GHO,
                     abi.encodeWithSelector(
                         0x095ea7b3, // approve(address,uint256)
-                        0x6A29A46E21C730DcA1d8b23d637c101cec605C5B,
+                        fToken2,
                         1 ether
                     )
                 );
@@ -189,10 +206,10 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
                     )
                 );
                 _safeExecuteTransaction(
-                    0x1aBaEA1f7C830bD89Acc67eC4af516284b1bC33c,
+                    FiatTokenV2,
                     abi.encodeWithSelector(
                         0x095ea7b3, // approve(address,uint256)
-                        0x0c6aec603d48eBf1cECc7b247a2c3DA08b398DC1,
+                        MetaMorphoV1,
                         1 ether
                     )
                 );
@@ -206,10 +223,10 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
                     )
                 );
                 _safeExecuteTransaction(
-                    0x1aBaEA1f7C830bD89Acc67eC4af516284b1bC33c,
+                    FiatTokenV2,
                     abi.encodeWithSelector(
                         0x095ea7b3, // approve(address,uint256)
-                        0xa877D5bb0274dcCbA8556154A30E1Ca4021a275f,
+                        VaultV2_2,
                         1 ether
                     )
                 );
@@ -224,7 +241,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
                         )
                     );
                     _safeExecuteTransaction(
-                        0x0c6aec603d48eBf1cECc7b247a2c3DA08b398DC1,
+                        MetaMorphoV1,
                         abi.encodeWithSelector(
                             0x6e553f65, // deposit(uint256,address)
                             1 ether,
@@ -241,7 +258,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
                         )
                     );
                     _safeExecuteTransaction(
-                        0x0c6aec603d48eBf1cECc7b247a2c3DA08b398DC1,
+                        MetaMorphoV1,
                         abi.encodeWithSelector(
                             0xb460af94, // withdraw(uint256,address,address)
                             1 ether,
@@ -259,7 +276,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
                         )
                     );
                     _safeExecuteTransaction(
-                        0x0c6aec603d48eBf1cECc7b247a2c3DA08b398DC1,
+                        MetaMorphoV1,
                         abi.encodeWithSelector(
                             0xba087652, // redeem(uint256,address,address)
                             1 ether,
@@ -279,7 +296,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
                         )
                     );
                     _safeExecuteTransaction(
-                        0x6A29A46E21C730DcA1d8b23d637c101cec605C5B,
+                        fToken2,
                         abi.encodeWithSelector(
                             0x6e553f65, // deposit(uint256,address)
                             1 ether,
@@ -296,7 +313,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
                         )
                     );
                     _safeExecuteTransaction(
-                        0x6A29A46E21C730DcA1d8b23d637c101cec605C5B,
+                        fToken2,
                         abi.encodeWithSelector(
                             0xb460af94, // withdraw(uint256,address,address)
                             1 ether,
@@ -314,7 +331,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
                         )
                     );
                     _safeExecuteTransaction(
-                        0x6A29A46E21C730DcA1d8b23d637c101cec605C5B,
+                        fToken2,
                         abi.encodeWithSelector(
                             0xba087652, // redeem(uint256,address,address)
                             1 ether,
@@ -334,7 +351,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
                         )
                     );
                     _safeExecuteTransaction(
-                        0x7060FE0Dd3E31be01EFAc6B28C8D38018fD163B0,
+                        FluidMerkleDistributor,
                         abi.encodeWithSelector(
                             0xbe5013dc, // claim(address recipient_, uint256 cumulativeAmount_, uint8 positionType_,
                                 // bytes32 positionId_, uint256 cycle_, bytes32[] merkleProof_, bytes metadata_)
@@ -359,7 +376,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
                         )
                     );
                     _safeExecuteTransaction(
-                        0x9Fb7b4477576Fe5B32be4C1843aFB1e55F251B33,
+                        fToken3,
                         abi.encodeWithSelector(
                             0x6e553f65, // deposit(uint256,address)
                             1 ether,
@@ -376,7 +393,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
                         )
                     );
                     _safeExecuteTransaction(
-                        0x9Fb7b4477576Fe5B32be4C1843aFB1e55F251B33,
+                        fToken3,
                         abi.encodeWithSelector(
                             0xb460af94, // withdraw(uint256,address,address)
                             1 ether,
@@ -394,7 +411,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
                         )
                     );
                     _safeExecuteTransaction(
-                        0x9Fb7b4477576Fe5B32be4C1843aFB1e55F251B33,
+                        fToken3,
                         abi.encodeWithSelector(
                             0xba087652, // redeem(uint256,address,address)
                             1 ether,
@@ -412,10 +429,10 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
                         )
                     );
                     _safeExecuteTransaction(
-                        0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48,
+                        USDC,
                         abi.encodeWithSelector(
                             0x095ea7b3, // approve(address, uint256)
-                            0x4Ef53d2cAa51C447fdFEEedee8F07FD1962C9ee6,
+                            VaultV2,
                             1 ether
                         )
                     );
@@ -427,10 +444,10 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
                         )
                     );
                     _safeExecuteTransaction(
-                        0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48,
+                        USDC,
                         abi.encodeWithSelector(
                             0x095ea7b3, // approve(address, uint256)
-                            0x9Fb7b4477576Fe5B32be4C1843aFB1e55F251B33,
+                            fToken3,
                             1 ether
                         )
                     );
@@ -442,10 +459,10 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
                         )
                     );
                     _safeExecuteTransaction(
-                        0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48,
+                        USDC,
                         abi.encodeWithSelector(
                             0x095ea7b3, // approve(address, uint256)
-                            0xe108fbc04852B5df72f9E44d7C29F47e7A993aDd,
+                            MetaMorphoV1_2,
                             1 ether
                         )
                     );
@@ -461,7 +478,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
                         )
                     );
                     _safeExecuteTransaction(
-                        0xa877D5bb0274dcCbA8556154A30E1Ca4021a275f,
+                        VaultV2_2,
                         abi.encodeWithSelector(
                             0x6e553f65, // deposit(uint256,address)
                             1 ether,
@@ -478,7 +495,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
                         )
                     );
                     _safeExecuteTransaction(
-                        0xa877D5bb0274dcCbA8556154A30E1Ca4021a275f,
+                        VaultV2_2,
                         abi.encodeWithSelector(
                             0xb460af94, // withdraw(uint256,address,address)
                             1 ether,
@@ -496,62 +513,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
                         )
                     );
                     _safeExecuteTransaction(
-                        0xa877D5bb0274dcCbA8556154A30E1Ca4021a275f,
-                        abi.encodeWithSelector(
-                            0xba087652, // redeem(uint256,address,address)
-                            1 ether,
-                            safe,
-                            safe
-                        )
-                    );
-                }
-            }
-            {
-                {
-                    vm.expectRevert(
-                        abi.encodeWithSelector(
-                            IZodiacRoles.ConditionViolation.selector,
-                            IZodiacRoles.Status.TargetAddressNotAllowed,
-                            bytes32(0)
-                        )
-                    );
-                    _safeExecuteTransaction(
-                        0xBb50A5341368751024ddf33385BA8cf61fE65FF9,
-                        abi.encodeWithSelector(
-                            0x6e553f65, // deposit(uint256,address)
-                            1 ether,
-                            safe
-                        )
-                    );
-                }
-                {
-                    vm.expectRevert(
-                        abi.encodeWithSelector(
-                            IZodiacRoles.ConditionViolation.selector,
-                            IZodiacRoles.Status.TargetAddressNotAllowed,
-                            bytes32(0)
-                        )
-                    );
-                    _safeExecuteTransaction(
-                        0xBb50A5341368751024ddf33385BA8cf61fE65FF9,
-                        abi.encodeWithSelector(
-                            0xb460af94, // withdraw(uint256,address,address)
-                            1 ether,
-                            safe,
-                            safe
-                        )
-                    );
-                }
-                {
-                    vm.expectRevert(
-                        abi.encodeWithSelector(
-                            IZodiacRoles.ConditionViolation.selector,
-                            IZodiacRoles.Status.TargetAddressNotAllowed,
-                            bytes32(0)
-                        )
-                    );
-                    _safeExecuteTransaction(
-                        0xBb50A5341368751024ddf33385BA8cf61fE65FF9,
+                        VaultV2_2,
                         abi.encodeWithSelector(
                             0xba087652, // redeem(uint256,address,address)
                             1 ether,
@@ -571,7 +533,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
                         )
                     );
                     _safeExecuteTransaction(
-                        0xe108fbc04852B5df72f9E44d7C29F47e7A993aDd,
+                        VaultV2_3,
                         abi.encodeWithSelector(
                             0x6e553f65, // deposit(uint256,address)
                             1 ether,
@@ -588,7 +550,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
                         )
                     );
                     _safeExecuteTransaction(
-                        0xe108fbc04852B5df72f9E44d7C29F47e7A993aDd,
+                        VaultV2_3,
                         abi.encodeWithSelector(
                             0xb460af94, // withdraw(uint256,address,address)
                             1 ether,
@@ -606,7 +568,62 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
                         )
                     );
                     _safeExecuteTransaction(
-                        0xe108fbc04852B5df72f9E44d7C29F47e7A993aDd,
+                        VaultV2_3,
+                        abi.encodeWithSelector(
+                            0xba087652, // redeem(uint256,address,address)
+                            1 ether,
+                            safe,
+                            safe
+                        )
+                    );
+                }
+            }
+            {
+                {
+                    vm.expectRevert(
+                        abi.encodeWithSelector(
+                            IZodiacRoles.ConditionViolation.selector,
+                            IZodiacRoles.Status.TargetAddressNotAllowed,
+                            bytes32(0)
+                        )
+                    );
+                    _safeExecuteTransaction(
+                        MetaMorphoV1_2,
+                        abi.encodeWithSelector(
+                            0x6e553f65, // deposit(uint256,address)
+                            1 ether,
+                            safe
+                        )
+                    );
+                }
+                {
+                    vm.expectRevert(
+                        abi.encodeWithSelector(
+                            IZodiacRoles.ConditionViolation.selector,
+                            IZodiacRoles.Status.TargetAddressNotAllowed,
+                            bytes32(0)
+                        )
+                    );
+                    _safeExecuteTransaction(
+                        MetaMorphoV1_2,
+                        abi.encodeWithSelector(
+                            0xb460af94, // withdraw(uint256,address,address)
+                            1 ether,
+                            safe,
+                            safe
+                        )
+                    );
+                }
+                {
+                    vm.expectRevert(
+                        abi.encodeWithSelector(
+                            IZodiacRoles.ConditionViolation.selector,
+                            IZodiacRoles.Status.TargetAddressNotAllowed,
+                            bytes32(0)
+                        )
+                    );
+                    _safeExecuteTransaction(
+                        MetaMorphoV1_2,
                         abi.encodeWithSelector(
                             0xba087652, // redeem(uint256,address,address)
                             1 ether,
@@ -623,10 +640,10 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
                     )
                 );
                 _safeExecuteTransaction(
-                    0xdAC17F958D2ee523a2206206994597C13D831ec7,
+                    USDT,
                     abi.encodeWithSelector(
                         0x095ea7b3, // approve(address, uint256)
-                        0x5C20B550819128074FD538Edf79791733ccEdd18,
+                        fToken,
                         1 ether
                     )
                 );
@@ -641,7 +658,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
                         )
                     );
                     _safeExecuteTransaction(
-                        0xd564F765F9aD3E7d2d6cA782100795a885e8e7C8,
+                        MetaMorphoV1_1,
                         abi.encodeWithSelector(
                             0x6e553f65, // deposit(uint256,address)
                             1 ether,
@@ -658,7 +675,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
                         )
                     );
                     _safeExecuteTransaction(
-                        0xd564F765F9aD3E7d2d6cA782100795a885e8e7C8,
+                        MetaMorphoV1_1,
                         abi.encodeWithSelector(
                             0xb460af94, // withdraw(uint256,address,address)
                             1 ether,
@@ -676,7 +693,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
                         )
                     );
                     _safeExecuteTransaction(
-                        0xd564F765F9aD3E7d2d6cA782100795a885e8e7C8,
+                        MetaMorphoV1_1,
                         abi.encodeWithSelector(
                             0xba087652, // redeem(uint256,address,address)
                             1 ether,
@@ -693,10 +710,10 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
                     )
                 );
                 _safeExecuteTransaction(
-                    0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2,
+                    WETH,
                     abi.encodeWithSelector(
                         0x095ea7b3, // approve(address, uint256)
-                        0xBb50A5341368751024ddf33385BA8cf61fE65FF9,
+                        VaultV2_3,
                         1 ether
                     )
                 );
@@ -706,10 +723,10 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
                     )
                 );
                 _safeExecuteTransaction(
-                    0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2,
+                    WETH,
                     abi.encodeWithSelector(
                         0x095ea7b3, // approve(address, uint256)
-                        0xd564F765F9aD3E7d2d6cA782100795a885e8e7C8,
+                        MetaMorphoV1_1,
                         1 ether
                     )
                 );
@@ -727,7 +744,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
         {
             vm.expectRevert();
             _safeExecuteTransaction(
-                0x330eefa8a787552DC5cAd3C3cA644844B1E61Ddb,
+                UniversalRewardsDistributor,
                 abi.encodeWithSelector(
                     0xfabed412, safe, 0xC18360217D8F7Ab5e7c516566761Ea12Ce7F9D72, 1 ether, new bytes32[](1)
                 )
@@ -738,7 +755,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
         {
             vm.expectRevert();
             _safeExecuteTransaction(
-                0x330eefa8a787552DC5cAd3C3cA644844B1E61Ddb,
+                UniversalRewardsDistributor,
                 abi.encodeWithSelector(
                     0xfabed412, safe, 0xC18360217D8F7Ab5e7c516566761Ea12Ce7F9D72, 1 ether, new bytes32[](1)
                 )
@@ -749,10 +766,10 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
         {
             {
                 _safeExecuteTransaction(
-                    0xdAC17F958D2ee523a2206206994597C13D831ec7,
+                    USDT,
                     abi.encodeWithSelector(
                         0x095ea7b3, // approve
-                        0x5C20B550819128074FD538Edf79791733ccEdd18,
+                        fToken,
                         1 ether
                     )
                 );
@@ -760,7 +777,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
             {
                 {
                     _safeExecuteTransaction(
-                        0x4Ef53d2cAa51C447fdFEEedee8F07FD1962C9ee6,
+                        VaultV2,
                         abi.encodeWithSelector(
                             0x6e553f65, // deposit(uint256,address)
                             1 ether,
@@ -770,7 +787,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
                 }
                 {
                     _safeExecuteTransaction(
-                        0x4Ef53d2cAa51C447fdFEEedee8F07FD1962C9ee6,
+                        VaultV2,
                         abi.encodeWithSelector(
                             0xba087652, // redeem(uint256,address,address)
                             1 ether,
@@ -781,7 +798,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
                 }
                 {
                     _safeExecuteTransaction(
-                        0x4Ef53d2cAa51C447fdFEEedee8F07FD1962C9ee6,
+                        VaultV2,
                         abi.encodeWithSelector(
                             0xba087652, // withdraw(uint256,address,address)
                             1 ether,
@@ -793,37 +810,37 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
             }
             {
                 _safeExecuteTransaction(
-                    0x40D16FC0246aD3160Ccc09B8D0D3A2cD28aE6C2f,
+                    GHO,
                     abi.encodeWithSelector(
                         0x095ea7b3, // approve(address,uint256)
-                        0x6A29A46E21C730DcA1d8b23d637c101cec605C5B,
+                        fToken2,
                         1 ether
                     )
                 );
             }
             {
                 _safeExecuteTransaction(
-                    0x1aBaEA1f7C830bD89Acc67eC4af516284b1bC33c,
+                    FiatTokenV2,
                     abi.encodeWithSelector(
                         0x095ea7b3, // approve(address,uint256)
-                        0x0c6aec603d48eBf1cECc7b247a2c3DA08b398DC1,
+                        MetaMorphoV1,
                         1 ether
                     )
                 );
             }
             {
                 _safeExecuteTransaction(
-                    0x1aBaEA1f7C830bD89Acc67eC4af516284b1bC33c,
+                    FiatTokenV2,
                     abi.encodeWithSelector(
                         0x095ea7b3, // approve(address,uint256)
-                        0xa877D5bb0274dcCbA8556154A30E1Ca4021a275f,
+                        VaultV2_2,
                         1 ether
                     )
                 );
             }
             {
                 _safeExecuteTransaction(
-                    0x0c6aec603d48eBf1cECc7b247a2c3DA08b398DC1,
+                    MetaMorphoV1,
                     abi.encodeWithSelector(
                         0x6e553f65, // deposit(uint256,address)
                         1 ether,
@@ -831,7 +848,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
                     )
                 );
                 _safeExecuteTransaction(
-                    0x0c6aec603d48eBf1cECc7b247a2c3DA08b398DC1,
+                    MetaMorphoV1,
                     abi.encodeWithSelector(
                         0xb460af94, // withdraw(uint256,address,address)
                         1 ether,
@@ -840,7 +857,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
                     )
                 );
                 _safeExecuteTransaction(
-                    0x0c6aec603d48eBf1cECc7b247a2c3DA08b398DC1,
+                    MetaMorphoV1,
                     abi.encodeWithSelector(
                         0xba087652, // redeem(uint256,address,address)
                         1 ether,
@@ -851,7 +868,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
             }
             {
                 _safeExecuteTransaction(
-                    0x6A29A46E21C730DcA1d8b23d637c101cec605C5B,
+                    fToken2,
                     abi.encodeWithSelector(
                         0x6e553f65, // deposit(uint256,address)
                         1 ether,
@@ -859,7 +876,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
                     )
                 );
                 _safeExecuteTransaction(
-                    0x6A29A46E21C730DcA1d8b23d637c101cec605C5B,
+                    fToken2,
                     abi.encodeWithSelector(
                         0xb460af94, // withdraw(uint256,address,address)
                         1 ether,
@@ -868,7 +885,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
                     )
                 );
                 _safeExecuteTransaction(
-                    0x6A29A46E21C730DcA1d8b23d637c101cec605C5B,
+                    fToken2,
                     abi.encodeWithSelector(
                         0xba087652, // redeem(uint256,address,address)
                         1 ether,
@@ -879,7 +896,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
             }
             {
                 _safeExecuteTransaction(
-                    0x7060FE0Dd3E31be01EFAc6B28C8D38018fD163B0,
+                    FluidMerkleDistributor,
                     abi.encodeWithSelector(
                         0xbe5013dc, // claim(address recipient_, uint256 cumulativeAmount_, uint8 positionType_,
                             // bytes32 positionId_, uint256 cycle_, bytes32[] merkleProof_, bytes metadata_)
@@ -896,7 +913,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
             {
                 {
                     _safeExecuteTransaction(
-                        0x9Fb7b4477576Fe5B32be4C1843aFB1e55F251B33,
+                        fToken3,
                         abi.encodeWithSelector(
                             0x6e553f65, // deposit(uint256,address)
                             1 ether,
@@ -906,7 +923,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
                 }
                 {
                     _safeExecuteTransaction(
-                        0x9Fb7b4477576Fe5B32be4C1843aFB1e55F251B33,
+                        fToken3,
                         abi.encodeWithSelector(
                             0xb460af94, // withdraw(uint256,address,address)
                             1 ether,
@@ -917,7 +934,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
                 }
                 {
                     _safeExecuteTransaction(
-                        0x9Fb7b4477576Fe5B32be4C1843aFB1e55F251B33,
+                        fToken3,
                         abi.encodeWithSelector(
                             0xba087652, // redeem(uint256,address,address)
                             1 ether,
@@ -930,30 +947,30 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
             {
                 {
                     _safeExecuteTransaction(
-                        0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48,
+                        USDC,
                         abi.encodeWithSelector(
                             0x095ea7b3, // approve(address, uint256)
-                            0x4Ef53d2cAa51C447fdFEEedee8F07FD1962C9ee6,
+                            VaultV2,
                             1 ether
                         )
                     );
                 }
                 {
                     _safeExecuteTransaction(
-                        0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48,
+                        USDC,
                         abi.encodeWithSelector(
                             0x095ea7b3, // approve(address, uint256)
-                            0x9Fb7b4477576Fe5B32be4C1843aFB1e55F251B33,
+                            fToken3,
                             1 ether
                         )
                     );
                 }
                 {
                     _safeExecuteTransaction(
-                        0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48,
+                        USDC,
                         abi.encodeWithSelector(
                             0x095ea7b3, // approve(address, uint256)
-                            0xe108fbc04852B5df72f9E44d7C29F47e7A993aDd,
+                            MetaMorphoV1_2,
                             1 ether
                         )
                     );
@@ -962,7 +979,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
             {
                 {
                     _safeExecuteTransaction(
-                        0xa877D5bb0274dcCbA8556154A30E1Ca4021a275f,
+                        VaultV2_2,
                         abi.encodeWithSelector(
                             0x6e553f65, // deposit(uint256,address)
                             1 ether,
@@ -972,7 +989,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
                 }
                 {
                     _safeExecuteTransaction(
-                        0xa877D5bb0274dcCbA8556154A30E1Ca4021a275f,
+                        VaultV2_2,
                         abi.encodeWithSelector(
                             0xb460af94, // withdraw(uint256,address,address)
                             1 ether,
@@ -983,7 +1000,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
                 }
                 {
                     _safeExecuteTransaction(
-                        0xa877D5bb0274dcCbA8556154A30E1Ca4021a275f,
+                        VaultV2_2,
                         abi.encodeWithSelector(
                             0xba087652, // redeem(uint256,address,address)
                             1 ether,
@@ -996,7 +1013,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
             {
                 {
                     _safeExecuteTransaction(
-                        0xBb50A5341368751024ddf33385BA8cf61fE65FF9,
+                        VaultV2_3,
                         abi.encodeWithSelector(
                             0x6e553f65, // deposit(uint256,address)
                             1 ether,
@@ -1006,7 +1023,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
                 }
                 {
                     _safeExecuteTransaction(
-                        0xBb50A5341368751024ddf33385BA8cf61fE65FF9,
+                        VaultV2_3,
                         abi.encodeWithSelector(
                             0xb460af94, // withdraw(uint256,address,address)
                             1 ether,
@@ -1017,7 +1034,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
                 }
                 {
                     _safeExecuteTransaction(
-                        0xBb50A5341368751024ddf33385BA8cf61fE65FF9,
+                        VaultV2_3,
                         abi.encodeWithSelector(
                             0xba087652, // redeem(uint256,address,address)
                             1 ether,
@@ -1030,7 +1047,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
             {
                 {
                     _safeExecuteTransaction(
-                        0xe108fbc04852B5df72f9E44d7C29F47e7A993aDd,
+                        MetaMorphoV1_2,
                         abi.encodeWithSelector(
                             0x6e553f65, // deposit(uint256,address)
                             1 ether,
@@ -1040,7 +1057,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
                 }
                 {
                     _safeExecuteTransaction(
-                        0xe108fbc04852B5df72f9E44d7C29F47e7A993aDd,
+                        MetaMorphoV1_2,
                         abi.encodeWithSelector(
                             0xb460af94, // withdraw(uint256,address,address)
                             1 ether,
@@ -1051,7 +1068,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
                 }
                 {
                     _safeExecuteTransaction(
-                        0xe108fbc04852B5df72f9E44d7C29F47e7A993aDd,
+                        MetaMorphoV1_2,
                         abi.encodeWithSelector(
                             0xba087652, // redeem(uint256,address,address)
                             1 ether,
@@ -1063,10 +1080,10 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
             }
             {
                 _safeExecuteTransaction(
-                    0xdAC17F958D2ee523a2206206994597C13D831ec7,
+                    USDT,
                     abi.encodeWithSelector(
                         0x095ea7b3, // approve(address, uint256)
-                        0x5C20B550819128074FD538Edf79791733ccEdd18,
+                        fToken,
                         1 ether
                     )
                 );
@@ -1074,7 +1091,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
             {
                 {
                     _safeExecuteTransaction(
-                        0xd564F765F9aD3E7d2d6cA782100795a885e8e7C8,
+                        MetaMorphoV1_1,
                         abi.encodeWithSelector(
                             0x6e553f65, // deposit(uint256,address)
                             1 ether,
@@ -1084,7 +1101,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
                 }
                 {
                     _safeExecuteTransaction(
-                        0xd564F765F9aD3E7d2d6cA782100795a885e8e7C8,
+                        MetaMorphoV1_1,
                         abi.encodeWithSelector(
                             0xb460af94, // withdraw(uint256,address,address)
                             1 ether,
@@ -1095,7 +1112,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
                 }
                 {
                     _safeExecuteTransaction(
-                        0xd564F765F9aD3E7d2d6cA782100795a885e8e7C8,
+                        MetaMorphoV1_1,
                         abi.encodeWithSelector(
                             0xba087652, // redeem(uint256,address,address)
                             1 ether,
@@ -1107,18 +1124,18 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
             }
             {
                 _safeExecuteTransaction(
-                    0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2,
+                    WETH,
                     abi.encodeWithSelector(
                         0x095ea7b3, // approve(address, uint256)
-                        0xBb50A5341368751024ddf33385BA8cf61fE65FF9,
+                        VaultV2_3,
                         1 ether
                     )
                 );
                 _safeExecuteTransaction(
-                    0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2,
+                    WETH,
                     abi.encodeWithSelector(
                         0x095ea7b3, // approve(address, uint256)
-                        0xd564F765F9aD3E7d2d6cA782100795a885e8e7C8,
+                        MetaMorphoV1_1,
                         1 ether
                     )
                 );
