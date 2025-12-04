@@ -40,7 +40,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
             _safeExecuteTransaction(
                 UniversalRewardsDistributor,
                 abi.encodeWithSelector(
-                    0xfabed412, safe, 0xC18360217D8F7Ab5e7c516566761Ea12Ce7F9D72, 1 ether, new bytes32[](1)
+                    0xfabed412, safe, ensToken, 1 ether, new bytes32[](1)
                 )
             );
         }
@@ -50,7 +50,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
             _safeExecuteTransaction(
                 UniversalRewardsDistributor,
                 abi.encodeWithSelector(
-                    0xfabed412, safe, 0xC18360217D8F7Ab5e7c516566761Ea12Ce7F9D72, 1 ether, new bytes32[](1)
+                    0xfabed412, safe, ensToken, 1 ether, new bytes32[](1)
                 )
             );
         }
@@ -689,7 +689,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
             _safeExecuteTransaction(
                 UniversalRewardsDistributor,
                 abi.encodeWithSelector(
-                    0xfabed412, safe, 0xC18360217D8F7Ab5e7c516566761Ea12Ce7F9D72, 1 ether, new bytes32[](1)
+                    0xfabed412, safe, ensToken, 1 ether, new bytes32[](1)
                 )
             );
         }
@@ -700,7 +700,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
             _safeExecuteTransaction(
                 UniversalRewardsDistributor,
                 abi.encodeWithSelector(
-                    0xfabed412, safe, 0xC18360217D8F7Ab5e7c516566761Ea12Ce7F9D72, 1 ether, new bytes32[](1)
+                    0xfabed412, safe, ensToken, 1 ether, new bytes32[](1)
                 )
             );
         }
