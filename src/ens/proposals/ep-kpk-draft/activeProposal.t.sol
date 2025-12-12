@@ -20,17 +20,17 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
 
     address private UniversalRewardsDistributor = 0x330eefa8a787552DC5cAd3C3cA644844B1E61Ddb;
     address private USDT = 0xdAC17F958D2ee523a2206206994597C13D831ec7;
-    address private fToken = 0x5C20B550819128074FD538Edf79791733ccEdd18;
-    address private VaultV2 = 0x4Ef53d2cAa51C447fdFEEedee8F07FD1962C9ee6;
+    address private FluidUSDT = 0x5C20B550819128074FD538Edf79791733ccEdd18;
+    address private kpkUSDCv2 = 0x4Ef53d2cAa51C447fdFEEedee8F07FD1962C9ee6;
     address private GHO = 0x40D16FC0246aD3160Ccc09B8D0D3A2cD28aE6C2f;
-    address private fToken2 = 0x6A29A46E21C730DcA1d8b23d637c101cec605C5B;
-    address private fToken3 = 0x9Fb7b4477576Fe5B32be4C1843aFB1e55F251B33;
+    address private FluidGHO = 0x6A29A46E21C730DcA1d8b23d637c101cec605C5B;
+    address private FluidUSDC = 0x9Fb7b4477576Fe5B32be4C1843aFB1e55F251B33;
     address private USDC = 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48;
-    address private VaultV2_3 = 0xBb50A5341368751024ddf33385BA8cf61fE65FF9;
+    address private kpkETHv2 = 0xBb50A5341368751024ddf33385BA8cf61fE65FF9;
     address private WETH = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
-    address private MetaMorphoV1_1 = 0xd564F765F9aD3E7d2d6cA782100795a885e8e7C8;
-    address private MetaMorphoV1_2 = 0xe108fbc04852B5df72f9E44d7C29F47e7A993aDd;
-    address private FluidMerkleDistributor = 0x7060FE0Dd3E31be01EFAc6B28C8D38018fD163B0;
+    address private kpkETHPrime = 0xd564F765F9aD3E7d2d6cA782100795a885e8e7C8;
+    address private kpkUSDCPrime = 0xe108fbc04852B5df72f9E44d7C29F47e7A993aDd;
+    address private FluidMerklDistributor = 0x7060FE0Dd3E31be01EFAc6B28C8D38018fD163B0;
 
     function _beforeProposal() public override {
         vm.startPrank(karpatkey);
@@ -73,7 +73,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
                         USDT,
                         abi.encodeWithSelector(
                             IERC20.approve.selector,
-                            fToken,
+                            FluidUSDT,
                             1 ether
                         )
                     );
@@ -87,7 +87,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
                         )
                     );
                     _safeExecuteTransaction(
-                        VaultV2,
+                        kpkUSDCv2,
                         abi.encodeWithSelector(
                             IFluidVaultV2.deposit.selector,
                             1 ether,
@@ -104,7 +104,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
                         )
                     );
                     _safeExecuteTransaction(
-                        VaultV2,
+                        kpkUSDCv2,
                         abi.encodeWithSelector(
                             IFluidVaultV2.redeem.selector,
                             1 ether,
@@ -123,7 +123,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
                     )
                 );
                 _safeExecuteTransaction(
-                    VaultV2,
+                    kpkUSDCv2,
                     abi.encodeWithSelector(
                         IFluidVaultV2.redeem.selector,
                         1 ether,
@@ -144,7 +144,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
                     GHO,
                     abi.encodeWithSelector(
                         IERC20.approve.selector,
-                        fToken2,
+                        FluidGHO,
                         1 ether
                     )
                 );
@@ -159,7 +159,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
                         )
                     );
                     _safeExecuteTransaction(
-                        fToken2,
+                        FluidGHO,
                         abi.encodeWithSelector(
                             IFluidVaultV2.deposit.selector,
                             1 ether,
@@ -176,7 +176,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
                         )
                     );
                     _safeExecuteTransaction(
-                        fToken2,
+                        FluidGHO,
                         abi.encodeWithSelector(
                             IFluidVaultV2.withdraw.selector,
                             1 ether,
@@ -194,7 +194,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
                         )
                     );
                     _safeExecuteTransaction(
-                        fToken2,
+                        FluidGHO,
                         abi.encodeWithSelector(
                             IFluidVaultV2.redeem.selector,
                             1 ether,
@@ -214,7 +214,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
                         )
                     );
                     _safeExecuteTransaction(
-                        FluidMerkleDistributor,
+                        FluidMerklDistributor,
                         abi.encodeWithSelector(
                             IFluidMerkleDistributor.claim.selector,
                             safe,
@@ -238,7 +238,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
                         )
                     );
                     _safeExecuteTransaction(
-                        fToken3,
+                        FluidUSDC,
                         abi.encodeWithSelector(
                             IFluidVaultV2.deposit.selector,
                             1 ether,
@@ -255,7 +255,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
                         )
                     );
                     _safeExecuteTransaction(
-                        fToken3,
+                        FluidUSDC,
                         abi.encodeWithSelector(
                             IFluidVaultV2.withdraw.selector,
                             1 ether,
@@ -273,7 +273,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
                         )
                     );
                     _safeExecuteTransaction(
-                        fToken3,
+                        FluidUSDC,
                         abi.encodeWithSelector(
                             IFluidVaultV2.redeem.selector,
                             1 ether,
@@ -294,7 +294,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
                         USDC,
                         abi.encodeWithSelector(
                             IERC20.approve.selector,
-                            VaultV2,
+                            kpkUSDCv2,
                             1 ether
                         )
                     );
@@ -309,7 +309,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
                         USDC,
                         abi.encodeWithSelector(
                             IERC20.approve.selector,
-                            fToken3,
+                            FluidUSDC,
                             1 ether
                         )
                     );
@@ -324,7 +324,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
                         USDC,
                         abi.encodeWithSelector(
                             IERC20.approve.selector,
-                            MetaMorphoV1_2,
+                            kpkUSDCPrime,
                             1 ether
                         )
                     );
@@ -340,7 +340,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
                         )
                     );
                     _safeExecuteTransaction(
-                        VaultV2_3,
+                        kpkETHv2,
                         abi.encodeWithSelector(
                             IFluidVaultV2.deposit.selector,
                             1 ether,
@@ -357,7 +357,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
                         )
                     );
                     _safeExecuteTransaction(
-                        VaultV2_3,
+                        kpkETHv2,
                         abi.encodeWithSelector(
                             IFluidVaultV2.withdraw.selector,
                             1 ether,
@@ -375,7 +375,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
                         )
                     );
                     _safeExecuteTransaction(
-                        VaultV2_3,
+                        kpkETHv2,
                         abi.encodeWithSelector(
                             IFluidVaultV2.redeem.selector,
                             1 ether,
@@ -395,7 +395,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
                         )
                     );
                     _safeExecuteTransaction(
-                        MetaMorphoV1_2,
+                        kpkUSDCPrime,
                         abi.encodeWithSelector(
                             IMetaMorphoV1.deposit.selector,
                             1 ether,
@@ -412,7 +412,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
                         )
                     );
                     _safeExecuteTransaction(
-                        MetaMorphoV1_2,
+                        kpkUSDCPrime,
                         abi.encodeWithSelector(
                             IMetaMorphoV1.withdraw.selector,
                             1 ether,
@@ -430,7 +430,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
                         )
                     );
                     _safeExecuteTransaction(
-                        MetaMorphoV1_2,
+                        kpkUSDCPrime,
                         abi.encodeWithSelector(
                             IMetaMorphoV1.redeem.selector,
                             1 ether,
@@ -450,7 +450,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
                     USDT,
                     abi.encodeWithSelector(
                         IERC20.approve.selector,
-                        fToken,
+                        FluidUSDT,
                         1 ether
                     )
                 );
@@ -465,7 +465,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
                         )
                     );
                     _safeExecuteTransaction(
-                        MetaMorphoV1_1,
+                        kpkETHPrime,
                         abi.encodeWithSelector(
                             IMetaMorphoV1.deposit.selector,
                             1 ether,
@@ -482,7 +482,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
                         )
                     );
                     _safeExecuteTransaction(
-                        MetaMorphoV1_1,
+                        kpkETHPrime,
                         abi.encodeWithSelector(
                             IMetaMorphoV1.withdraw.selector,
                             1 ether,
@@ -500,7 +500,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
                         )
                     );
                     _safeExecuteTransaction(
-                        MetaMorphoV1_1,
+                        kpkETHPrime,
                         abi.encodeWithSelector(
                             IMetaMorphoV1.redeem.selector,
                             1 ether,
@@ -520,7 +520,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
                     WETH,
                     abi.encodeWithSelector(
                         IERC20.approve.selector,
-                        VaultV2_3,
+                        kpkETHv2,
                         1 ether
                     )
                 );
@@ -533,7 +533,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
                     WETH,
                     abi.encodeWithSelector(
                         IERC20.approve.selector,
-                        MetaMorphoV1_1,
+                        kpkETHPrime,
                         1 ether
                     )
                 );
@@ -576,7 +576,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
                     USDT,
                     abi.encodeWithSelector(
                         IERC20.approve.selector,
-                        fToken,
+                        FluidUSDT,
                         1 ether
                     )
                 );
@@ -584,7 +584,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
             {
                 {
                     _safeExecuteTransaction(
-                        VaultV2,
+                        kpkUSDCv2,
                         abi.encodeWithSelector(
                             IFluidVaultV2.deposit.selector,
                             1 ether,
@@ -594,7 +594,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
                 }
                 {
                     _safeExecuteTransaction(
-                        VaultV2,
+                        kpkUSDCv2,
                         abi.encodeWithSelector(
                             IFluidVaultV2.redeem.selector,
                             1 ether,
@@ -605,7 +605,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
                 }
                 {
                     _safeExecuteTransaction(
-                        VaultV2,
+                        kpkUSDCv2,
                         abi.encodeWithSelector(
                             IFluidVaultV2.redeem.selector,
                             1 ether,
@@ -620,14 +620,14 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
                     GHO,
                     abi.encodeWithSelector(
                         IERC20.approve.selector,
-                        fToken2,
+                        FluidGHO,
                         1 ether
                     )
                 );
             }
             {
                 _safeExecuteTransaction(
-                    fToken2,
+                    FluidGHO,
                     abi.encodeWithSelector(
                         IFluidVaultV2.deposit.selector,
                         1 ether,
@@ -635,7 +635,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
                     )
                 );
                 _safeExecuteTransaction(
-                    fToken2,
+                    FluidGHO,
                     abi.encodeWithSelector(
                         IFluidVaultV2.withdraw.selector,
                         1 ether,
@@ -644,7 +644,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
                     )
                 );
                 _safeExecuteTransaction(
-                    fToken2,
+                    FluidGHO,
                     abi.encodeWithSelector(
                         IFluidVaultV2.redeem.selector,
                         1 ether,
@@ -655,7 +655,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
             }
             {
                 _safeExecuteTransaction(
-                    FluidMerkleDistributor,
+                    FluidMerklDistributor,
                     abi.encodeWithSelector(
                         IFluidMerkleDistributor.claim.selector,
                         safe,
@@ -671,7 +671,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
             {
                 {
                     _safeExecuteTransaction(
-                        fToken3,
+                        FluidUSDC,
                         abi.encodeWithSelector(
                             IFluidVaultV2.deposit.selector,
                             1 ether,
@@ -681,7 +681,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
                 }
                 {
                     _safeExecuteTransaction(
-                        fToken3,
+                        FluidUSDC,
                         abi.encodeWithSelector(
                             IFluidVaultV2.withdraw.selector,
                             1 ether,
@@ -692,7 +692,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
                 }
                 {
                     _safeExecuteTransaction(
-                        fToken3,
+                        FluidUSDC,
                         abi.encodeWithSelector(
                             IFluidVaultV2.redeem.selector,
                             1 ether,
@@ -708,7 +708,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
                         USDC,
                         abi.encodeWithSelector(
                             IERC20.approve.selector,
-                            VaultV2,
+                            kpkUSDCv2,
                             1 ether
                         )
                     );
@@ -718,7 +718,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
                         USDC,
                         abi.encodeWithSelector(
                             IERC20.approve.selector,
-                            fToken3,
+                            FluidUSDC,
                             1 ether
                         )
                     );
@@ -728,7 +728,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
                         USDC,
                         abi.encodeWithSelector(
                             IERC20.approve.selector,
-                            MetaMorphoV1_2,
+                            kpkUSDCPrime,
                             1 ether
                         )
                     );
@@ -737,7 +737,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
             {
                 {
                     _safeExecuteTransaction(
-                        VaultV2_3,
+                        kpkETHv2,
                         abi.encodeWithSelector(
                             IFluidVaultV2.deposit.selector,
                             1 ether,
@@ -747,7 +747,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
                 }
                 {
                     _safeExecuteTransaction(
-                        VaultV2_3,
+                        kpkETHv2,
                         abi.encodeWithSelector(
                             IFluidVaultV2.withdraw.selector,
                             1 ether,
@@ -758,7 +758,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
                 }
                 {
                     _safeExecuteTransaction(
-                        VaultV2_3,
+                        kpkETHv2,
                         abi.encodeWithSelector(
                             IFluidVaultV2.redeem.selector,
                             1 ether,
@@ -771,7 +771,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
             {
                 {
                     _safeExecuteTransaction(
-                        MetaMorphoV1_2,
+                        kpkUSDCPrime,
                         abi.encodeWithSelector(
                             IMetaMorphoV1.deposit.selector,
                             1 ether,
@@ -781,7 +781,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
                 }
                 {
                     _safeExecuteTransaction(
-                        MetaMorphoV1_2,
+                        kpkUSDCPrime,
                         abi.encodeWithSelector(
                             IMetaMorphoV1.withdraw.selector,
                             1 ether,
@@ -792,7 +792,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
                 }
                 {
                     _safeExecuteTransaction(
-                        MetaMorphoV1_2,
+                        kpkUSDCPrime,
                         abi.encodeWithSelector(
                             IMetaMorphoV1.redeem.selector,
                             1 ether,
@@ -807,7 +807,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
                     USDT,
                     abi.encodeWithSelector(
                         IERC20.approve.selector,
-                        fToken,
+                        FluidUSDT,
                         1 ether
                     )
                 );
@@ -815,7 +815,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
             {
                 {
                     _safeExecuteTransaction(
-                        MetaMorphoV1_1,
+                        kpkETHPrime,
                         abi.encodeWithSelector(
                             IMetaMorphoV1.deposit.selector,
                             1 ether,
@@ -825,7 +825,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
                 }
                 {
                     _safeExecuteTransaction(
-                        MetaMorphoV1_1,
+                        kpkETHPrime,
                         abi.encodeWithSelector(
                             IMetaMorphoV1.withdraw.selector,
                             1 ether,
@@ -836,7 +836,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
                 }
                 {
                     _safeExecuteTransaction(
-                        MetaMorphoV1_1,
+                        kpkETHPrime,
                         abi.encodeWithSelector(
                             IMetaMorphoV1.redeem.selector,
                             1 ether,
@@ -851,7 +851,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
                     WETH,
                     abi.encodeWithSelector(
                         IERC20.approve.selector,
-                        VaultV2_3,
+                        kpkETHv2,
                         1 ether
                     )
                 );
@@ -859,7 +859,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
                     WETH,
                     abi.encodeWithSelector(
                         IERC20.approve.selector,
-                        MetaMorphoV1_1,
+                        kpkETHPrime,
                         1 ether
                     )
                 );
