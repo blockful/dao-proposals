@@ -180,8 +180,8 @@ async function fetchLiveProposal() {
         // Define output paths
         const projectRoot = path.resolve(__dirname, '../../');
         const outputDir = path.join(projectRoot, '');
-        const jsonOutputPath = path.join(outputDir, 'liveProposalCalldata.json');
-        const mdOutputPath = path.join(outputDir, 'liveProposal.md');
+        const jsonOutputPath = path.join(outputDir, 'proposalCalldata.json');
+        const mdOutputPath = path.join(outputDir, 'proposalDescription.md');
         
         // Write JSON file (without description)
         fs.writeFileSync(jsonOutputPath, JSON.stringify(draftCalldata, null, 2));
