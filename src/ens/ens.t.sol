@@ -224,7 +224,7 @@ abstract contract ENS_Governance is Test, IDAO, ENSHelper {
     }
 
     function draftCallDataComparison() public {
-        string memory jsonContent = vm.readFile(string.concat(dirPath(), "/draftCalldata.json"));
+        string memory jsonContent = vm.readFile(string.concat(dirPath(), "/proposalCalldata.json"));
     
         address[] memory jsonTargets = parseJsonTargets(jsonContent);
         string[] memory jsonValues = parseJsonValues(jsonContent);
@@ -347,7 +347,7 @@ abstract contract ENS_Governance is Test, IDAO, ENSHelper {
 
     function getDescriptionFromMarkdown() public returns (string memory) {
         // Read markdown file
-        string memory markdownPath = string.concat(dirPath(), "/proposal.md");
+        string memory markdownPath = string.concat(dirPath(), "/proposalDescription.md");
         string memory markdownContent = vm.readFile(markdownPath);
         
         return markdownContent;
