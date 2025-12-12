@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 
 const TALLY_API_URL = 'https://api.tally.xyz/query';
-const PROPOSAL_ID = '2729564643990177078';
+const PROPOSAL_ID = '2735734945690421016';
 
 const query = `
 query Proposal {
@@ -64,8 +64,8 @@ async function fetchCalldata() {
         // Define output paths
         const projectRoot = path.resolve(__dirname, '../../');
         const outputDir = path.join(projectRoot, '');
-        const jsonOutputPath = path.join(outputDir, 'draftCalldata.json');
-        const mdOutputPath = path.join(outputDir, 'proposal.md');
+        const jsonOutputPath = path.join(outputDir, 'proposalCalldata.json');
+        const mdOutputPath = path.join(outputDir, 'proposalDescription.md');
         
         // Write JSON file (without description)
         fs.writeFileSync(jsonOutputPath, JSON.stringify(draftCalldata, null, 2));
