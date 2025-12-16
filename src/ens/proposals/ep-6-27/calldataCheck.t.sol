@@ -32,6 +32,14 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
     address private kpkUSDCPrime = 0xe108fbc04852B5df72f9E44d7C29F47e7A993aDd;
     address private FluidMerklDistributor = 0x7060FE0Dd3E31be01EFAc6B28C8D38018fD163B0;
 
+    function _selectFork() public override {
+        vm.createSelectFork({ blockNumber: 24023538, urlOrAlias: "mainnet" });
+    }
+
+    function _proposer() public pure override returns (address) {
+        return 0x1D5460F896521aD685Ea4c3F2c679Ec0b6806359; // coltron.eth
+    }
+
     function _beforeProposal() public override {
         vm.startPrank(karpatkey);
         vm.pauseGasMetering();
@@ -888,7 +896,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
         targets[0] = safe;
         calldatas[0] = abi.encodeWithSelector(
             ISafe.execTransaction.selector,
-            0x40A2aCCbd92BCA938b02010E17A5b8929b49130D,
+            0x9641d764fc13c8B624c04430C7356C1C7C8102e2,
             0,
             _getSafeCalldata(),
             1,
@@ -901,13 +909,17 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
         );
         values[0] = 0;
         signatures[0] = "";
-        description = "";
+        description = getDescriptionFromMarkdown();
 
         return (targets, values, signatures, calldatas, description);
     }
 
     function _isProposalSubmitted() public view override returns (bool) {
-        return false;
+        return true;
+    }
+
+    function dirPath() public pure override returns (string memory) {
+        return "src/ens/proposals/ep-6-27";
     }
 
     function _getSafeCalldata() internal pure returns (bytes memory cd) {
