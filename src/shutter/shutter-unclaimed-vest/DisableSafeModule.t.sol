@@ -8,7 +8,9 @@ import "./Context.sol";
 
 contract DisableSafeModule is Test, Context {
     /// @dev A function invoked before each test case is run.
-    function setUp() public virtual { }
+    function setUp() public virtual override {
+        super.setUp();
+    }
 
     /**
      * @dev Will validate the following steps:

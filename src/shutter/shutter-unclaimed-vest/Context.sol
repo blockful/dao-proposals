@@ -11,6 +11,13 @@ import { Test } from "forge-std/src/Test.sol";
 import { console2 } from "forge-std/src/console2.sol";
 
 contract Context is Test {
+    /// @dev Fork setup - creates a fork of mainnet at a specific block
+    /// NOTE: Block 20500000 is approximately when the claim/disable proposal was submitted
+    /// The proposal has since been executed. Use a historical block to test.
+    function setUp() public virtual {
+        vm.createSelectFork({ blockNumber: 20_500_000, urlOrAlias: "mainnet" });
+    }
+
     /// @dev Our beloved contributor that will submit the proposal and approve it
     /// Joseph seems to be allowed to submit proposals.
     address Joseph = 0x9Cc9C7F874eD77df06dCd41D95a2C858cd2a2506;

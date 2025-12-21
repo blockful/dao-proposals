@@ -13,7 +13,8 @@ import "./Context.sol";
 
 contract CalldataGovernance is Test, Context, Delegate, Vote, SubmitProposal, ExecuteProposal {
     /// @dev A function invoked before each test case is run.
-    function setUp() public virtual {
+    function setUp() public virtual override {
+        super.setUp();
         vm.label(address(USDC), "USDC");
         vm.label(address(DAI), "DAI");
         vm.label(address(DssPsm), "DssPsm");

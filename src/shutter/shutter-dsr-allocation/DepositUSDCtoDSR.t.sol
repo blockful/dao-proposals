@@ -13,7 +13,9 @@ import "./Context.sol";
 
 contract DepositUSDCtoDSR is Test, Context {
     /// @dev A function invoked before each test case is run.
-    function setUp() public virtual { }
+    function setUp() public virtual override {
+        super.setUp();
+    }
 
     /**
      * @dev Tests depositing USDC to the DSR contract.
