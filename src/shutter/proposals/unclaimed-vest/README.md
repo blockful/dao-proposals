@@ -26,16 +26,7 @@ Shutter DAO tests are strictly dependable on mainnet conditions and thus require
 environment.
 
 ```sh
-$ yarn test:claim-unused-tokens
-$ yarn test:disable-vest-as-module
-```
-
-### Governance Test
-
-This test will simulate the governance proposal and its execution. It will also generate the calldata for the proposal.
-
-```shell
-$ yarn calldata:claim-and-disable
+$ forge test --match-path "src/shutter/proposals/unclaimed-vest/**" -vvv
 ```
 
 ### Fractal Calldata
@@ -57,3 +48,4 @@ $ yarn calldata:claim-and-disable
 # Parameter 2 Value: 0xD724DBe7e230E400fe7390885e16957Ec246d716
 # Transaction Value: 0
 ```
+
