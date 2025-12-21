@@ -4,14 +4,13 @@ pragma solidity ^0.8.13;
 import { Test } from "@forge-std/src/Test.sol";
 import { console2 } from "@forge-std/src/console2.sol";
 
-import { IToken } from "@ens/interfaces/IToken.sol";
 import { IGovernor } from "@ens/interfaces/IGovernor.sol";
 import { ITimelock } from "@ens/interfaces/ITimelock.sol";
 import { IENSToken } from "@ens/interfaces/IENSToken.sol";
 import { IDAO } from "@contracts/utils/interfaces/IDAO.sol";
 
 abstract contract ENSHelper {
-    bytes32 constant rootNode = 0x0000000000000000000000000000000000000000000000000000000000000000;
+    bytes32 constant ROOT_NODE = 0x0000000000000000000000000000000000000000000000000000000000000000;
 
     function labelhash(string memory _name) public pure returns (bytes32) {
         return keccak256(abi.encodePacked(_name));
@@ -276,11 +275,11 @@ abstract contract ENS_Governance is Test, IDAO, ENSHelper {
         assertEq(jsonTargets.length, jsonCalldatas.length, "Targets and calldata arrays length mismatch");
     }
 
-    function decodeTargetsArray(string memory jsonContent) public returns (address[] memory) {
+    function decodeTargetsArray(string memory jsonContent) public pure returns (address[] memory) {
         return abi.decode(vm.parseJson(jsonContent, ".executableCalls[*].target"), (address[]));
     }
 
-    function decodeTargetSingle(string memory jsonContent) public returns (address) {
+    function decodeTargetSingle(string memory jsonContent) public pure returns (address) {
         return abi.decode(vm.parseJson(jsonContent, ".executableCalls[*].target"), (address));
     }
 
@@ -299,11 +298,11 @@ abstract contract ENS_Governance is Test, IDAO, ENSHelper {
         }
     }
 
-    function decodeValuesArray(string memory jsonContent) public returns (string[] memory) {
+    function decodeValuesArray(string memory jsonContent) public pure returns (string[] memory) {
         return abi.decode(vm.parseJson(jsonContent, ".executableCalls[*].value"), (string[]));
     }
 
-    function decodeValueSingle(string memory jsonContent) public returns (string memory) {
+    function decodeValueSingle(string memory jsonContent) public pure returns (string memory) {
         return abi.decode(vm.parseJson(jsonContent, ".executableCalls[*].value"), (string));
     }   
     
@@ -322,11 +321,11 @@ abstract contract ENS_Governance is Test, IDAO, ENSHelper {
         }
     }
 
-    function decodeCalldatasArray(string memory jsonContent) public returns (bytes[] memory) {
+    function decodeCalldatasArray(string memory jsonContent) public pure returns (bytes[] memory) {
         return abi.decode(vm.parseJson(jsonContent, ".executableCalls[*].calldata"), (bytes[]));
     }
 
-    function decodeCalldataSingle(string memory jsonContent) public returns (bytes memory) {
+    function decodeCalldataSingle(string memory jsonContent) public pure returns (bytes memory) {
         return abi.decode(vm.parseJson(jsonContent, ".executableCalls[*].calldata"), (bytes));
     }
     
