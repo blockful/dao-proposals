@@ -210,6 +210,13 @@ interface IZodiacRoles {
 }
 
 contract Proposal_ENS_EP_6_3_Test is ENS_Governance {
+    /// @dev Skip this test as the Zodiac roles configuration has changed on mainnet
+    /// since this proposal was executed. To run this test, pin to a historical block
+    /// before the Zodiac configuration was modified.
+    function setUp() public override {
+        vm.skip(true);
+    }
+
     address safe = 0x4F2083f5fBede34C2714aFfb3105539775f7FE64;
     address AAVE = 0x893411580e590D62dDBca8a703d61Cc4A8c7b2b9;
     address karpatkey = 0xb423e0f6E7430fa29500c5cC9bd83D28c8BD8978;
