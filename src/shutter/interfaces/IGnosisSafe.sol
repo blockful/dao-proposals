@@ -6,3 +6,4 @@ interface IGnosisSafe {
 
     function disableModule(address prevModule, address module) external;
 }
+

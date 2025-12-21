@@ -1,7 +1,7 @@
 # Shutter DAO
 
 A recent Shutter Forum post raised a discussion of treasury management, specifically regarding the opportunity to
-allocate part of Shutter DAO 0x36’s long term stablecoin assets to earn yield and generate additional resources / runway
+allocate part of Shutter DAO 0x36's long term stablecoin assets to earn yield and generate additional resources / runway
 for the project.
 
 See: [Discussion](https://shutterdao.discourse.group/t/shutter-dao-0x36-discussion-regarding-treasury-management/367)
@@ -21,8 +21,6 @@ and
 - [LinearERC20Voting - Vote and Strategy Contract](https://etherscan.io/address/0x4b29d8B250B8b442ECfCd3a4e3D91933d2db720F)
 - [ShutterToken - ERC20Vote Token Contract](https://etherscan.io/address/0xe485E2f1bab389C08721B291f6b59780feC83Fd7)
 - [ShutterDAO 0x36 Treasury - Gnosis Safe Contract](https://etherscan.io/address/0x36bD3044ab68f600f6d3e081056F34f2a58432c4)
-- [Convert 3M USDC to DAI Savings Rate (DSR) Token](https://github.com/blockful-io/dao-proposals/blob/f00a6ed1a5c6fd74a6e1470310954ec63dc93905/proposals/shutter-dsr-allocation/tests/DepositUSDCtoDSR.t.sol)
-- [Submit and execute the proposal to ShutterDAO 0x36 to allocate 3M DAI to the DSR Contract](https://github.com/blockful-io/dao-proposals/blob/efdb685cf4551c1938c22a4d4dad2d729c77de17/proposals/shutter-dsr-allocation/tests/CalldataGovernance.t.sol#L82)
 
 ### Tests
 
@@ -33,7 +31,7 @@ environment.
 the tests still work you will need a full-node RPC provider.**
 
 ```sh
-$ yarn test:dsr-allocation
+$ forge test --match-path "src/shutter/proposals/dsr-allocation/**" -vvv
 ```
 
 ### Calldata
@@ -103,3 +101,4 @@ $ yarn test:dsr-allocation
 # Parameter 2 Value: 0x36bD3044ab68f600f6d3e081056F34f2a58432c4
 # Transaction Value: 0
 ```
+
