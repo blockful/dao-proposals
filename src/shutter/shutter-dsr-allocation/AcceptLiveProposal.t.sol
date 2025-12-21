@@ -12,9 +12,8 @@ import "@contracts/governance/azorius/ExecuteProposal.sol";
 import "./Context.sol";
 
 contract CalldataGovernance is Test, Context, Delegate, Vote, SubmitProposal, ExecuteProposal {
-    /// @dev A function invoked before each test case is run.
-    function setUp() public virtual override {
-        super.setUp();
+    function _selectFork() public {
+        vm.createSelectFork({ blockNumber: 20055924, urlOrAlias: "mainnet" });
     }
 
     /**
