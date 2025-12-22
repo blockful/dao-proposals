@@ -169,9 +169,15 @@ abstract contract UNI_Governance is Test, IDAO {
         // Assert parameters modified after execution
         _afterExecution();
 
-        // Compare calldata with JSON if dirPath is set and proposal is not submitted
-        if (keccak256(abi.encodePacked(dirPath())) != keccak256(abi.encodePacked("")) && !_isProposalSubmitted()) {
-            draftCallDataComparison();
+        // Compare calldata with JSON if dirPath is set
+        if (keccak256(abi.encodePacked(dirPath())) != keccak256(abi.encodePacked(""))) {
+            if (_isProposalSubmitted()) {
+                // Live proposal - use Tally JSON format (no signatures)
+                liveCalldataComparison();
+            } else {
+                // Draft proposal - use full format with signatures
+                draftCallDataComparison();
+            }
         }
     }
 
@@ -282,6 +288,69 @@ abstract contract UNI_Governance is Test, IDAO {
         assertEq(jsonTargets.length, jsonValues.length, "Targets and values arrays length mismatch");
         assertEq(jsonTargets.length, jsonCalldatas.length, "Targets and calldata arrays length mismatch");
         assertEq(jsonTargets.length, jsonSignatures.length, "Targets and signatures arrays length mismatch");
+    }
+
+    /*//////////////////////////////////////////////////////////////////////////
+                          LIVE CALLDATA COMPARISON (TALLY FORMAT)
+    //////////////////////////////////////////////////////////////////////////*/
+
+    /// @notice Compares generated calldata against JSON from Tally (without signatures)
+    /// @dev Use this for live proposals where JSON only has target, calldata, value fields
+    function liveCalldataComparison() public {
+        string memory jsonContent = vm.readFile(string.concat(dirPath(), "/proposalCalldata.json"));
+
+        address[] memory jsonTargets = parseJsonTargets(jsonContent);
+        string[] memory jsonValues = parseJsonValues(jsonContent);
+        bytes[] memory jsonCalldatas = parseJsonCalldatas(jsonContent);
+
+        console2.log("=== Live Calldata Comparison ===");
+        console2.log("JSON parsed successfully with", jsonTargets.length, "operations");
+
+        // Generate calldata from the contract
+        (
+            address[] memory generatedTargets,
+            uint256[] memory generatedValues,
+            ,
+            bytes[] memory generatedCalldatas,
+        ) = _generateCallData();
+
+        // Compare lengths
+        assertEq(jsonTargets.length, generatedTargets.length, "Number of executable calls mismatch");
+
+        // Compare each operation
+        for (uint256 i = 0; i < jsonTargets.length; i++) {
+            console2.log("Checking call", i);
+
+            // Compare target addresses
+            assertEq(
+                jsonTargets[i],
+                generatedTargets[i],
+                string(abi.encodePacked("Target mismatch at index ", vm.toString(i)))
+            );
+
+            // Compare values
+            assertEq(
+                vm.parseUint(jsonValues[i]),
+                generatedValues[i],
+                string(abi.encodePacked("Value mismatch at index ", vm.toString(i)))
+            );
+
+            // Compare calldata
+            assertEq(
+                jsonCalldatas[i],
+                generatedCalldatas[i],
+                string(abi.encodePacked("Calldata mismatch at index ", vm.toString(i)))
+            );
+
+            console2.log("  Target:", jsonTargets[i]);
+            console2.log("  Value:", vm.parseUint(jsonValues[i]));
+            console2.log("  Calldata match: OK");
+        }
+
+        assertEq(jsonTargets.length, jsonValues.length, "Targets and values arrays length mismatch");
+        assertEq(jsonTargets.length, jsonCalldatas.length, "Targets and calldata arrays length mismatch");
+
+        console2.log("=== All calldata matches JSON ===");
     }
 
     /*//////////////////////////////////////////////////////////////////////////
