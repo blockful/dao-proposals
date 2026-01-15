@@ -1,5 +1,5 @@
-# EP-XXX: Assign Ownership of the .kred TLD to Verified Multisig Controller
-# EP-XXX: Assign Ownership of the `.kred` TLD to Verified Multisig Controller
+# Assign Ownership of the .kred TLD to Verified Multisig Controller
+# Assign Ownership of the `.kred` TLD to Verified Multisig Controller
 
 ## **Abstract**
 
@@ -10,7 +10,6 @@ This Executable Proposal requests that the ENS DAO assign ownership of the `.kr
 The proposing entity already owns and operates the ICANN `.kred` TLD and has demonstrated authoritative control of the DNS registry by publishing the ENS verification TXT record:
 
 `_ens.nic.kred TXT "a=0xb9ef2c160D908A4F7a9DFcdba46662C4a7EC4FD9"`
-
 
 This satisfies the ENS DNS-based proof-of-ownership mechanism and confirms legitimate authority over `.kred`.
 
@@ -37,7 +36,6 @@ The authoritative DNS TXT record published is:
 
 `_ens.nic.kred TXT "a=0xb9ef2c160D908A4F7a9DFcdba46662C4a7EC4FD9"`
 
-
 This demonstrates:
 
 1. Control of the ICANN `.kred` zone
@@ -55,7 +53,6 @@ setSubnodeOwner(
 &#x20;   keccak256("kred"),                             // Label hash for .kred
 &#x20;   0xb9ef2c160D908A4F7a9DFcdba46662C4a7EC4FD9     // Verified controller multisig
 );
-
 
 Effects:
 
