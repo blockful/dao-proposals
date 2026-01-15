@@ -9,7 +9,7 @@ import { IERC20 } from "@contracts/utils/interfaces/IERC20.sol";
 import { IENSRoot } from "@ens/interfaces/IENSRoot.sol";
 import { IENSRegistryWithFallback } from "@ens/interfaces/IENSRegistryWithFallback.sol";
 
-contract Proposal_ENS_EP_KRED_DRAFT_Test is ENS_Governance {
+contract Proposal_ENS_EP_6_28_Test is ENS_Governance {
     IENSRoot root = IENSRoot(0xaB528d626EC275E3faD363fF1393A41F581c5897);
     IENSRegistryWithFallback ensRegistry = IENSRegistryWithFallback(0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e);
 
@@ -20,11 +20,11 @@ contract Proposal_ENS_EP_KRED_DRAFT_Test is ENS_Governance {
     bytes32 node = namehash(abi.encodePacked(tld));
 
     function _selectFork() public override {
-        vm.createSelectFork({ blockNumber: 23998178, urlOrAlias: "mainnet" });
+        vm.createSelectFork({ blockNumber: 24225260, urlOrAlias: "mainnet" });
     }
 
     function _proposer() public pure override returns (address) {
-        return 0x534631Bcf33BDb069fB20A93d2fdb9e4D4dD42CF; // slobo.eth
+        return 0xb8c2C29ee19D8307cb7255e1Cd9CbDE883A267d5; // nick.eth
     }
 
     function _beforeProposal() public override {
@@ -67,10 +67,10 @@ contract Proposal_ENS_EP_KRED_DRAFT_Test is ENS_Governance {
     }
 
     function _isProposalSubmitted() public pure override returns (bool) {
-        return false;
+        return true;
     }
 
     function dirPath() public pure override returns (string memory) {
-        return "src/ens/proposals/ep-kred-tld";
+        return "src/ens/proposals/ep-6-28";
     }
 }
