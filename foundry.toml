@@ -20,6 +20,24 @@
   fuzz = { runs = 10_000 }
   verbosity = 4
 
+# Profile for shutter contracts that need via_ir due to stack-too-deep in IGuard interface
+[profile.shutter]
+  auto_detect_solc = false
+  block_timestamp = 1_680_220_800
+  bytecode_hash = "none"
+  evm_version = "shanghai"
+  fuzz = { runs = 1_000 }
+  gas_reports = ["*"]
+  optimizer = true
+  optimizer_runs = 10_000
+  out = "out"
+  script = "script"
+  solc = "0.8.25"
+  src = "src/shutter"
+  test = "src/shutter"
+  via_ir = true
+  fs_permissions = [{ access = "read", path = "./src" }]
+
 [etherscan]
   mainnet = { key = "${API_KEY_ETHERSCAN}" }
 
