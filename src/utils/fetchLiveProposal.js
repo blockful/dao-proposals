@@ -2,13 +2,30 @@ const fs = require('fs');
 const path = require('path');
 
 const TALLY_API_URL = 'https://api.tally.xyz/query';
-const PROPOSAL_ID = '2746027444409468820';
+const PROPOSAL_ID = '2779038904580310743';
 
 const query = `
     query ProposalDetails($input: ProposalInput!, $votesInput: VotesInput!) {
   proposal(input: $input) {
     id
     onchainId
+    createdAt
+    block {
+      number
+      timestamp
+    }
+    start {
+      ... on Block {
+        number
+        timestamp
+      }
+    }
+    end {
+      ... on Block {
+        number
+        timestamp
+      }
+    }
     metadata {
       description
       discourseURL
@@ -166,10 +183,20 @@ async function fetchLiveProposal() {
         }
 
         console.log(`Found ${executableCalls.length} executable call(s)`);
+        
+        // Log block information
+        console.log(`\nBlock Information:`);
+        console.log(`  Created at block: ${proposal.block?.number} (${proposal.block?.timestamp})`);
+        console.log(`  Voting start block: ${proposal.start?.number} (${proposal.start?.timestamp})`);
+        console.log(`  Voting end block: ${proposal.end?.number} (${proposal.end?.timestamp})`);
 
         // Create the draft calldata structure (without description)
         const draftCalldata = {
             proposalId: proposal.onchainId || proposal.id,
+            blockNumber: proposal.block?.number,
+            votingStart: proposal.start?.number,
+            votingEnd: proposal.end?.number,
+            createdAt: proposal.createdAt,
             executableCalls: executableCalls.map(call => ({
                 target: call.target,
                 calldata: call.calldata,
