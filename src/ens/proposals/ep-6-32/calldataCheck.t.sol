@@ -8,8 +8,8 @@ import { SafeHelper } from "@ens/helpers/SafeHelper.sol";
 import { IERC20 } from "@contracts/utils/interfaces/IERC20.sol";
 
 /**
- * @title Proposal_ENS_EP_Transfer_2_5M_USDC_Draft_Test
- * @notice Calldata review for ENS Draft - Transfer $2.5M USDC from Endowment to wallet.ensdao.eth
+ * @title Proposal_ENS_EP_6_32_Test
+ * @notice Calldata review for ENS EP 6.32 - Transfer $2.5M USDC from Endowment to wallet.ensdao.eth
  * @dev This proposal executes a Safe execTransaction on the ENS Endowment Safe to transfer
  *      2,500,000 USDC to wallet.ensdao.eth (ENS Timelock) to enable execution of previously
  *      approved working group funding (Collective Working Group Funding Request Oct 2025).
@@ -19,11 +19,9 @@ import { IERC20 } from "@contracts/utils/interfaces/IERC20.sol";
  *        - Inner call: USDC.transfer(wallet.ensdao.eth, 2_500_000e6)
  *        - Pre-approved signature from the Timelock (owner of the Safe)
  */
-contract Proposal_ENS_EP_Transfer_2_5M_USDC_Draft_Test is ENS_Governance, SafeHelper {
+contract Proposal_ENS_EP_6_32_Test is ENS_Governance, SafeHelper {
     // Contracts
     IERC20 public constant USDC = IERC20(0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48);
-
-    // wallet.ensdao.eth = ENS Timelock (available as `timelock` from ENS_Governance)
 
     // Transfer amount: 2,500,000 USDC (6 decimals)
     uint256 constant expectedUSDCTransfer = 2_500_000 * 10 ** 6;
@@ -33,13 +31,15 @@ contract Proposal_ENS_EP_Transfer_2_5M_USDC_Draft_Test is ENS_Governance, SafeHe
     uint256 walletUSDCBalanceBefore;
 
     function _selectFork() public override {
-        // Use recent block for draft testing
-        vm.createSelectFork({ blockNumber: 24_401_192, urlOrAlias: "mainnet" });
+        // Fork at the block when the proposal was created
+        // Proposal created: block 24405279 (2026-02-07T13:35:35Z)
+        // Voting start: block 24405280
+        // Voting end: block 24451098
+        vm.createSelectFork({ blockNumber: 24_405_279, urlOrAlias: "mainnet" });
     }
 
     function _proposer() public pure override returns (address) {
-        // Draft proposer - update when known
-        return 0x5BFCB4BE4d7B43437d5A0c57E908c048a4418390; // fireeyesdao.eth
+        return 0x1D5460F896521aD685Ea4c3F2c679Ec0b6806359; // coltron.eth
     }
 
     function _beforeProposal() public override {
@@ -117,10 +117,10 @@ contract Proposal_ENS_EP_Transfer_2_5M_USDC_Draft_Test is ENS_Governance, SafeHe
     }
 
     function _isProposalSubmitted() public pure override returns (bool) {
-        return false; // Draft proposal
+        return true; // Live proposal
     }
 
     function dirPath() public pure override returns (string memory) {
-        return "src/ens/proposals/ep-transfer-2.5m-usdc-draft";
+        return "src/ens/proposals/ep-6-32";
     }
 }
