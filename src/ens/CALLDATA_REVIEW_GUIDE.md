@@ -98,7 +98,7 @@ git push origin ens/ep-X-Y
 ```markdown
 ## Live proposal calldata security verification
 
-This proposal is finally [live](https://www.tally.xyz/gov/ens/proposal/ONCHAIN_ID)!
+This proposal is finally [live](https://anticapture.com/ens/governance/proposal/ONCHAIN_ID)!
 
 Calldata executed the expected outcome. The simulation and tests of the **live** proposal can be found [here](https://github.com/blockful/dao-proposals/blob/COMMIT_HASH/src/ens/proposals/ep-X-Y/calldataCheck.t.sol).
 
