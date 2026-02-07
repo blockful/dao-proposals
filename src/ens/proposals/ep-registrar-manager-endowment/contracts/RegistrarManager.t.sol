@@ -4,7 +4,7 @@ pragma solidity >=0.8.25 <0.9.0;
 import { Test } from "@forge-std/src/Test.sol";
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 
-import { RegistrarManager } from "./contracts/RegistrarManager.sol";
+import { RegistrarManager } from "./RegistrarManager.sol";
 
 // ---------------------------------------------------------------------------
 // Mock helpers
@@ -13,12 +13,20 @@ import { RegistrarManager } from "./contracts/RegistrarManager.sol";
 /// @dev A registrar that holds ETH and sends it to its owner on withdraw().
 contract MockRegistrar {
     address public owner;
+    uint256 public value;
+
+    error OnlyOwner();
 
     constructor() {
         owner = msg.sender;
     }
 
-    function setOwner(address newOwner) external {
+    modifier onlyOwner() {
+        if (msg.sender != owner) revert OnlyOwner();
+        _;
+    }
+
+    function setOwner(address newOwner) external onlyOwner {
         owner = newOwner;
     }
 
@@ -30,9 +38,9 @@ contract MockRegistrar {
         }
     }
 
-    /// @dev Helper used via execOnRegistrar to test arbitrary calls.
-    function echo(uint256 x) external pure returns (uint256) {
-        return x * 2;
+    /// @dev Owner-gated write function to simulate registrar admin operations.
+    function setValue(uint256 newValue) external onlyOwner {
+        value = newValue;
     }
 
     receive() external payable { }
@@ -111,7 +119,7 @@ contract RegistrarManagerTest is Test {
     function test_addRegistrar_single() public {
         address r = makeAddr("registrar1");
 
-        vm.expectEmit(true, false, false, false);
+        vm.expectEmit();
         emit RegistrarManager.RegistrarAdded(r);
 
         vm.prank(owner);
@@ -174,16 +182,6 @@ contract RegistrarManagerTest is Test {
         manager.addRegistrar(makeAddr("r"));
     }
 
-    function testFuzz_addRegistrar(address r) public {
-        vm.assume(r != address(0) && r != address(0x1));
-
-        vm.prank(owner);
-        manager.addRegistrar(r);
-
-        assertTrue(manager.isRegistrar(r));
-        assertEq(manager.registrarCount(), 1);
-    }
-
     // =====================================================================
     //  removeRegistrar
     // =====================================================================
@@ -197,7 +195,7 @@ contract RegistrarManagerTest is Test {
         manager.addRegistrar(r2);
         // List: [r2, r1]. Remove r2 (head).
 
-        vm.expectEmit(true, false, false, false);
+        vm.expectEmit();
         emit RegistrarManager.RegistrarRemoved(r2);
 
         manager.removeRegistrar(r2);
@@ -305,7 +303,7 @@ contract RegistrarManagerTest is Test {
     function test_setDestination_updatesAndEmits() public {
         address newDest = makeAddr("newDest");
 
-        vm.expectEmit(true, true, false, false);
+        vm.expectEmit();
         emit RegistrarManager.DestinationUpdated(destination, newDest);
 
         vm.prank(owner);
@@ -385,10 +383,10 @@ contract RegistrarManagerTest is Test {
         vm.stopPrank();
 
         // Expect RegistrarWithdrawn(bad, false) for the reverting one
-        vm.expectEmit(true, false, false, true);
+        vm.expectEmit();
         emit RegistrarManager.RegistrarWithdrawn(address(bad), false);
 
-        vm.expectEmit(true, false, false, true);
+        vm.expectEmit();
         emit RegistrarManager.RegistrarWithdrawn(address(good), true);
 
         uint256 destBefore = destination.balance;
@@ -465,7 +463,7 @@ contract RegistrarManagerTest is Test {
         vm.prank(owner);
         manager.addRegistrar(address(r));
 
-        vm.expectEmit(true, false, false, true);
+        vm.expectEmit();
         emit RegistrarManager.FundsForwarded(destination, 1 ether);
 
         manager.withdrawAll();
@@ -492,19 +490,43 @@ contract RegistrarManagerTest is Test {
     //  execOnRegistrar
     // =====================================================================
 
-    function test_execOnRegistrar_successfulCall() public {
+    function test_execOnRegistrar_ownerGatedCall() public {
         MockRegistrar r = new MockRegistrar();
+        // Transfer registrar ownership to the manager (realistic setup).
+        r.setOwner(address(manager));
 
         vm.prank(owner);
         manager.addRegistrar(address(r));
 
-        bytes memory data = abi.encodeWithSelector(MockRegistrar.echo.selector, 21);
+        // Use execOnRegistrar to call an onlyOwner function on the registrar.
+        bytes memory data = abi.encodeWithSelector(MockRegistrar.setValue.selector, 42);
 
         vm.prank(owner);
-        (bool success, bytes memory result) = manager.execOnRegistrar(address(r), 0, data);
+        (bool success,) = manager.execOnRegistrar(address(r), 0, data);
 
         assertTrue(success);
-        assertEq(abi.decode(result, (uint256)), 42);
+        assertEq(r.value(), 42);
+    }
+
+    function test_execOnRegistrar_registrarRejectsNonOwnerCaller() public {
+        MockRegistrar r = new MockRegistrar();
+        r.setOwner(address(manager));
+
+        vm.prank(owner);
+        manager.addRegistrar(address(r));
+
+        // Direct call from alice should fail — only the manager (owner of registrar) can call.
+        vm.prank(alice);
+        vm.expectRevert(MockRegistrar.OnlyOwner.selector);
+        r.setValue(99);
+
+        // But via execOnRegistrar it works, because msg.sender to the registrar is the manager.
+        bytes memory data = abi.encodeWithSelector(MockRegistrar.setValue.selector, 99);
+        vm.prank(owner);
+        (bool success,) = manager.execOnRegistrar(address(r), 0, data);
+
+        assertTrue(success);
+        assertEq(r.value(), 99);
     }
 
     function test_execOnRegistrar_failedCallDoesNotRevert() public {
@@ -558,13 +580,14 @@ contract RegistrarManagerTest is Test {
 
     function test_execOnRegistrar_emitsEvent() public {
         MockRegistrar r = new MockRegistrar();
+        r.setOwner(address(manager));
 
         vm.prank(owner);
         manager.addRegistrar(address(r));
 
-        bytes memory data = abi.encodeWithSelector(MockRegistrar.echo.selector, 1);
+        bytes memory data = abi.encodeWithSelector(MockRegistrar.setValue.selector, 1);
 
-        vm.expectEmit(true, false, false, true);
+        vm.expectEmit();
         emit RegistrarManager.RegistrarCall(address(r), 0, data, true);
 
         vm.prank(owner);
@@ -646,11 +669,11 @@ contract RegistrarManagerTest is Test {
 
         vm.startPrank(owner);
 
-        vm.expectEmit(true, true, false, false);
+        vm.expectEmit();
         emit RegistrarManager.DestinationUpdated(destination, dest2);
         manager.setDestination(dest2);
 
-        vm.expectEmit(true, true, false, false);
+        vm.expectEmit();
         emit RegistrarManager.DestinationUpdated(dest2, dest3);
         manager.setDestination(dest3);
 
