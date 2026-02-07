@@ -18,3 +18,9 @@ yarn.lock
 !broadcast
 broadcast/*
 broadcast/*/31337/
+
+# proposal files (should not be committed)
+proposalDescription.md
+proposalCalldata.json
+**/proposalDescription.md
+**/proposalCalldata.json
