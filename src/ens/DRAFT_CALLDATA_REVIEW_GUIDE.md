@@ -1,54 +1,38 @@
 # ENS Draft Calldata Review Guide
 
-This guide covers the process for reviewing calldata when ENS proposals are in the **Tally Draft** stage, before they are submitted on-chain.
+Use this guide when a proposal exists as a **Tally draft** (URL contains `/draft/`). This covers fetching the draft data, writing or updating the test, and verifying calldata.
 
-## Overview
-
-Draft proposals on Tally allow community review and feedback before formal submission. This guide helps reviewers verify the calldata will execute as intended.
-
-## 1. Create Branch
+## 1. Create Branch (if new)
 
 ```bash
-git checkout -b ens/ep-X-Y-draft
+git checkout -b ens/ep-topic-name
 ```
 
-## 2. Extract Draft Proposal ID
+If continuing from a pre-draft, use the existing branch.
 
-From the Tally draft URL (e.g., `https://www.tally.xyz/gov/ens/draft/2786603872288769996`), extract the draft ID: `2786603872288769996`
-
-## 3. Fetch Draft Proposal Data
-
-First, update the `PROPOSAL_ID` in `src/utils/fetchTallyDraft.js`:
-
-```javascript
-const PROPOSAL_ID = '2786603872288769996'; // Your draft ID
-```
-
-Then run:
-```bash
-node src/utils/fetchTallyDraft.js
-```
-
-Output files:
-- `proposalCalldata.json` - Executable calls for the draft
-- `proposalDescription.md` - Proposal description
-
-Note: The script outputs `proposalCalldata.json` (not `draftCalldata.json`) to maintain consistency with the existing workflow.
-
-## 4. Create Proposal Directory
+## 2. Fetch Draft Proposal Data
 
 ```bash
-mkdir -p src/ens/proposals/ep-X-Y-draft
-cp proposalCalldata.json proposalDescription.md src/ens/proposals/ep-X-Y-draft/
+node src/utils/fetchTallyDraft.js <DRAFT_URL_OR_ID> <OUTPUT_DIR>
 ```
 
-## 5. Write Test File
+Examples:
+```bash
+node src/utils/fetchTallyDraft.js https://www.tally.xyz/gov/ens/draft/2786603872288769996 src/ens/proposals/ep-topic-name
+node src/utils/fetchTallyDraft.js 2786603872288769996 src/ens/proposals/ep-topic-name
+```
 
-Create `calldataCheck.t.sol` extending `ENS_Governance`.
+This creates:
+- `proposalCalldata.json` — executable calls from the draft
+- `proposalDescription.md` — proposal description
+
+## 3. Write or Update Test File
+
+Create `calldataCheck.t.sol` (or update the existing one from the pre-draft phase).
 
 ### Inherited State from `ENS_Governance`
 
-The base contract (`src/ens/ens.t.sol`) already provides these variables via `setUp()` — do NOT redeclare them:
+The base contract (`src/ens/ens.t.sol`) provides these variables — do NOT redeclare them:
 
 | Variable | Type | Address | Notes |
 |----------|------|---------|-------|
@@ -57,182 +41,31 @@ The base contract (`src/ens/ens.t.sol`) already provides these variables via `se
 | `timelock` | `ITimelock` | `0xFe89cc7aBB2C4183683ab71653C4cdc9B02D44b7` | ENS Timelock (= wallet.ensdao.eth) |
 | `proposer` | `address` | Set by `_proposer()` | Proposal submitter |
 | `voters` | `address[]` | Set by `_voters()` | Default voter set with quorum |
-| `targets` | `address[]` | — | Proposal targets (use in `_generateCallData`) |
-| `values` | `uint256[]` | — | Proposal values (use in `_generateCallData`) |
-| `signatures` | `string[]` | — | Proposal signatures (use in `_generateCallData`) |
-| `calldatas` | `bytes[]` | — | Proposal calldatas (use in `_generateCallData`) |
-| `description` | `string` | — | Proposal description (use in `_generateCallData`) |
+| `targets`, `values`, `signatures`, `calldatas`, `description` | — | — | Proposal parameters |
 
-**Important**: `address(timelock)` is `wallet.ensdao.eth` (`0xFe89cc7aBB2C4183683ab71653C4cdc9B02D44b7`). Use `address(timelock)` instead of redeclaring this address.
+**Important**: Use `address(timelock)` instead of hardcoding the timelock/wallet address.
 
-Template:
+### Template
 
 ```solidity
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.25 <0.9.0;
 
-import { Test } from "@forge-std/src/Test.sol";
-import { console2 } from "@forge-std/src/console2.sol";
-
 import { ENS_Governance } from "@ens/ens.t.sol";
-// Import relevant interfaces based on proposal type
+// Import relevant interfaces
 
-contract Proposal_ENS_EP_X_Y_Draft_Test is ENS_Governance {
-    // State variables for tracking changes
-    
+contract Proposal_ENS_EP_Topic_Name_Test is ENS_Governance {
+
     function _selectFork() public override {
-        // Use latest block or specific block for consistent testing
-        vm.createSelectFork({ blockNumber: BLOCK_NUMBER, urlOrAlias: "mainnet" });
+        vm.createSelectFork({ blockNumber: RECENT_BLOCK, urlOrAlias: "mainnet" });
     }
 
     function _proposer() public pure override returns (address) {
-        // Draft proposer address from Tally
-        return PROPOSER_ADDRESS;
+        return PROPOSER_ADDRESS; // From Tally draft
     }
 
     function _beforeProposal() public override {
         // Capture state before execution
-    }
-
-    function _generateCallData() 
-        public 
-        override 
-        returns (
-            address[] memory,
-            uint256[] memory,
-            string[] memory,
-            bytes[] memory,
-            string memory
-        ) 
-    {
-        // Reconstruct calldata from proposalCalldata.json
-        uint256 numTransactions = N;
-
-        targets = new address[](numTransactions);
-        values = new uint256[](numTransactions);
-        calldatas = new bytes[](numTransactions);
-        signatures = new string[](numTransactions);
-
-        // Transaction 1
-        targets[0] = TARGET_ADDRESS;
-        calldatas[0] = CALLDATA;
-        values[0] = VALUE;
-        signatures[0] = "";
-
-        // Add more transactions as needed
-
-        return (targets, values, signatures, calldatas, description);
-    }
-
-    function _afterExecution() public override {
-        // Assert expected state changes
-    }
-
-    function _isProposalSubmitted() public pure override returns (bool) {
-        return false; // IMPORTANT: false for draft proposals
-    }
-
-    function dirPath() public pure override returns (string memory) {
-        return "src/ens/proposals/ep-X-Y-draft";
-    }
-}
-```
-
-## 6. Key Differences from Live Proposals
-
-| Aspect | Draft | Live |
-|--------|-------|------|
-| **Proposal ID** | Draft ID from Tally | On-chain proposal ID |
-| **Block Number** | Use latest or recent block | Specific proposal block |
-| **_isProposalSubmitted()** | Returns `false` | Returns `true` |
-| **Directory Name** | `ep-X-Y-draft` | `ep-X-Y` |
-| **Calldata File** | `proposalCalldata.json` | `proposalCalldata.json` |
-
-## 7. Run Test
-
-```bash
-forge test --match-contract Proposal_ENS_EP_X_Y_Draft_Test -vvv
-```
-
-## 8. Community Review Process
-
-### Create Review Post
-
-Post in the ENS governance forum with:
-
-```markdown
-## Draft proposal calldata security review
-
-The calldata draft executes successfully and achieves the expected outcome of the proposal. All simulations and tests are available [here](https://github.com/blockful/dao-proposals/blob/COMMIT_HASH/src/ens/proposals/ep-X-Y-draft/calldataCheck.t.sol).
-
-To verify locally:
-1. Clone: `git clone https://github.com/blockful/dao-proposals.git`
-2. Checkout: `git checkout SHORT_HASH`
-3. Run: `forge test --match-path "src/ens/proposals/ep-X-Y-draft/*" -vv`
-```
-
-Replace:
-- `COMMIT_HASH` - The full commit hash from the merged PR
-- `SHORT_HASH` - The short commit hash (first 7 characters)
-- `ep-X-Y-draft` - The proposal directory name
-
-## 9. Transitioning from Draft to Live
-
-When the proposal is submitted on-chain:
-
-1. **Create new branch** from main: `git checkout -b ens/ep-X-Y`
-
-2. **Copy draft files** to new directory:
-   ```bash
-   cp -r src/ens/proposals/ep-X-Y-draft src/ens/proposals/ep-X-Y
-   ```
-
-3. **Fetch live proposal data**:
-   ```bash
-   node src/utils/fetchLiveProposal.js
-   ```
-
-4. **Update test file**:
-   - Change `_isProposalSubmitted()` to return `true`
-   - Update block number from `proposalCalldata.json`
-   - Update proposer if different
-   - Update `dirPath()` to remove `-draft`
-
-5. **Run updated test** and create PR
-
-## Example: Draft Proposal Review
-
-Here's a real example based on EP-6.17 (transfer .locker TLD):
-
-```solidity
-// SPDX-License-Identifier: MIT
-pragma solidity >=0.8.25 <0.9.0;
-
-import { Test } from "@forge-std/src/Test.sol";
-import { ENS_Governance } from "@ens/ens.t.sol";
-import { IENSRoot } from "@ens/interfaces/IENSRoot.sol";
-import { IENSRegistryWithFallback } from "@ens/interfaces/IENSRegistryWithFallback.sol";
-
-contract Proposal_ENS_EP_6_17_Draft_Test is ENS_Governance {
-    IENSRoot root = IENSRoot(0xaB528d626EC275E3faD363fF1393A41F581c5897);
-    IENSRegistryWithFallback ensRegistry = IENSRegistryWithFallback(0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e);
-
-    address oldOwner;
-    address newOwner = 0x63862031C544642024eF9A0B713AF2aB9236A198;
-    bytes32 labelhashBytes = labelhash("locker");
-    bytes32 node = namehash("locker");
-
-    function _selectFork() public override {
-        // Use recent block for draft testing
-        vm.createSelectFork({ blockNumber: 23_043_292, urlOrAlias: "mainnet" });
-    }
-
-    function _proposer() public pure override returns (address) {
-        return 0x534631Bcf33BDb069fB20A93d2fdb9e4D4dD42CF; // slobo.eth
-    }
-
-    function _beforeProposal() public override {
-        oldOwner = ensRegistry.owner(node);
     }
 
     function _generateCallData()
@@ -246,71 +79,110 @@ contract Proposal_ENS_EP_6_17_Draft_Test is ENS_Governance {
             string memory
         )
     {
-        uint256 numTransactions = 1;
+        uint256 numTransactions = N;
 
         targets = new address[](numTransactions);
         values = new uint256[](numTransactions);
         calldatas = new bytes[](numTransactions);
         signatures = new string[](numTransactions);
 
-        // 1. Set the owner of the .locker TLD to Orange Domains address
-        targets[0] = address(root);
-        calldatas[0] = abi.encodeWithSelector(
-            IENSRoot.setSubnodeOwner.selector, 
-            labelhashBytes, 
-            newOwner
-        );
+        // Reconstruct calldata — must match proposalCalldata.json
+        targets[0] = TARGET_ADDRESS;
+        calldatas[0] = abi.encodeWithSelector(...);
         values[0] = 0;
         signatures[0] = "";
+
+        description = getDescriptionFromMarkdown();
 
         return (targets, values, signatures, calldatas, description);
     }
 
     function _afterExecution() public override {
-        assertEq(ensRegistry.owner(node), newOwner);
-        assertNotEq(oldOwner, newOwner);
+        // Assert expected state changes
     }
 
     function _isProposalSubmitted() public pure override returns (bool) {
-        return false; // Draft proposal
+        return false; // Draft — not yet on-chain
     }
 
     function dirPath() public pure override returns (string memory) {
-        return "src/ens/proposals/ep-6-17-draft";
+        return "src/ens/proposals/ep-topic-name";
     }
 }
 ```
 
-## Troubleshooting
+### What changes from pre-draft
 
-### Draft-Specific Issues
+| Field | Pre-draft | Draft |
+|-------|-----------|-------|
+| `description` | Hardcoded placeholder | `getDescriptionFromMarkdown()` |
+| `dirPath()` | `""` | `"src/ens/proposals/ep-topic-name"` |
+| `_proposer()` | Default | From Tally draft |
 
-1. **No draft data returned**
-   - Verify the draft ID is correct
-   - Check if the draft is still active on Tally
-   - Ensure you have proper API access
+### What the test does
 
-2. **Calldata mismatch**
-   - Draft proposals may be updated - refetch the latest data
-   - Verify you're using the correct draft ID
+1. Simulates the full governance lifecycle (propose → vote → queue → execute)
+2. Runs `_beforeProposal()` and `_afterExecution()` assertions
+3. Runs `callDataComparison()` — compares generated calldata against `proposalCalldata.json`
 
-3. **Block number considerations**
-   - For drafts, use a recent block or the latest
-   - Be aware that state may change between draft review and submission
+## 4. Run Test
 
-### Common Patterns
+```bash
+forge test --match-contract Proposal_ENS_EP_Topic_Name_Test -vvv
+```
 
-See the main [CALLDATA_REVIEW_GUIDE.md](./CALLDATA_REVIEW_GUIDE.md) for:
-- Token transfer patterns
-- Registry update patterns
-- Safe execTransaction patterns (use `SafeHelper`)
-- Zodiac permission patterns (use `ZodiacRolesHelper`)
-- Common function selectors
-- Key contract addresses
+## 5. Commit and PR
 
-### Available Helpers (`src/ens/helpers/`)
+```bash
+git add src/ens/proposals/ep-topic-name/
+git commit -m "test(ens): draft proposal topic-name"
+git push origin ens/ep-topic-name
+```
+
+## 6. Post to Forum
+
+```markdown
+## Draft proposal calldata security review
+
+The calldata draft executes successfully and achieves the expected outcome of the proposal. All simulations and tests are available [here](https://github.com/blockful/dao-proposals/blob/COMMIT_HASH/src/ens/proposals/ep-topic-name/calldataCheck.t.sol).
+
+To verify locally:
+1. Clone: `git clone https://github.com/blockful/dao-proposals.git`
+2. Checkout: `git checkout SHORT_HASH`
+3. Run: `forge test --match-path "src/ens/proposals/ep-topic-name/*" -vv`
+```
+
+## 7. Transitioning to Live
+
+When the proposal is submitted on-chain, follow the [Calldata Review Guide](./CALLDATA_REVIEW_GUIDE.md) to update the same `calldataCheck.t.sol`:
+
+1. Rename directory to `ep-X-Y` if it now has a number
+2. Fetch live data: `node src/utils/fetchLiveProposal.js <TALLY_URL> src/ens/proposals/ep-X-Y`
+3. Update `_isProposalSubmitted()` to return `true`
+4. Update `_selectFork()` with the proposal creation block from `proposalCalldata.json`
+5. Update `_proposer()` with the on-chain proposer
+6. Update `dirPath()` if the directory was renamed
+7. Fix the description if needed (see troubleshooting in the live guide)
+
+## Available Helpers
 
 | Helper | Import | Use Case |
 |--------|--------|----------|
-| `SafeHelper` | `@ens/helpers/SafeHelper.sol` | Build `execTransaction` calldata with pre-approved signatures. Provides `endowmentSafe`, `_buildSafeExecCalldata()`, `_buildSafeExecDelegateCalldata()`, `_buildPreApprovedSignature()` |
+| `SafeHelper` | `@ens/helpers/SafeHelper.sol` | Build `execTransaction` calldata. Provides `endowmentSafe`, `_buildSafeExecCalldata()`, `_buildSafeExecDelegateCalldata()` |
 | `ZodiacRolesHelper` | `@ens/helpers/ZodiacRolesHelper.sol` | Test Zodiac Roles permissions. Provides `roles`, `karpatkey`, `MANAGER_ROLE`, `_safeExecuteTransaction()`, `_expectConditionViolation()` |
+
+## Troubleshooting
+
+### Calldata mismatch
+
+1. Check decimal places (USDC: 6, ETH/ENS: 18)
+2. Verify address checksums
+3. Ensure parameter order matches function signature
+4. Draft may have been updated on Tally — refetch with the same command
+
+### Stack Too Deep
+
+```bash
+# Skip specific file causing issues
+forge test --match-contract Proposal_ENS_EP_Topic_Name_Test --skip FileName -vvv
+```

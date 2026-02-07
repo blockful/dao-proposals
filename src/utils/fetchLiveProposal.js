@@ -2,166 +2,61 @@ const fs = require('fs');
 const path = require('path');
 
 const TALLY_API_URL = 'https://api.tally.xyz/query';
-const PROPOSAL_ID = '2779038904580310743';
+const API_KEY = '365b418f59bd6dc4a0d7f23c2e8c12d982f156e9069695a6f0a2dcc3232448df';
+const ENS_GOVERNOR_ID = 'eip155:1:0x323A76393544d5ecca80cd6ef2A560C6a395b7E3';
 
-const query = `
-    query ProposalDetails($input: ProposalInput!, $votesInput: VotesInput!) {
-  proposal(input: $input) {
-    id
-    onchainId
-    createdAt
-    block {
-      number
-      timestamp
+function usage() {
+    console.log('Usage: node fetchLiveProposal.js <TALLY_URL_OR_ONCHAIN_ID> <OUTPUT_DIR>');
+    console.log('');
+    console.log('Examples:');
+    console.log('  node src/utils/fetchLiveProposal.js https://www.tally.xyz/gov/ens/proposal/10731397... src/ens/proposals/ep-6-32');
+    console.log('  node src/utils/fetchLiveProposal.js 107313977323541760723614084561841045035159333942448750767795024713131429640046 src/ens/proposals/ep-6-32');
+    process.exit(1);
+}
+
+function parseOnchainId(input) {
+    // Accept full Tally proposal URL or raw on-chain ID
+    const urlMatch = input.match(/\/proposal\/(\d+)/);
+    if (urlMatch) return urlMatch[1];
+    if (/^\d+$/.test(input)) return input;
+    console.error(`Error: Cannot parse on-chain proposal ID from "${input}"`);
+    process.exit(1);
+}
+
+async function fetchLiveProposal(onchainId, outputDir) {
+    const query = `
+query ProposalDetails($input: ProposalInput!) {
+    proposal(input: $input) {
+        id
+        onchainId
+        createdAt
+        block { number timestamp }
+        start { ... on Block { number timestamp } }
+        end { ... on Block { number timestamp } }
+        proposer { address name }
+        metadata { description }
+        executableCalls { value target calldata }
     }
-    start {
-      ... on Block {
-        number
-        timestamp
-      }
-    }
-    end {
-      ... on Block {
-        number
-        timestamp
-      }
-    }
-    metadata {
-      description
-      discourseURL
-      snapshotURL
-    }
-    executableCalls {
-      value
-      target
-      calldata
-      signature
-      type
-      decodedCalldata {
-        signature
-        parameters {
-          name
-          type
-          value
-        }
-      }
-      offchaindata {
-        ... on ExecutableCallSwap {
-          amountIn
-          fee
-          buyToken {
-            data {
-              price
-              decimals
-              name
-              symbol
-            }
-          }
-          sellToken {
-            data {
-              price
-              decimals
-              name
-              symbol
-            }
-          }
-          to
-          quote {
-            buyAmount
-            feeAmount
-          }
-          order {
-            id
-            status
-            buyAmount
-            address
-          }
-          priceChecker {
-            tokenPath
-            feePath
-            uniPoolPath
-            slippage
-          }
-        }
-        ... on ExecutableCallRewards {
-          contributorFee
-          tallyFee
-          recipients
-        }
-      }
-    }
-    governor {
-      id
-      chainId
-      slug
-      organization {
-        metadata {
-          description
-        }
-      }
-      contracts {
-        governor {
-          address
-          type
-        }
-      }
-      timelockId
-    }
-  }
-  votes(input: $votesInput) {
-    nodes {
-      ... on OnchainVote {
-        isBridged
-        voter {
-          name
-          picture
-          address
-          twitter
-        }
-        chainId
-        reason
-        type
-        block {
-          timestamp
-        }
-      }
-    }
-  }
 }
 `;
 
-const variables = {
-    input: {
-        id: PROPOSAL_ID
-    },
-    votesInput: {
-        filters: {
-            proposalId: PROPOSAL_ID
-        },
-        sort: {
-            sortBy: "amount",
-            isDescending: true
-        },
-        page: {
-            limit: 500
+    const variables = {
+        input: {
+            governorId: ENS_GOVERNOR_ID,
+            onchainId: onchainId
         }
-    }
-};
+    };
 
-async function fetchLiveProposal() {
     try {
-        console.log('Fetching live proposal from Tally API...');
-        
+        console.log(`Fetching live proposal ${onchainId.substring(0, 20)}... from Tally API...`);
+
         const response = await fetch(TALLY_API_URL, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Api-Key': '365b418f59bd6dc4a0d7f23c2e8c12d982f156e9069695a6f0a2dcc3232448df'
+                'Api-Key': API_KEY
             },
-            body: JSON.stringify({ 
-                query,
-                variables 
-            })
+            body: JSON.stringify({ query, variables })
         });
 
         if (!response.ok) {
@@ -169,30 +64,40 @@ async function fetchLiveProposal() {
         }
 
         const data = await response.json();
-        
+
         if (data.errors) {
             throw new Error(`GraphQL error: ${JSON.stringify(data.errors)}`);
         }
 
         const proposal = data.data.proposal;
+
+        if (!proposal) {
+            throw new Error(`Proposal not found for onchainId: ${onchainId}`);
+        }
+
         const executableCalls = proposal.executableCalls;
-        const description = proposal.metadata.description;
-        
+        const description = proposal.metadata?.description || '';
+
         if (!executableCalls || executableCalls.length === 0) {
             throw new Error('No executable calls found in the proposal');
         }
 
         console.log(`Found ${executableCalls.length} executable call(s)`);
-        
-        // Log block information
-        console.log(`\nBlock Information:`);
+
+        // Log proposal information
+        console.log(`\nLive Proposal Information:`);
+        console.log(`  Tally ID: ${proposal.id}`);
+        console.log(`  Onchain ID: ${proposal.onchainId}`);
         console.log(`  Created at block: ${proposal.block?.number} (${proposal.block?.timestamp})`);
         console.log(`  Voting start block: ${proposal.start?.number} (${proposal.start?.timestamp})`);
         console.log(`  Voting end block: ${proposal.end?.number} (${proposal.end?.timestamp})`);
+        if (proposal.proposer) {
+            console.log(`  Proposer: ${proposal.proposer.name || 'Unknown'} (${proposal.proposer.address})`);
+        }
 
-        // Create the draft calldata structure (without description)
-        const draftCalldata = {
-            proposalId: proposal.onchainId || proposal.id,
+        // Create the calldata structure
+        const calldataJson = {
+            proposalId: proposal.onchainId || onchainId,
             blockNumber: proposal.block?.number,
             votingStart: proposal.start?.number,
             votingEnd: proposal.end?.number,
@@ -204,30 +109,31 @@ async function fetchLiveProposal() {
             }))
         };
 
-        // Define output paths
-        const projectRoot = path.resolve(__dirname, '../../');
-        const outputDir = path.join(projectRoot, '');
-        const jsonOutputPath = path.join(outputDir, 'proposalCalldata.json');
-        const mdOutputPath = path.join(outputDir, 'proposalDescription.md');
-        
-        // Write JSON file (without description)
-        fs.writeFileSync(jsonOutputPath, JSON.stringify(draftCalldata, null, 2));
-        console.log(`Successfully created ${jsonOutputPath}`);
-        
-        // Write description as markdown file
-        fs.writeFileSync(mdOutputPath, description);
-        console.log(`Successfully created ${mdOutputPath}`);
-        
-        console.log(`Executable calls:`, executableCalls.length);
-        console.log(`Description length:`, description.length);
-        
+        // Ensure output directory exists
+        const resolvedDir = path.resolve(outputDir);
+        fs.mkdirSync(resolvedDir, { recursive: true });
+
+        const jsonPath = path.join(resolvedDir, 'proposalCalldata.json');
+        const mdPath = path.join(resolvedDir, 'proposalDescription.md');
+
+        fs.writeFileSync(jsonPath, JSON.stringify(calldataJson, null, 2));
+        console.log(`\nWrote ${jsonPath}`);
+
+        fs.writeFileSync(mdPath, description);
+        console.log(`Wrote ${mdPath}`);
+
         // Log each call for verification
         executableCalls.forEach((call, index) => {
-            console.log(`Call ${index + 1}:`);
+            console.log(`\nCall ${index + 1}:`);
             console.log(`  Target: ${call.target}`);
             console.log(`  Value: ${call.value || "0"}`);
-            console.log(`  Calldata: ${call.calldata.substring(0, 50)}...`);
+            console.log(`  Calldata: ${call.calldata.substring(0, 66)}...`);
         });
+
+        console.log('\nDone!');
+        console.log(`\nIMPORTANT: The description from Tally may differ from the on-chain description`);
+        console.log(`(trailing whitespace, encoding). If the test fails with "Governor: unknown proposal id",`);
+        console.log(`extract the exact description from the ProposalCreated event on-chain.`);
 
     } catch (error) {
         console.error('Error fetching live proposal:', error.message);
@@ -235,15 +141,19 @@ async function fetchLiveProposal() {
     }
 }
 
-// Check if this script is being run directly
 if (require.main === module) {
-    // Check if fetch is available (Node.js 18+)
     if (typeof fetch === 'undefined') {
-        console.error('This script requires Node.js 18+ for fetch support, or install node-fetch package');
+        console.error('This script requires Node.js 18+ for fetch support');
         process.exit(1);
     }
-    
-    fetchLiveProposal();
+
+    const args = process.argv.slice(2);
+    if (args.length < 2) usage();
+
+    const onchainId = parseOnchainId(args[0]);
+    const outputDir = args[1];
+
+    fetchLiveProposal(onchainId, outputDir);
 }
 
 module.exports = { fetchLiveProposal };

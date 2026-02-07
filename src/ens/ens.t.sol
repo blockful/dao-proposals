@@ -174,8 +174,13 @@ abstract contract ENS_Governance is Test, IDAO, ENSHelper {
         // Assert parameters modified after execution
         _afterExecution();
 
-        if (keccak256(abi.encodePacked(dirPath())) != keccak256(abi.encodePacked("")) && !_isProposalSubmitted()) {
-            draftCallDataComparison();
+        // Compare generated calldata against proposalCalldata.json when it exists
+        string memory _dirPath = dirPath();
+        if (bytes(_dirPath).length > 0) {
+            string memory jsonPath = string.concat(_dirPath, "/proposalCalldata.json");
+            if (vm.isFile(jsonPath)) {
+                callDataComparison();
+            }
         }
     }
 
@@ -222,7 +227,7 @@ abstract contract ENS_Governance is Test, IDAO, ENSHelper {
         return "";
     }
 
-    function draftCallDataComparison() public {
+    function callDataComparison() public {
         string memory jsonContent = vm.readFile(string.concat(dirPath(), "/proposalCalldata.json"));
     
         address[] memory jsonTargets = parseJsonTargets(jsonContent);

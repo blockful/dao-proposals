@@ -1,14 +1,20 @@
 New ENS proposal to review. Ask for:
-- Proposal URL on Tally (to determine if it's live or draft)
-- Proposal number or name (e.g., EP-6.17)
+- Proposal URL on Tally (or "no URL yet" for pre-draft)
+- Proposal number or name (e.g., EP-6.17, or descriptive name like "registrar-manager")
 
-Then:
-1. Check if URL contains "/draft/" → Use DRAFT_CALLDATA_REVIEW_GUIDE.md
-2. Otherwise → Use CALLDATA_REVIEW_GUIDE.md for live proposals
+Then route to the correct guide based on the phase:
 
-Key differences:
-- Draft: _isProposalSubmitted() returns false, use ep-title-of-proposal naming
-- Live: _isProposalSubmitted() returns true, use ep-X-Y naming
+1. No URL / idea / pre-draft → Read and follow `src/ens/PRE_DRAFT_GUIDE.md`
+2. URL contains "/draft/" → Read and follow `src/ens/DRAFT_CALLDATA_REVIEW_GUIDE.md`
+3. URL is a live proposal → Read and follow `src/ens/CALLDATA_REVIEW_GUIDE.md`
+
+Lifecycle: proposals evolve through phases in the SAME `calldataCheck.t.sol` file:
+- Pre-draft: `_isProposalSubmitted = false`, `dirPath = ""`
+- Draft: `_isProposalSubmitted = false`, `dirPath = "src/ens/proposals/ep-..."`, fetches JSON/md from Tally
+- Live: `_isProposalSubmitted = true`, `dirPath = "src/ens/proposals/ep-X-Y"`, updates JSON/md with on-chain data
+
+When transitioning between phases, UPDATE the existing test file — don't create a new one.
+If the directory needs renaming (e.g., `ep-topic-name` → `ep-X-Y`), rename it and update `dirPath()`.
 
 Important: ENS_Governance (src/ens/ens.t.sol) already provides these inherited variables — do NOT redeclare them:
 - `timelock` (ITimelock) = wallet.ensdao.eth = 0xFe89cc7aBB2C4183683ab71653C4cdc9B02D44b7
