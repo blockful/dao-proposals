@@ -36,7 +36,28 @@ Read the proposal description and identify the type:
 
 ## 5. Write Test File
 
-Create `calldataCheck.t.sol` extending `ENS_Governance`:
+Create `calldataCheck.t.sol` extending `ENS_Governance`.
+
+### Inherited State from `ENS_Governance`
+
+The base contract (`src/ens/ens.t.sol`) already provides these variables via `setUp()` — do NOT redeclare them:
+
+| Variable | Type | Address | Notes |
+|----------|------|---------|-------|
+| `ensToken` | `IENSToken` | `0xC18360217D8F7Ab5e7c516566761Ea12Ce7F9D72` | ENS governance token |
+| `governor` | `IGovernor` | `0x323A76393544d5ecca80cd6ef2A560C6a395b7E3` | ENS Governor contract |
+| `timelock` | `ITimelock` | `0xFe89cc7aBB2C4183683ab71653C4cdc9B02D44b7` | ENS Timelock (= wallet.ensdao.eth) |
+| `proposer` | `address` | Set by `_proposer()` | Proposal submitter |
+| `voters` | `address[]` | Set by `_voters()` | Default voter set with quorum |
+| `targets` | `address[]` | — | Proposal targets (use in `_generateCallData`) |
+| `values` | `uint256[]` | — | Proposal values (use in `_generateCallData`) |
+| `signatures` | `string[]` | — | Proposal signatures (use in `_generateCallData`) |
+| `calldatas` | `bytes[]` | — | Proposal calldatas (use in `_generateCallData`) |
+| `description` | `string` | — | Proposal description (use in `_generateCallData`) |
+
+**Important**: `address(timelock)` is `wallet.ensdao.eth` (`0xFe89cc7aBB2C4183683ab71653C4cdc9B02D44b7`). Use `address(timelock)` instead of redeclaring this address.
+
+Template:
 
 ```solidity
 // SPDX-License-Identifier: MIT
@@ -185,28 +206,61 @@ Reference: `ep-6-28`
 
 ---
 
-### Zodiac Permissions
+### Safe execTransaction (Endowment Transfers)
 
-Update treasury management roles via Zodiac Roles Modifier.
+When the proposal calls the Endowment Safe to execute an action. Use `SafeHelper`:
 
 ```solidity
-IZodiacRoles roles = IZodiacRoles(0x703806E61847984346d2D7DDd853049627e50A40);
-ISafe safe = ISafe(0x4F2083f5fBede34C2714aFfb3105539775f7FE64);
+import { SafeHelper } from "@ens/helpers/SafeHelper.sol";
 
-// Test that permissions are correctly scoped
-function _beforeProposal() public override {
-    vm.startPrank(managerAddress);
-    
-    // Should revert before proposal
-    vm.expectRevert();
-    _safeExecuteTransaction(target, calldata);
+contract MyProposal is ENS_Governance, SafeHelper {
+    // Build inner calldata (e.g. USDC transfer)
+    bytes memory innerCalldata = abi.encodeWithSelector(
+        USDC.transfer.selector, address(timelock), amount
+    );
+
+    // Wrap in Safe execTransaction (Call)
+    (targets[0], calldatas[0]) = _buildSafeExecCalldata(
+        address(endowmentSafe), // safe
+        address(USDC),          // to
+        innerCalldata,          // data
+        address(timelock)       // owner (pre-approved signer)
+    );
+
+    // For DelegateCall (e.g. Zodiac batch updates via MultiSend):
+    (targets[0], calldatas[0]) = _buildSafeExecDelegateCalldata(
+        address(endowmentSafe), multiSendTarget, batchData, address(timelock)
+    );
 }
+```
 
-function _afterExecution() public override {
-    vm.startPrank(managerAddress);
-    
-    // Should succeed after proposal
-    _safeExecuteTransaction(target, calldata);
+Reference: `ep-transfer-2.5m-usdc-draft`, `ep-6-21`
+
+---
+
+### Zodiac Permissions
+
+Update treasury management roles via Zodiac Roles Modifier. Use `ZodiacRolesHelper`:
+
+```solidity
+import { SafeHelper } from "@ens/helpers/SafeHelper.sol";
+import { ZodiacRolesHelper } from "@ens/helpers/ZodiacRolesHelper.sol";
+
+contract MyProposal is ENS_Governance, SafeHelper, ZodiacRolesHelper {
+    function _beforeProposal() public override {
+        vm.startPrank(karpatkey);
+
+        // Should revert before proposal grants the permission
+        _expectConditionViolation(IZodiacRoles.Status.TargetAddressNotAllowed);
+        _safeExecuteTransaction(target, calldata);
+    }
+
+    function _afterExecution() public override {
+        vm.startPrank(karpatkey);
+
+        // Should succeed after proposal grants the permission
+        _safeExecuteTransaction(target, calldata);
+    }
 }
 ```
 
