@@ -17,6 +17,8 @@ Important: ENS_Governance (src/ens/ens.t.sol) already provides these inherited v
 - `proposer`, `voters`, `targets`, `values`, `signatures`, `calldatas`, `description`
 Use `address(timelock)` instead of hardcoding the timelock/wallet address.
 
+Forum posts: When generating forum post text, always output as raw markdown inside a fenced code block so the user can copy-paste directly.
+
 Available helpers (src/ens/helpers/):
 - SafeHelper: for proposals calling Safe.execTransaction (endowment transfers, delegatecalls). Inherit and use `_buildSafeExecCalldata()` or `_buildSafeExecDelegateCalldata()`. Provides `endowmentSafe` constant.
 - ZodiacRolesHelper: for proposals updating Zodiac Roles permissions (karpatkey). Inherit and use `_safeExecuteTransaction()` for dry-run testing and `_expectConditionViolation()` for asserting role restrictions. Provides `roles`, `karpatkey`, `MANAGER_ROLE` constants.
