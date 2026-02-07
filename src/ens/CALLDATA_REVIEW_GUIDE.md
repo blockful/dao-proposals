@@ -124,15 +124,18 @@ After the PR is merged, post the verification to the governance forum:
 
 This proposal is finally [live](https://anticapture.com/ens/governance/proposal/PROPOSAL_ID)! 
 
-Calldata executed the expected outcome. The simulation and tests of the **live** proposal can be found [here](https://github.com/blockful-io/dao-proposals/blob/COMMIT_HASH/src/ens/proposals/ep-X-Y/calldataCheck.t.sol).
+Calldata executed the expected outcome. The simulation and tests of the **live** proposal can be found [here](https://github.com/blockful/dao-proposals/blob/COMMIT_HASH/src/ens/proposals/ep-X-Y/calldataCheck.t.sol).
 
-It can be checked by cloning the repo and running:
-`forge test --match-path "src/ens/proposals/ep-X-Y/*" -vv`
+To verify locally:
+1. Clone: `git clone https://github.com/blockful/dao-proposals.git`
+2. Checkout: `git checkout SHORT_HASH`
+3. Run: `forge test --match-path "src/ens/proposals/ep-X-Y/*" -vv`
 ```
 
 Replace:
 - `PROPOSAL_ID` - The onchain proposal ID (from `proposalCalldata.json`)
-- `COMMIT_HASH` - The merged commit hash
+- `COMMIT_HASH` - The full commit hash from the merged PR
+- `SHORT_HASH` - The short commit hash (first 7 characters)
 - `ep-X-Y` - The proposal number
 
 ---

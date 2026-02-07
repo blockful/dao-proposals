@@ -161,28 +161,20 @@ forge test --match-contract Proposal_ENS_EP_X_Y_Draft_Test -vvv
 Post in the ENS governance forum with:
 
 ```markdown
-## Draft Proposal Calldata Review: [EP X.Y Title]
+## Draft proposal calldata security review
 
-I've reviewed the draft proposal calldata for [EP X.Y](https://www.tally.xyz/gov/ens/draft/DRAFT_ID).
+The calldata draft executes successfully and achieves the expected outcome of the proposal. All simulations and tests are available [here](https://github.com/blockful/dao-proposals/blob/COMMIT_HASH/src/ens/proposals/ep-X-Y-draft/calldataCheck.t.sol).
 
-### Summary
-[Brief description of what the proposal does]
-
-### Calldata Verification
-- ✅ Calldata correctly implements the intended actions
-- ✅ All target addresses verified
-- ✅ Parameter values match proposal description
-- ✅ No unexpected side effects
-
-### Test Results
-The simulation passed successfully. You can verify by:
-1. Clone: `git clone https://github.com/blockful-io/dao-proposals.git`
-2. Checkout: `git checkout ens/ep-X-Y-draft`
+To verify locally:
+1. Clone: `git clone https://github.com/blockful/dao-proposals.git`
+2. Checkout: `git checkout SHORT_HASH`
 3. Run: `forge test --match-path "src/ens/proposals/ep-X-Y-draft/*" -vv`
-
-### Recommendations
-[Any suggestions for improvement before submission]
 ```
+
+Replace:
+- `COMMIT_HASH` - The full commit hash from the merged PR
+- `SHORT_HASH` - The short commit hash (first 7 characters)
+- `ep-X-Y-draft` - The proposal directory name
 
 ## 9. Transitioning from Draft to Live
 
