@@ -1,0 +1,31 @@
+[
+  {
+    "name": "scopeTarget",
+    "contractInputsValues": {
+      "targetAddress": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"
+    }
+  },
+  {
+    "name": "scopeFunction",
+    "contractInputsValues": {
+      "targetAddress": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+      "selector": "0xa9059cbb",
+      "conditions": "[[\"0\",\"5\",\"5\",\"0x\"],[\"0\",\"1\",\"16\",\"0x000000000000000000000000fe89cc7abb2c4183683ab71653c4cdc9b02d44b7\"],[\"0\",\"1\",\"0\",\"0x\"]]",
+      "options": "0"
+    }
+  },
+  {
+    "name": "scopeTarget",
+    "contractInputsValues": {
+      "targetAddress": "0xFe89cc7aBB2C4183683ab71653C4cdc9B02D44b7"
+    }
+  },
+  {
+    "name": "allowFunction",
+    "contractInputsValues": {
+      "targetAddress": "0xFe89cc7aBB2C4183683ab71653C4cdc9B02D44b7",
+      "selector": "0x00000000",
+      "options": "1"
+    }
+  }
+]
