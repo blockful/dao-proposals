@@ -12,8 +12,8 @@ import { RegistrarSecurityController } from "./RegistrarSecurityController.sol";
 import { RootSecurityController } from "./RootSecurityController.sol";
 
 /**
- * @title Proposal_ENS_EP_Enable_Security_Controllers_Test
- * @notice Calldata review for ENS Draft — Enable Root and Registrar Security Controllers
+ * @title Proposal_ENS_EP_6_33_Test
+ * @notice Calldata review for ENS EP 6.33 — Enable Root and Registrar Security Controllers
  * @dev This proposal executes 4 transactions:
  *
  *      1. Root.setController(RootSecurityController, true)
@@ -27,7 +27,7 @@ import { RootSecurityController } from "./RootSecurityController.sol";
  *        - Verify only authorized controllers can perform emergency actions.
  *        - Verify the DAO (via RegistrarSecurityController owner) retains full control.
  */
-contract Proposal_ENS_EP_Enable_Security_Controllers_Test is ENS_Governance {
+contract Proposal_ENS_EP_6_33_Test is ENS_Governance {
     // ── ENS core contracts ───────────────────────────────────────────────
     IENSRoot public root = IENSRoot(0xaB528d626EC275E3faD363fF1393A41F581c5897);
     IENSRegistrar public baseRegistrar = IENSRegistrar(0x57f1887a8BF19b14fC0dF6Fd9B2acc9Af147eA85);
@@ -76,7 +76,7 @@ contract Proposal_ENS_EP_Enable_Security_Controllers_Test is ENS_Governance {
     }
 
     function _selectFork() public override {
-        vm.createSelectFork({ blockNumber: 24_434_287, urlOrAlias: "mainnet" });
+        vm.createSelectFork({ blockNumber: 24_434_380, urlOrAlias: "mainnet" });
     }
 
     function _proposer() public pure override returns (address) {
@@ -316,10 +316,10 @@ contract Proposal_ENS_EP_Enable_Security_Controllers_Test is ENS_Governance {
     }
 
     function _isProposalSubmitted() public pure override returns (bool) {
-        return false; // Draft proposal — not yet submitted on-chain
+        return true; // Live proposal
     }
 
     function dirPath() public pure override returns (string memory) {
-        return "src/ens/proposals/ep-enable-security-controllers";
+        return "src/ens/proposals/ep-6-33";
     }
 }
