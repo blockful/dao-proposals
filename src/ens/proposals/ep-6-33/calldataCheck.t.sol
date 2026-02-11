@@ -12,18 +12,14 @@ import { RegistrarSecurityController } from "./RegistrarSecurityController.sol";
 import { RootSecurityController } from "./RootSecurityController.sol";
 
 /**
- * @title Proposal_ENS_EP_Enable_Security_Controllers_Test
- * @notice Calldata review for ENS Draft — Enable Root and Registrar Security Controllers
- * @dev This proposal executes 2 transactions:
+ * @title Proposal_ENS_EP_6_33_Test
+ * @notice Calldata review for ENS EP 6.33 — Enable Root and Registrar Security Controllers
+ * @dev This proposal executes 4 transactions:
  *
  *      1. Root.setController(RootSecurityController, true)
- *         → Enables the RootSecurityController as a controller on the ENS Root, allowing
- *           it to call setSubnodeOwner to disable compromised TLDs.
- *
  *      2. BaseRegistrar.transferOwnership(RegistrarSecurityController)
- *         → Transfers registrar ownership so the RegistrarSecurityController becomes the
- *           pass-through owner, enabling the security council to disable problematic
- *           registrar controllers without a full DAO vote.
+ *      3. RootSecurityController.transferOwnership(securityCouncilMultisig)
+ *      4. RegistrarSecurityController.setController(securityCouncilMultisig, true)
  *
  *      After governance execution, we test the full security council flow:
  *        - Security council member calls disableRegistrarController() to remove a
@@ -31,18 +27,20 @@ import { RootSecurityController } from "./RootSecurityController.sol";
  *        - Verify only authorized controllers can perform emergency actions.
  *        - Verify the DAO (via RegistrarSecurityController owner) retains full control.
  */
-contract Proposal_ENS_EP_Enable_Security_Controllers_Test is ENS_Governance {
+contract Proposal_ENS_EP_6_33_Test is ENS_Governance {
     // ── ENS core contracts ───────────────────────────────────────────────
     IENSRoot public root = IENSRoot(0xaB528d626EC275E3faD363fF1393A41F581c5897);
     IENSRegistrar public baseRegistrar = IENSRegistrar(0x57f1887a8BF19b14fC0dF6Fd9B2acc9Af147eA85);
     IENSRegistryWithFallback public ensRegistry = IENSRegistryWithFallback(0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e);
 
-    // ── Security controllers (deployed in setUp) ─────────────────────────
-    RootSecurityController public rootSecurityController;
-    RegistrarSecurityController public registrarSecurityController;
+    // ── Security controllers (already deployed) ──────────────────────────
+    RootSecurityController public rootSecurityController =
+        RootSecurityController(0x95123B1ec97df0d3c52c728aB38FBbb7A3ca6da6);
+    RegistrarSecurityController public registrarSecurityController =
+        RegistrarSecurityController(0x7dd4d97653A67C2FD7fbA0a84825eC09524D4E1b);
 
     // ── Test actors ──────────────────────────────────────────────────────
-    address public securityCouncilMultisig;
+    address public securityCouncilMultisig = 0xaA5cD05f6B62C3af58AE9c4F3F7A2aCC2Cdc2Cc7;
     address public unauthorizedCaller;
 
     // ── Simulated problematic controller (added pre-proposal for testing) ─
@@ -51,31 +49,22 @@ contract Proposal_ENS_EP_Enable_Security_Controllers_Test is ENS_Governance {
     // ── State tracking ───────────────────────────────────────────────────
     address registrarOwnerBefore;
     bool rootControllerEnabledBefore;
+    address rootSecurityControllerOwnerBefore;
+    bool registrarSecurityControllerEnabledBefore;
 
     function setUp() public override {
         super.setUp();
 
         // Create test actors
-        securityCouncilMultisig = vm.addr(0x5EC);
         unauthorizedCaller = vm.addr(0xDEAD);
         problematicController = vm.addr(0xBADC0DE);
+        if (baseRegistrar.controllers(problematicController)) {
+            problematicController = vm.addr(0xBADC0DF);
+        }
+
         vm.label(securityCouncilMultisig, "securityCouncilMultisig");
         vm.label(unauthorizedCaller, "unauthorizedCaller");
         vm.label(problematicController, "problematicController");
-
-        // Deploy RootSecurityController owned by the security council multisig
-        // (disableTLD is onlyOwner — the security council calls it in emergencies)
-        vm.prank(securityCouncilMultisig);
-        rootSecurityController = new RootSecurityController(root);
-
-        // Deploy RegistrarSecurityController owned by the DAO timelock
-        // (onlyOwner = DAO governance, onlyController = security council emergency)
-        vm.startPrank(address(timelock));
-        registrarSecurityController = new RegistrarSecurityController(baseRegistrar);
-
-        // Set security council multisig as a controller on RegistrarSecurityController
-        registrarSecurityController.setController(securityCouncilMultisig, true);
-        vm.stopPrank();
 
         vm.label(address(rootSecurityController), "RootSecurityController");
         vm.label(address(registrarSecurityController), "RegistrarSecurityController");
@@ -87,7 +76,7 @@ contract Proposal_ENS_EP_Enable_Security_Controllers_Test is ENS_Governance {
     }
 
     function _selectFork() public override {
-        vm.createSelectFork({ blockNumber: 21_800_000, urlOrAlias: "mainnet" });
+        vm.createSelectFork({ blockNumber: 24_434_380, urlOrAlias: "mainnet" });
     }
 
     function _proposer() public pure override returns (address) {
@@ -98,10 +87,17 @@ contract Proposal_ENS_EP_Enable_Security_Controllers_Test is ENS_Governance {
         // Capture state before execution
         registrarOwnerBefore = baseRegistrar.owner();
         rootControllerEnabledBefore = root.controllers(address(rootSecurityController));
+        rootSecurityControllerOwnerBefore = rootSecurityController.owner();
+        registrarSecurityControllerEnabledBefore = registrarSecurityController.controllers(securityCouncilMultisig);
 
         // Verify preconditions
         assertEq(registrarOwnerBefore, address(timelock), "Registrar should be owned by timelock before proposal");
         assertFalse(rootControllerEnabledBefore, "RootSecurityController should not be a root controller yet");
+        assertEq(rootSecurityControllerOwnerBefore, address(timelock), "RootSecurityController should be timelock-owned");
+        assertFalse(
+            registrarSecurityControllerEnabledBefore,
+            "Security council should not be enabled on RegistrarSecurityController before proposal"
+        );
     }
 
     function _generateCallData()
@@ -109,7 +105,7 @@ contract Proposal_ENS_EP_Enable_Security_Controllers_Test is ENS_Governance {
         override
         returns (address[] memory, uint256[] memory, string[] memory, bytes[] memory, string memory)
     {
-        uint256 numTransactions = 2;
+        uint256 numTransactions = 4;
 
         targets = new address[](numTransactions);
         values = new uint256[](numTransactions);
@@ -124,6 +120,7 @@ contract Proposal_ENS_EP_Enable_Security_Controllers_Test is ENS_Governance {
 
         console2.log("Root.setController(RootSecurityController, true)");
         console2.logBytes(calldatas[0]);
+
         // Transaction 2: Transfer base registrar ownership to RegistrarSecurityController
         targets[1] = address(baseRegistrar);
         calldatas[1] = abi.encodeWithSelector(
@@ -135,8 +132,29 @@ contract Proposal_ENS_EP_Enable_Security_Controllers_Test is ENS_Governance {
         console2.log("BaseRegistrar.transferOwnership(RegistrarSecurityController)");
         console2.logBytes(calldatas[1]);
 
+        // Transaction 3: Transfer RootSecurityController ownership to Security Council
+        targets[2] = address(rootSecurityController);
+        calldatas[2] =
+            abi.encodeWithSelector(bytes4(keccak256("transferOwnership(address)")), securityCouncilMultisig);
+        values[2] = 0;
+        signatures[2] = "";
+
+        console2.log("RootSecurityController.transferOwnership(securityCouncilMultisig)");
+        console2.logBytes(calldatas[2]);
+
+        // Transaction 4: Enable Security Council as RegistrarSecurityController controller
+        targets[3] = address(registrarSecurityController);
+        calldatas[3] = abi.encodeWithSelector(
+            bytes4(keccak256("setController(address,bool)")), securityCouncilMultisig, true
+        );
+        values[3] = 0;
+        signatures[3] = "";
+
+        console2.log("RegistrarSecurityController.setController(securityCouncilMultisig, true)");
+        console2.logBytes(calldatas[3]);
+
         // Read description from the proposal markdown
-        description = vm.readFile("src/ens/proposals/ep-enable-security-controllers/proposalDescription.md");
+        description = getDescriptionFromMarkdown();
 
         return (targets, values, signatures, calldatas, description);
     }
@@ -157,18 +175,24 @@ contract Proposal_ENS_EP_Enable_Security_Controllers_Test is ENS_Governance {
             "RegistrarSecurityController should be the new registrar owner"
         );
 
-        // 3. RegistrarSecurityController is owned by the DAO timelock
-        assertEq(
-            registrarSecurityController.owner(),
-            address(timelock),
-            "RegistrarSecurityController should be owned by the DAO timelock"
-        );
-
-        // 4. RootSecurityController is owned by the security council multisig
+        // 3. RootSecurityController ownership is transferred to Security Council
         assertEq(
             rootSecurityController.owner(),
             securityCouncilMultisig,
-            "RootSecurityController should be owned by the security council"
+            "RootSecurityController should be owned by the security council multisig"
+        );
+
+        // 4. RegistrarSecurityController has Security Council enabled as controller
+        assertTrue(
+            registrarSecurityController.controllers(securityCouncilMultisig),
+            "Security council should be enabled on RegistrarSecurityController"
+        );
+
+        // 5. RegistrarSecurityController remains owned by the DAO timelock
+        assertEq(
+            registrarSecurityController.owner(),
+            address(timelock),
+            "RegistrarSecurityController should remain timelock-owned"
         );
 
         // ── Test: Security council can disable a registrar controller ────
@@ -292,12 +316,10 @@ contract Proposal_ENS_EP_Enable_Security_Controllers_Test is ENS_Governance {
     }
 
     function _isProposalSubmitted() public pure override returns (bool) {
-        return false; // Draft proposal — not yet submitted on-chain
+        return true; // Live proposal
     }
 
     function dirPath() public pure override returns (string memory) {
-        // No Tally draft yet — contracts are not deployed, so calldata comparison
-        // is not applicable. Return empty to skip draftCallDataComparison().
-        return "";
+        return "src/ens/proposals/ep-6-33";
     }
 }
