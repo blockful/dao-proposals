@@ -10,7 +10,7 @@ interface IChainResolver {
     function supportsInterface(bytes4 interfaceId) external view returns (bool);
 }
 
-contract Proposal_ENS_EP_6_34_Draft_Test is ENS_Governance {
+contract Proposal_ENS_EP_6_34_Test is ENS_Governance {
     IENSRegistrar public constant baseRegistrar = IENSRegistrar(0x57f1887a8BF19b14fC0dF6Fd9B2acc9Af147eA85);
     IENSRegistryWithFallback public constant ensRegistry =
         IENSRegistryWithFallback(0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e);
@@ -33,8 +33,8 @@ contract Proposal_ENS_EP_6_34_Draft_Test is ENS_Governance {
     function setUp() public override {
         super.setUp();
 
-        // Tally drafts are off-chain and may not satisfy the on-chain proposal threshold.
-        // For lifecycle simulation, top up proposer voting power on the fork when needed.
+        // The proposer's voting power at the fork block is below the proposal threshold,
+        // but the proposal was already submitted on-chain. Top up for simulation.
         uint256 threshold = governor.proposalThreshold();
         uint256 proposerVotes = ensToken.getVotes(proposer);
 
@@ -47,19 +47,18 @@ contract Proposal_ENS_EP_6_34_Draft_Test is ENS_Governance {
             vm.prank(proposer);
             ensToken.delegate(proposer);
 
-            // Governor checks proposer voting power at block.number - 1.
             vm.roll(block.number + 1);
             vm.warp(block.timestamp + 12);
         }
     }
 
     function _selectFork() public override {
-        // Near draft creation time on Tally (2026-02-12).
-        vm.createSelectFork({ blockNumber: 24_440_213, urlOrAlias: "mainnet" });
+        // Proposal creation block from proposalCalldata.json
+        vm.createSelectFork({ blockNumber: 24_441_402, urlOrAlias: "mainnet" });
     }
 
     function _proposer() public pure override returns (address) {
-        return 0xAC50cE326de14dDF9b7e9611Cd2F33a1Af8aC039; // clowes.eth
+        return 0xb8c2C29ee19D8307cb7255e1Cd9CbDE883A267d5; // nick.eth
     }
 
     function _beforeProposal() public override {
@@ -138,7 +137,7 @@ contract Proposal_ENS_EP_6_34_Draft_Test is ENS_Governance {
     }
 
     function _isProposalSubmitted() public pure override returns (bool) {
-        return false;
+        return true;
     }
 
     function dirPath() public pure override returns (string memory) {
