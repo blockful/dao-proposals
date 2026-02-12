@@ -2,6 +2,14 @@
 
 Use this guide when a proposal is being **discussed or designed** but has no Tally draft yet. This covers deploying custom contracts, testing an idea, or building calldata before it goes to Tally.
 
+## Critical Objective (Read First)
+
+- The goal is to catch bugs in proposal calldata early. A false positive review is the worst outcome.
+- Build calldata manually from proposal intent and contract interfaces. Derive parameters from first principles whenever possible.
+- Do not copy raw calldata blobs (from old proposals, JSON files, or on-chain calldata) into `_generateCallData()`.
+- Prefer semantic derivation (`namehash`, `labelhash`, typed args, selectors, known addresses) plus explicit pre/post assertions.
+- If any parameter cannot be confidently derived, stop and flag it as a finding/assumption gap instead of claiming success.
+
 ## 1. Create Branch
 
 ```bash

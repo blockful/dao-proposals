@@ -2,6 +2,15 @@
 
 Use this guide when a proposal is **live on-chain** (submitted to the ENS Governor). This covers fetching the on-chain data, updating the test, and verifying the live calldata.
 
+## Critical Objective (Read First)
+
+- The primary goal is to catch calldata bugs. A false positive review is the worst possible outcome.
+- Build `_generateCallData()` from manual derivation of the proposal intent and interfaces.
+- Never treat on-chain calldata or `proposalCalldata.json` as source data to copy from.
+- Derive parameters from first principles whenever possible (`namehash`, `labelhash`, selectors, typed args, role checks, ownership checks).
+- Passing execution simulation alone is not enough; manual derivation must also match the live calldata comparison.
+- If manually derived calldata mismatches live calldata at any index, treat it as a security finding and stop approval/forum posting.
+
 ## 1. Create Branch (if new)
 
 ```bash
@@ -77,7 +86,9 @@ contract Proposal_ENS_EP_X_Y_Test is ENS_Governance {
 2. Verifies the proposal exists on-chain (if the hash doesn't match, you get "Governor: unknown proposal id")
 3. Simulates voting, queuing, and execution
 4. Runs `_beforeProposal()` and `_afterExecution()` assertions
-5. Runs `callDataComparison()` — compares generated calldata against the live `proposalCalldata.json`
+5. Runs `callDataComparison()` — compares manually generated calldata against the live `proposalCalldata.json`
+
+If step 5 fails, do not approve the proposal calldata. Report the mismatch as a finding.
 
 ## 4. Run Test
 
@@ -134,6 +145,8 @@ cast logs \
 Then decode the description from the event data and overwrite `proposalDescription.md` with the exact bytes.
 
 ### Calldata Mismatch
+
+Treat any mismatch as a critical finding until proven otherwise. Do not publish approval text while mismatch exists.
 
 1. Check decimal places (USDC: 6, ETH/ENS: 18)
 2. Verify address checksums

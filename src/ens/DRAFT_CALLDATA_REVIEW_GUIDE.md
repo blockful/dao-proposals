@@ -2,6 +2,15 @@
 
 Use this guide when a proposal exists as a **Tally draft** (URL contains `/draft/`). This covers fetching the draft data, writing or updating the test, and verifying calldata.
 
+## Critical Objective (Read First)
+
+- The goal is to detect calldata mistakes before a live submission. A false positive is unacceptable.
+- Build `_generateCallData()` from manual derivation of proposal intent, not by copying from `proposalCalldata.json`.
+- Do not copy raw calldata blobs from JSON/on-chain/legacy files into the test.
+- Derive as much as possible with semantics (`namehash`, `labelhash`, selectors, typed args, contract interfaces).
+- `callDataComparison()` is a validation step, not a source of truth.
+- If manually derived calldata differs from `proposalCalldata.json`, treat it as a security finding and stop approval. Do not publish approval text.
+
 ## 1. Create Branch (if new)
 
 ```bash
@@ -86,7 +95,8 @@ contract Proposal_ENS_EP_Topic_Name_Test is ENS_Governance {
         calldatas = new bytes[](numTransactions);
         signatures = new string[](numTransactions);
 
-        // Reconstruct calldata — must match proposalCalldata.json
+        // Reconstruct calldata manually from spec + interfaces.
+        // Result must then match proposalCalldata.json.
         targets[0] = TARGET_ADDRESS;
         calldatas[0] = abi.encodeWithSelector(...);
         values[0] = 0;
@@ -123,7 +133,9 @@ contract Proposal_ENS_EP_Topic_Name_Test is ENS_Governance {
 
 1. Simulates the full governance lifecycle (propose → vote → queue → execute)
 2. Runs `_beforeProposal()` and `_afterExecution()` assertions
-3. Runs `callDataComparison()` — compares generated calldata against `proposalCalldata.json`
+3. Runs `callDataComparison()` — compares manually generated calldata against `proposalCalldata.json`
+
+If step 3 fails, this is a finding, not a flaky test. Pause approval and investigate the mismatch.
 
 ## 4. Run Test
 

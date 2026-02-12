@@ -119,6 +119,15 @@ abstract contract ENS_Governance is Test, IDAO, ENSHelper {
         // Generate call data
         (targets, values, signatures, calldatas, description) = _generateCallData();
 
+        // Compare generated calldata against proposalCalldata.json when it exists
+        string memory _dirPath = dirPath();
+        if (bytes(_dirPath).length > 0) {
+            string memory jsonPath = string.concat(_dirPath, "/proposalCalldata.json");
+            if (vm.isFile(jsonPath)) {
+                callDataComparison();
+            }
+        }
+
         // Hash the description
         descriptionHash = keccak256(bytes(description));
 
@@ -174,14 +183,6 @@ abstract contract ENS_Governance is Test, IDAO, ENSHelper {
         // Assert parameters modified after execution
         _afterExecution();
 
-        // Compare generated calldata against proposalCalldata.json when it exists
-        string memory _dirPath = dirPath();
-        if (bytes(_dirPath).length > 0) {
-            string memory jsonPath = string.concat(_dirPath, "/proposalCalldata.json");
-            if (vm.isFile(jsonPath)) {
-                callDataComparison();
-            }
-        }
     }
 
     function _selectFork() public virtual {
