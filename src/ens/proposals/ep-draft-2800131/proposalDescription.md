@@ -115,7 +115,7 @@ This proposal contains **7** transaction(s) to be executed by the ENS DAO Timelo
 
 **Encoded Calldata:** `0x8cb8ecec68ce0763ca729318b714b0cf33478e4e228e19f58aeaf12cfa1535c9d4bbcaf90000000000000000000000000000000000000000000000000000000000000000`
 
-### Transaction 5: setSubnodeOwner of `name` back to DNS\_REGISTRAR\_ADDRESS
+### Transaction 5: setSubnodeOwner of `name` to 0
 
 **Target:** Root
 

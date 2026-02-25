@@ -8,6 +8,7 @@ import { IENSRegistryWithFallback } from "@ens/interfaces/IENSRegistryWithFallba
 interface IDNSSECImpl {
     function algorithms(uint8) external view returns (address);
     function setAlgorithm(uint8 id, address algo) external;
+    function owner() external view returns (address);
 }
 
 interface IDNSRegistrar {
@@ -32,23 +33,17 @@ contract Proposal_ENS_DNSSEC_Oracle_Draft_Test is ENS_Governance {
     address public constant NEW_RSASHA256 = 0xaee0E2c4d5AB2fc164C8b0Cc8D3118C1c752C95E;
     address public constant NEW_P256SHA256 = 0xB091C4F6FAc16eDDA5Ee1E0f4738f80011905878;
 
-    // ── TLD labelhashes ────────────────────────────────────────────────
-    // keccak256("cc")
-    bytes32 public constant CC_LABELHASH = 0x68ce0763ca729318b714b0cf33478e4e228e19f58aeaf12cfa1535c9d4bbcaf9;
-    // keccak256("name")
-    bytes32 public constant NAME_LABELHASH = 0x2361458367e696363fbcc70777d07ebbd2394e89fd0adcaf147faccd1d294d60;
+    // ── TLD labels ────────────────────────────────────────────────────
+    string public constant CC_LABEL = "cc";
+    string public constant NAME_LABEL = "name";
 
-    // ── TLD namehashes (for registry ownership checks) ─────────────────
-    // namehash("cc") = keccak256(bytes32(0) + keccak256("cc"))
-    bytes32 public constant CC_NODE = 0x3f4ea7e15a27161c78f2a8d06e552a852a74ebc5d10217d59eb16663812fa903;
-    // namehash("name") = keccak256(bytes32(0) + keccak256("name"))
-    bytes32 public constant NAME_NODE = 0x3065e4a455eb71d25d2d52a7cd46eb2f50c4bbbf98681c7ac61b3ab06c012991;
-
-    // ── DNS wire format names ──────────────────────────────────────────
-    // \x02cc\x00
-    bytes public constant CC_DNS_NAME = hex"026363_00";
-    // \x04name\x00
-    bytes public constant NAME_DNS_NAME = hex"046e616d65_00";
+    // ── Derived hashes (computed in setUp) ─────────────────────────────
+    bytes32 public ccLabelhash;
+    bytes32 public nameLabelhash;
+    bytes32 public ccNode;
+    bytes32 public nameNode;
+    bytes public ccDnsName;
+    bytes public nameDnsName;
 
     // ── State captured before execution ────────────────────────────────
     address public oldRSASHA1;
@@ -59,6 +54,13 @@ contract Proposal_ENS_DNSSEC_Oracle_Draft_Test is ENS_Governance {
 
     function setUp() public override {
         super.setUp();
+
+        ccLabelhash = labelhash(CC_LABEL);
+        nameLabelhash = labelhash(NAME_LABEL);
+        ccNode = namehash(bytes(CC_LABEL));
+        nameNode = namehash(bytes(NAME_LABEL));
+        ccDnsName = dnsEncodeName(CC_LABEL);
+        nameDnsName = dnsEncodeName(NAME_LABEL);
 
         uint256 threshold = governor.proposalThreshold();
         uint256 proposerVotes = ensToken.getVotes(proposer);
@@ -74,8 +76,20 @@ contract Proposal_ENS_DNSSEC_Oracle_Draft_Test is ENS_Governance {
         }
     }
 
+    /// @dev Encodes a single-label TLD into DNS wire format: <length><label><0x00>
+    function dnsEncodeName(string memory label) internal pure returns (bytes memory) {
+        bytes memory labelBytes = bytes(label);
+        bytes memory encoded = new bytes(labelBytes.length + 2);
+        encoded[0] = bytes1(uint8(labelBytes.length));
+        for (uint256 i = 0; i < labelBytes.length; i++) {
+            encoded[i + 1] = labelBytes[i];
+        }
+        encoded[labelBytes.length + 1] = 0x00;
+        return encoded;
+    }
+
     function _selectFork() public override {
-        vm.createSelectFork({ blockNumber: 24_500_000, urlOrAlias: "mainnet" });
+        vm.createSelectFork({ blockNumber: 24_534_046, urlOrAlias: "mainnet" });
     }
 
     function _proposer() public pure override returns (address) {
@@ -83,11 +97,20 @@ contract Proposal_ENS_DNSSEC_Oracle_Draft_Test is ENS_Governance {
     }
 
     function _beforeProposal() public override {
+        // Verify access control: timelock must have permission to execute all transactions
+        assertEq(dnssecImpl.owner(), address(timelock), "DNSSECImpl should be owned by timelock");
+        assertEq(ensRoot.owner(), address(timelock), "Root should be owned by timelock");
+        assertTrue(ensRoot.controllers(address(timelock)), "Timelock should be a Root controller");
+
         oldRSASHA1 = dnssecImpl.algorithms(ALGO_RSASHA1);
         oldRSASHA256 = dnssecImpl.algorithms(ALGO_RSASHA256);
         oldP256SHA256 = dnssecImpl.algorithms(ALGO_P256SHA256);
-        ccOwnerBefore = ensRegistry.owner(CC_NODE);
-        nameOwnerBefore = ensRegistry.owner(NAME_NODE);
+        ccOwnerBefore = ensRegistry.owner(ccNode);
+        nameOwnerBefore = ensRegistry.owner(nameNode);
+
+        // TLDs should have an existing owner (otherwise zeroing is a no-op)
+        assertTrue(ccOwnerBefore != address(0), ".cc should have a non-zero owner before proposal");
+        assertTrue(nameOwnerBefore != address(0), ".name should have a non-zero owner before proposal");
 
         // Old algorithms should be set (non-zero)
         assertTrue(oldRSASHA1 != address(0), "RSASHA1 algo should exist before");
@@ -99,12 +122,9 @@ contract Proposal_ENS_DNSSEC_Oracle_Draft_Test is ENS_Governance {
         assertTrue(oldRSASHA256 != NEW_RSASHA256, "RSASHA256 should be different before update");
         assertTrue(oldP256SHA256 != NEW_P256SHA256, "P256SHA256 should be different before update");
 
-        // NOTE: New algorithm contracts may not be deployed yet at this fork block.
-        // P256SHA256 depends on the EIP-7951 precompile (Fusaka hardfork).
-        // These checks should be re-enabled once the contracts are deployed.
-        // assertGt(NEW_RSASHA1.code.length, 0, "New RSASHA1 should be deployed");
-        // assertGt(NEW_RSASHA256.code.length, 0, "New RSASHA256 should be deployed");
-        // assertGt(NEW_P256SHA256.code.length, 0, "New P256SHA256 should be deployed");
+        assertGt(NEW_RSASHA1.code.length, 0, "New RSASHA1 should be deployed");
+        assertGt(NEW_RSASHA256.code.length, 0, "New RSASHA256 should be deployed");
+        assertGt(NEW_P256SHA256.code.length, 0, "New P256SHA256 should be deployed");
     }
 
     function _generateCallData()
@@ -142,25 +162,25 @@ contract Proposal_ENS_DNSSEC_Oracle_Draft_Test is ENS_Governance {
         targets[3] = address(ensRoot);
         values[3] = 0;
         signatures[3] = "";
-        calldatas[3] = abi.encodeWithSelector(IENSRoot.setSubnodeOwner.selector, CC_LABELHASH, address(0));
+        calldatas[3] = abi.encodeWithSelector(IENSRoot.setSubnodeOwner.selector, ccLabelhash, address(0));
 
         // TX5: Reset .name TLD ownership to address(0) via Root
         targets[4] = address(ensRoot);
         values[4] = 0;
         signatures[4] = "";
-        calldatas[4] = abi.encodeWithSelector(IENSRoot.setSubnodeOwner.selector, NAME_LABELHASH, address(0));
+        calldatas[4] = abi.encodeWithSelector(IENSRoot.setSubnodeOwner.selector, nameLabelhash, address(0));
 
         // TX6: Re-enable .cc in DNSRegistrar
         targets[5] = address(dnsRegistrar);
         values[5] = 0;
         signatures[5] = "";
-        calldatas[5] = abi.encodeWithSelector(IDNSRegistrar.enableNode.selector, CC_DNS_NAME);
+        calldatas[5] = abi.encodeWithSelector(IDNSRegistrar.enableNode.selector, ccDnsName);
 
         // TX7: Re-enable .name in DNSRegistrar
         targets[6] = address(dnsRegistrar);
         values[6] = 0;
         signatures[6] = "";
-        calldatas[6] = abi.encodeWithSelector(IDNSRegistrar.enableNode.selector, NAME_DNS_NAME);
+        calldatas[6] = abi.encodeWithSelector(IDNSRegistrar.enableNode.selector, nameDnsName);
 
         description = getDescriptionFromMarkdown();
 
@@ -174,8 +194,8 @@ contract Proposal_ENS_DNSSEC_Oracle_Draft_Test is ENS_Governance {
         assertEq(dnssecImpl.algorithms(ALGO_P256SHA256), NEW_P256SHA256, "P256SHA256 algo should be updated");
 
         // Verify .cc and .name TLDs were re-enabled (ownership transferred to DNSRegistrar)
-        address ccOwnerAfter = ensRegistry.owner(CC_NODE);
-        address nameOwnerAfter = ensRegistry.owner(NAME_NODE);
+        address ccOwnerAfter = ensRegistry.owner(ccNode);
+        address nameOwnerAfter = ensRegistry.owner(nameNode);
         assertEq(ccOwnerAfter, address(dnsRegistrar), ".cc should be owned by DNSRegistrar after enableNode");
         assertEq(nameOwnerAfter, address(dnsRegistrar), ".name should be owned by DNSRegistrar after enableNode");
     }
