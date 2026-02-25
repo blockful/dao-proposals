@@ -1,0 +1,27 @@
+{
+    "proposalId": "pending",
+    "type": "pre-draft",
+    "source": "https://discuss.ens.domains/t/executable-register-on-eth-to-the-ens-dao-wallet-and-set-the-resolver/21894/8",
+    "executableCalls": [
+        {
+            "target": "0x7dd4d97653A67C2FD7fbA0a84825eC09524D4E1b",
+            "calldata": "0xb229e85e000000000000000000000000fe89cc7abb2c4183683ab71653c4cdc9b02d44b7",
+            "value": "0"
+        },
+        {
+            "target": "0x57f1887a8BF19b14fC0dF6Fd9B2acc9Af147eA85",
+            "calldata": "0xfca247ac6460d40e0362f6a2c743f205df8181010b7f26e76d5606847fb7be7fb6d135f9000000000000000000000000fe89cc7abb2c4183683ab71653c4cdc9b02d44b70000000000000000000000000000000000000000000000000000000012cc0300",
+            "value": "0"
+        },
+        {
+            "target": "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e",
+            "calldata": "0x1896f70acabf8262fe531c2a7e8cd86e06342bc27fc0591ecd562fbac88280abc18ef8990000000000000000000000002a9b5787207863cf2d63d20172ed1f7bb2c9487a",
+            "value": "0"
+        },
+        {
+            "target": "0x7dd4d97653A67C2FD7fbA0a84825eC09524D4E1b",
+            "calldata": "0x246b813e000000000000000000000000fe89cc7abb2c4183683ab71653c4cdc9b02d44b7",
+            "value": "0"
+        }
+    ]
+}
