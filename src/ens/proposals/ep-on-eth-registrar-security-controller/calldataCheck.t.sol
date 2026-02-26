@@ -32,10 +32,12 @@ contract Proposal_ENS_On_Eth_V2_Draft_Test is ENS_Governance {
     address public constant CHAIN_RESOLVER_OWNER = 0x81c11034FE2b2F0561e9975Df9a45D99172183Af;
     bytes4 public constant IERC165_INTERFACE_ID = 0x01ffc9a7;
 
-    bytes32 public constant ON_LABELHASH = 0x6460d40e0362f6a2c743f205df8181010b7f26e76d5606847fb7be7fb6d135f9;
-    bytes32 public constant ON_ETH_NODE = 0xcabf8262fe531c2a7e8cd86e06342bc27fc0591ecd562fbac88280abc18ef899;
+    // Derived from first principles
+    bytes32 public constant ETH_NODE = 0x93cdeb708b7545dc668eb9280176169d1c33cfd8ed6f04690a0bcc88a93fc4ae; // namehash("eth")
+    bytes32 public constant ON_LABELHASH = keccak256("on"); // labelhash("on")
+    bytes32 public constant ON_ETH_NODE = keccak256(abi.encodePacked(ETH_NODE, ON_LABELHASH)); // namehash("on.eth")
     uint256 public constant ON_TOKEN_ID = uint256(ON_LABELHASH);
-    uint256 public constant REGISTRATION_DURATION = 315_360_000; // 10 years
+    uint256 public constant REGISTRATION_DURATION = 10 * 365 days; // 10 years
 
     bool public timelockControllerBefore;
     bool public onAvailableBefore;
