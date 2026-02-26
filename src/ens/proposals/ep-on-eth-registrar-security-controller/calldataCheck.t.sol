@@ -43,29 +43,8 @@ contract Proposal_ENS_On_Eth_V2_Draft_Test is ENS_Governance {
     address public onResolverBefore;
     uint256 public onExpiryBefore;
 
-    function setUp() public override {
-        super.setUp();
-
-        uint256 threshold = governor.proposalThreshold();
-        uint256 proposerVotes = ensToken.getVotes(proposer);
-
-        if (proposerVotes < threshold) {
-            uint256 neededVotes = threshold - proposerVotes;
-            vm.prank(address(timelock));
-            ensToken.transfer(proposer, neededVotes);
-            vm.prank(proposer);
-            ensToken.delegate(proposer);
-            vm.roll(block.number + 1);
-            vm.warp(block.timestamp + 12);
-        }
-    }
-
     function _selectFork() public override {
         vm.createSelectFork({ blockNumber: 24_535_000, urlOrAlias: "mainnet" });
-    }
-
-    function _proposer() public pure override returns (address) {
-        return 0xAC50cE326de14dDF9b7e9611Cd2F33a1Af8aC039; // clowes.eth
     }
 
     function _beforeProposal() public override {
