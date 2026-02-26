@@ -165,6 +165,6 @@ contract Proposal_ENS_On_Eth_V2_Draft_Test is ENS_Governance {
     }
 
     function dirPath() public pure override returns (string memory) {
-        return "src/ens/proposals/ep-on-eth-v2";
+        return "src/ens/proposals/ep-on-eth-registrar-security-controller";
     }
 }
