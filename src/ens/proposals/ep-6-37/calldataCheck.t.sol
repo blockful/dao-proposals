@@ -31,7 +31,7 @@ contract Proposal_ENS_EP_6_37_Test is ENS_Governance, SafeHelper {
     uint256 walletUSDCBalanceBefore;
 
     function _selectFork() public override {
-        vm.createSelectFork({ blockNumber: 24_634_800, urlOrAlias: "mainnet" });
+        vm.createSelectFork({ blockNumber: 24_635_225, urlOrAlias: "mainnet" });
     }
 
     function _proposer() public pure override returns (address) {
@@ -120,7 +120,7 @@ contract Proposal_ENS_EP_6_37_Test is ENS_Governance, SafeHelper {
     }
 
     function _isProposalSubmitted() public pure override returns (bool) {
-        return false; // Draft — not yet on-chain
+        return true; // Live proposal
     }
 
     function dirPath() public pure override returns (string memory) {
