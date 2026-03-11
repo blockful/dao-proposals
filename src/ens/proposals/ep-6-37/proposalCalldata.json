@@ -1,6 +1,9 @@
 {
-  "proposalId": "2809685118711498730",
-  "type": "draft",
+  "proposalId": "14831140174897720265958605023745728013789151926234669357340635631180294168431",
+  "blockNumber": 24635225,
+  "votingStart": 24635226,
+  "votingEnd": 24681044,
+  "createdAt": "2026-03-10T15:08:52.673196Z",
   "executableCalls": [
     {
       "target": "0x4F2083f5fBede34C2714aFfb3105539775f7FE64",
