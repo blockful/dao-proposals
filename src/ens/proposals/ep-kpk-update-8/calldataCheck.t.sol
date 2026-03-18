@@ -12,11 +12,25 @@ interface IRoles {
     function revokeTarget(bytes32 roleKey, address targetAddress) external;
     function revokeFunction(bytes32 roleKey, address targetAddress, bytes4 selector) external;
     function scopeTarget(bytes32 roleKey, address targetAddress) external;
+    function scopeFunction(
+        bytes32 roleKey,
+        address targetAddress,
+        bytes4 selector,
+        ConditionFlat[] calldata conditions,
+        uint8 options
+    ) external;
     function allowFunction(bytes32 roleKey, address targetAddress, bytes4 selector, uint8 options) external;
 }
 
 interface IMultiSend {
     function multiSend(bytes calldata transactions) external;
+}
+
+struct ConditionFlat {
+    uint8 parent;
+    uint8 paramType;
+    uint8 operator;
+    bytes compValue;
 }
 
 /**
@@ -28,42 +42,113 @@ interface IMultiSend {
  *
  *   1. disableModule: Remove Roles V1 (0xf20325cf...) from Endowment Safe
  *   2. setTransactionUnwrapper: Update unwrapper for multiSend adapter on Roles V2
- *   3. revokeTarget(MANAGER, 0xdd3f50f8...): Revoke target (old karpatkey address?)
- *   4. revokeFunction(MANAGER, 0xdd3f50f8..., deposit()): Revoke deposit on revoked target
+ *   3. revokeTarget(MANAGER, RocketPoolDepositV3): Revoke old RocketPool deposit pool
+ *   4. revokeFunction(MANAGER, RocketPoolDepositV3, deposit()): Revoke deposit
  *   5. revokeFunction(MANAGER, SPK, transfer()): Remove SPK transfer permission
- *   6. revokeTarget(MANAGER, 0x7ac96180...): Revoke target
- *   7. revokeFunction(MANAGER, 0x7ac96180..., 0xef98231e): Revoke function
+ *   6. revokeTarget(MANAGER, SparkRewards): Revoke SparkRewards contract
+ *   7. revokeFunction(MANAGER, SparkRewards, claim()): Revoke SparkRewards claim
  *   8. post(): Remove old annotations from annotation registry
- *   9. scopeFunction(MANAGER, CowSwap, ...): Updated CowSwap swap permissions (buy/sell GHO+FLUID)
- *  10. scopeFunction(MANAGER, GHO, approve()): GHO approval scoping
+ *   9. scopeFunction(MANAGER, CowSwapOrderSigner, signOrder()): CowSwap swap permissions with GHO+FLUID
+ *  10. scopeFunction(MANAGER, GHO, approve()): GHO approval scoped to fGHO + GPv2VaultRelayer
  *  11. scopeTarget(MANAGER, FLUID): Scope FLUID token target
- *  12. scopeFunction(MANAGER, FLUID, approve()): FLUID approval scoping
- *  13. scopeTarget(MANAGER, 0xce152942...): Scope new target
- *  14. allowFunction(MANAGER, 0xce152942..., deposit()): Allow deposit
+ *  12. scopeFunction(MANAGER, FLUID, approve()): FLUID approval scoped to GPv2VaultRelayer
+ *  13. scopeTarget(MANAGER, RocketPoolDepositV4): Scope new RocketPool deposit pool
+ *  14. allowFunction(MANAGER, RocketPoolDepositV4, deposit()): Allow deposit with ETH
  *  15. scopeTarget(MANAGER, FluidMerkle): Scope Fluid Merkle Distributor
- *  16. scopeFunction(MANAGER, FluidMerkle, claim()): Claim function scoping
+ *  16. scopeFunction(MANAGER, FluidMerkle, claim()): Claim scoped to recipient=Safe
  *  17. post(): Add new annotations to annotation registry
- *  18. setTransactionUnwrapper: Update unwrapper for multiSend adapter
+ *  18. setTransactionUnwrapper: Re-apply unwrapper for multiSend adapter
  */
 contract Proposal_ENS_EP_KPK_Update_8_Draft_Test is ENS_Governance, SafeHelper, ZodiacRolesHelper {
-    // Addresses involved in this proposal
+    // ─── Protocol Addresses ──────────────────────────────────────────────
+
     address private constant MULTISEND = 0xA83c336B20401Af773B6219BA5027174338D1836;
-    address private constant ROLES_V1 = 0xf20325cf84b72e8BBF8D8984B8f0059B984B390B;
-    address private constant PREV_MODULE = 0xCFbFaC74C26F8647cBDb8c5caf80BB5b32E43134;
-    address private constant SPK = 0xc20059e0317DE91738d13af027DfC4a50781b066;
-    address private constant GHO = 0x40D16FC0246aD3160Ccc09B8D0D3A2cD28aE6C2f;
-    address private constant FLUID = 0x6f40d4A6237C257fff2dB00FA0510DeEECd303eb;
-    address private constant FLUID_MERKLE = 0xF398E66B1273a34558AeBbEC550DccaF4AcC7714;
-    address private constant USDC = 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48;
-    address private constant ANNOTATION_REGISTRY = 0x000000000000cd17345801aa8147b8D3950260FF;
-    address private constant COWSWAP = 0x23dA9AdE38E4477b23770DeD512fD37b12381FAB;
     address private constant MULTISEND_HANDLER = 0xA238CBeb142c10Ef7Ad8442C6D1f9E89e07e7761;
     address private constant MULTISEND_ADAPTER = 0xB4Cd4bb764C089f20DA18700CE8bc5e49F369efD;
-    address private constant REVOKED_TARGET_1 = 0xDD3f50F8A6CafbE9b31a427582963f465E745AF8;
-    address private constant REVOKED_TARGET_2 = 0x7ac96180C4d6b2A328D3a19ac059D0E7Fc3C6d41;
-    address private constant NEW_DEPOSIT_TARGET = 0xCE15294273CFb9D9b628F4D61636623decDF4fdC;
+    address private constant ANNOTATION_REGISTRY = 0x000000000000cd17345801aa8147b8D3950260FF;
 
-    uint8 private constant EXECUTION_SEND = 1;
+    // ─── Roles V1 (being disabled) ───────────────────────────────────────
+
+    address private constant ROLES_V1 = 0xf20325cf84b72e8BBF8D8984B8f0059B984B390B;
+    address private constant PREV_MODULE = 0xCFbFaC74C26F8647cBDb8c5caf80BB5b32E43134;
+
+    // ─── Revoked Targets ─────────────────────────────────────────────────
+
+    address private constant ROCKET_POOL_DEPOSIT_V3 = 0xDD3f50F8A6CafbE9b31a427582963f465E745AF8;
+    address private constant SPARK_REWARDS = 0x7ac96180C4d6b2A328D3a19ac059D0E7Fc3C6d41;
+    address private constant SPK = 0xc20059e0317DE91738d13af027DfC4a50781b066;
+
+    // ─── New Targets ─────────────────────────────────────────────────────
+
+    address private constant ROCKET_POOL_DEPOSIT_V4 = 0xCE15294273CFb9D9b628F4D61636623decDF4fdC;
+    address private constant FLUID_MERKLE = 0xF398E66B1273a34558AeBbEC550DccaF4AcC7714;
+    address private constant COWSWAP_ORDER_SIGNER = 0x23dA9AdE38E4477b23770DeD512fD37b12381FAB;
+
+    // ─── CowSwap Sell Tokens (25, sorted by address ascending) ───────────
+
+    address private constant GHO     = 0x40D16FC0246aD3160Ccc09B8D0D3A2cD28aE6C2f;
+    address private constant SWISE   = 0x48C3399719B582dD63eB5AADf12A40B4C3f52FA2;
+    address private constant CVX     = 0x4e3FBD56CD56c3e72c1403e103b45Db9da5B9D2B;
+    address private constant MORPHO  = 0x58D97B57BB95320F9a05dC918Aef65434969c2B2;
+    address private constant LDO     = 0x5A98FcBEA516Cf06857215779Fd812CA3beF1B32;
+    address private constant DAI     = 0x6B175474E89094C44Da98b954EedeAC495271d0F;
+    address private constant FLUID   = 0x6f40d4A6237C257fff2dB00FA0510DeEECd303eb;
+    address private constant WSTETH  = 0x7f39C581F595B53c5cb19bD0b3f8dA6c935E2Ca0;
+    address private constant LUSD    = 0x856c4Efb76C1D1AE02e20CEB03A2A6a08b0b8dC3;
+    address private constant USDC    = 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48;
+    address private constant USR     = 0xA35b1B31Ce002FBF2058D22F30f95D405200A15b;
+    address private constant SDAI    = 0xa3931d71877C0E7a3148CB7Eb4463524FEc27fbD;
+    address private constant RETH    = 0xae78736Cd615f374D3085123A210448E74Fc6393;
+    address private constant STETH   = 0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84;
+    address private constant BAL     = 0xba100000625a3754423978a60c9317c58a424e3D;
+    address private constant COMP    = 0xc00e94Cb662C3520282E6f5717214004A7f26888;
+    address private constant WETH    = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
+    address private constant AURA    = 0xC0c293ce456fF0ED870ADd98a0828Dd4d2903DBF;
+    // SPK already declared above in Revoked Targets
+    address private constant RPL     = 0xD33526068D116cE69F19A9ee46F0bd304F21A51f;
+    address private constant CRV     = 0xD533a949740bb3306d119CC777fa900bA034cd52;
+    address private constant USDT    = 0xdAC17F958D2ee523a2206206994597C13D831ec7;
+    address private constant USDS    = 0xdC035D45d973E3EC169d2276DDab16f1e407384F;
+    address private constant SUSDE   = 0xE95A203B1a91a908F9B9CE46459d101078c2c3cb;
+    address private constant SFRXETH = 0xf1C9acDc66974dFB6dEcB12aA385b9cD01190E38;
+
+    // ─── CowSwap Buy-only Tokens (not in sell list) ──────────────────────
+
+    address private constant NATIVE_ETH = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
+
+    // ─── Approved Spenders ───────────────────────────────────────────────
+
+    address private constant F_GHO = 0x6A29A46E21C730DcA1d8b23d637c101cec605C5B;
+    address private constant GPV2_VAULT_RELAYER = 0xC92E8bdf79f0507f65a392b0ab4667716BFE0110;
+
+    // ─── Function Selectors ──────────────────────────────────────────────
+
+    bytes4 private constant DEPOSIT_SELECTOR = 0xd0e30db0;       // deposit()
+    bytes4 private constant TRANSFER_SELECTOR = 0xa9059cbb;      // transfer(address,uint256)
+    bytes4 private constant APPROVE_SELECTOR = 0x095ea7b3;       // approve(address,uint256)
+    bytes4 private constant SIGN_ORDER_SELECTOR = 0x569d3489;    // signOrder((...),uint32,uint256)
+    bytes4 private constant SPARK_CLAIM_SELECTOR = 0xef98231e;   // claim(uint256,address,address,uint256,bytes32,bytes32[])
+    bytes4 private constant FLUID_CLAIM_SELECTOR = 0xbe5013dc;   // claim(address,uint256,uint8,bytes32,uint256,bytes32[],bytes)
+    bytes4 private constant MULTISEND_SELECTOR = 0x8d80ff0a;     // multiSend(bytes)
+
+    // ─── Zodiac Condition Constants ──────────────────────────────────────
+
+    uint8 private constant PARAM_TYPE_NONE = 0;
+    uint8 private constant PARAM_TYPE_STATIC = 1;
+    uint8 private constant PARAM_TYPE_TUPLE = 3;
+    uint8 private constant PARAM_TYPE_CALLDATA = 5;
+
+    uint8 private constant OP_PASS = 0;
+    uint8 private constant OP_OR = 2;
+    uint8 private constant OP_MATCHES = 5;
+    uint8 private constant OP_EQUAL_TO_AVATAR = 15;
+    uint8 private constant OP_EQUAL_TO = 16;
+
+    uint8 private constant EXEC_NONE = 0;
+    uint8 private constant EXEC_SEND = 1;
+    uint8 private constant EXEC_DELEGATE_CALL = 2;
+
+    // ─── Framework Overrides ─────────────────────────────────────────────
 
     function _selectFork() public override {
         vm.createSelectFork({ urlOrAlias: "mainnet" });
@@ -73,22 +158,232 @@ contract Proposal_ENS_EP_KPK_Update_8_Draft_Test is ENS_Governance, SafeHelper, 
         return 0x1D5460F896521aD685Ea4c3F2c679Ec0b6806359; // coltron.eth
     }
 
+    function _isProposalSubmitted() public pure override returns (bool) {
+        return false; // Draft -- not yet on-chain
+    }
+
+    function dirPath() public pure override returns (string memory) {
+        return "src/ens/proposals/ep-kpk-update-8";
+    }
+
+    // ─── Before/After Permission Assertions ──────────────────────────────
+
     function _beforeProposal() public override {
-        // Before execution: Roles V1 should still be enabled as a module on the Safe
+        // Roles V1 should still be enabled as a module on the Safe
         (bool ok, bytes memory ret) = address(endowmentSafe).staticcall(
             abi.encodeWithSignature("isModuleEnabled(address)", ROLES_V1)
         );
         assertTrue(ok && abi.decode(ret, (bool)), "Roles V1 should be enabled before execution");
+
+        // --- Permissions that should NOT WORK before execution (will be added) ---
+
+        // FLUID token target should not be scoped yet
+        vm.startPrank(karpatkey);
+        _expectConditionViolation(IZodiacRoles.Status.TargetAddressNotAllowed);
+        roles.execTransactionWithRole(
+            FLUID,
+            0,
+            abi.encodeWithSelector(APPROVE_SELECTOR, GPV2_VAULT_RELAYER, uint256(1)),
+            IZodiacRoles.Operation.Call,
+            MANAGER_ROLE,
+            false
+        );
+        vm.stopPrank();
+
+        // FluidMerkle target should not be scoped yet
+        vm.startPrank(karpatkey);
+        _expectConditionViolation(IZodiacRoles.Status.TargetAddressNotAllowed);
+        roles.execTransactionWithRole(
+            FLUID_MERKLE,
+            0,
+            abi.encodeWithSelector(
+                FLUID_CLAIM_SELECTOR,
+                address(endowmentSafe),
+                uint256(0),
+                uint8(0),
+                bytes32(0),
+                uint256(0),
+                new bytes32[](0),
+                ""
+            ),
+            IZodiacRoles.Operation.Call,
+            MANAGER_ROLE,
+            false
+        );
+        vm.stopPrank();
+
+        // RocketPool v4 target should not be scoped yet
+        vm.startPrank(karpatkey);
+        _expectConditionViolation(IZodiacRoles.Status.TargetAddressNotAllowed);
+        roles.execTransactionWithRole(
+            ROCKET_POOL_DEPOSIT_V4,
+            0,
+            abi.encodeWithSelector(DEPOSIT_SELECTOR),
+            IZodiacRoles.Operation.Call,
+            MANAGER_ROLE,
+            false
+        );
+        vm.stopPrank();
     }
 
     function _afterExecution() public override {
-        // After execution: Roles V1 should be disabled
+        // --- Roles V1 should be disabled ---
         (bool ok, bytes memory ret) = address(endowmentSafe).staticcall(
             abi.encodeWithSignature("isModuleEnabled(address)", ROLES_V1)
         );
         assertTrue(ok, "isModuleEnabled call should succeed");
         assertFalse(abi.decode(ret, (bool)), "Roles V1 should be disabled after execution");
+
+        // --- Revoked permissions should NO LONGER work ---
+
+        // RocketPool v3 deposit revoked
+        vm.startPrank(karpatkey);
+        _expectConditionViolation(IZodiacRoles.Status.TargetAddressNotAllowed);
+        roles.execTransactionWithRole(
+            ROCKET_POOL_DEPOSIT_V3,
+            0,
+            abi.encodeWithSelector(DEPOSIT_SELECTOR),
+            IZodiacRoles.Operation.Call,
+            MANAGER_ROLE,
+            false
+        );
+        vm.stopPrank();
+
+        // SPK transfer revoked
+        vm.startPrank(karpatkey);
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                IZodiacRoles.ConditionViolation.selector,
+                IZodiacRoles.Status.FunctionNotAllowed,
+                bytes32(TRANSFER_SELECTOR)
+            )
+        );
+        roles.execTransactionWithRole(
+            SPK,
+            0,
+            abi.encodeWithSelector(TRANSFER_SELECTOR, address(timelock), uint256(1)),
+            IZodiacRoles.Operation.Call,
+            MANAGER_ROLE,
+            false
+        );
+        vm.stopPrank();
+
+        // SparkRewards claim revoked
+        vm.startPrank(karpatkey);
+        _expectConditionViolation(IZodiacRoles.Status.TargetAddressNotAllowed);
+        roles.execTransactionWithRole(
+            SPARK_REWARDS,
+            0,
+            abi.encodeWithSelector(
+                SPARK_CLAIM_SELECTOR, uint256(0), address(endowmentSafe), SPK, uint256(0), bytes32(0), new bytes32[](0)
+            ),
+            IZodiacRoles.Operation.Call,
+            MANAGER_ROLE,
+            false
+        );
+        vm.stopPrank();
+
+        // --- New permissions should WORK ---
+
+        // GHO approve to fGHO should be allowed
+        vm.startPrank(karpatkey);
+        _safeExecuteTransaction(
+            GHO,
+            abi.encodeWithSelector(APPROVE_SELECTOR, F_GHO, uint256(1e18))
+        );
+        vm.stopPrank();
+
+        // GHO approve to GPv2VaultRelayer should be allowed
+        vm.startPrank(karpatkey);
+        _safeExecuteTransaction(
+            GHO,
+            abi.encodeWithSelector(APPROVE_SELECTOR, GPV2_VAULT_RELAYER, uint256(1e18))
+        );
+        vm.stopPrank();
+
+        // GHO approve to a random address should be BLOCKED (OR group fails -> OrViolation)
+        vm.startPrank(karpatkey);
+        _expectConditionViolation(IZodiacRoles.Status.OrViolation);
+        roles.execTransactionWithRole(
+            GHO,
+            0,
+            abi.encodeWithSelector(APPROVE_SELECTOR, address(0xdead), uint256(1e18)),
+            IZodiacRoles.Operation.Call,
+            MANAGER_ROLE,
+            false
+        );
+        vm.stopPrank();
+
+        // FLUID approve to GPv2VaultRelayer should be allowed
+        vm.startPrank(karpatkey);
+        _safeExecuteTransaction(
+            FLUID,
+            abi.encodeWithSelector(APPROVE_SELECTOR, GPV2_VAULT_RELAYER, uint256(1e18))
+        );
+        vm.stopPrank();
+
+        // FLUID approve to random address should be BLOCKED
+        vm.startPrank(karpatkey);
+        _expectConditionViolation(IZodiacRoles.Status.ParameterNotAllowed);
+        roles.execTransactionWithRole(
+            FLUID,
+            0,
+            abi.encodeWithSelector(APPROVE_SELECTOR, address(0xdead), uint256(1e18)),
+            IZodiacRoles.Operation.Call,
+            MANAGER_ROLE,
+            false
+        );
+        vm.stopPrank();
+
+        // RocketPool v4 deposit should be allowed (with ETH)
+        vm.startPrank(karpatkey);
+        _safeExecuteTransaction(
+            ROCKET_POOL_DEPOSIT_V4,
+            abi.encodeWithSelector(DEPOSIT_SELECTOR)
+        );
+        vm.stopPrank();
+
+        // FluidMerkle claim with recipient=Safe should be allowed
+        vm.startPrank(karpatkey);
+        _safeExecuteTransaction(
+            FLUID_MERKLE,
+            abi.encodeWithSelector(
+                FLUID_CLAIM_SELECTOR,
+                address(endowmentSafe), // recipient must be the Safe
+                uint256(0),
+                uint8(0),
+                bytes32(0),
+                uint256(0),
+                new bytes32[](0),
+                ""
+            )
+        );
+        vm.stopPrank();
+
+        // FluidMerkle claim with recipient=attacker should be BLOCKED
+        vm.startPrank(karpatkey);
+        _expectConditionViolation(IZodiacRoles.Status.ParameterNotAllowed);
+        roles.execTransactionWithRole(
+            FLUID_MERKLE,
+            0,
+            abi.encodeWithSelector(
+                FLUID_CLAIM_SELECTOR,
+                address(0xdead), // wrong recipient
+                uint256(0),
+                uint8(0),
+                bytes32(0),
+                uint256(0),
+                new bytes32[](0),
+                ""
+            ),
+            IZodiacRoles.Operation.Call,
+            MANAGER_ROLE,
+            false
+        );
+        vm.stopPrank();
     }
+
+    // ─── Calldata Generation ─────────────────────────────────────────────
 
     function _generateCallData()
         public
@@ -124,184 +419,318 @@ contract Proposal_ENS_EP_KPK_Update_8_Draft_Test is ENS_Governance, SafeHelper, 
         return (targets, values, signatures, calldatas, description);
     }
 
-    function _isProposalSubmitted() public pure override returns (bool) {
-        return false; // Draft — not yet on-chain
-    }
-
-    function dirPath() public pure override returns (string memory) {
-        return "src/ens/proposals/ep-kpk-update-8";
-    }
-
-    // ─── MultiSend packing ───────────────────────────────────────────────
+    // ─── MultiSend Packing ───────────────────────────────────────────────
 
     function _packTx(address to, bytes memory data) internal pure returns (bytes memory) {
         return abi.encodePacked(uint8(0), to, uint256(0), uint256(data.length), data);
     }
 
-    function _buildMultiSendTransactions() internal pure returns (bytes memory) {
+    function _buildMultiSendTransactions() internal view returns (bytes memory) {
         return bytes.concat(
-            _buildMultiSendPart1(),
-            _buildMultiSendPart2(),
-            _buildMultiSendPart3()
+            _buildRevocationTransactions(),
+            _buildAnnotationRemoval(),
+            _buildScopingTransactions(),
+            _buildAnnotationAddition(),
+            _buildFinalUnwrapper()
         );
     }
 
-    /// @dev TX 1–7: Module removal, unwrapper setup, and revocations
-    function _buildMultiSendPart1() internal pure returns (bytes memory) {
+    // ─── TX 1-7: Module removal, unwrapper setup, and revocations ────────
+
+    function _buildRevocationTransactions() internal view returns (bytes memory) {
         return bytes.concat(
-            // TX 1: Safe.disableModule(prevModule, ROLES_V1)
+            // TX 1: Safe.disableModule -- remove Roles V1
             _packTx(
                 address(endowmentSafe),
                 abi.encodeWithSignature("disableModule(address,address)", PREV_MODULE, ROLES_V1)
             ),
-            // TX 2: roles.setTransactionUnwrapper(handler, multiSendSelector, adapter)
+            // TX 2: roles.setTransactionUnwrapper -- configure multiSend adapter
             _packTx(
                 address(roles),
                 abi.encodeWithSelector(
                     IRoles.setTransactionUnwrapper.selector,
                     MULTISEND_HANDLER,
-                    bytes4(0x8d80ff0a), // multiSend selector
+                    MULTISEND_SELECTOR,
                     MULTISEND_ADAPTER
                 )
             ),
-            // TX 3: roles.revokeTarget(MANAGER, 0xdd3f50f8...)
+            // TX 3: roles.revokeTarget -- RocketPool Deposit V3
             _packTx(
                 address(roles),
-                abi.encodeWithSelector(IRoles.revokeTarget.selector, MANAGER_ROLE, REVOKED_TARGET_1)
+                abi.encodeWithSelector(IRoles.revokeTarget.selector, MANAGER_ROLE, ROCKET_POOL_DEPOSIT_V3)
             ),
-            // TX 4: roles.revokeFunction(MANAGER, 0xdd3f50f8..., deposit())
+            // TX 4: roles.revokeFunction -- RocketPool Deposit V3 deposit()
             _packTx(
                 address(roles),
-                abi.encodeWithSelector(
-                    IRoles.revokeFunction.selector,
-                    MANAGER_ROLE,
-                    REVOKED_TARGET_1,
-                    bytes4(0xd0e30db0) // deposit()
-                )
+                abi.encodeWithSelector(IRoles.revokeFunction.selector, MANAGER_ROLE, ROCKET_POOL_DEPOSIT_V3, DEPOSIT_SELECTOR)
             ),
-            // TX 5: roles.revokeFunction(MANAGER, SPK, transfer())
+            // TX 5: roles.revokeFunction -- SPK transfer()
             _packTx(
                 address(roles),
-                abi.encodeWithSelector(
-                    IRoles.revokeFunction.selector,
-                    MANAGER_ROLE,
-                    SPK,
-                    bytes4(0xa9059cbb) // transfer(address,uint256)
-                )
+                abi.encodeWithSelector(IRoles.revokeFunction.selector, MANAGER_ROLE, SPK, TRANSFER_SELECTOR)
             ),
-            // TX 6: roles.revokeTarget(MANAGER, 0x7ac96180...)
+            // TX 6: roles.revokeTarget -- SparkRewards
             _packTx(
                 address(roles),
-                abi.encodeWithSelector(IRoles.revokeTarget.selector, MANAGER_ROLE, REVOKED_TARGET_2)
+                abi.encodeWithSelector(IRoles.revokeTarget.selector, MANAGER_ROLE, SPARK_REWARDS)
             ),
-            // TX 7: roles.revokeFunction(MANAGER, 0x7ac96180..., 0xef98231e)
+            // TX 7: roles.revokeFunction -- SparkRewards claim()
             _packTx(
                 address(roles),
-                abi.encodeWithSelector(
-                    IRoles.revokeFunction.selector,
-                    MANAGER_ROLE,
-                    REVOKED_TARGET_2,
-                    bytes4(0xef98231e)
-                )
+                abi.encodeWithSelector(IRoles.revokeFunction.selector, MANAGER_ROLE, SPARK_REWARDS, SPARK_CLAIM_SELECTOR)
             )
         );
     }
 
-    /// @dev TX 8–12: Annotations removal, CowSwap/GHO/FLUID scoping
-    function _buildMultiSendPart2() internal pure returns (bytes memory) {
+    // ─── TX 8: Remove old annotations ────────────────────────────────────
+
+    function _buildAnnotationRemoval() internal pure returns (bytes memory) {
+        // JSON payload for removing old annotations -- opaque data, not ABI-encoded calldata.
+        // Contains removeAnnotations URIs for:
+        //   - kit.karpatkey.com/.../spark/deposit?targets=SKY_USDS
+        //   - kit.karpatkey.com/.../cowswap/swap?sell=<old list without GHO/FLUID>&buy=<old list>
+        bytes memory jsonPayload =
+            hex"7b22726f6c65734d6f64223a22307837303338303665363138343739383433343664326437646464383533303439363237653530613430222c22726f6c654b6579223a22307834643431346534313437343535323030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030222c2272656d6f7665416e6e6f746174696f6e73223a5b2268747470733a2f2f6b69742e6b61727061746b65792e636f6d2f6170692f76312f7065726d697373696f6e732f6574682f737061726b2f6465706f7369743f746172676574733d534b595f55534453222c2268747470733a2f2f6b69742e6b61727061746b65792e636f6d2f6170692f76312f7065726d697373696f6e732f6574682f636f77737761702f737761703f73656c6c3d455448253243307845393541323033423161393161393038463942394345343634353964313031303738633263336362253243307843306332393363653435366646304544383730414464393861303832384464346432393033444246253243307862613130303030303632356133373534343233393738613630633933313763353861343234653344253243307863303065393443623636324333353230323832453666353731373231343030344137663236383838253243307844353333613934393734306262333330366431313943433737376661393030624130333463643532253243307834653346424435364344353663336537326331343033653130336234354462396461354239443242253243307836423137353437344538393039344334344461393862393534456564654143343935323731643046253243307841333562314233314365303032464246323035384432324633306639354434303532303041313562253243307835413938466342454135313643663036383537323135373739466438313243413362654631423332253243307835384439374235374242393533323046396130356443393138416566363534333439363963324232253243307838353663344566623736433144314145303265323043454230334132413661303862306238644333253243307866314339616344633636393734644642366445634231326141333835623963443031313930453338253243307861653738373336436436313566333734443330383531323341323130343438453734466336333933253243307844333335323630363844313136634536394631394139656534364630626433303446323141353166253243307863323030353965303331374445393137333864313361663032374466433461353037383162303636253243307861653761623936353230444533413138453565313131423545614162303935333132443766453834253243307861333933316437313837374330453761333134384342374562343436333532344645633237666244253243307834384333333939373139423538326444363365423541414466313241343042344333663532464132253243307841306238363939316336323138623336633164313944346132653945623063453336303665423438253243307864433033354434356439373345334543313639643232373644446162313666316534303733383446253243307864414331374639353844326565353233613232303632303639393435393743313344383331656337253243307843303261614133396232323346453844304130653543344632376541443930383343373536436332253243307837663339433538314635393542353363356362313962443062336638644136633933354532436130266275793d455448253243307845393541323033423161393161393038463942394345343634353964313031303738633263336362253243307836423137353437344538393039344334344461393862393534456564654143343935323731643046253243307841333562314233314365303032464246323035384432324633306639354434303532303041313562253243307838353663344566623736433144314145303265323043454230334132413661303862306238644333253243307866314339616344633636393734644642366445634231326141333835623963443031313930453338253243307861653738373336436436313566333734443330383531323341323130343438453734466336333933253243307861653761623936353230444533413138453565313131423545614162303935333132443766453834253243307861333933316437313837374330453761333134384342374562343436333532344645633237666244253243307841306238363939316336323138623336633164313944346132653945623063453336303665423438253243307864433033354434356439373345334543313639643232373644446162313666316534303733383446253243307864414331374639353844326565353233613232303632303639393435393743313344383331656337253243307843303261614133396232323346453844304130653543344632376541443930383343373536436332253243307837663339433538314635393542353363356362313962443062336638644136633933354532436130225d7d";
+
+        return _packTx(
+            ANNOTATION_REGISTRY,
+            abi.encodeWithSelector(
+                bytes4(0x0ae1b13d), // post(string,string)
+                string(jsonPayload),
+                "ROLES_PERMISSION_ANNOTATION"
+            )
+        );
+    }
+
+    // ─── TX 9-16: Scoping transactions ───────────────────────────────────
+
+    function _buildScopingTransactions() internal view returns (bytes memory) {
         return bytes.concat(
-            // TX 8: annotationRegistry.post() — Remove old annotations
-            _packTx(ANNOTATION_REGISTRY, _buildRemoveAnnotationsCalldata()),
-            // TX 9: roles.scopeFunction(MANAGER, CowSwap, 0x569d3489, ...) — CowSwap swap permissions
-            _packTx(address(roles), _buildCowSwapScopeFunctionCalldata()),
-            // TX 10: roles.scopeFunction(MANAGER, GHO, approve(), ...) — GHO approval scoping
-            _packTx(address(roles), _buildGhoApproveScopeFunctionCalldata()),
-            // TX 11: roles.scopeTarget(MANAGER, FLUID)
+            // TX 9: CowSwap signOrder scoping
+            _packTx(
+                address(roles),
+                abi.encodeWithSelector(
+                    IRoles.scopeFunction.selector,
+                    MANAGER_ROLE, COWSWAP_ORDER_SIGNER, SIGN_ORDER_SELECTOR,
+                    _buildCowSwapSignOrderConditions(), EXEC_DELEGATE_CALL
+                )
+            ),
+            // TX 10: GHO approve scoping
+            _packTx(
+                address(roles),
+                abi.encodeWithSelector(
+                    IRoles.scopeFunction.selector,
+                    MANAGER_ROLE, GHO, APPROVE_SELECTOR,
+                    _buildGhoApproveConditions(), EXEC_NONE
+                )
+            ),
+            // TX 11: scopeTarget FLUID
             _packTx(
                 address(roles),
                 abi.encodeWithSelector(IRoles.scopeTarget.selector, MANAGER_ROLE, FLUID)
             ),
-            // TX 12: roles.scopeFunction(MANAGER, FLUID, approve(), ...) — FLUID approval scoping
-            _packTx(address(roles), _buildFluidApproveScopeFunctionCalldata())
-        );
-    }
-
-    /// @dev TX 13–18: New target scoping, FluidMerkle, annotations, unwrapper
-    function _buildMultiSendPart3() internal pure returns (bytes memory) {
-        return bytes.concat(
-            // TX 13: roles.scopeTarget(MANAGER, 0xce152942...)
-            _packTx(
-                address(roles),
-                abi.encodeWithSelector(IRoles.scopeTarget.selector, MANAGER_ROLE, NEW_DEPOSIT_TARGET)
-            ),
-            // TX 14: roles.allowFunction(MANAGER, 0xce152942..., deposit(), EXECUTION_SEND)
+            // TX 12: FLUID approve scoping
             _packTx(
                 address(roles),
                 abi.encodeWithSelector(
-                    IRoles.allowFunction.selector,
-                    MANAGER_ROLE,
-                    NEW_DEPOSIT_TARGET,
-                    bytes4(0xd0e30db0), // deposit()
-                    EXECUTION_SEND
+                    IRoles.scopeFunction.selector,
+                    MANAGER_ROLE, FLUID, APPROVE_SELECTOR,
+                    _buildFluidApproveConditions(), EXEC_NONE
                 )
             ),
-            // TX 15: roles.scopeTarget(MANAGER, FluidMerkle)
+            // TX 13: scopeTarget RocketPool Deposit V4
+            _packTx(
+                address(roles),
+                abi.encodeWithSelector(IRoles.scopeTarget.selector, MANAGER_ROLE, ROCKET_POOL_DEPOSIT_V4)
+            ),
+            // TX 14: allowFunction RocketPool Deposit V4 deposit() with ETH
+            _packTx(
+                address(roles),
+                abi.encodeWithSelector(
+                    IRoles.allowFunction.selector, MANAGER_ROLE, ROCKET_POOL_DEPOSIT_V4, DEPOSIT_SELECTOR, EXEC_SEND
+                )
+            ),
+            // TX 15: scopeTarget FluidMerkle
             _packTx(
                 address(roles),
                 abi.encodeWithSelector(IRoles.scopeTarget.selector, MANAGER_ROLE, FLUID_MERKLE)
             ),
-            // TX 16: roles.scopeFunction(MANAGER, FluidMerkle, claim(), ...) — Claim function scoping
-            _packTx(address(roles), _buildFluidMerkleClaimScopeFunctionCalldata()),
-            // TX 17: annotationRegistry.post() — Add new annotations
-            _packTx(ANNOTATION_REGISTRY, _buildAddAnnotationsCalldata()),
-            // TX 18: roles.setTransactionUnwrapper(handler, multiSendSelector, adapter) — same as TX 2
+            // TX 16: FluidMerkle claim scoping
             _packTx(
                 address(roles),
                 abi.encodeWithSelector(
-                    IRoles.setTransactionUnwrapper.selector,
-                    MULTISEND_HANDLER,
-                    bytes4(0x8d80ff0a), // multiSend selector
-                    MULTISEND_ADAPTER
+                    IRoles.scopeFunction.selector,
+                    MANAGER_ROLE, FLUID_MERKLE, FLUID_CLAIM_SELECTOR,
+                    _buildFluidMerkleClaimConditions(), EXEC_NONE
                 )
             )
         );
     }
 
-    // ─── Complex calldata helpers ────────────────────────────────────────
+    // ─── TX 17: Add new annotations ──────────────────────────────────────
 
-    /// @dev TX 8: Remove old annotations from annotation registry (2116 bytes)
-    function _buildRemoveAnnotationsCalldata() internal pure returns (bytes memory) {
-        return
-            hex"0ae1b13d0000000000000000000000000000000000000000000000000000000000000040000000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000000007957b22726f6c65734d6f64223a22307837303338303665363138343739383433343664326437646464383533303439363237653530613430222c22726f6c654b6579223a22307834643431346534313437343535323030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030222c2272656d6f7665416e6e6f746174696f6e73223a5b2268747470733a2f2f6b69742e6b61727061746b65792e636f6d2f6170692f76312f7065726d697373696f6e732f6574682f737061726b2f6465706f7369743f746172676574733d534b595f55534453222c2268747470733a2f2f6b69742e6b61727061746b65792e636f6d2f6170692f76312f7065726d697373696f6e732f6574682f636f77737761702f737761703f73656c6c3d455448253243307845393541323033423161393161393038463942394345343634353964313031303738633263336362253243307843306332393363653435366646304544383730414464393861303832384464346432393033444246253243307862613130303030303632356133373534343233393738613630633933313763353861343234653344253243307863303065393443623636324333353230323832453666353731373231343030344137663236383838253243307844353333613934393734306262333330366431313943433737376661393030624130333463643532253243307834653346424435364344353663336537326331343033653130336234354462396461354239443242253243307836423137353437344538393039344334344461393862393534456564654143343935323731643046253243307841333562314233314365303032464246323035384432324633306639354434303532303041313562253243307835413938466342454135313643663036383537323135373739466438313243413362654631423332253243307835384439374235374242393533323046396130356443393138416566363534333439363963324232253243307838353663344566623736433144314145303265323043454230334132413661303862306238644333253243307866314339616344633636393734644642366445634231326141333835623963443031313930453338253243307861653738373336436436313566333734443330383531323341323130343438453734466336333933253243307844333335323630363844313136634536394631394139656534364630626433303446323141353166253243307863323030353965303331374445393137333864313361663032374466433461353037383162303636253243307861653761623936353230444533413138453565313131423545614162303935333132443766453834253243307861333933316437313837374330453761333134384342374562343436333532344645633237666244253243307834384333333939373139423538326444363365423541414466313241343042344333663532464132253243307841306238363939316336323138623336633164313944346132653945623063453336303665423438253243307864433033354434356439373345334543313639643232373644446162313666316534303733383446253243307864414331374639353844326565353233613232303632303639393435393743313344383331656337253243307843303261614133396232323346453844304130653543344632376541443930383343373536436332253243307837663339433538314635393542353363356362313962443062336638644136633933354532436130266275793d455448253243307845393541323033423161393161393038463942394345343634353964313031303738633263336362253243307836423137353437344538393039344334344461393862393534456564654143343935323731643046253243307841333562314233314365303032464246323035384432324633306639354434303532303041313562253243307838353663344566623736433144314145303265323043454230334132413661303862306238644333253243307866314339616344633636393734644642366445634231326141333835623963443031313930453338253243307861653738373336436436313566333734443330383531323341323130343438453734466336333933253243307861653761623936353230444533413138453565313131423545614162303935333132443766453834253243307861333933316437313837374330453761333134384342374562343436333532344645633237666244253243307841306238363939316336323138623336633164313944346132653945623063453336303665423438253243307864433033354434356439373345334543313639643232373644446162313666316534303733383446253243307864414331374639353844326565353233613232303632303639393435393743313344383331656337253243307843303261614133396232323346453844304130653543344632376541443930383343373536436332253243307837663339433538314635393542353363356362313962443062336638644136633933354532436130225d7d0000000000000000000000000000000000000000000000000000000000000000000000000000000000001b524f4c45535f5045524d495353494f4e5f414e4e4f544154494f4e0000000000";
+    function _buildAnnotationAddition() internal pure returns (bytes memory) {
+        // JSON payload for adding new annotations -- opaque data, not ABI-encoded calldata.
+        // Contains addAnnotations with URIs for:
+        //   - kit.karpatkey.com/.../cowswap/swap?sell=<new list with GHO/FLUID>&buy=<new list with GHO>
+        //   - kit.karpatkey.com/.../spark/deposit?targets=SKY_sUSDS
+        bytes memory jsonPayload =
+            hex"7b22726f6c65734d6f64223a22307837303338303665363138343739383433343664326437646464383533303439363237653530613430222c22726f6c654b6579223a22307834643431346534313437343535323030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030222c22616464416e6e6f746174696f6e73223a5b7b22736368656d61223a2268747470733a2f2f6b69742e6b61727061746b65792e636f6d2f6170692f76312f6f70656e6170692e6a736f6e222c2275726973223a5b2268747470733a2f2f6b69742e6b61727061746b65792e636f6d2f6170692f76312f7065726d697373696f6e732f6574682f636f77737761702f737761703f73656c6c3d455448253243307845393541323033423161393161393038463942394345343634353964313031303738633263336362253243307843306332393363653435366646304544383730414464393861303832384464346432393033444246253243307862613130303030303632356133373534343233393738613630633933313763353861343234653344253243307863303065393443623636324333353230323832453666353731373231343030344137663236383838253243307844353333613934393734306262333330366431313943433737376661393030624130333463643532253243307834653346424435364344353663336537326331343033653130336234354462396461354239443242253243307836423137353437344538393039344334344461393862393534456564654143343935323731643046253243307841333562314233314365303032464246323035384432324633306639354434303532303041313562253243307836663430643441363233374332353766666632644230304641303531304465454543643330336562253243307834304431364643303234366144333136304363633039423844304433413263443238614536433266253243307835413938466342454135313643663036383537323135373739466438313243413362654631423332253243307835384439374235374242393533323046396130356443393138416566363534333439363963324232253243307838353663344566623736433144314145303265323043454230334132413661303862306238644333253243307866314339616344633636393734644642366445634231326141333835623963443031313930453338253243307861653738373336436436313566333734443330383531323341323130343438453734466336333933253243307844333335323630363844313136634536394631394139656534364630626433303446323141353166253243307863323030353965303331374445393137333864313361663032374466433461353037383162303636253243307861653761623936353230444533413138453565313131423545614162303935333132443766453834253243307861333933316437313837374330453761333134384342374562343436333532344645633237666244253243307834384333333939373139423538326444363365423541414466313241343042344333663532464132253243307841306238363939316336323138623336633164313944346132653945623063453336303665423438253243307864433033354434356439373345334543313639643232373644446162313666316534303733383446253243307864414331374639353844326565353233613232303632303639393435393743313344383331656337253243307843303261614133396232323346453844304130653543344632376541443930383343373536436332253243307837663339433538314635393542353363356362313962443062336638644136633933354532436130266275793d455448253243307845393541323033423161393161393038463942394345343634353964313031303738633263336362253243307836423137353437344538393039344334344461393862393534456564654143343935323731643046253243307841333562314233314365303032464246323035384432324633306639354434303532303041313562253243307834304431364643303234366144333136304363633039423844304433413263443238614536433266253243307838353663344566623736433144314145303265323043454230334132413661303862306238644333253243307866314339616344633636393734644642366445634231326141333835623963443031313930453338253243307861653738373336436436313566333734443330383531323341323130343438453734466336333933253243307861653761623936353230444533413138453565313131423545614162303935333132443766453834253243307861333933316437313837374330453761333134384342374562343436333532344645633237666244253243307841306238363939316336323138623336633164313944346132653945623063453336303665423438253243307864433033354434356439373345334543313639643232373644446162313666316534303733383446253243307864414331374639353844326565353233613232303632303639393435393743313344383331656337253243307843303261614133396232323346453844304130653543344632376541443930383343373536436332253243307837663339433538314635393542353363356362313962443062336638644136633933354532436130222c2268747470733a2f2f6b69742e6b61727061746b65792e636f6d2f6170692f76312f7065726d697373696f6e732f6574682f737061726b2f6465706f7369743f746172676574733d534b595f7355534453225d7d5d7d";
+
+        return _packTx(
+            ANNOTATION_REGISTRY,
+            abi.encodeWithSelector(
+                bytes4(0x0ae1b13d), // post(string,string)
+                string(jsonPayload),
+                "ROLES_PERMISSION_ANNOTATION"
+            )
+        );
     }
 
-    /// @dev TX 9: CowSwap scopeFunction — swap permissions with buy/sell token whitelists (11844 bytes)
-    function _buildCowSwapScopeFunctionCalldata() internal pure returns (bytes memory) {
-        return
-            hex"7508dd984d414e414745520000000000000000000000000000000000000000000000000000000000000000000000000023da9ade38e4477b23770ded512fd37b12381fab569d34890000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000a00000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000003600000000000000000000000000000000000000000000000000000000000006c00000000000000000000000000000000000000000000000000000000000000760000000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000000008a0000000000000000000000000000000000000000000000000000000000000094000000000000000000000000000000000000000000000000000000000000009e00000000000000000000000000000000000000000000000000000000000000a800000000000000000000000000000000000000000000000000000000000000b200000000000000000000000000000000000000000000000000000000000000bc00000000000000000000000000000000000000000000000000000000000000c600000000000000000000000000000000000000000000000000000000000000d000000000000000000000000000000000000000000000000000000000000000da00000000000000000000000000000000000000000000000000000000000000e400000000000000000000000000000000000000000000000000000000000000ee00000000000000000000000000000000000000000000000000000000000000f800000000000000000000000000000000000000000000000000000000000001040000000000000000000000000000000000000000000000000000000000000110000000000000000000000000000000000000000000000000000000000000011c000000000000000000000000000000000000000000000000000000000000012800000000000000000000000000000000000000000000000000000000000001340000000000000000000000000000000000000000000000000000000000000140000000000000000000000000000000000000000000000000000000000000014c000000000000000000000000000000000000000000000000000000000000015800000000000000000000000000000000000000000000000000000000000001640000000000000000000000000000000000000000000000000000000000000170000000000000000000000000000000000000000000000000000000000000017c0000000000000000000000000000000000000000000000000000000000000188000000000000000000000000000000000000000000000000000000000000019400000000000000000000000000000000000000000000000000000000000001a000000000000000000000000000000000000000000000000000000000000001ac00000000000000000000000000000000000000000000000000000000000001b800000000000000000000000000000000000000000000000000000000000001c400000000000000000000000000000000000000000000000000000000000001d000000000000000000000000000000000000000000000000000000000000001dc00000000000000000000000000000000000000000000000000000000000001e800000000000000000000000000000000000000000000000000000000000001f40000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000020c000000000000000000000000000000000000000000000000000000000000021800000000000000000000000000000000000000000000000000000000000002240000000000000000000000000000000000000000000000000000000000000230000000000000000000000000000000000000000000000000000000000000023c000000000000000000000000000000000000000000000000000000000000024800000000000000000000000000000000000000000000000000000000000002540000000000000000000000000000000000000000000000000000000000000260000000000000000000000000000000000000000000000000000000000000026c000000000000000000000000000000000000000000000000000000000000027800000000000000000000000000000000000000000000000000000000000002840000000000000000000000000000000000000000000000000000000000000290000000000000000000000000000000000000000000000000000000000000029c00000000000000000000000000000000000000000000000000000000000002a800000000000000000000000000000000000000000000000000000000000002b400000000000000000000000000000000000000000000000000000000000002c000000000000000000000000000000000000000000000000000000000000002cc00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000500000000000000000000000000000000000000000000000000000000000000050000000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000003000000000000000000000000000000000000000000000000000000000000000500000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000f000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000000002000000000000000000000000040d16fc0246ad3160ccc09b8d0d3a2cd28ae6c2f0000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000000002000000000000000000000000048c3399719b582dd63eb5aadf12a40b4c3f52fa2000000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000000000200000000000000000000000004e3fbd56cd56c3e72c1403e103b45db9da5b9d2b0000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000000002000000000000000000000000058d97b57bb95320f9a05dc918aef65434969c2b2000000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000000000200000000000000000000000005a98fcbea516cf06857215779fd812ca3bef1b32000000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000000000200000000000000000000000006b175474e89094c44da98b954eedeac495271d0f000000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000000000200000000000000000000000006f40d4a6237c257fff2db00fa0510deeecd303eb000000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000000000200000000000000000000000007f39c581f595b53c5cb19bd0b3f8da6c935e2ca000000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000000020000000000000000000000000856c4efb76c1d1ae02e20ceb03a2a6a08b0b8dc300000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000000020000000000000000000000000a0b86991c6218b36c1d19d4a2e9eb0ce3606eb4800000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000000020000000000000000000000000a35b1b31ce002fbf2058d22f30f95d405200a15b00000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000000020000000000000000000000000a3931d71877c0e7a3148cb7eb4463524fec27fbd00000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000000020000000000000000000000000ae78736cd615f374d3085123a210448e74fc639300000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000000020000000000000000000000000ae7ab96520de3a18e5e111b5eaab095312d7fe8400000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000000020000000000000000000000000ba100000625a3754423978a60c9317c58a424e3d00000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000000020000000000000000000000000c00e94cb662c3520282e6f5717214004a7f2688800000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000000020000000000000000000000000c02aaa39b223fe8d0a0e5c4f27ead9083c756cc200000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000000020000000000000000000000000c0c293ce456ff0ed870add98a0828dd4d2903dbf00000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000000020000000000000000000000000c20059e0317de91738d13af027dfc4a50781b06600000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000000020000000000000000000000000d33526068d116ce69f19a9ee46f0bd304f21a51f00000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000000020000000000000000000000000d533a949740bb3306d119cc777fa900ba034cd5200000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000000020000000000000000000000000dac17f958d2ee523a2206206994597c13d831ec700000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000000020000000000000000000000000dc035d45d973e3ec169d2276ddab16f1e407384f00000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000000020000000000000000000000000e95a203b1a91a908f9b9ce46459d101078c2c3cb00000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000000020000000000000000000000000f1c9acdc66974dfb6decb12aa385b9cd01190e380000000000000000000000000000000000000000000000000000000000000003000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000000002000000000000000000000000040d16fc0246ad3160ccc09b8d0d3a2cd28ae6c2f000000000000000000000000000000000000000000000000000000000000000300000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000000000200000000000000000000000006b175474e89094c44da98b954eedeac495271d0f000000000000000000000000000000000000000000000000000000000000000300000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000000000200000000000000000000000007f39c581f595b53c5cb19bd0b3f8da6c935e2ca000000000000000000000000000000000000000000000000000000000000000030000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000000020000000000000000000000000856c4efb76c1d1ae02e20ceb03a2a6a08b0b8dc300000000000000000000000000000000000000000000000000000000000000030000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000000020000000000000000000000000a0b86991c6218b36c1d19d4a2e9eb0ce3606eb4800000000000000000000000000000000000000000000000000000000000000030000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000000020000000000000000000000000a35b1b31ce002fbf2058d22f30f95d405200a15b00000000000000000000000000000000000000000000000000000000000000030000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000000020000000000000000000000000a3931d71877c0e7a3148cb7eb4463524fec27fbd00000000000000000000000000000000000000000000000000000000000000030000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000000020000000000000000000000000ae78736cd615f374d3085123a210448e74fc639300000000000000000000000000000000000000000000000000000000000000030000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000000020000000000000000000000000ae7ab96520de3a18e5e111b5eaab095312d7fe8400000000000000000000000000000000000000000000000000000000000000030000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000000020000000000000000000000000c02aaa39b223fe8d0a0e5c4f27ead9083c756cc200000000000000000000000000000000000000000000000000000000000000030000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000000020000000000000000000000000dac17f958d2ee523a2206206994597c13d831ec700000000000000000000000000000000000000000000000000000000000000030000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000000020000000000000000000000000dc035d45d973e3ec169d2276ddab16f1e407384f00000000000000000000000000000000000000000000000000000000000000030000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000000020000000000000000000000000e95a203b1a91a908f9b9ce46459d101078c2c3cb00000000000000000000000000000000000000000000000000000000000000030000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000000020000000000000000000000000eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee00000000000000000000000000000000000000000000000000000000000000030000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000000020000000000000000000000000f1c9acdc66974dfb6decb12aa385b9cd01190e38";
+    // ─── TX 18: Re-apply unwrapper ───────────────────────────────────────
+
+    function _buildFinalUnwrapper() internal view returns (bytes memory) {
+        // TX 18: roles.setTransactionUnwrapper -- same as TX 2
+        return _packTx(
+            address(roles),
+            abi.encodeWithSelector(
+                IRoles.setTransactionUnwrapper.selector,
+                MULTISEND_HANDLER,
+                MULTISEND_SELECTOR,
+                MULTISEND_ADAPTER
+            )
+        );
     }
 
-    /// @dev TX 10: GHO approve() scoping (1028 bytes)
-    function _buildGhoApproveScopeFunctionCalldata() internal pure returns (bytes memory) {
-        return
-            hex"7508dd984d414e414745520000000000000000000000000000000000000000000000000000000000000000000000000040d16fc0246ad3160ccc09b8d0d3a2cd28ae6c2f095ea7b30000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000a0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000040000000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000000012000000000000000000000000000000000000000000000000000000000000001c000000000000000000000000000000000000000000000000000000000000002800000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000500000000000000000000000000000000000000000000000000000000000000050000000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000000000200000000000000000000000006a29a46e21c730dca1d8b23d637c101cec605c5b00000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000000020000000000000000000000000c92e8bdf79f0507f65a392b0ab4667716bfe0110";
+    // ─── Condition Builders ──────────────────────────────────────────────
+
+    /// @dev TX 9: CowSwap signOrder -- 54 conditions total
+    ///      Struct: (sellToken, buyToken, receiver, sellAmount, buyAmount, validTo, appData,
+    ///               feeAmount, kind, partiallyFillable, sellTokenBalance, buyTokenBalance)
+    function _buildCowSwapSignOrderConditions() internal pure returns (ConditionFlat[] memory) {
+        address[] memory sellTokens = _cowSwapSellTokens();
+        address[] memory buyTokens = _cowSwapBuyTokens();
+
+        // Total: 1 root + 1 tuple + 2 OR groups + 1 avatar + 9 pass + 25 sell + 15 buy = 54
+        uint256 numConditions = 14 + sellTokens.length + buyTokens.length;
+        ConditionFlat[] memory c = new ConditionFlat[](numConditions);
+
+        uint256 i = 0;
+
+        // [0] Root: Calldata Matches
+        c[i++] = ConditionFlat(0, PARAM_TYPE_CALLDATA, OP_MATCHES, "");
+        // [1] Param 0 (order struct): Tuple Matches
+        c[i++] = ConditionFlat(0, PARAM_TYPE_TUPLE, OP_MATCHES, "");
+        // [2] sellToken: OR group (children will be sell tokens)
+        c[i++] = ConditionFlat(1, PARAM_TYPE_NONE, OP_OR, "");
+        // [3] buyToken: OR group (children will be buy tokens)
+        c[i++] = ConditionFlat(1, PARAM_TYPE_NONE, OP_OR, "");
+        // [4] receiver: must equal Avatar (the Safe)
+        c[i++] = ConditionFlat(1, PARAM_TYPE_STATIC, OP_EQUAL_TO_AVATAR, "");
+        // [5-13] sellAmount, buyAmount, validTo, appData, feeAmount, kind,
+        //        partiallyFillable, sellTokenBalance, buyTokenBalance: Pass
+        for (uint256 j = 0; j < 9; j++) {
+            c[i++] = ConditionFlat(1, PARAM_TYPE_STATIC, OP_PASS, "");
+        }
+
+        // [14-38] Sell token whitelist (parent=2, the sellToken OR group)
+        for (uint256 j = 0; j < sellTokens.length; j++) {
+            c[i++] = ConditionFlat(2, PARAM_TYPE_STATIC, OP_EQUAL_TO, abi.encode(sellTokens[j]));
+        }
+
+        // [39-53] Buy token whitelist (parent=3, the buyToken OR group)
+        for (uint256 j = 0; j < buyTokens.length; j++) {
+            c[i++] = ConditionFlat(3, PARAM_TYPE_STATIC, OP_EQUAL_TO, abi.encode(buyTokens[j]));
+        }
+
+        return c;
     }
 
-    /// @dev TX 12: FLUID approve() scoping (612 bytes)
-    function _buildFluidApproveScopeFunctionCalldata() internal pure returns (bytes memory) {
-        return
-            hex"7508dd984d414e41474552000000000000000000000000000000000000000000000000000000000000000000000000006f40d4a6237c257fff2db00fa0510deeecd303eb095ea7b30000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000a000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000004000000000000000000000000000000000000000000000000000000000000000e00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000500000000000000000000000000000000000000000000000000000000000000050000000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000000020000000000000000000000000c92e8bdf79f0507f65a392b0ab4667716bfe0110";
+    /// @dev TX 10: GHO approve() -- spender must be fGHO OR GPv2VaultRelayer
+    function _buildGhoApproveConditions() internal pure returns (ConditionFlat[] memory) {
+        ConditionFlat[] memory c = new ConditionFlat[](4);
+        // [0] Root: Calldata Matches
+        c[0] = ConditionFlat(0, PARAM_TYPE_CALLDATA, OP_MATCHES, "");
+        // [1] Param 0 (spender): OR group
+        c[1] = ConditionFlat(0, PARAM_TYPE_NONE, OP_OR, "");
+        // [2] spender == fGHO
+        c[2] = ConditionFlat(1, PARAM_TYPE_STATIC, OP_EQUAL_TO, abi.encode(F_GHO));
+        // [3] spender == GPv2VaultRelayer
+        c[3] = ConditionFlat(1, PARAM_TYPE_STATIC, OP_EQUAL_TO, abi.encode(GPV2_VAULT_RELAYER));
+        return c;
     }
 
-    /// @dev TX 16: FluidMerkle claim() scoping (580 bytes)
-    function _buildFluidMerkleClaimScopeFunctionCalldata() internal pure returns (bytes memory) {
-        return
-            hex"7508dd984d414e4147455200000000000000000000000000000000000000000000000000000000000000000000000000f398e66b1273a34558aebbec550dccaf4acc7714be5013dc0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000a000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000004000000000000000000000000000000000000000000000000000000000000000e00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000500000000000000000000000000000000000000000000000000000000000000050000000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000f00000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000000000";
+    /// @dev TX 12: FLUID approve() -- spender must be GPv2VaultRelayer only
+    function _buildFluidApproveConditions() internal pure returns (ConditionFlat[] memory) {
+        ConditionFlat[] memory c = new ConditionFlat[](2);
+        // [0] Root: Calldata Matches
+        c[0] = ConditionFlat(0, PARAM_TYPE_CALLDATA, OP_MATCHES, "");
+        // [1] Param 0 (spender): must equal GPv2VaultRelayer
+        c[1] = ConditionFlat(0, PARAM_TYPE_STATIC, OP_EQUAL_TO, abi.encode(GPV2_VAULT_RELAYER));
+        return c;
     }
 
-    /// @dev TX 17: Add new annotations to annotation registry (2308 bytes)
-    function _buildAddAnnotationsCalldata() internal pure returns (bytes memory) {
-        return
-            hex"0ae1b13d000000000000000000000000000000000000000000000000000000000000004000000000000000000000000000000000000000000000000000000000000008c0000000000000000000000000000000000000000000000000000000000000085e7b22726f6c65734d6f64223a22307837303338303665363138343739383433343664326437646464383533303439363237653530613430222c22726f6c654b6579223a22307834643431346534313437343535323030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030222c22616464416e6e6f746174696f6e73223a5b7b22736368656d61223a2268747470733a2f2f6b69742e6b61727061746b65792e636f6d2f6170692f76312f6f70656e6170692e6a736f6e222c2275726973223a5b2268747470733a2f2f6b69742e6b61727061746b65792e636f6d2f6170692f76312f7065726d697373696f6e732f6574682f636f77737761702f737761703f73656c6c3d455448253243307845393541323033423161393161393038463942394345343634353964313031303738633263336362253243307843306332393363653435366646304544383730414464393861303832384464346432393033444246253243307862613130303030303632356133373534343233393738613630633933313763353861343234653344253243307863303065393443623636324333353230323832453666353731373231343030344137663236383838253243307844353333613934393734306262333330366431313943433737376661393030624130333463643532253243307834653346424435364344353663336537326331343033653130336234354462396461354239443242253243307836423137353437344538393039344334344461393862393534456564654143343935323731643046253243307841333562314233314365303032464246323035384432324633306639354434303532303041313562253243307836663430643441363233374332353766666632644230304641303531304465454543643330336562253243307834304431364643303234366144333136304363633039423844304433413263443238614536433266253243307835413938466342454135313643663036383537323135373739466438313243413362654631423332253243307835384439374235374242393533323046396130356443393138416566363534333439363963324232253243307838353663344566623736433144314145303265323043454230334132413661303862306238644333253243307866314339616344633636393734644642366445634231326141333835623963443031313930453338253243307861653738373336436436313566333734443330383531323341323130343438453734466336333933253243307844333335323630363844313136634536394631394139656534364630626433303446323141353166253243307863323030353965303331374445393137333864313361663032374466433461353037383162303636253243307861653761623936353230444533413138453565313131423545614162303935333132443766453834253243307861333933316437313837374330453761333134384342374562343436333532344645633237666244253243307834384333333939373139423538326444363365423541414466313241343042344333663532464132253243307841306238363939316336323138623336633164313944346132653945623063453336303665423438253243307864433033354434356439373345334543313639643232373644446162313666316534303733383446253243307864414331374639353844326565353233613232303632303639393435393743313344383331656337253243307843303261614133396232323346453844304130653543344632376541443930383343373536436332253243307837663339433538314635393542353363356362313962443062336638644136633933354532436130266275793d455448253243307845393541323033423161393161393038463942394345343634353964313031303738633263336362253243307836423137353437344538393039344334344461393862393534456564654143343935323731643046253243307841333562314233314365303032464246323035384432324633306639354434303532303041313562253243307834304431364643303234366144333136304363633039423844304433413263443238614536433266253243307838353663344566623736433144314145303265323043454230334132413661303862306238644333253243307866314339616344633636393734644642366445634231326141333835623963443031313930453338253243307861653738373336436436313566333734443330383531323341323130343438453734466336333933253243307861653761623936353230444533413138453565313131423545614162303935333132443766453834253243307861333933316437313837374330453761333134384342374562343436333532344645633237666244253243307841306238363939316336323138623336633164313944346132653945623063453336303665423438253243307864433033354434356439373345334543313639643232373644446162313666316534303733383446253243307864414331374639353844326565353233613232303632303639393435393743313344383331656337253243307843303261614133396232323346453844304130653543344632376541443930383343373536436332253243307837663339433538314635393542353363356362313962443062336638644136633933354532436130222c2268747470733a2f2f6b69742e6b61727061746b65792e636f6d2f6170692f76312f7065726d697373696f6e732f6574682f737061726b2f6465706f7369743f746172676574733d534b595f7355534453225d7d5d7d0000000000000000000000000000000000000000000000000000000000000000001b524f4c45535f5045524d495353494f4e5f414e4e4f544154494f4e0000000000";
+    /// @dev TX 16: FluidMerkle claim() -- recipient (param 0) must equal the Safe (EqualToAvatar)
+    function _buildFluidMerkleClaimConditions() internal pure returns (ConditionFlat[] memory) {
+        ConditionFlat[] memory c = new ConditionFlat[](2);
+        // [0] Root: Calldata Matches
+        c[0] = ConditionFlat(0, PARAM_TYPE_CALLDATA, OP_MATCHES, "");
+        // [1] Param 0 (recipient): must equal Avatar (the Safe)
+        c[1] = ConditionFlat(0, PARAM_TYPE_STATIC, OP_EQUAL_TO_AVATAR, "");
+        return c;
+    }
+
+    // ─── Token List Helpers ──────────────────────────────────────────────
+
+    /// @dev 25 sell tokens, sorted by address ascending (matching on-chain condition order)
+    function _cowSwapSellTokens() internal pure returns (address[] memory) {
+        address[] memory t = new address[](25);
+        t[0]  = GHO;      // 0x40D16FC0...
+        t[1]  = SWISE;    // 0x48C33997...
+        t[2]  = CVX;      // 0x4e3FBD56...
+        t[3]  = MORPHO;   // 0x58D97B57...
+        t[4]  = LDO;      // 0x5A98FcBE...
+        t[5]  = DAI;      // 0x6B175474...
+        t[6]  = FLUID;    // 0x6f40d4A6...
+        t[7]  = WSTETH;   // 0x7f39C581...
+        t[8]  = LUSD;     // 0x856c4Efb...
+        t[9]  = USDC;     // 0xA0b86991...
+        t[10] = USR;      // 0xA35b1B31...
+        t[11] = SDAI;     // 0xa3931d71...
+        t[12] = RETH;     // 0xae78736C...
+        t[13] = STETH;    // 0xae7ab965...
+        t[14] = BAL;      // 0xba100000...
+        t[15] = COMP;     // 0xc00e94Cb...
+        t[16] = WETH;     // 0xC02aaA39...
+        t[17] = AURA;     // 0xC0c293ce...
+        t[18] = SPK;      // 0xc20059e0...
+        t[19] = RPL;      // 0xD3352606...
+        t[20] = CRV;      // 0xD533a949...
+        t[21] = USDT;     // 0xdAC17F95...
+        t[22] = USDS;     // 0xdC035D45...
+        t[23] = SUSDE;    // 0xE95A203B...
+        t[24] = SFRXETH;  // 0xf1C9acDc...
+        return t;
+    }
+
+    /// @dev 15 buy tokens, sorted by address ascending (matching on-chain condition order)
+    function _cowSwapBuyTokens() internal pure returns (address[] memory) {
+        address[] memory t = new address[](15);
+        t[0]  = GHO;        // 0x40D16FC0...
+        t[1]  = DAI;        // 0x6B175474...
+        t[2]  = WSTETH;     // 0x7f39C581...
+        t[3]  = LUSD;       // 0x856c4Efb...
+        t[4]  = USDC;       // 0xA0b86991...
+        t[5]  = USR;        // 0xA35b1B31...
+        t[6]  = SDAI;       // 0xa3931d71...
+        t[7]  = RETH;       // 0xae78736C...
+        t[8]  = STETH;      // 0xae7ab965...
+        t[9]  = WETH;       // 0xC02aaA39...
+        t[10] = USDT;       // 0xdAC17F95...
+        t[11] = USDS;       // 0xdC035D45...
+        t[12] = SUSDE;      // 0xE95A203B...
+        t[13] = NATIVE_ETH; // 0xEeeeeeEe...
+        t[14] = SFRXETH;    // 0xf1C9acDc...
+        return t;
     }
 }
