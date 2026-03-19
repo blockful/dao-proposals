@@ -16,8 +16,8 @@ import { IERC20 } from "@forge-std/src/interfaces/IERC20.sol";
 
 /**
  * @title EP 6.38 — Endowment permissions to karpatkey — Update #8
- * @notice Calldata review for the draft proposal on Tally
- * @dev Draft: https://www.tally.xyz/gov/ens/draft/2810671389726475399
+ * @notice Calldata review for the live proposal on Tally
+ * @dev Live: https://www.tally.xyz/gov/ens/proposal/37471031935121384443990643698532486694478877174074595786824358199918042537243
  *
  * Summary of operations (18 transactions in MultiSend):
  *
@@ -117,7 +117,7 @@ contract Proposal_ENS_EP_KPK_Update_8_Draft_Test is ENS_Governance, SafeHelper, 
     // ─── Framework Overrides ─────────────────────────────────────────────
 
     function _selectFork() public override {
-        vm.createSelectFork({ urlOrAlias: "mainnet" });
+        vm.createSelectFork({ blockNumber: 24_693_037, urlOrAlias: "mainnet" });
     }
 
     function _proposer() public pure override returns (address) {
@@ -125,11 +125,11 @@ contract Proposal_ENS_EP_KPK_Update_8_Draft_Test is ENS_Governance, SafeHelper, 
     }
 
     function _isProposalSubmitted() public pure override returns (bool) {
-        return false; // Draft -- not yet on-chain
+        return true; // Live proposal
     }
 
     function dirPath() public pure override returns (string memory) {
-        return "src/ens/proposals/ep-kpk-update-8";
+        return "src/ens/proposals/ep-6-38";
     }
 
     // ─── Before/After Permission Assertions ──────────────────────────────
@@ -478,7 +478,7 @@ contract Proposal_ENS_EP_KPK_Update_8_Draft_Test is ENS_Governance, SafeHelper, 
         // See annotationRemoval.json — removes old annotation URIs for:
         //   - spark/deposit?targets=SKY_USDS
         //   - cowswap/swap with old sell/buy token lists (without GHO/FLUID)
-        string memory jsonPayload = vm.readFile("src/ens/proposals/ep-kpk-update-8/annotationRemoval.json");
+        string memory jsonPayload = vm.readFile("src/ens/proposals/ep-6-38/annotationRemoval.json");
 
         return _packTx(
             ANNOTATION_REGISTRY,
@@ -561,7 +561,7 @@ contract Proposal_ENS_EP_KPK_Update_8_Draft_Test is ENS_Governance, SafeHelper, 
         // See annotationAddition.json — adds new annotation URIs for:
         //   - cowswap/swap with updated sell/buy token lists (GHO + FLUID added)
         //   - spark/deposit?targets=SKY_sUSDS
-        string memory jsonPayload = vm.readFile("src/ens/proposals/ep-kpk-update-8/annotationAddition.json");
+        string memory jsonPayload = vm.readFile("src/ens/proposals/ep-6-38/annotationAddition.json");
 
         return _packTx(
             ANNOTATION_REGISTRY,
