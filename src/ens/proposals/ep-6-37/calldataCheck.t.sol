@@ -5,7 +5,7 @@ import { console2 } from "@forge-std/src/console2.sol";
 
 import { ENS_Governance } from "@ens/ens.t.sol";
 import { SafeHelper } from "@ens/helpers/SafeHelper.sol";
-import { IERC20 } from "@contracts/utils/interfaces/IERC20.sol";
+import { IERC20 } from "@forge-std/src/interfaces/IERC20.sol";
 
 /**
  * @title Proposal_ENS_EP_6_37_Test

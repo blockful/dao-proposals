@@ -8,15 +8,12 @@ import { IFluidVaultV2 } from "@ens/interfaces/IFluidVaultV2.sol";
 import { IFluidMerkleDistributor } from "@ens/interfaces/IFluidMerkleDistributor.sol";
 import { IMetaMorphoV1 } from "@ens/interfaces/IMetaMorphoV1.sol";
 import { ENS_Governance } from "@ens/ens.t.sol";
+import { ZodiacRolesHelper } from "@ens/helpers/ZodiacRolesHelper.sol";
 import { console2 } from "@forge-std/src/console2.sol";
 import { IERC20 } from "@forge-std/src/interfaces/IERC20.sol";
 
-contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
+contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance, ZodiacRolesHelper {
     address private safe = 0x4F2083f5fBede34C2714aFfb3105539775f7FE64;
-    address private karpatkey = 0xb423e0f6E7430fa29500c5cC9bd83D28c8BD8978;
-
-    IZodiacRoles roles = IZodiacRoles(0x703806E61847984346d2D7DDd853049627e50A40);
-    bytes32 private constant MANAGER_ROLE = 0x4d414e4147455200000000000000000000000000000000000000000000000000;
 
     address private UniversalRewardsDistributor = 0x330eefa8a787552DC5cAd3C3cA644844B1E61Ddb;
     address private USDT = 0xdAC17F958D2ee523a2206206994597C13D831ec7;
@@ -87,13 +84,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
                     );
                 }
                 {
-                    vm.expectRevert(
-                        abi.encodeWithSelector(
-                            IZodiacRoles.ConditionViolation.selector,
-                            IZodiacRoles.Status.TargetAddressNotAllowed,
-                            bytes32(0)
-                        )
-                    );
+                    _expectConditionViolation(IZodiacRoles.Status.TargetAddressNotAllowed);
                     _safeExecuteTransaction(
                         kpkUSDCv2,
                         abi.encodeWithSelector(
@@ -104,13 +95,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
                     );
                 }
                 {
-                    vm.expectRevert(
-                        abi.encodeWithSelector(
-                            IZodiacRoles.ConditionViolation.selector,
-                            IZodiacRoles.Status.TargetAddressNotAllowed,
-                            bytes32(0)
-                        )
-                    );
+                    _expectConditionViolation(IZodiacRoles.Status.TargetAddressNotAllowed);
                     _safeExecuteTransaction(
                         kpkUSDCv2,
                         abi.encodeWithSelector(
@@ -123,13 +108,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
                 }
             }
             {
-                vm.expectRevert(
-                    abi.encodeWithSelector(
-                        IZodiacRoles.ConditionViolation.selector,
-                        IZodiacRoles.Status.TargetAddressNotAllowed,
-                        bytes32(0)
-                    )
-                );
+                _expectConditionViolation(IZodiacRoles.Status.TargetAddressNotAllowed);
                 _safeExecuteTransaction(
                     kpkUSDCv2,
                     abi.encodeWithSelector(
@@ -141,13 +120,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
                 );
             }
             {
-                vm.expectRevert(
-                    abi.encodeWithSelector(
-                        IZodiacRoles.ConditionViolation.selector,
-                        IZodiacRoles.Status.TargetAddressNotAllowed,
-                        bytes32(0)
-                    )
-                );
+                _expectConditionViolation(IZodiacRoles.Status.TargetAddressNotAllowed);
                 _safeExecuteTransaction(
                     GHO,
                     abi.encodeWithSelector(
@@ -159,13 +132,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
             }
             {
                 {
-                    vm.expectRevert(
-                        abi.encodeWithSelector(
-                            IZodiacRoles.ConditionViolation.selector,
-                            IZodiacRoles.Status.TargetAddressNotAllowed,
-                            bytes32(0)
-                        )
-                    );
+                    _expectConditionViolation(IZodiacRoles.Status.TargetAddressNotAllowed);
                     _safeExecuteTransaction(
                         FluidGHO,
                         abi.encodeWithSelector(
@@ -176,13 +143,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
                     );
                 }
                 {
-                    vm.expectRevert(
-                        abi.encodeWithSelector(
-                            IZodiacRoles.ConditionViolation.selector,
-                            IZodiacRoles.Status.TargetAddressNotAllowed,
-                            bytes32(0)
-                        )
-                    );
+                    _expectConditionViolation(IZodiacRoles.Status.TargetAddressNotAllowed);
                     _safeExecuteTransaction(
                         FluidGHO,
                         abi.encodeWithSelector(
@@ -194,13 +155,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
                     );
                 }
                 {
-                    vm.expectRevert(
-                        abi.encodeWithSelector(
-                            IZodiacRoles.ConditionViolation.selector,
-                            IZodiacRoles.Status.TargetAddressNotAllowed,
-                            bytes32(0)
-                        )
-                    );
+                    _expectConditionViolation(IZodiacRoles.Status.TargetAddressNotAllowed);
                     _safeExecuteTransaction(
                         FluidGHO,
                         abi.encodeWithSelector(
@@ -214,13 +169,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
             }
             {
                 {
-                    vm.expectRevert(
-                        abi.encodeWithSelector(
-                            IZodiacRoles.ConditionViolation.selector,
-                            IZodiacRoles.Status.TargetAddressNotAllowed,
-                            bytes32(0)
-                        )
-                    );
+                    _expectConditionViolation(IZodiacRoles.Status.TargetAddressNotAllowed);
                     _safeExecuteTransaction(
                         FluidMerklDistributor,
                         abi.encodeWithSelector(
@@ -238,13 +187,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
             }
             {
                 {
-                    vm.expectRevert(
-                        abi.encodeWithSelector(
-                            IZodiacRoles.ConditionViolation.selector,
-                            IZodiacRoles.Status.TargetAddressNotAllowed,
-                            bytes32(0)
-                        )
-                    );
+                    _expectConditionViolation(IZodiacRoles.Status.TargetAddressNotAllowed);
                     _safeExecuteTransaction(
                         FluidUSDC,
                         abi.encodeWithSelector(
@@ -255,13 +198,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
                     );
                 }
                 {
-                    vm.expectRevert(
-                        abi.encodeWithSelector(
-                            IZodiacRoles.ConditionViolation.selector,
-                            IZodiacRoles.Status.TargetAddressNotAllowed,
-                            bytes32(0)
-                        )
-                    );
+                    _expectConditionViolation(IZodiacRoles.Status.TargetAddressNotAllowed);
                     _safeExecuteTransaction(
                         FluidUSDC,
                         abi.encodeWithSelector(
@@ -273,13 +210,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
                     );
                 }
                 {
-                    vm.expectRevert(
-                        abi.encodeWithSelector(
-                            IZodiacRoles.ConditionViolation.selector,
-                            IZodiacRoles.Status.TargetAddressNotAllowed,
-                            bytes32(0)
-                        )
-                    );
+                    _expectConditionViolation(IZodiacRoles.Status.TargetAddressNotAllowed);
                     _safeExecuteTransaction(
                         FluidUSDC,
                         abi.encodeWithSelector(
@@ -340,13 +271,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
             }
             {
                 {
-                    vm.expectRevert(
-                        abi.encodeWithSelector(
-                            IZodiacRoles.ConditionViolation.selector,
-                            IZodiacRoles.Status.TargetAddressNotAllowed,
-                            bytes32(0)
-                        )
-                    );
+                    _expectConditionViolation(IZodiacRoles.Status.TargetAddressNotAllowed);
                     _safeExecuteTransaction(
                         kpkETHv2,
                         abi.encodeWithSelector(
@@ -357,13 +282,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
                     );
                 }
                 {
-                    vm.expectRevert(
-                        abi.encodeWithSelector(
-                            IZodiacRoles.ConditionViolation.selector,
-                            IZodiacRoles.Status.TargetAddressNotAllowed,
-                            bytes32(0)
-                        )
-                    );
+                    _expectConditionViolation(IZodiacRoles.Status.TargetAddressNotAllowed);
                     _safeExecuteTransaction(
                         kpkETHv2,
                         abi.encodeWithSelector(
@@ -375,13 +294,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
                     );
                 }
                 {
-                    vm.expectRevert(
-                        abi.encodeWithSelector(
-                            IZodiacRoles.ConditionViolation.selector,
-                            IZodiacRoles.Status.TargetAddressNotAllowed,
-                            bytes32(0)
-                        )
-                    );
+                    _expectConditionViolation(IZodiacRoles.Status.TargetAddressNotAllowed);
                     _safeExecuteTransaction(
                         kpkETHv2,
                         abi.encodeWithSelector(
@@ -395,13 +308,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
             }
             {
                 {
-                    vm.expectRevert(
-                        abi.encodeWithSelector(
-                            IZodiacRoles.ConditionViolation.selector,
-                            IZodiacRoles.Status.TargetAddressNotAllowed,
-                            bytes32(0)
-                        )
-                    );
+                    _expectConditionViolation(IZodiacRoles.Status.TargetAddressNotAllowed);
                     _safeExecuteTransaction(
                         kpkUSDCPrime,
                         abi.encodeWithSelector(
@@ -412,13 +319,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
                     );
                 }
                 {
-                    vm.expectRevert(
-                        abi.encodeWithSelector(
-                            IZodiacRoles.ConditionViolation.selector,
-                            IZodiacRoles.Status.TargetAddressNotAllowed,
-                            bytes32(0)
-                        )
-                    );
+                    _expectConditionViolation(IZodiacRoles.Status.TargetAddressNotAllowed);
                     _safeExecuteTransaction(
                         kpkUSDCPrime,
                         abi.encodeWithSelector(
@@ -430,13 +331,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
                     );
                 }
                 {
-                    vm.expectRevert(
-                        abi.encodeWithSelector(
-                            IZodiacRoles.ConditionViolation.selector,
-                            IZodiacRoles.Status.TargetAddressNotAllowed,
-                            bytes32(0)
-                        )
-                    );
+                    _expectConditionViolation(IZodiacRoles.Status.TargetAddressNotAllowed);
                     _safeExecuteTransaction(
                         kpkUSDCPrime,
                         abi.encodeWithSelector(
@@ -465,13 +360,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
             }
             {
                 {
-                    vm.expectRevert(
-                        abi.encodeWithSelector(
-                            IZodiacRoles.ConditionViolation.selector,
-                            IZodiacRoles.Status.TargetAddressNotAllowed,
-                            bytes32(0)
-                        )
-                    );
+                    _expectConditionViolation(IZodiacRoles.Status.TargetAddressNotAllowed);
                     _safeExecuteTransaction(
                         kpkETHPrime,
                         abi.encodeWithSelector(
@@ -482,13 +371,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
                     );
                 }
                 {
-                    vm.expectRevert(
-                        abi.encodeWithSelector(
-                            IZodiacRoles.ConditionViolation.selector,
-                            IZodiacRoles.Status.TargetAddressNotAllowed,
-                            bytes32(0)
-                        )
-                    );
+                    _expectConditionViolation(IZodiacRoles.Status.TargetAddressNotAllowed);
                     _safeExecuteTransaction(
                         kpkETHPrime,
                         abi.encodeWithSelector(
@@ -500,13 +383,7 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
                     );
                 }
                 {
-                    vm.expectRevert(
-                        abi.encodeWithSelector(
-                            IZodiacRoles.ConditionViolation.selector,
-                            IZodiacRoles.Status.TargetAddressNotAllowed,
-                            bytes32(0)
-                        )
-                    );
+                    _expectConditionViolation(IZodiacRoles.Status.TargetAddressNotAllowed);
                     _safeExecuteTransaction(
                         kpkETHPrime,
                         abi.encodeWithSelector(
@@ -875,12 +752,6 @@ contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance {
         }
 
         vm.stopPrank();
-    }
-
-    function _safeExecuteTransaction(address target, bytes memory data) internal {
-        uint256 snapshot = vm.snapshot();
-        roles.execTransactionWithRole(target, 0, data, IZodiacRoles.Operation.Call, MANAGER_ROLE, false);
-        vm.revertTo(snapshot);
     }
 
     function _generateCallData()
