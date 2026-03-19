@@ -16,8 +16,8 @@ import { IERC20 } from "@forge-std/src/interfaces/IERC20.sol";
 
 /**
  * @title EP 6.38 — Endowment permissions to karpatkey — Update #8
- * @notice Calldata review for the draft proposal on Tally
- * @dev Draft: https://www.tally.xyz/gov/ens/draft/2810671389726475399
+ * @notice Calldata review for the live proposal on Tally
+ * @dev Live: https://www.tally.xyz/gov/ens/proposal/37471031935121384443990643698532486694478877174074595786824358199918042537243
  *
  * Summary of operations (18 transactions in MultiSend):
  *
@@ -117,7 +117,7 @@ contract Proposal_ENS_EP_KPK_Update_8_Draft_Test is ENS_Governance, SafeHelper, 
     // ─── Framework Overrides ─────────────────────────────────────────────
 
     function _selectFork() public override {
-        vm.createSelectFork({ urlOrAlias: "mainnet" });
+        vm.createSelectFork({ blockNumber: 24_693_037, urlOrAlias: "mainnet" });
     }
 
     function _proposer() public pure override returns (address) {
@@ -125,7 +125,7 @@ contract Proposal_ENS_EP_KPK_Update_8_Draft_Test is ENS_Governance, SafeHelper, 
     }
 
     function _isProposalSubmitted() public pure override returns (bool) {
-        return false; // Draft -- not yet on-chain
+        return true; // Live proposal
     }
 
     function dirPath() public pure override returns (string memory) {
