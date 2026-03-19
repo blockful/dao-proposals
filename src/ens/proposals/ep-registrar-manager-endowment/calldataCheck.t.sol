@@ -7,6 +7,7 @@ import { ENS_Governance } from "@ens/ens.t.sol";
 import { SafeHelper } from "@ens/helpers/SafeHelper.sol";
 import { ZodiacRolesHelper } from "@ens/helpers/ZodiacRolesHelper.sol";
 import { IZodiacRoles } from "@ens/interfaces/IZodiacRoles.sol";
+import { IRolesModifier, ConditionFlat } from "@ens/interfaces/IRolesModifier.sol";
 import { IERC20 } from "@forge-std/src/interfaces/IERC20.sol";
 
 import { RegistrarManager } from "./contracts/RegistrarManager.sol";
@@ -16,34 +17,6 @@ interface IRegistrarController {
     function transferOwnership(address newOwner) external;
     function recoverFunds(address _token, address _to, uint256 _amount) external;
     function withdraw() external;
-}
-
-interface IRoles {
-    function scopeTarget(bytes32 roleKey, address targetAddress) external;
-
-    function allowFunction(
-        bytes32 roleKey,
-        address targetAddress,
-        bytes4 selector,
-        uint8 options
-    )
-        external;
-
-    function scopeFunction(
-        bytes32 roleKey,
-        address targetAddress,
-        bytes4 selector,
-        ConditionFlat[] calldata conditions,
-        uint8 options
-    )
-        external;
-}
-
-struct ConditionFlat {
-    uint8 parent;
-    uint8 paramType;
-    uint8 operator;
-    bytes compValue;
 }
 
 /**
@@ -64,14 +37,7 @@ contract Proposal_ENS_EP_Registrar_Manager_Endowment_Test is ENS_Governance, Saf
     IRegistrarController public constant OLD_REGISTRAR =
         IRegistrarController(0x283Af0B28c62C092C9727F1Ee09c02CA627EB7F5);
 
-    IRoles public constant ROLES_MOD = IRoles(0x703806E61847984346d2D7DDd853049627e50A40);
-
-    uint8 private constant ABI_TYPE_STATIC = 1;
-    uint8 private constant ABI_TYPE_CALLDATA = 5;
-    uint8 private constant OP_PASS = 0;
-    uint8 private constant OP_MATCHES = 5;
-    uint8 private constant OP_EQUAL_TO = 16;
-    uint8 private constant EXECUTION_SEND = 1;
+    IRolesModifier public constant ROLES_MOD = IRolesModifier(0x703806E61847984346d2D7DDd853049627e50A40);
 
     RegistrarManager public manager;
 
@@ -134,7 +100,7 @@ contract Proposal_ENS_EP_Registrar_Manager_Endowment_Test is ENS_Governance, Saf
 
         // 5) Zodiac: scope USDC target
         {
-            bytes memory inner = abi.encodeWithSelector(IRoles.scopeTarget.selector, MANAGER_ROLE, address(USDC));
+            bytes memory inner = abi.encodeWithSelector(IRolesModifier.scopeTarget.selector, MANAGER_ROLE, address(USDC));
             (targets[4], calldatas[4]) = _buildSafeExecCalldata(
                 address(endowmentSafe), address(ROLES_MOD), inner, address(timelock)
             );
@@ -144,7 +110,7 @@ contract Proposal_ENS_EP_Registrar_Manager_Endowment_Test is ENS_Governance, Saf
         {
             ConditionFlat[] memory conditions = _usdcTransferConditions();
             bytes memory inner = abi.encodeWithSelector(
-                IRoles.scopeFunction.selector,
+                IRolesModifier.scopeFunction.selector,
                 MANAGER_ROLE, address(USDC), IERC20.transfer.selector, conditions, uint8(0)
             );
             (targets[5], calldatas[5]) = _buildSafeExecCalldata(
@@ -154,7 +120,7 @@ contract Proposal_ENS_EP_Registrar_Manager_Endowment_Test is ENS_Governance, Saf
 
         // 7) Zodiac: scope timelock target
         {
-            bytes memory inner = abi.encodeWithSelector(IRoles.scopeTarget.selector, MANAGER_ROLE, address(timelock));
+            bytes memory inner = abi.encodeWithSelector(IRolesModifier.scopeTarget.selector, MANAGER_ROLE, address(timelock));
             (targets[6], calldatas[6]) = _buildSafeExecCalldata(
                 address(endowmentSafe), address(ROLES_MOD), inner, address(timelock)
             );
@@ -163,7 +129,7 @@ contract Proposal_ENS_EP_Registrar_Manager_Endowment_Test is ENS_Governance, Saf
         // 8) Zodiac: allow ETH sends to timelock (empty calldata, send-only)
         {
             bytes memory inner = abi.encodeWithSelector(
-                IRoles.allowFunction.selector, MANAGER_ROLE, address(timelock), bytes4(0), EXECUTION_SEND
+                IRolesModifier.allowFunction.selector, MANAGER_ROLE, address(timelock), bytes4(0), EXEC_SEND
             );
             (targets[7], calldatas[7]) = _buildSafeExecCalldata(
                 address(endowmentSafe), address(ROLES_MOD), inner, address(timelock)
@@ -250,19 +216,19 @@ contract Proposal_ENS_EP_Registrar_Manager_Endowment_Test is ENS_Governance, Saf
         ConditionFlat[] memory conditions = new ConditionFlat[](3);
         conditions[0] = ConditionFlat({
             parent: 0,
-            paramType: ABI_TYPE_CALLDATA,
+            paramType: PARAM_TYPE_CALLDATA,
             operator: OP_MATCHES,
             compValue: ""
         });
         conditions[1] = ConditionFlat({
             parent: 0,
-            paramType: ABI_TYPE_STATIC,
+            paramType: PARAM_TYPE_STATIC,
             operator: OP_EQUAL_TO,
             compValue: abi.encodePacked(bytes32(uint256(uint160(address(timelock)))))
         });
         conditions[2] = ConditionFlat({
             parent: 0,
-            paramType: ABI_TYPE_STATIC,
+            paramType: PARAM_TYPE_STATIC,
             operator: OP_PASS,
             compValue: ""
         });
