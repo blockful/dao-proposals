@@ -12,7 +12,7 @@
 
 ## File Structure
 
-- **Modify:** `src/ens/proposals/ep-kpk-update-8/calldataCheck.t.sol` — complete rewrite
+- **Modify:** `src/ens/proposals/ep-6-38/calldataCheck.t.sol` — complete rewrite
 - **Reference (read-only):**
   - `src/ens/helpers/SafeHelper.sol` — `_buildSafeExecDelegateCalldata`, `_buildPreApprovedSignature`, `endowmentSafe`
   - `src/ens/helpers/ZodiacRolesHelper.sol` — `roles`, `MANAGER_ROLE`, `karpatkey`, `_safeExecuteTransaction`, `_expectConditionViolation`
@@ -111,7 +111,7 @@ Options: 0 (None)
 ### Task 1: Write the contract shell with all interfaces and constants
 
 **Files:**
-- Modify: `src/ens/proposals/ep-kpk-update-8/calldataCheck.t.sol`
+- Modify: `src/ens/proposals/ep-6-38/calldataCheck.t.sol`
 
 - [ ] **Step 1: Write the full contract shell**
 
@@ -286,7 +286,7 @@ Expected: Compiles (with warnings about empty functions)
 - [ ] **Step 3: Commit**
 
 ```bash
-git add src/ens/proposals/ep-kpk-update-8/calldataCheck.t.sol
+git add src/ens/proposals/ep-6-38/calldataCheck.t.sol
 git commit -m "refactor(ens): EP 6.38 — scaffold with named constants and interfaces"
 ```
 
@@ -546,7 +546,7 @@ Run: `forge build --match-contract Proposal_ENS_EP_KPK_Update_8_Draft_Test`
 - [ ] **Step 3: Commit**
 
 ```bash
-git add src/ens/proposals/ep-kpk-update-8/calldataCheck.t.sol
+git add src/ens/proposals/ep-6-38/calldataCheck.t.sol
 git commit -m "test(ens): EP 6.38 — add comprehensive before/after permission assertions"
 ```
 
@@ -679,7 +679,7 @@ Run: `forge build --match-contract Proposal_ENS_EP_KPK_Update_8_Draft_Test`
 - [ ] **Step 6: Commit**
 
 ```bash
-git add src/ens/proposals/ep-kpk-update-8/calldataCheck.t.sol
+git add src/ens/proposals/ep-6-38/calldataCheck.t.sol
 git commit -m "feat(ens): EP 6.38 — build simple transactions manually (TX 1-7, 11, 13-15, 18)"
 ```
 
@@ -934,7 +934,7 @@ Run: `forge build --match-contract Proposal_ENS_EP_KPK_Update_8_Draft_Test`
 - [ ] **Step 5: Commit**
 
 ```bash
-git add src/ens/proposals/ep-kpk-update-8/calldataCheck.t.sol
+git add src/ens/proposals/ep-6-38/calldataCheck.t.sol
 git commit -m "feat(ens): EP 6.38 — build all scopeFunction conditions from structs (TX 9-16)"
 ```
 
@@ -1034,7 +1034,7 @@ If the test FAILS on calldata comparison, that means our independently construct
 - [ ] **Step 4: Commit**
 
 ```bash
-git add src/ens/proposals/ep-kpk-update-8/calldataCheck.t.sol
+git add src/ens/proposals/ep-6-38/calldataCheck.t.sol
 git commit -m "feat(ens): EP 6.38 — complete calldata review with independent construction and assertions"
 ```
 

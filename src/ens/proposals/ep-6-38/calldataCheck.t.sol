@@ -129,7 +129,7 @@ contract Proposal_ENS_EP_KPK_Update_8_Draft_Test is ENS_Governance, SafeHelper, 
     }
 
     function dirPath() public pure override returns (string memory) {
-        return "src/ens/proposals/ep-kpk-update-8";
+        return "src/ens/proposals/ep-6-38";
     }
 
     // ─── Before/After Permission Assertions ──────────────────────────────
@@ -478,7 +478,7 @@ contract Proposal_ENS_EP_KPK_Update_8_Draft_Test is ENS_Governance, SafeHelper, 
         // See annotationRemoval.json — removes old annotation URIs for:
         //   - spark/deposit?targets=SKY_USDS
         //   - cowswap/swap with old sell/buy token lists (without GHO/FLUID)
-        string memory jsonPayload = vm.readFile("src/ens/proposals/ep-kpk-update-8/annotationRemoval.json");
+        string memory jsonPayload = vm.readFile("src/ens/proposals/ep-6-38/annotationRemoval.json");
 
         return _packTx(
             ANNOTATION_REGISTRY,
@@ -561,7 +561,7 @@ contract Proposal_ENS_EP_KPK_Update_8_Draft_Test is ENS_Governance, SafeHelper, 
         // See annotationAddition.json — adds new annotation URIs for:
         //   - cowswap/swap with updated sell/buy token lists (GHO + FLUID added)
         //   - spark/deposit?targets=SKY_sUSDS
-        string memory jsonPayload = vm.readFile("src/ens/proposals/ep-kpk-update-8/annotationAddition.json");
+        string memory jsonPayload = vm.readFile("src/ens/proposals/ep-6-38/annotationAddition.json");
 
         return _packTx(
             ANNOTATION_REGISTRY,
