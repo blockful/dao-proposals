@@ -5,33 +5,14 @@ import { ENS_Governance } from "@ens/ens.t.sol";
 import { SafeHelper } from "@ens/helpers/SafeHelper.sol";
 import { ZodiacRolesHelper } from "@ens/helpers/ZodiacRolesHelper.sol";
 import { IZodiacRoles } from "@ens/interfaces/IZodiacRoles.sol";
+import { IRolesModifier, ConditionFlat } from "@ens/interfaces/IRolesModifier.sol";
+import { IMultiSend } from "@ens/interfaces/IMultiSend.sol";
+import { ICowSwapOrderSigner } from "@ens/interfaces/ICowSwapOrderSigner.sol";
+import { ISparkRewards } from "@ens/interfaces/ISparkRewards.sol";
+import { IAnnotationRegistry } from "@ens/interfaces/IAnnotationRegistry.sol";
+import { IFluidMerkleDistributor } from "@ens/interfaces/IFluidMerkleDistributor.sol";
+import { IWETH } from "@ens/interfaces/IWETH.sol";
 import { IERC20 } from "@forge-std/src/interfaces/IERC20.sol";
-
-interface IRoles {
-    function setTransactionUnwrapper(address handler, bytes4 selector, address adapter) external;
-    function revokeTarget(bytes32 roleKey, address targetAddress) external;
-    function revokeFunction(bytes32 roleKey, address targetAddress, bytes4 selector) external;
-    function scopeTarget(bytes32 roleKey, address targetAddress) external;
-    function scopeFunction(
-        bytes32 roleKey,
-        address targetAddress,
-        bytes4 selector,
-        ConditionFlat[] calldata conditions,
-        uint8 options
-    ) external;
-    function allowFunction(bytes32 roleKey, address targetAddress, bytes4 selector, uint8 options) external;
-}
-
-interface IMultiSend {
-    function multiSend(bytes calldata transactions) external;
-}
-
-struct ConditionFlat {
-    uint8 parent;
-    uint8 paramType;
-    uint8 operator;
-    bytes compValue;
-}
 
 /**
  * @title EP 6.38 — Endowment permissions to karpatkey — Update #8
@@ -123,30 +104,15 @@ contract Proposal_ENS_EP_KPK_Update_8_Draft_Test is ENS_Governance, SafeHelper, 
 
     // ─── Function Selectors ──────────────────────────────────────────────
 
-    bytes4 private constant DEPOSIT_SELECTOR = 0xd0e30db0;       // deposit()
-    bytes4 private constant TRANSFER_SELECTOR = 0xa9059cbb;      // transfer(address,uint256)
-    bytes4 private constant APPROVE_SELECTOR = 0x095ea7b3;       // approve(address,uint256)
-    bytes4 private constant SIGN_ORDER_SELECTOR = 0x569d3489;    // signOrder((...),uint32,uint256)
-    bytes4 private constant SPARK_CLAIM_SELECTOR = 0xef98231e;   // claim(uint256,address,address,uint256,bytes32,bytes32[])
-    bytes4 private constant FLUID_CLAIM_SELECTOR = 0xbe5013dc;   // claim(address,uint256,uint8,bytes32,uint256,bytes32[],bytes)
-    bytes4 private constant MULTISEND_SELECTOR = 0x8d80ff0a;     // multiSend(bytes)
+    bytes4 private constant DEPOSIT_SELECTOR = IWETH.deposit.selector;
+    bytes4 private constant TRANSFER_SELECTOR = IERC20.transfer.selector;
+    bytes4 private constant APPROVE_SELECTOR = IERC20.approve.selector;
+    bytes4 private constant SIGN_ORDER_SELECTOR = ICowSwapOrderSigner.signOrder.selector;
+    bytes4 private constant SPARK_CLAIM_SELECTOR = ISparkRewards.claim.selector;
+    bytes4 private constant FLUID_CLAIM_SELECTOR = IFluidMerkleDistributor.claim.selector;
+    bytes4 private constant MULTISEND_SELECTOR = IMultiSend.multiSend.selector;
 
     // ─── Zodiac Condition Constants ──────────────────────────────────────
-
-    uint8 private constant PARAM_TYPE_NONE = 0;
-    uint8 private constant PARAM_TYPE_STATIC = 1;
-    uint8 private constant PARAM_TYPE_TUPLE = 3;
-    uint8 private constant PARAM_TYPE_CALLDATA = 5;
-
-    uint8 private constant OP_PASS = 0;
-    uint8 private constant OP_OR = 2;
-    uint8 private constant OP_MATCHES = 5;
-    uint8 private constant OP_EQUAL_TO_AVATAR = 15;
-    uint8 private constant OP_EQUAL_TO = 16;
-
-    uint8 private constant EXEC_NONE = 0;
-    uint8 private constant EXEC_SEND = 1;
-    uint8 private constant EXEC_DELEGATE_CALL = 2;
 
     // ─── Framework Overrides ─────────────────────────────────────────────
 
@@ -174,6 +140,34 @@ contract Proposal_ENS_EP_KPK_Update_8_Draft_Test is ENS_Governance, SafeHelper, 
             abi.encodeWithSignature("isModuleEnabled(address)", ROLES_V1)
         );
         assertTrue(ok && abi.decode(ret, (bool)), "Roles V1 should be enabled before execution");
+
+        // --- Permissions that SHOULD WORK before execution (will be revoked) ---
+
+        // RocketPool v3 deposit currently works
+        vm.startPrank(karpatkey);
+        _safeExecuteTransaction(
+            ROCKET_POOL_DEPOSIT_V3,
+            abi.encodeWithSelector(DEPOSIT_SELECTOR)
+        );
+        vm.stopPrank();
+
+        // SPK transfer currently works
+        vm.startPrank(karpatkey);
+        _safeExecuteTransaction(
+            SPK,
+            abi.encodeWithSelector(TRANSFER_SELECTOR, address(timelock), uint256(1))
+        );
+        vm.stopPrank();
+
+        // SparkRewards claim currently works
+        vm.startPrank(karpatkey);
+        _safeExecuteTransaction(
+            SPARK_REWARDS,
+            abi.encodeWithSelector(
+                SPARK_CLAIM_SELECTOR, uint256(0), address(endowmentSafe), SPK, uint256(0), bytes32(0), new bytes32[](0)
+            )
+        );
+        vm.stopPrank();
 
         // --- Permissions that should NOT WORK before execution (will be added) ---
 
@@ -421,10 +415,6 @@ contract Proposal_ENS_EP_KPK_Update_8_Draft_Test is ENS_Governance, SafeHelper, 
 
     // ─── MultiSend Packing ───────────────────────────────────────────────
 
-    function _packTx(address to, bytes memory data) internal pure returns (bytes memory) {
-        return abi.encodePacked(uint8(0), to, uint256(0), uint256(data.length), data);
-    }
-
     function _buildMultiSendTransactions() internal view returns (bytes memory) {
         return bytes.concat(
             _buildRevocationTransactions(),
@@ -448,7 +438,7 @@ contract Proposal_ENS_EP_KPK_Update_8_Draft_Test is ENS_Governance, SafeHelper, 
             _packTx(
                 address(roles),
                 abi.encodeWithSelector(
-                    IRoles.setTransactionUnwrapper.selector,
+                    IRolesModifier.setTransactionUnwrapper.selector,
                     MULTISEND_HANDLER,
                     MULTISEND_SELECTOR,
                     MULTISEND_ADAPTER
@@ -457,46 +447,44 @@ contract Proposal_ENS_EP_KPK_Update_8_Draft_Test is ENS_Governance, SafeHelper, 
             // TX 3: roles.revokeTarget -- RocketPool Deposit V3
             _packTx(
                 address(roles),
-                abi.encodeWithSelector(IRoles.revokeTarget.selector, MANAGER_ROLE, ROCKET_POOL_DEPOSIT_V3)
+                abi.encodeWithSelector(IRolesModifier.revokeTarget.selector, MANAGER_ROLE, ROCKET_POOL_DEPOSIT_V3)
             ),
             // TX 4: roles.revokeFunction -- RocketPool Deposit V3 deposit()
             _packTx(
                 address(roles),
-                abi.encodeWithSelector(IRoles.revokeFunction.selector, MANAGER_ROLE, ROCKET_POOL_DEPOSIT_V3, DEPOSIT_SELECTOR)
+                abi.encodeWithSelector(IRolesModifier.revokeFunction.selector, MANAGER_ROLE, ROCKET_POOL_DEPOSIT_V3, DEPOSIT_SELECTOR)
             ),
             // TX 5: roles.revokeFunction -- SPK transfer()
             _packTx(
                 address(roles),
-                abi.encodeWithSelector(IRoles.revokeFunction.selector, MANAGER_ROLE, SPK, TRANSFER_SELECTOR)
+                abi.encodeWithSelector(IRolesModifier.revokeFunction.selector, MANAGER_ROLE, SPK, TRANSFER_SELECTOR)
             ),
             // TX 6: roles.revokeTarget -- SparkRewards
             _packTx(
                 address(roles),
-                abi.encodeWithSelector(IRoles.revokeTarget.selector, MANAGER_ROLE, SPARK_REWARDS)
+                abi.encodeWithSelector(IRolesModifier.revokeTarget.selector, MANAGER_ROLE, SPARK_REWARDS)
             ),
             // TX 7: roles.revokeFunction -- SparkRewards claim()
             _packTx(
                 address(roles),
-                abi.encodeWithSelector(IRoles.revokeFunction.selector, MANAGER_ROLE, SPARK_REWARDS, SPARK_CLAIM_SELECTOR)
+                abi.encodeWithSelector(IRolesModifier.revokeFunction.selector, MANAGER_ROLE, SPARK_REWARDS, SPARK_CLAIM_SELECTOR)
             )
         );
     }
 
     // ─── TX 8: Remove old annotations ────────────────────────────────────
 
-    function _buildAnnotationRemoval() internal pure returns (bytes memory) {
-        // JSON payload for removing old annotations -- opaque data, not ABI-encoded calldata.
-        // Contains removeAnnotations URIs for:
-        //   - kit.karpatkey.com/.../spark/deposit?targets=SKY_USDS
-        //   - kit.karpatkey.com/.../cowswap/swap?sell=<old list without GHO/FLUID>&buy=<old list>
-        bytes memory jsonPayload =
-            hex"7b22726f6c65734d6f64223a22307837303338303665363138343739383433343664326437646464383533303439363237653530613430222c22726f6c654b6579223a22307834643431346534313437343535323030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030222c2272656d6f7665416e6e6f746174696f6e73223a5b2268747470733a2f2f6b69742e6b61727061746b65792e636f6d2f6170692f76312f7065726d697373696f6e732f6574682f737061726b2f6465706f7369743f746172676574733d534b595f55534453222c2268747470733a2f2f6b69742e6b61727061746b65792e636f6d2f6170692f76312f7065726d697373696f6e732f6574682f636f77737761702f737761703f73656c6c3d455448253243307845393541323033423161393161393038463942394345343634353964313031303738633263336362253243307843306332393363653435366646304544383730414464393861303832384464346432393033444246253243307862613130303030303632356133373534343233393738613630633933313763353861343234653344253243307863303065393443623636324333353230323832453666353731373231343030344137663236383838253243307844353333613934393734306262333330366431313943433737376661393030624130333463643532253243307834653346424435364344353663336537326331343033653130336234354462396461354239443242253243307836423137353437344538393039344334344461393862393534456564654143343935323731643046253243307841333562314233314365303032464246323035384432324633306639354434303532303041313562253243307835413938466342454135313643663036383537323135373739466438313243413362654631423332253243307835384439374235374242393533323046396130356443393138416566363534333439363963324232253243307838353663344566623736433144314145303265323043454230334132413661303862306238644333253243307866314339616344633636393734644642366445634231326141333835623963443031313930453338253243307861653738373336436436313566333734443330383531323341323130343438453734466336333933253243307844333335323630363844313136634536394631394139656534364630626433303446323141353166253243307863323030353965303331374445393137333864313361663032374466433461353037383162303636253243307861653761623936353230444533413138453565313131423545614162303935333132443766453834253243307861333933316437313837374330453761333134384342374562343436333532344645633237666244253243307834384333333939373139423538326444363365423541414466313241343042344333663532464132253243307841306238363939316336323138623336633164313944346132653945623063453336303665423438253243307864433033354434356439373345334543313639643232373644446162313666316534303733383446253243307864414331374639353844326565353233613232303632303639393435393743313344383331656337253243307843303261614133396232323346453844304130653543344632376541443930383343373536436332253243307837663339433538314635393542353363356362313962443062336638644136633933354532436130266275793d455448253243307845393541323033423161393161393038463942394345343634353964313031303738633263336362253243307836423137353437344538393039344334344461393862393534456564654143343935323731643046253243307841333562314233314365303032464246323035384432324633306639354434303532303041313562253243307838353663344566623736433144314145303265323043454230334132413661303862306238644333253243307866314339616344633636393734644642366445634231326141333835623963443031313930453338253243307861653738373336436436313566333734443330383531323341323130343438453734466336333933253243307861653761623936353230444533413138453565313131423545614162303935333132443766453834253243307861333933316437313837374330453761333134384342374562343436333532344645633237666244253243307841306238363939316336323138623336633164313944346132653945623063453336303665423438253243307864433033354434356439373345334543313639643232373644446162313666316534303733383446253243307864414331374639353844326565353233613232303632303639393435393743313344383331656337253243307843303261614133396232323346453844304130653543344632376541443930383343373536436332253243307837663339433538314635393542353363356362313962443062336638644136633933354532436130225d7d";
+    function _buildAnnotationRemoval() internal view returns (bytes memory) {
+        // See annotationRemoval.json — removes old annotation URIs for:
+        //   - spark/deposit?targets=SKY_USDS
+        //   - cowswap/swap with old sell/buy token lists (without GHO/FLUID)
+        string memory jsonPayload = vm.readFile("src/ens/proposals/ep-kpk-update-8/annotationRemoval.json");
 
         return _packTx(
             ANNOTATION_REGISTRY,
             abi.encodeWithSelector(
-                bytes4(0x0ae1b13d), // post(string,string)
-                string(jsonPayload),
+                IAnnotationRegistry.post.selector,
+                jsonPayload,
                 "ROLES_PERMISSION_ANNOTATION"
             )
         );
@@ -510,7 +498,7 @@ contract Proposal_ENS_EP_KPK_Update_8_Draft_Test is ENS_Governance, SafeHelper, 
             _packTx(
                 address(roles),
                 abi.encodeWithSelector(
-                    IRoles.scopeFunction.selector,
+                    IRolesModifier.scopeFunction.selector,
                     MANAGER_ROLE, COWSWAP_ORDER_SIGNER, SIGN_ORDER_SELECTOR,
                     _buildCowSwapSignOrderConditions(), EXEC_DELEGATE_CALL
                 )
@@ -519,7 +507,7 @@ contract Proposal_ENS_EP_KPK_Update_8_Draft_Test is ENS_Governance, SafeHelper, 
             _packTx(
                 address(roles),
                 abi.encodeWithSelector(
-                    IRoles.scopeFunction.selector,
+                    IRolesModifier.scopeFunction.selector,
                     MANAGER_ROLE, GHO, APPROVE_SELECTOR,
                     _buildGhoApproveConditions(), EXEC_NONE
                 )
@@ -527,13 +515,13 @@ contract Proposal_ENS_EP_KPK_Update_8_Draft_Test is ENS_Governance, SafeHelper, 
             // TX 11: scopeTarget FLUID
             _packTx(
                 address(roles),
-                abi.encodeWithSelector(IRoles.scopeTarget.selector, MANAGER_ROLE, FLUID)
+                abi.encodeWithSelector(IRolesModifier.scopeTarget.selector, MANAGER_ROLE, FLUID)
             ),
             // TX 12: FLUID approve scoping
             _packTx(
                 address(roles),
                 abi.encodeWithSelector(
-                    IRoles.scopeFunction.selector,
+                    IRolesModifier.scopeFunction.selector,
                     MANAGER_ROLE, FLUID, APPROVE_SELECTOR,
                     _buildFluidApproveConditions(), EXEC_NONE
                 )
@@ -541,25 +529,25 @@ contract Proposal_ENS_EP_KPK_Update_8_Draft_Test is ENS_Governance, SafeHelper, 
             // TX 13: scopeTarget RocketPool Deposit V4
             _packTx(
                 address(roles),
-                abi.encodeWithSelector(IRoles.scopeTarget.selector, MANAGER_ROLE, ROCKET_POOL_DEPOSIT_V4)
+                abi.encodeWithSelector(IRolesModifier.scopeTarget.selector, MANAGER_ROLE, ROCKET_POOL_DEPOSIT_V4)
             ),
             // TX 14: allowFunction RocketPool Deposit V4 deposit() with ETH
             _packTx(
                 address(roles),
                 abi.encodeWithSelector(
-                    IRoles.allowFunction.selector, MANAGER_ROLE, ROCKET_POOL_DEPOSIT_V4, DEPOSIT_SELECTOR, EXEC_SEND
+                    IRolesModifier.allowFunction.selector, MANAGER_ROLE, ROCKET_POOL_DEPOSIT_V4, DEPOSIT_SELECTOR, EXEC_SEND
                 )
             ),
             // TX 15: scopeTarget FluidMerkle
             _packTx(
                 address(roles),
-                abi.encodeWithSelector(IRoles.scopeTarget.selector, MANAGER_ROLE, FLUID_MERKLE)
+                abi.encodeWithSelector(IRolesModifier.scopeTarget.selector, MANAGER_ROLE, FLUID_MERKLE)
             ),
             // TX 16: FluidMerkle claim scoping
             _packTx(
                 address(roles),
                 abi.encodeWithSelector(
-                    IRoles.scopeFunction.selector,
+                    IRolesModifier.scopeFunction.selector,
                     MANAGER_ROLE, FLUID_MERKLE, FLUID_CLAIM_SELECTOR,
                     _buildFluidMerkleClaimConditions(), EXEC_NONE
                 )
@@ -569,19 +557,17 @@ contract Proposal_ENS_EP_KPK_Update_8_Draft_Test is ENS_Governance, SafeHelper, 
 
     // ─── TX 17: Add new annotations ──────────────────────────────────────
 
-    function _buildAnnotationAddition() internal pure returns (bytes memory) {
-        // JSON payload for adding new annotations -- opaque data, not ABI-encoded calldata.
-        // Contains addAnnotations with URIs for:
-        //   - kit.karpatkey.com/.../cowswap/swap?sell=<new list with GHO/FLUID>&buy=<new list with GHO>
-        //   - kit.karpatkey.com/.../spark/deposit?targets=SKY_sUSDS
-        bytes memory jsonPayload =
-            hex"7b22726f6c65734d6f64223a22307837303338303665363138343739383433343664326437646464383533303439363237653530613430222c22726f6c654b6579223a22307834643431346534313437343535323030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030222c22616464416e6e6f746174696f6e73223a5b7b22736368656d61223a2268747470733a2f2f6b69742e6b61727061746b65792e636f6d2f6170692f76312f6f70656e6170692e6a736f6e222c2275726973223a5b2268747470733a2f2f6b69742e6b61727061746b65792e636f6d2f6170692f76312f7065726d697373696f6e732f6574682f636f77737761702f737761703f73656c6c3d455448253243307845393541323033423161393161393038463942394345343634353964313031303738633263336362253243307843306332393363653435366646304544383730414464393861303832384464346432393033444246253243307862613130303030303632356133373534343233393738613630633933313763353861343234653344253243307863303065393443623636324333353230323832453666353731373231343030344137663236383838253243307844353333613934393734306262333330366431313943433737376661393030624130333463643532253243307834653346424435364344353663336537326331343033653130336234354462396461354239443242253243307836423137353437344538393039344334344461393862393534456564654143343935323731643046253243307841333562314233314365303032464246323035384432324633306639354434303532303041313562253243307836663430643441363233374332353766666632644230304641303531304465454543643330336562253243307834304431364643303234366144333136304363633039423844304433413263443238614536433266253243307835413938466342454135313643663036383537323135373739466438313243413362654631423332253243307835384439374235374242393533323046396130356443393138416566363534333439363963324232253243307838353663344566623736433144314145303265323043454230334132413661303862306238644333253243307866314339616344633636393734644642366445634231326141333835623963443031313930453338253243307861653738373336436436313566333734443330383531323341323130343438453734466336333933253243307844333335323630363844313136634536394631394139656534364630626433303446323141353166253243307863323030353965303331374445393137333864313361663032374466433461353037383162303636253243307861653761623936353230444533413138453565313131423545614162303935333132443766453834253243307861333933316437313837374330453761333134384342374562343436333532344645633237666244253243307834384333333939373139423538326444363365423541414466313241343042344333663532464132253243307841306238363939316336323138623336633164313944346132653945623063453336303665423438253243307864433033354434356439373345334543313639643232373644446162313666316534303733383446253243307864414331374639353844326565353233613232303632303639393435393743313344383331656337253243307843303261614133396232323346453844304130653543344632376541443930383343373536436332253243307837663339433538314635393542353363356362313962443062336638644136633933354532436130266275793d455448253243307845393541323033423161393161393038463942394345343634353964313031303738633263336362253243307836423137353437344538393039344334344461393862393534456564654143343935323731643046253243307841333562314233314365303032464246323035384432324633306639354434303532303041313562253243307834304431364643303234366144333136304363633039423844304433413263443238614536433266253243307838353663344566623736433144314145303265323043454230334132413661303862306238644333253243307866314339616344633636393734644642366445634231326141333835623963443031313930453338253243307861653738373336436436313566333734443330383531323341323130343438453734466336333933253243307861653761623936353230444533413138453565313131423545614162303935333132443766453834253243307861333933316437313837374330453761333134384342374562343436333532344645633237666244253243307841306238363939316336323138623336633164313944346132653945623063453336303665423438253243307864433033354434356439373345334543313639643232373644446162313666316534303733383446253243307864414331374639353844326565353233613232303632303639393435393743313344383331656337253243307843303261614133396232323346453844304130653543344632376541443930383343373536436332253243307837663339433538314635393542353363356362313962443062336638644136633933354532436130222c2268747470733a2f2f6b69742e6b61727061746b65792e636f6d2f6170692f76312f7065726d697373696f6e732f6574682f737061726b2f6465706f7369743f746172676574733d534b595f7355534453225d7d5d7d";
+    function _buildAnnotationAddition() internal view returns (bytes memory) {
+        // See annotationAddition.json — adds new annotation URIs for:
+        //   - cowswap/swap with updated sell/buy token lists (GHO + FLUID added)
+        //   - spark/deposit?targets=SKY_sUSDS
+        string memory jsonPayload = vm.readFile("src/ens/proposals/ep-kpk-update-8/annotationAddition.json");
 
         return _packTx(
             ANNOTATION_REGISTRY,
             abi.encodeWithSelector(
-                bytes4(0x0ae1b13d), // post(string,string)
-                string(jsonPayload),
+                IAnnotationRegistry.post.selector,
+                jsonPayload,
                 "ROLES_PERMISSION_ANNOTATION"
             )
         );
@@ -594,7 +580,7 @@ contract Proposal_ENS_EP_KPK_Update_8_Draft_Test is ENS_Governance, SafeHelper, 
         return _packTx(
             address(roles),
             abi.encodeWithSelector(
-                IRoles.setTransactionUnwrapper.selector,
+                IRolesModifier.setTransactionUnwrapper.selector,
                 MULTISEND_HANDLER,
                 MULTISEND_SELECTOR,
                 MULTISEND_ADAPTER
