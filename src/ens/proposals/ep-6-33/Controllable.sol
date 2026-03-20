@@ -1,4 +1,4 @@
-pragma solidity ^0.8.4;
+pragma solidity >=0.8.25 <0.9.0;
 
 import "./vendor/oz-v4/Ownable.sol";
 

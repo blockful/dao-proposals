@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.4;
+pragma solidity >=0.8.25 <0.9.0;
 
 interface IENSRegistryWithFallback {
     event ApprovalForAll(address indexed owner, address indexed operator, bool approved);

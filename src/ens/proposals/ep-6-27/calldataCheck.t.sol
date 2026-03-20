@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.25;
+pragma solidity >=0.8.25 <0.9.0;
 
 import { ISafe } from "@ens/interfaces/ISafe.sol";
 import { IZodiacRoles } from "@ens/interfaces/IZodiacRoles.sol";
@@ -12,7 +12,7 @@ import { ZodiacRolesHelper } from "@ens/helpers/ZodiacRolesHelper.sol";
 import { console2 } from "@forge-std/src/console2.sol";
 import { IERC20 } from "@forge-std/src/interfaces/IERC20.sol";
 
-contract Proposal_ENS_EP_KPK_DRAFT_Test is ENS_Governance, ZodiacRolesHelper {
+contract Proposal_ENS_EP_6_27_Test is ENS_Governance, ZodiacRolesHelper {
     address private safe = 0x4F2083f5fBede34C2714aFfb3105539775f7FE64;
 
     address private UniversalRewardsDistributor = 0x330eefa8a787552DC5cAd3C3cA644844B1E61Ddb;

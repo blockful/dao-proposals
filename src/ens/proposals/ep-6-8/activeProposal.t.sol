@@ -1,5 +1,10 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.13;
+// TODO: This file contains deeply nested Zodiac Roles Modifier permission updates (986KB).
+// Modernizing to the calldataCheck.t.sol pattern would require decomposing hundreds of
+// individual permission scope/revoke calls. The calldata is too complex to safely decode
+// and reconstruct from interfaces without risk of subtle errors. Consider modernizing
+// only if/when a structured Zodiac permissions builder library is available.
+pragma solidity >=0.8.25 <0.9.0;
 
 import { Test } from "@forge-std/src/Test.sol";
 import { console2 } from "@forge-std/src/console2.sol";

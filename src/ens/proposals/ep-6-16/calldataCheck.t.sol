@@ -23,7 +23,7 @@ abstract contract NameResolver {
     function setName(bytes32 node, string memory name) public virtual;
 }
 
-contract Proposal_ENS_EP_Enable_L2_Test is ENS_Governance {
+contract Proposal_ENS_EP_6_16_Test is ENS_Governance {
     // Contract addresses - Update with actual addresses
     IENSNewReverseRegistrar newReverseRegistrar = IENSNewReverseRegistrar(0x283F227c4Bd38ecE252C4Ae7ECE650B0e913f1f9);
     INewEthRegistrarController newEthRegistrarController = 

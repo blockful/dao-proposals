@@ -141,14 +141,45 @@ contract Proposal_ENS_EP_Topic_Name_Test is ENS_Governance {
 forge test --match-contract Proposal_ENS_EP_Topic_Name_Test -vvv
 ```
 
-## 6. Available Helpers
+## 6. Minimum Assertion Baseline
+
+Even at the pre-draft stage, `_beforeProposal()` and `_afterExecution()` must contain real assertions. These hooks are the primary proof that the proposal does what it claims. Empty hooks mean the test only proves the calldata does not revert — not that it achieves the correct outcome.
+
+### What to put in `_beforeProposal()`
+
+1. **Snapshot values that will change** into state variables (balances, owners, config values, permission states).
+2. **Assert preconditions** the proposal depends on (e.g., timelock owns a contract, a permission does not yet exist).
+3. **For permission proposals:** exercise permissions that will be revoked (should succeed) and attempt permissions that will be added (should revert).
+
+### What to put in `_afterExecution()`
+
+Assert **at least one check per executable call** in the proposal:
+
+| Proposal type | Required assertions |
+|---------------|---------------------|
+| **Token transfer** | Recipient balance increased by exact amount (`assertEq` on delta). |
+| **Ownership / registry change** | New owner matches expected address. |
+| **Permission grant** | Granted action succeeds. Wrong parameters revert (negative test). |
+| **Permission revocation** | Revoked action reverts with expected error. |
+| **Configuration change** | New value matches expected. |
+| **ENS name operations** | `ensRegistry.owner(namehash(...))` returns expected value. |
+
+### Anti-patterns
+
+- `_beforeProposal() {}` or `_afterExecution() {}` — never acceptable.
+- Only using `assertNotEq` — proves something changed but not that it changed correctly.
+- No negative tests for permission scoping — if a proposal grants scoped permissions, verify that out-of-scope parameters are blocked.
+
+These assertions will carry forward into the draft and live stages, so writing them early saves rework later.
+
+## 7. Available Helpers
 
 | Helper | Import | Use Case |
 |--------|--------|----------|
 | `SafeHelper` | `@ens/helpers/SafeHelper.sol` | Build `execTransaction` calldata with pre-approved signatures. Provides `endowmentSafe`, `_buildSafeExecCalldata()`, `_buildSafeExecDelegateCalldata()` |
 | `ZodiacRolesHelper` | `@ens/helpers/ZodiacRolesHelper.sol` | Test Zodiac Roles permissions. Provides `roles`, `karpatkey`, `MANAGER_ROLE`, `_safeExecuteTransaction()`, `_expectConditionViolation()` |
 
-## 7. Transitioning to Draft
+## 8. Transitioning to Draft
 
 When the proposal is created as a Tally draft, follow the [Draft Calldata Review Guide](./DRAFT_CALLDATA_REVIEW_GUIDE.md) to update the same `calldataCheck.t.sol`:
 

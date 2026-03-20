@@ -1,5 +1,10 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.25;
+// TODO: This file contains deeply nested Zodiac Roles Modifier permission updates (514KB).
+// It includes hundreds of individual protocol permission scope/revoke calls for the
+// ENS Endowment Safe. Modernizing to the calldataCheck.t.sol pattern would require
+// decomposing all permission calls, which carries risk of subtle errors. Consider
+// modernizing only if/when a structured Zodiac permissions builder library is available.
+pragma solidity >=0.8.25 <0.9.0;
 
 import { ISafe } from "@ens/interfaces/ISafe.sol";
 import { IZodiacRoles } from "@ens/interfaces/IZodiacRoles.sol";

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.4;
+pragma solidity >=0.8.25 <0.9.0;
 
 interface IWETH {
     event Approval(address indexed src, address indexed guy, uint256 wad);
