@@ -20,7 +20,9 @@
 
 - [ ] **Standardize IERC20 import path** — Some proposals import from `@contracts/utils/interfaces/IERC20.sol`, others from `@forge-std/src/interfaces/IERC20.sol`. Pick one.
 
-- [ ] **Refactor ENS base class to inherit CalldataComparison** — `ens.t.sol` still has duplicated JSON parsing. Replace with `CalldataComparison` from `@contracts/base/`. Same for `uniswap.t.sol`.
+- [x] **Refactor ENS base class to inherit CalldataComparison** — `ens.t.sol` now inherits `CalldataComparison`, removing ~130 lines of duplicated code. Also fixed double `_generateCallData()` call.
+
+- [ ] **Refactor Uniswap base class to inherit CalldataComparison** — `uniswap.t.sol` still has duplicated JSON parsing.
 
 ## Remaining — Low Priority
 
