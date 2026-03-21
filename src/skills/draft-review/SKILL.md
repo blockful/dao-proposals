@@ -1,20 +1,36 @@
 ---
-name: ens-draft-review
-description: Use when reviewing an ENS DAO proposal that exists as a Tally draft (URL contains /draft/), when fetching draft data, writing or updating calldata review tests, or when the user shares a Tally draft URL
+name: draft-review
+description: Use when reviewing a DAO proposal that exists as a Tally draft (URL contains /draft/), when fetching draft data, writing or updating calldata review tests, or when the user shares a Tally draft URL
 ---
 
-# ENS Draft Calldata Review
+# Draft Calldata Review
 
 Review a proposal that exists as a **Tally draft** (URL contains `/draft/`).
 
-**REQUIRED REFERENCE:** Use `ens-review-reference` for key addresses, helpers, and troubleshooting.
+**REQUIRED REFERENCE:** Use `review-reference` for key addresses, helpers, and troubleshooting.
+
+## DAO Detection
+
+1. Extract the Tally slug from the URL (e.g., `tally.xyz/gov/{slug}/draft/...`).
+2. Look up the slug in `src/dao-registry.json` under `daos[slug].tallySlug`.
+3. Use the matched entry to resolve all parameterized values below:
+   - `{dao}` -- the registry key (e.g., `ens`, `uniswap`)
+   - `{name}` -- human-readable DAO name (e.g., `ENS`, `Uniswap`)
+   - `{basePath}` -- e.g., `src/ens`
+   - `{proposalsPath}` -- e.g., `src/ens/proposals`
+   - `{baseTestContract}` -- e.g., `ENS_Governance`
+   - `{baseTestFile}` -- e.g., `src/ens/ens.t.sol`
+   - `{chain}` -- e.g., `mainnet`
+   - `{proposalPrefix}` -- e.g., `ep`
+
+If no Tally URL is provided, ask the user which DAO this review is for.
 
 ## Workflow
 
 ### 1. Create branch (if new)
 
 ```bash
-git checkout -b ens/ep-topic-name
+git checkout -b {dao}/{proposalPrefix}-topic-name
 ```
 
 If continuing from a pre-draft, use the existing branch.
@@ -27,7 +43,7 @@ node src/utils/fetchTallyDraft.js <DRAFT_URL_OR_ID> <OUTPUT_DIR>
 
 Example:
 ```bash
-node src/utils/fetchTallyDraft.js https://www.tally.xyz/gov/ens/draft/2786603872288769996 src/ens/proposals/ep-topic-name
+node src/utils/fetchTallyDraft.js https://www.tally.xyz/gov/{dao}/draft/2786603872288769996 {proposalsPath}/{proposalPrefix}-topic-name
 ```
 
 This creates:
@@ -42,14 +58,14 @@ Create `calldataCheck.t.sol` (or update from pre-draft phase).
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.25 <0.9.0;
 
-import { ENS_Governance } from "@ens/ens.t.sol";
-// Import helpers based on proposal type (see ens-review-reference)
-// Import shared interfaces from @ens/interfaces/
+import { {baseTestContract} } from "{baseTestFile import}";
+// Import helpers based on proposal type (see review-reference)
+// Import shared interfaces from {basePath}/interfaces/
 
-contract Proposal_ENS_EP_Topic_Name_Draft_Test is ENS_Governance {
+contract Proposal_{NAME}_{PREFIX}_Topic_Name_Draft_Test is {baseTestContract} {
 
     function _selectFork() public override {
-        vm.createSelectFork({ urlOrAlias: "mainnet" });
+        vm.createSelectFork({ urlOrAlias: "{chain}" });
     }
 
     function _proposer() public pure override returns (address) {
@@ -93,7 +109,7 @@ contract Proposal_ENS_EP_Topic_Name_Draft_Test is ENS_Governance {
     }
 
     function dirPath() public pure override returns (string memory) {
-        return "src/ens/proposals/ep-topic-name";
+        return "{proposalsPath}/{proposalPrefix}-topic-name";
     }
 }
 ```
@@ -111,21 +127,21 @@ contract Proposal_ENS_EP_Topic_Name_Draft_Test is ENS_Governance {
 | Field | Pre-draft | Draft |
 |-------|-----------|-------|
 | `description` | Hardcoded placeholder | `getDescriptionFromMarkdown()` |
-| `dirPath()` | `""` | `"src/ens/proposals/ep-topic-name"` |
+| `dirPath()` | `""` | `"{proposalsPath}/{proposalPrefix}-topic-name"` |
 | `_proposer()` | Default | From Tally draft |
 
 ### 4. Run test
 
 ```bash
-forge test --match-path "src/ens/proposals/ep-topic-name/*" -vv
+forge test --match-path "{proposalsPath}/{proposalPrefix}-topic-name/*" -vv
 ```
 
 ### 5. Commit, push, and open PR
 
 ```bash
-git add src/ens/proposals/ep-topic-name/
-git commit -m "chore(ens): add draft calldata review for EP X.Y -- topic-name"
-git push origin ens/ep-topic-name
+git add {proposalsPath}/{proposalPrefix}-topic-name/
+git commit -m "chore({dao}): add draft calldata review for {PREFIX} X.Y -- topic-name"
+git push origin {dao}/{proposalPrefix}-topic-name
 ```
 
 Open PR targeting `main`. Merge after review.
@@ -135,19 +151,19 @@ Open PR targeting `main`. Merge after review.
 ```markdown
 ## Draft proposal calldata security review
 
-The calldata draft executes successfully and achieves the expected outcome of the proposal. All simulations and tests are available [here](https://github.com/blockful/dao-proposals/blob/COMMIT_HASH/src/ens/proposals/ep-topic-name/calldataCheck.t.sol).
+The calldata draft executes successfully and achieves the expected outcome of the proposal. All simulations and tests are available [here](https://github.com/blockful/dao-proposals/blob/COMMIT_HASH/{proposalsPath}/{proposalPrefix}-topic-name/calldataCheck.t.sol).
 
 To verify locally:
 1. Clone: `git clone https://github.com/blockful/dao-proposals.git`
 2. Checkout: `git checkout SHORT_HASH`
-3. Run: `forge test --match-path "src/ens/proposals/ep-topic-name/*" -vv`
+3. Run: `forge test --match-path "{proposalsPath}/{proposalPrefix}-topic-name/*" -vv`
 ```
 
 Replace `COMMIT_HASH` with the full merge commit hash, `SHORT_HASH` with first 7 chars.
 
 ## Transitioning to Live
 
-When the proposal is submitted on-chain, use the `ens-live-review` skill. Changes needed:
+When the proposal is submitted on-chain, use the `live-review` skill. Changes needed:
 
 | Field | Draft | Live |
 |-------|-------|------|
@@ -156,4 +172,4 @@ When the proposal is submitted on-chain, use the `ens-live-review` skill. Change
 | `_proposer()` | Draft proposer | On-chain proposer |
 | Contract name | `_Draft_Test` | `_Test` |
 | Data fetch | `fetchTallyDraft.js` | `fetchLiveProposal.js` |
-| Directory | May rename to `ep-X-Y` | Final name |
+| Directory | May rename to `{proposalPrefix}-X-Y` | Final name |

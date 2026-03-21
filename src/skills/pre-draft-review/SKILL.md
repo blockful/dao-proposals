@@ -1,30 +1,45 @@
 ---
-name: ens-pre-draft-review
-description: Use when an ENS DAO proposal is being discussed or designed but has no Tally draft yet, when the user wants to test a proposal idea, deploy custom contracts, or build calldata before it goes to Tally
+name: pre-draft-review
+description: Use when a DAO proposal is being discussed or designed but has no Tally draft yet, when the user wants to test a proposal idea, deploy custom contracts, or build calldata before it goes to Tally
 ---
 
-# ENS Pre-Draft Proposal Review
+# Pre-Draft Proposal Review
 
 Review a proposal that is being **discussed or designed** -- no Tally draft exists yet.
 
-**REQUIRED REFERENCE:** Use `ens-review-reference` for key addresses, helpers, and troubleshooting.
+**REQUIRED REFERENCE:** Use `review-reference` for key addresses, helpers, and troubleshooting.
+
+## DAO Detection
+
+1. If the user provides a Tally URL, extract the slug (e.g., `tally.xyz/gov/{slug}/...`).
+2. Otherwise, ask the user which DAO this review is for.
+3. Look up the DAO in `src/dao-registry.json` under `daos[key]`.
+4. Use the matched entry to resolve all parameterized values below:
+   - `{dao}` -- the registry key (e.g., `ens`, `uniswap`)
+   - `{name}` -- human-readable DAO name (e.g., `ENS`, `Uniswap`)
+   - `{basePath}` -- e.g., `src/ens`
+   - `{proposalsPath}` -- e.g., `src/ens/proposals`
+   - `{baseTestContract}` -- e.g., `ENS_Governance`
+   - `{baseTestFile}` -- e.g., `src/ens/ens.t.sol`
+   - `{chain}` -- e.g., `mainnet`
+   - `{proposalPrefix}` -- e.g., `ep`
 
 ## Workflow
 
 ### 1. Create branch and directory
 
 ```bash
-git checkout -b ens/ep-topic-name
-mkdir -p src/ens/proposals/ep-topic-name
+git checkout -b {dao}/{proposalPrefix}-topic-name
+mkdir -p {proposalsPath}/{proposalPrefix}-topic-name
 ```
 
-Use a descriptive name (e.g., `ens/ep-registrar-manager-endowment`).
+Use a descriptive name (e.g., `{dao}/{proposalPrefix}-registrar-manager-endowment`).
 
 ### 2. (Optional) Add custom contracts
 
 If the proposal deploys new contracts:
 ```
-src/ens/proposals/ep-topic-name/
+{proposalsPath}/{proposalPrefix}-topic-name/
   contracts/
     MyContract.sol
     MyContract.t.sol    # Unit tests for the contract
@@ -39,18 +54,18 @@ Create `calldataCheck.t.sol`:
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.25 <0.9.0;
 
-import { ENS_Governance } from "@ens/ens.t.sol";
-// Import helpers based on proposal type (see ens-review-reference)
-// Import shared interfaces from @ens/interfaces/
+import { {baseTestContract} } from "{baseTestFile import}";
+// Import helpers based on proposal type (see review-reference)
+// Import shared interfaces from {basePath}/interfaces/
 
-contract Proposal_ENS_EP_Topic_Name_Test is ENS_Governance {
+contract Proposal_{NAME}_{PREFIX}_Topic_Name_Test is {baseTestContract} {
 
     function _selectFork() public override {
-        vm.createSelectFork({ blockNumber: RECENT_BLOCK, urlOrAlias: "mainnet" });
+        vm.createSelectFork({ blockNumber: RECENT_BLOCK, urlOrAlias: "{chain}" });
     }
 
     function _proposer() public pure override returns (address) {
-        return 0x5BFCB4BE4d7B43437d5A0c57E908c048a4418390; // fireeyesdao.eth (default)
+        return DEFAULT_PROPOSER; // See DAO's Constants.sol or registry
     }
 
     function _beforeProposal() public override {
@@ -99,24 +114,24 @@ contract Proposal_ENS_EP_Topic_Name_Test is ENS_Governance {
 ### 4. Run test
 
 ```bash
-forge test --match-contract Proposal_ENS_EP_Topic_Name_Test -vvv
+forge test --match-contract Proposal_{NAME}_{PREFIX}_Topic_Name_Test -vvv
 ```
 
 ### 5. Commit
 
 ```bash
-git add src/ens/proposals/ep-topic-name/
-git commit -m "chore(ens): add pre-draft calldata review for EP topic-name"
-git push origin ens/ep-topic-name
+git add {proposalsPath}/{proposalPrefix}-topic-name/
+git commit -m "chore({dao}): add pre-draft calldata review for {PREFIX} topic-name"
+git push origin {dao}/{proposalPrefix}-topic-name
 ```
 
 ## Transitioning to Draft
 
-When the proposal is created on Tally, use the `ens-draft-review` skill. Changes needed:
+When the proposal is created on Tally, use the `draft-review` skill. Changes needed:
 
 | Field | Pre-draft | Draft |
 |-------|-----------|-------|
 | `description` | Hardcoded placeholder | `getDescriptionFromMarkdown()` |
-| `dirPath()` | `""` | `"src/ens/proposals/ep-topic-name"` |
+| `dirPath()` | `""` | `"{proposalsPath}/{proposalPrefix}-topic-name"` |
 | `_proposer()` | Default | From Tally draft |
 | New files | None | `proposalCalldata.json`, `proposalDescription.md` (fetched) |
