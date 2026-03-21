@@ -9,7 +9,7 @@ import { IUSDCx } from "@ens/interfaces/IUSDCx.sol";
 import { CFAv1Forwarder } from "@ens/interfaces/ISuperfluidCFAv1Forwarder.sol";
 import { IAutoWrapper } from "@ens/interfaces/IAutoWrapper.sol";
 
-contract ProposalENSEPReactivateStreamDraftTest is ENS_Governance {
+contract Proposal_ENS_EP_6_18_Test is ENS_Governance {
     // Contract addresses
     IERC20 public constant USDC = IERC20(0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48);
     IUSDCx public constant USDCx = IUSDCx(0x1BA8603DA702602A8657980e825A6DAa03Dee93a);

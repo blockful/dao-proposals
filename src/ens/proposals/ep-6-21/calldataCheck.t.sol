@@ -8,7 +8,7 @@ import { SafeHelper } from "@ens/helpers/SafeHelper.sol";
 import { IENSReverseRegistrar } from "@ens/interfaces/IENSReverseRegistrar.sol";
 import { IEthTLDResolver } from "@ens/interfaces/IEthTLDResolver.sol";
 
-contract ProposalENS_EP_Naming_Core_Contracts_Test is ENS_Governance, SafeHelper {
+contract Proposal_ENS_EP_6_21_Test is ENS_Governance, SafeHelper {
     // Contract addresses
     IENSReverseRegistrar reverseRegistrar = IENSReverseRegistrar(0xa58E81fe9b61B5c3fE2AFD33CF304c454AbFc7Cb);
     IEthTLDResolver resolver = IEthTLDResolver(0xF29100983E058B709F3D539b0c765937B804AC15);

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.4;
+pragma solidity >=0.8.25 <0.9.0;
 
 interface ITimelock {
     event CallExecuted(bytes32 indexed id, uint256 indexed index, address target, uint256 value, bytes data);

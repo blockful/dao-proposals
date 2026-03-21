@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.25;
+pragma solidity >=0.8.25 <0.9.0;
 
 import { ENS_Governance } from "@ens/ens.t.sol";
 import { SafeHelper } from "@ens/helpers/SafeHelper.sol";
@@ -40,7 +40,7 @@ import { IERC20 } from "@forge-std/src/interfaces/IERC20.sol";
  *  17. post(): Add new annotations to annotation registry
  *  18. setTransactionUnwrapper: Re-apply unwrapper for multiSend adapter
  */
-contract Proposal_ENS_EP_KPK_Update_8_Draft_Test is ENS_Governance, SafeHelper, ZodiacRolesHelper {
+contract Proposal_ENS_EP_6_38_Test is ENS_Governance, SafeHelper, ZodiacRolesHelper {
     // ─── Protocol Addresses ──────────────────────────────────────────────
 
     address private constant MULTISEND = 0xA83c336B20401Af773B6219BA5027174338D1836;

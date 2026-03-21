@@ -15,7 +15,7 @@ interface IDNSRegistrar {
     function enableNode(bytes memory name) external returns (bytes32);
 }
 
-contract Proposal_ENS_DNSSEC_Oracle_Test is ENS_Governance {
+contract Proposal_ENS_EP_6_35_Test is ENS_Governance {
     // ── Contracts ──────────────────────────────────────────────────────
     IDNSSECImpl public constant dnssecImpl = IDNSSECImpl(0x0fc3152971714E5ed7723FAFa650F86A4BaF30C5);
     IENSRoot public constant ensRoot = IENSRoot(0xaB528d626EC275E3faD363fF1393A41F581c5897);

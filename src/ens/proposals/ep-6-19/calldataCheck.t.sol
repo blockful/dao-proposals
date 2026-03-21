@@ -7,7 +7,7 @@ import { ENS_Governance } from "@ens/ens.t.sol";
 import { ISafeHarbor } from "@ens/interfaces/ISafeHarbor.sol";
 import { IAgreement } from "@ens/interfaces/IAgreement.sol";
 
-contract ProposalENSEPReactivateStreamDraftTest is ENS_Governance {
+contract Proposal_ENS_EP_6_19_Test is ENS_Governance {
     // Contract addresses
     ISafeHarbor public constant safeHarbor = ISafeHarbor(0x1eaCD100B0546E433fbf4d773109cAD482c34686);
     IAgreement public constant agreement = IAgreement(0x3303a9A3eb71836c0e88E8AB4eaf0d478e29E04c);

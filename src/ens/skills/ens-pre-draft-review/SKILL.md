@@ -37,7 +37,7 @@ Create `calldataCheck.t.sol`:
 
 ```solidity
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.25;
+pragma solidity >=0.8.25 <0.9.0;
 
 import { ENS_Governance } from "@ens/ens.t.sol";
 // Import helpers based on proposal type (see ens-review-reference)
