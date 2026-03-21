@@ -6,7 +6,7 @@ import { console2 } from "@forge-std/src/console2.sol";
 import { ENS_Governance } from "@ens/ens.t.sol";
 import { IERC20 } from "@contracts/utils/interfaces/IERC20.sol";
 
-contract ProposalENS_EP_6_20_Test is ENS_Governance {
+contract Proposal_ENS_EP_6_20_Test is ENS_Governance {
     // Contract addresses
     IERC20 USDC = IERC20(0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48);
 
