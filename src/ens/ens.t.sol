@@ -131,7 +131,7 @@ abstract contract ENS_Governance is Test, IDAO, ENSHelper {
         // Enforce dirPath for live proposals — calldata comparison must not be silently skipped
         if (_isProposalSubmitted()) {
             require(
-                bytes(dirPath()).length > 0,
+                bytes(_dirPath).length > 0,
                 "Live proposals must set dirPath() for calldata comparison"
             );
         }
