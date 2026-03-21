@@ -22,7 +22,7 @@
 
 - [x] **Refactor ENS base class to inherit CalldataComparison** — `ens.t.sol` now inherits `CalldataComparison`, removing ~130 lines of duplicated code. Also fixed double `_generateCallData()` call.
 
-- [ ] **Refactor Uniswap base class to inherit CalldataComparison** — `uniswap.t.sol` still has duplicated JSON parsing.
+- [x] **Refactor Uniswap base class to inherit CalldataComparison** — `uniswap.t.sol` now inherits `CalldataComparison`, removing ~180 lines. Kept signature parsing locally (Uniswap-specific).
 
 ## Remaining — Low Priority
 
