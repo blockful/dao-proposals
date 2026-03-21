@@ -1,0 +1,65 @@
+{
+  "daos": {
+    "ens": {
+      "name": "ENS",
+      "governanceType": "governor-timelock",
+      "chain": "mainnet",
+      "basePath": "src/ens",
+      "baseTestContract": "ENS_Governance",
+      "baseTestFile": "src/ens/ens.t.sol",
+      "contracts": {
+        "governor": "0x323A76393544d5ecca80cd6ef2A560C6a395b7E3",
+        "timelock": "0xFe89cc7aBB2C4183683ab71653C4cdc9B02D44b7",
+        "token": "0xC18360217D8F7Ab5e7c516566761Ea12Ce7F9D72"
+      },
+      "tallySlug": "ens",
+      "proposalPrefix": "ep",
+      "contractNaming": "Proposal_ENS_EP_{epoch}_{number}_Test",
+      "helpers": ["SafeHelper", "ZodiacRolesHelper", "MultiSendHelper"],
+      "interfacesPath": "src/ens/interfaces",
+      "proposalsPath": "src/ens/proposals",
+      "constantsFile": "src/ens/Constants.sol"
+    },
+    "uniswap": {
+      "name": "Uniswap",
+      "governanceType": "governor-timelock",
+      "chain": "mainnet",
+      "basePath": "src/uniswap",
+      "baseTestContract": "UNI_Governance",
+      "baseTestFile": "src/uniswap/uniswap.t.sol",
+      "contracts": {
+        "governor": "0x408ED6354d4973f66138C91495F2f2FCbd8724C3",
+        "timelock": "0x1a9C8182C09F50C8318d769245beA52c32BE35BC",
+        "token": "0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984"
+      },
+      "tallySlug": "uniswap",
+      "proposalPrefix": "proposal",
+      "contractNaming": "Proposal_UNI_{number}_Test",
+      "helpers": [],
+      "interfacesPath": "src/uniswap/interfaces",
+      "proposalsPath": "src/uniswap/proposals",
+      "constantsFile": null
+    },
+    "shutter": {
+      "name": "Shutter",
+      "governanceType": "azorius",
+      "chain": "mainnet",
+      "basePath": "src/shutter",
+      "baseTestContract": "Shutter_Governance",
+      "baseTestFile": "src/shutter/shutter.t.sol",
+      "contracts": {
+        "azorius": "0xAA6BfA174d2f803b517026E93DBBEc1eBa26258e",
+        "voting": "0x4b29d8B250B8b442ECfCd3a4e3D91933d2db720F",
+        "treasury": "0x36bD3044ab68f600f6d3e081056F34f2a58432c4",
+        "token": "0xe485E2f1bab389C08721B291f6b59780feC83Fd7"
+      },
+      "tallySlug": null,
+      "proposalPrefix": "proposal",
+      "contractNaming": "Proposal_Shutter_{name}_Test",
+      "helpers": [],
+      "interfacesPath": "src/shutter/interfaces",
+      "proposalsPath": "src/shutter/proposals",
+      "constantsFile": null
+    }
+  }
+}

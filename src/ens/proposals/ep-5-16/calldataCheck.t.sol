@@ -68,4 +68,8 @@ contract Proposal_ENS_EP_5_16_Test is ENS_Governance {
     function _isProposalSubmitted() public pure override returns (bool) {
         return true;
     }
+
+    function dirPath() public pure override returns (string memory) {
+        return "src/ens/proposals/ep-5-16";
+    }
 }
