@@ -192,13 +192,11 @@ contract RegistrarManager is Ownable {
     ///      flag and `result` bytes. This is intentional: it allows the owner to observe
     ///      failure data without the entire transaction reverting.
     /// @param registrar Target registrar (must be in the managed set).
-    /// @param value ETH value to send with the call.
     /// @param data Calldata to forward.
     /// @return success Whether the low-level call succeeded.
     /// @return result The raw bytes returned by the call.
     function execOnRegistrar(
         address registrar,
-        uint256 value,
         bytes calldata data
     )
         external
@@ -206,8 +204,8 @@ contract RegistrarManager is Ownable {
         returns (bool success, bytes memory result)
     {
         if (!isRegistrar(registrar)) revert RegistrarNotFound(registrar);
-        (success, result) = registrar.call{ value: value }(data);
-        emit RegistrarCall(registrar, value, data, success);
+        (success, result) = registrar.call(data);
+        emit RegistrarCall(registrar, 0, data, success);
     }
 
     // -------------------------------------------------------------------------

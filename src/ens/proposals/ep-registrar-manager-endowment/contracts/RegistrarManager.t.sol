@@ -502,7 +502,7 @@ contract RegistrarManagerTest is Test {
         bytes memory data = abi.encodeWithSelector(MockRegistrar.setValue.selector, 42);
 
         vm.prank(owner);
-        (bool success,) = manager.execOnRegistrar(address(r), 0, data);
+        (bool success,) = manager.execOnRegistrar(address(r), data);
 
         assertTrue(success);
         assertEq(r.value(), 42);
@@ -523,7 +523,7 @@ contract RegistrarManagerTest is Test {
         // But via execOnRegistrar it works, because msg.sender to the registrar is the manager.
         bytes memory data = abi.encodeWithSelector(MockRegistrar.setValue.selector, 99);
         vm.prank(owner);
-        (bool success,) = manager.execOnRegistrar(address(r), 0, data);
+        (bool success,) = manager.execOnRegistrar(address(r), data);
 
         assertTrue(success);
         assertEq(r.value(), 99);
@@ -539,7 +539,7 @@ contract RegistrarManagerTest is Test {
         bytes memory data = abi.encodeWithSelector(bytes4(0xdeadbeef));
 
         vm.prank(owner);
-        (bool success,) = manager.execOnRegistrar(address(r), 0, data);
+        (bool success,) = manager.execOnRegistrar(address(r), data);
 
         assertFalse(success);
     }
@@ -549,7 +549,7 @@ contract RegistrarManagerTest is Test {
 
         vm.prank(owner);
         vm.expectRevert(abi.encodeWithSelector(RegistrarManager.RegistrarNotFound.selector, ghost));
-        manager.execOnRegistrar(ghost, 0, "");
+        manager.execOnRegistrar(ghost, "");
     }
 
     function test_execOnRegistrar_revertsForNonOwner() public {
@@ -560,22 +560,24 @@ contract RegistrarManagerTest is Test {
 
         vm.prank(alice);
         vm.expectRevert(abi.encodeWithSelector(Ownable.OwnableUnauthorizedAccount.selector, alice));
-        manager.execOnRegistrar(address(r), 0, "");
+        manager.execOnRegistrar(address(r), "");
     }
 
-    function test_execOnRegistrar_forwardsETH() public {
+    function test_execOnRegistrar_doesNotForwardETH() public {
         MockRegistrar r = new MockRegistrar();
 
         vm.prank(owner);
         manager.addRegistrar(address(r));
 
-        vm.deal(address(manager), 1 ether);
+        vm.deal(address(manager), 5 ether);
 
         vm.prank(owner);
-        (bool success,) = manager.execOnRegistrar(address(r), 0.5 ether, "");
+        (bool success,) = manager.execOnRegistrar(address(r), "");
 
         assertTrue(success);
-        assertEq(address(r).balance, 0.5 ether);
+        // Contract balance is untouched — execOnRegistrar never sends ETH
+        assertEq(address(r).balance, 0);
+        assertEq(address(manager).balance, 5 ether);
     }
 
     function test_execOnRegistrar_emitsEvent() public {
@@ -591,7 +593,20 @@ contract RegistrarManagerTest is Test {
         emit RegistrarManager.RegistrarCall(address(r), 0, data, true);
 
         vm.prank(owner);
-        manager.execOnRegistrar(address(r), 0, data);
+        manager.execOnRegistrar(address(r), data);
+    }
+
+    function test_execOnRegistrar_emitsEventWithZeroValue() public {
+        MockRegistrar r = new MockRegistrar();
+
+        vm.prank(owner);
+        manager.addRegistrar(address(r));
+
+        vm.expectEmit();
+        emit RegistrarManager.RegistrarCall(address(r), 0, "", true);
+
+        vm.prank(owner);
+        manager.execOnRegistrar(address(r), "");
     }
 
     // =====================================================================
