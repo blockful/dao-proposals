@@ -48,10 +48,9 @@ contract RegistrarManager is Ownable {
 
     /// @notice Emitted when an arbitrary call is executed on a registrar via `execOnRegistrar`.
     /// @param registrar The target registrar address.
-    /// @param value The ETH value sent with the call.
     /// @param data The calldata forwarded to the registrar.
     /// @param success Whether the low-level call succeeded.
-    event RegistrarCall(address indexed registrar, uint256 value, bytes data, bool success);
+    event RegistrarCall(address indexed registrar, bytes data, bool success);
 
     /// @notice Emitted when the contract's ETH balance is forwarded to the destination.
     /// @param destination The address that received the funds.
@@ -192,13 +191,11 @@ contract RegistrarManager is Ownable {
     ///      flag and `result` bytes. This is intentional: it allows the owner to observe
     ///      failure data without the entire transaction reverting.
     /// @param registrar Target registrar (must be in the managed set).
-    /// @param value ETH value to send with the call.
     /// @param data Calldata to forward.
     /// @return success Whether the low-level call succeeded.
     /// @return result The raw bytes returned by the call.
     function execOnRegistrar(
         address registrar,
-        uint256 value,
         bytes calldata data
     )
         external
@@ -206,8 +203,8 @@ contract RegistrarManager is Ownable {
         returns (bool success, bytes memory result)
     {
         if (!isRegistrar(registrar)) revert RegistrarNotFound(registrar);
-        (success, result) = registrar.call{ value: value }(data);
-        emit RegistrarCall(registrar, value, data, success);
+        (success, result) = registrar.call(data);
+        emit RegistrarCall(registrar, data, success);
     }
 
     // -------------------------------------------------------------------------
