@@ -1,15 +1,15 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.25 <0.9.0;
 
-import { Test } from "@forge-std/src/Test.sol";
 import { console2 } from "@forge-std/src/console2.sol";
 
 import { IDAO } from "@contracts/utils/interfaces/IDAO.sol";
+import { CalldataComparison } from "@contracts/base/CalldataComparison.sol";
 import { IToken } from "@uniswap/interfaces/IToken.sol";
 import { IGovernor } from "@uniswap/interfaces/IGovernor.sol";
 import { ITimelock } from "@uniswap/interfaces/ITimelock.sol";
 
-abstract contract UNI_Governance is Test, IDAO {
+abstract contract UNI_Governance is CalldataComparison, IDAO {
     enum ProposalState {
         Pending,
         Active,
@@ -170,13 +170,16 @@ abstract contract UNI_Governance is Test, IDAO {
         _afterExecution();
 
         // Compare calldata with JSON if dirPath is set
-        if (keccak256(abi.encodePacked(dirPath())) != keccak256(abi.encodePacked(""))) {
-            if (_isProposalSubmitted()) {
-                // Live proposal - use Tally JSON format (no signatures)
-                liveCalldataComparison();
-            } else {
-                // Draft proposal - use full format with signatures
-                draftCallDataComparison();
+        string memory _dirPath = dirPath();
+        if (bytes(_dirPath).length > 0) {
+            string memory jsonPath = string.concat(_dirPath, "/proposalCalldata.json");
+            if (vm.isFile(jsonPath)) {
+                string memory jsonContent = vm.readFile(jsonPath);
+                if (_isProposalSubmitted()) {
+                    _compareLiveCalldata(jsonContent, targets, values, calldatas);
+                } else {
+                    _compareDraftCalldata(jsonContent, targets, values, signatures, calldatas);
+                }
             }
         }
     }
@@ -229,55 +232,42 @@ abstract contract UNI_Governance is Test, IDAO {
     }
 
     /*//////////////////////////////////////////////////////////////////////////
-                          DRAFT CALLDATA COMPARISON
+                    DRAFT CALLDATA COMPARISON (with signatures)
     //////////////////////////////////////////////////////////////////////////*/
 
-    function draftCallDataComparison() public {
-        string memory jsonContent = vm.readFile(string.concat(dirPath(), "/proposalCalldata.json"));
-
-        address[] memory jsonTargets = parseJsonTargets(jsonContent);
-        string[] memory jsonValues = parseJsonValues(jsonContent);
-        string[] memory jsonSignatures = parseJsonSignatures(jsonContent);
-        bytes[] memory jsonCalldatas = parseJsonCalldatas(jsonContent);
+    /// @notice Compare draft calldata including signatures (Uniswap Governor Alpha format)
+    function _compareDraftCalldata(
+        string memory jsonContent,
+        address[] memory generatedTargets,
+        uint256[] memory generatedValues,
+        string[] memory generatedSignatures,
+        bytes[] memory generatedCalldatas
+    ) internal {
+        address[] memory jsonTargets = _parseJsonTargets(jsonContent);
+        string[] memory jsonValues = _parseJsonValues(jsonContent);
+        string[] memory jsonSignatures = _parseJsonSignatures(jsonContent);
+        bytes[] memory jsonCalldatas = _parseJsonCalldatas(jsonContent);
 
         console2.log("JSON parsed successfully with", jsonTargets.length, "operations");
 
-        // Generate calldata from the contract
-        (
-            address[] memory generatedTargets,
-            uint256[] memory generatedValues,
-            string[] memory generatedSignatures,
-            bytes[] memory generatedCalldatas,
-            string memory generatedDescription
-        ) = _generateCallData();
-
-        // Compare lengths
         assertEq(jsonTargets.length, generatedTargets.length, "Number of executable calls mismatch");
 
-        // Compare each operation
         for (uint256 i = 0; i < jsonTargets.length; i++) {
-            // Compare target addresses
             assertEq(
                 jsonTargets[i],
                 generatedTargets[i],
                 string(abi.encodePacked("Target mismatch at index ", vm.toString(i)))
             );
-
-            // Compare values
             assertEq(
                 vm.parseUint(jsonValues[i]),
                 generatedValues[i],
                 string(abi.encodePacked("Value mismatch at index ", vm.toString(i)))
             );
-
-            // Compare signatures
             assertEq(
                 keccak256(bytes(jsonSignatures[i])),
                 keccak256(bytes(generatedSignatures[i])),
                 string(abi.encodePacked("Signature mismatch at index ", vm.toString(i)))
             );
-
-            // Compare calldata
             assertEq(
                 jsonCalldatas[i],
                 generatedCalldatas[i],
@@ -291,162 +281,29 @@ abstract contract UNI_Governance is Test, IDAO {
     }
 
     /*//////////////////////////////////////////////////////////////////////////
-                          LIVE CALLDATA COMPARISON (TALLY FORMAT)
+                    SIGNATURE PARSING (Uniswap-specific, not in CalldataComparison)
     //////////////////////////////////////////////////////////////////////////*/
 
-    /// @notice Compares generated calldata against JSON from Tally (without signatures)
-    /// @dev Use this for live proposals where JSON only has target, calldata, value fields
-    function liveCalldataComparison() public {
-        string memory jsonContent = vm.readFile(string.concat(dirPath(), "/proposalCalldata.json"));
-
-        address[] memory jsonTargets = parseJsonTargets(jsonContent);
-        string[] memory jsonValues = parseJsonValues(jsonContent);
-        bytes[] memory jsonCalldatas = parseJsonCalldatas(jsonContent);
-
-        console2.log("=== Live Calldata Comparison ===");
-        console2.log("JSON parsed successfully with", jsonTargets.length, "operations");
-
-        // Generate calldata from the contract
-        (
-            address[] memory generatedTargets,
-            uint256[] memory generatedValues,
-            ,
-            bytes[] memory generatedCalldatas,
-        ) = _generateCallData();
-
-        // Compare lengths
-        assertEq(jsonTargets.length, generatedTargets.length, "Number of executable calls mismatch");
-
-        // Compare each operation
-        for (uint256 i = 0; i < jsonTargets.length; i++) {
-            console2.log("Checking call", i);
-
-            // Compare target addresses
-            assertEq(
-                jsonTargets[i],
-                generatedTargets[i],
-                string(abi.encodePacked("Target mismatch at index ", vm.toString(i)))
-            );
-
-            // Compare values
-            assertEq(
-                vm.parseUint(jsonValues[i]),
-                generatedValues[i],
-                string(abi.encodePacked("Value mismatch at index ", vm.toString(i)))
-            );
-
-            // Compare calldata
-            assertEq(
-                jsonCalldatas[i],
-                generatedCalldatas[i],
-                string(abi.encodePacked("Calldata mismatch at index ", vm.toString(i)))
-            );
-
-            console2.log("  Target:", jsonTargets[i]);
-            console2.log("  Value:", vm.parseUint(jsonValues[i]));
-            console2.log("  Calldata match: OK");
-        }
-
-        assertEq(jsonTargets.length, jsonValues.length, "Targets and values arrays length mismatch");
-        assertEq(jsonTargets.length, jsonCalldatas.length, "Targets and calldata arrays length mismatch");
-
-        console2.log("=== All calldata matches JSON ===");
+    function _decodeSignaturesArray(string memory j) public pure returns (string[] memory) {
+        return abi.decode(vm.parseJson(j, ".executableCalls[*].signature"), (string[]));
     }
 
-    /*//////////////////////////////////////////////////////////////////////////
-                              JSON PARSING UTILITIES
-    //////////////////////////////////////////////////////////////////////////*/
-
-    function decodeTargetsArray(string memory jsonContent) public returns (address[] memory) {
-        return abi.decode(vm.parseJson(jsonContent, ".executableCalls[*].target"), (address[]));
+    function _decodeSignatureSingle(string memory j) public pure returns (string memory) {
+        return abi.decode(vm.parseJson(j, ".executableCalls[*].signature"), (string));
     }
 
-    function decodeTargetSingle(string memory jsonContent) public returns (address) {
-        return abi.decode(vm.parseJson(jsonContent, ".executableCalls[*].target"), (address));
-    }
+    function _parseJsonSignatures(string memory j) internal returns (string[] memory result) {
+        (bool ok, bytes memory ret) = address(this).call(
+            abi.encodeWithSelector(this._decodeSignaturesArray.selector, j)
+        );
+        if (ok) return abi.decode(ret, (string[]));
 
-    function parseJsonTargets(string memory jsonContent) public returns (address[] memory jsonTargets) {
-        bytes memory data = abi.encodeWithSelector(this.decodeTargetsArray.selector, jsonContent);
-        (bool success, bytes memory returnData) = address(this).call(data);
-
-        if (success) {
-            jsonTargets = abi.decode(returnData, (address[]));
-        } else {
-            bytes memory singleData = abi.encodeWithSelector(this.decodeTargetSingle.selector, jsonContent);
-            (bool ok, bytes memory ret) = address(this).call(singleData);
-            require(ok, "Single decode failed");
-            jsonTargets = new address[](1);
-            jsonTargets[0] = abi.decode(ret, (address));
-        }
-    }
-
-    function decodeValuesArray(string memory jsonContent) public returns (string[] memory) {
-        return abi.decode(vm.parseJson(jsonContent, ".executableCalls[*].value"), (string[]));
-    }
-
-    function decodeValueSingle(string memory jsonContent) public returns (string memory) {
-        return abi.decode(vm.parseJson(jsonContent, ".executableCalls[*].value"), (string));
-    }
-
-    function parseJsonValues(string memory jsonContent) public returns (string[] memory jsonValues) {
-        bytes memory data = abi.encodeWithSelector(this.decodeValuesArray.selector, jsonContent);
-        (bool success, bytes memory returnData) = address(this).call(data);
-
-        if (success) {
-            jsonValues = abi.decode(returnData, (string[]));
-        } else {
-            bytes memory singleData = abi.encodeWithSelector(this.decodeValueSingle.selector, jsonContent);
-            (bool ok, bytes memory ret) = address(this).call(singleData);
-            require(ok, "Single decode failed");
-            jsonValues = new string[](1);
-            jsonValues[0] = abi.decode(ret, (string));
-        }
-    }
-
-    function decodeSignaturesArray(string memory jsonContent) public returns (string[] memory) {
-        return abi.decode(vm.parseJson(jsonContent, ".executableCalls[*].signature"), (string[]));
-    }
-
-    function decodeSignatureSingle(string memory jsonContent) public returns (string memory) {
-        return abi.decode(vm.parseJson(jsonContent, ".executableCalls[*].signature"), (string));
-    }
-
-    function parseJsonSignatures(string memory jsonContent) public returns (string[] memory jsonSignatures) {
-        bytes memory data = abi.encodeWithSelector(this.decodeSignaturesArray.selector, jsonContent);
-        (bool success, bytes memory returnData) = address(this).call(data);
-
-        if (success) {
-            jsonSignatures = abi.decode(returnData, (string[]));
-        } else {
-            bytes memory singleData = abi.encodeWithSelector(this.decodeSignatureSingle.selector, jsonContent);
-            (bool ok, bytes memory ret) = address(this).call(singleData);
-            require(ok, "Single decode failed");
-            jsonSignatures = new string[](1);
-            jsonSignatures[0] = abi.decode(ret, (string));
-        }
-    }
-
-    function decodeCalldatasArray(string memory jsonContent) public returns (bytes[] memory) {
-        return abi.decode(vm.parseJson(jsonContent, ".executableCalls[*].calldata"), (bytes[]));
-    }
-
-    function decodeCalldataSingle(string memory jsonContent) public returns (bytes memory) {
-        return abi.decode(vm.parseJson(jsonContent, ".executableCalls[*].calldata"), (bytes));
-    }
-
-    function parseJsonCalldatas(string memory jsonContent) public returns (bytes[] memory jsonCalldatas) {
-        bytes memory data = abi.encodeWithSelector(this.decodeCalldatasArray.selector, jsonContent);
-        (bool success, bytes memory returnData) = address(this).call(data);
-
-        if (success) {
-            jsonCalldatas = abi.decode(returnData, (bytes[]));
-        } else {
-            bytes memory singleData = abi.encodeWithSelector(this.decodeCalldataSingle.selector, jsonContent);
-            (bool ok, bytes memory ret) = address(this).call(singleData);
-            require(ok, "Single decode failed");
-            jsonCalldatas = new bytes[](1);
-            jsonCalldatas[0] = abi.decode(ret, (bytes));
-        }
+        (bool ok2, bytes memory ret2) = address(this).call(
+            abi.encodeWithSelector(this._decodeSignatureSingle.selector, j)
+        );
+        require(ok2, "JSON signature decode failed");
+        result = new string[](1);
+        result[0] = abi.decode(ret2, (string));
     }
 
     /*//////////////////////////////////////////////////////////////////////////
@@ -454,8 +311,6 @@ abstract contract UNI_Governance is Test, IDAO {
     //////////////////////////////////////////////////////////////////////////*/
 
     function getDescriptionFromMarkdown() public returns (string memory) {
-        string memory markdownPath = string.concat(dirPath(), "/proposalDescription.md");
-        string memory markdownContent = vm.readFile(markdownPath);
-        return markdownContent;
+        return _getDescriptionFromMarkdown(dirPath());
     }
 }
