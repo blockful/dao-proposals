@@ -58,9 +58,10 @@ abstract contract CalldataComparison is Test {
         );
         if (ok) return abi.decode(ret, (address[]));
 
-        (, ret) = address(this).call(abi.encodeWithSelector(this._decodeTargetSingle.selector, j));
+        (bool ok2, bytes memory ret2) = address(this).call(abi.encodeWithSelector(this._decodeTargetSingle.selector, j));
+        require(ok2, "JSON target decode failed");
         result = new address[](1);
-        result[0] = abi.decode(ret, (address));
+        result[0] = abi.decode(ret2, (address));
     }
 
     function _decodeValuesArray(string memory j) public pure returns (string[] memory) {
@@ -77,9 +78,10 @@ abstract contract CalldataComparison is Test {
         );
         if (ok) return abi.decode(ret, (string[]));
 
-        (, ret) = address(this).call(abi.encodeWithSelector(this._decodeValueSingle.selector, j));
+        (bool ok2, bytes memory ret2) = address(this).call(abi.encodeWithSelector(this._decodeValueSingle.selector, j));
+        require(ok2, "JSON value decode failed");
         result = new string[](1);
-        result[0] = abi.decode(ret, (string));
+        result[0] = abi.decode(ret2, (string));
     }
 
     function _decodeCalldatasArray(string memory j) public pure returns (bytes[] memory) {
@@ -96,9 +98,10 @@ abstract contract CalldataComparison is Test {
         );
         if (ok) return abi.decode(ret, (bytes[]));
 
-        (, ret) = address(this).call(abi.encodeWithSelector(this._decodeCalldataSingle.selector, j));
+        (bool ok2, bytes memory ret2) = address(this).call(abi.encodeWithSelector(this._decodeCalldataSingle.selector, j));
+        require(ok2, "JSON calldata decode failed");
         result = new bytes[](1);
-        result[0] = abi.decode(ret, (bytes));
+        result[0] = abi.decode(ret2, (bytes));
     }
 
     /// @notice Read proposal description from markdown file
