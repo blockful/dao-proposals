@@ -41,7 +41,7 @@ contract Proposal_ENS_EP_Registrar_Manager_Endowment_Test is ENS_Governance, Saf
 
     /// @dev Deployed RegistrarManager contract.
     RegistrarManager public constant manager =
-        RegistrarManager(payable(0x62627681d92e36B9AEE1D9a6Bf181373CcD42552));
+        RegistrarManager(payable(0x62627681D92e36b9aeE1D9A6BF181373ccd42552));
 
     function _selectFork() public override {
         vm.createSelectFork({ blockNumber: 24_736_040, urlOrAlias: "mainnet" });
