@@ -70,28 +70,32 @@ Create `src/{dao-name}/{dao-name}.t.sol` and adapt:
 
 ### 6. Add to DAO Registry
 
-Add an entry to `src/dao-registry.json`. Use existing entries as a template. All fields are required:
+Add a new key under the `daos` object in `src/dao-registry.json`. The key should be the lowercase DAO identifier. Use existing entries as a template. All fields are required:
 
 ```json
 {
-  "name": "MyDAO",
-  "governanceType": "governor-timelock",
-  "chain": "mainnet",
-  "basePath": "src/mydao",
-  "baseTestContract": "MyDAO_Governance",
-  "baseTestFile": "src/mydao/mydao.t.sol",
-  "contracts": {
-    "governor": "0x...",
-    "timelock": "0x...",
-    "token": "0x..."
-  },
-  "tallySlug": "mydao",
-  "proposalPrefix": "proposal",
-  "contractNaming": "Proposal_MyDAO_{number}_Test",
-  "helpers": [],
-  "interfacesPath": "src/mydao/interfaces",
-  "proposalsPath": "src/mydao/proposals",
-  "constantsFile": null
+  "daos": {
+    "mydao": {
+      "name": "MyDAO",
+      "governanceType": "governor-timelock",
+      "chain": "mainnet",
+      "basePath": "src/mydao",
+      "baseTestContract": "MyDAO_Governance",
+      "baseTestFile": "src/mydao/mydao.t.sol",
+      "contracts": {
+        "governor": "0x...",
+        "timelock": "0x...",
+        "token": "0x..."
+      },
+      "tallySlug": "mydao",
+      "proposalPrefix": "proposal",
+      "contractNaming": "Proposal_MyDAO_{number}_Test",
+      "helpers": [],
+      "interfacesPath": "src/mydao/interfaces",
+      "proposalsPath": "src/mydao/proposals",
+      "constantsFile": null
+    }
+  }
 }
 ```
 
