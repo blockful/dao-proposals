@@ -16,29 +16,34 @@ See `src/dao-registry.json` for the full list. Currently:
 ## Repo Structure
 
 ```
-.claude/skills/                  # Claude Code skills (auto-discovered)
-  proposal-review/               # /proposal-review <URL> — universal entry point
-  live-review/                   # /live-review <URL> — live proposal workflow
-  draft-review/                  # /draft-review <URL> — draft proposal workflow
-  pre-draft-review/              # /pre-draft-review — pre-draft workflow
-  review-reference/              # Shared reference (auto-loaded, not invocable)
+.claude/skills/
+  proposal-review/               # /proposal-review <URL> — the review skill
+    SKILL.md                     # Entry point: detect phase, route
+    live-review.md               # Live proposal workflow
+    draft-review.md              # Draft proposal workflow
+    pre-draft-review.md          # Pre-draft proposal workflow
+    reference.md                 # Key addresses, helpers, selectors
+    assertion-baseline.md        # Minimum assertion requirements
+    troubleshooting.md           # Common issues and fixes
+    scripts/                     # Bundled fetch scripts
+      fetchLiveProposal.js
+      fetchTallyDraft.js
   dao-scaffold/                  # /dao-scaffold <name> — bootstrap a new DAO
 src/
   dao-registry.json              # DAO config manifest
   base/                          # Shared governance abstractions
-  ens/                           # ENS proposals, helpers, interfaces, review guides
+  ens/                           # ENS proposals, helpers, interfaces, Constants.sol
   uniswap/                       # Uniswap proposals
   shutter/                       # Shutter proposals
-  utils/                         # Fetch scripts (fetchLiveProposal.js, fetchTallyDraft.js)
+  utils/                         # Shared interfaces (IDAO.sol)
 ```
 
 ## How to Review a Proposal
 
 When given a Tally URL or asked to review a proposal:
 
-1. Use `/proposal-review <TALLY_URL>` — it detects the DAO, determines the phase (pre-draft/draft/live), and routes to the correct workflow
-2. Or invoke the phase-specific skill directly: `/live-review`, `/draft-review`, `/pre-draft-review`
-3. The skill references the DAO-specific review guides (`src/ens/CALLDATA_REVIEW_GUIDE.md`, etc.) as the source of truth
+1. Use `/proposal-review <TALLY_URL>` — detects the phase (live/draft/pre-draft) and walks through the full workflow
+2. The skill contains phase-specific guides, assertion baselines, and troubleshooting — all in one place
 
 ## Golden Rules
 
@@ -66,7 +71,7 @@ forge test --match-path "src/ens/proposals/ep-6-38/*" -vv
 # Run all ENS tests
 forge test --match-path "src/ens/**" -vv
 
-# Fetch live proposal data
+# Fetch live proposal data (script bundled in skill, also at src/utils/)
 node src/utils/fetchLiveProposal.js <TALLY_URL> <OUTPUT_DIR>
 
 # Fetch draft proposal data

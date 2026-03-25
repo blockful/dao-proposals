@@ -1,73 +1,56 @@
 ---
 name: proposal-review
-description: Review a DAO governance proposal end-to-end. Use when the user shares a Tally URL (live or draft), asks to review a proposal, or wants to verify calldata. Accepts a Tally URL as argument.
-argument-hint: <TALLY_URL>
+description: Review a DAO governance proposal. Use when the user shares a Tally URL (live or draft), asks to review a proposal, or wants to verify calldata. Detects the phase automatically from the URL and runs the full review workflow.
+argument-hint: [TALLY_URL]
 ---
 
 # Proposal Review
 
-Autonomous end-to-end review of a DAO governance proposal. Detects the DAO and phase from the URL, then runs the full workflow.
+End-to-end calldata security review of a DAO governance proposal.
 
-## Input
+**Input:** $ARGUMENTS
 
-Tally URL or context: $ARGUMENTS
+## Critical Objective
 
-## Step 1: Detect DAO and Phase
+This system tests proposals that control millions/billions of dollars in DAO treasuries. A false positive (approving bad calldata) is the **worst possible outcome**.
 
-Parse the URL to determine the DAO and proposal phase:
+- Build `_generateCallData()` from **manual derivation** of proposal intent and Solidity interfaces.
+- **Never** copy from `proposalCalldata.json`. It is validation, not source.
+- No opaque hex blobs. Every selector from `Interface.method.selector`. Every address from a named constant.
+- `callDataComparison()` validates your manual derivation against the JSON. If they mismatch, **stop — this is a security finding**.
+- Both `_beforeProposal()` and `_afterExecution()` must contain substantive state checks. Empty hooks are never acceptable.
 
-- `/gov/{slug}/proposal/{id}` → **Live** proposal
-- `/gov/{slug}/draft/{id}` → **Draft** proposal
-- No URL → **Pre-draft** — ask the user which DAO
+## Step 1: Detect Phase
 
-Look up the DAO slug in `src/dao-registry.json` under `daos.{slug}.tallySlug` to load the DAO config (base path, governor address, test contract, etc.).
+Parse the Tally URL to determine the review phase:
 
-**Currently supported:** ENS (`ens`), Uniswap (`uniswap`). Shutter has no Tally integration.
+| URL Pattern | Phase | What It Means |
+|-------------|-------|---------------|
+| Contains `/proposal/` | **Live** | Proposal is on-chain, submitted to the Governor |
+| Contains `/draft/` | **Draft** | Proposal exists as a Tally draft, not yet on-chain |
+| No URL provided | **Pre-draft** | Proposal is being discussed/designed, no Tally entry yet |
 
-## Step 2: Route to the Correct Workflow
+## Step 2: Follow Phase-Specific Workflow
 
-Based on the detected phase, follow the corresponding DAO-specific review guide:
+Based on the detected phase, read and follow the corresponding workflow file:
 
-| Phase | ENS Guide | What to Do |
-|-------|-----------|------------|
-| **Live** | `src/ens/CALLDATA_REVIEW_GUIDE.md` | Fetch live data → update test → verify calldata matches |
-| **Draft** | `src/ens/DRAFT_CALLDATA_REVIEW_GUIDE.md` | Fetch draft data → write/update test → verify calldata matches |
-| **Pre-draft** | `src/ens/PRE_DRAFT_GUIDE.md` | Create test from proposal spec → verify execution |
+- **Live:** Read [live-review.md](live-review.md) — fetch on-chain data, update test, verify calldata matches
+- **Draft:** Read [draft-review.md](draft-review.md) — fetch draft data, write test, verify calldata matches
+- **Pre-draft:** Read [pre-draft-review.md](pre-draft-review.md) — create test from proposal spec, verify execution
 
-**Read the full guide before proceeding.** The guides contain critical information about manual derivation requirements, assertion baselines, and anti-patterns.
+Each workflow file has the complete step-by-step process for that phase.
 
-## Step 3: Execute the Workflow
+## Step 3: Verify Assertions
 
-### For Live proposals:
-```bash
-# Fetch data (script auto-detects DAO from URL)
-node src/utils/fetchLiveProposal.js $ARGUMENTS src/ens/proposals/ep-X-Y
+Before publishing any approval, verify the assertion baseline. Read [assertion-baseline.md](assertion-baseline.md) for:
+- What `_beforeProposal()` must contain
+- What `_afterExecution()` must contain
+- Required assertion patterns per proposal type
+- Anti-patterns to avoid
 
-# Run test
-forge test --match-path "src/ens/proposals/ep-X-Y/*" -vv
-```
+## Step 4: Produce Security Report
 
-### For Draft proposals:
-```bash
-# Fetch data
-node src/utils/fetchTallyDraft.js $ARGUMENTS src/ens/proposals/ep-topic-name
-
-# Run test
-forge test --match-path "src/ens/proposals/ep-topic-name/*" -vv
-```
-
-## Step 4: Critical Rules
-
-These rules are non-negotiable. Read `CLAUDE.md` for the full list.
-
-1. **Manual derivation only.** Build `_generateCallData()` from the proposal specification and Solidity interfaces. Never copy from `proposalCalldata.json`.
-2. **No hex blobs.** Every selector from `Interface.method.selector`. Every address from a named constant.
-3. **Meaningful assertions.** Both `_beforeProposal()` and `_afterExecution()` must contain substantive state checks. Empty hooks are never acceptable.
-4. **Mismatch = finding.** If manually derived calldata differs from `proposalCalldata.json`, stop. Do not approve.
-
-## Step 5: Produce Report
-
-After the test passes, produce a structured security report:
+After the test passes, produce a structured report:
 
 1. **Proposal Summary** — What it does (1-3 sentences)
 2. **Calldata Verification** — PASS/FAIL per executable call with target and selector
@@ -76,6 +59,18 @@ After the test passes, produce a structured security report:
 5. **Recommendation** — APPROVE / REJECT / NEEDS_REVIEW
 6. **Reproduction** — `git clone` + `forge test` commands
 
-## Step 6: Commit, Push, PR
+## Reference Data
 
-Follow commit conventions from the review guide. Open PR targeting `main`.
+For key addresses, helpers, inherited state, selectors, and troubleshooting, see [reference.md](reference.md).
+
+## Fetch Scripts
+
+The skill bundles two fetch scripts:
+
+```bash
+# Fetch live proposal data (auto-detects DAO from Tally URL)
+node ${CLAUDE_SKILL_DIR}/scripts/fetchLiveProposal.js <TALLY_URL> <OUTPUT_DIR>
+
+# Fetch draft proposal data
+node ${CLAUDE_SKILL_DIR}/scripts/fetchTallyDraft.js <DRAFT_URL> <OUTPUT_DIR>
+```
