@@ -177,9 +177,13 @@ contract Proposal_ENS_EP_Registrar_Manager_Endowment_Test is ENS_Governance, Saf
             "Endowment balance should increase after withdraw"
         );
 
-        // Zodiac role permissions
+        // Zodiac role permissions — positive tests
         _expectUSDCTransferAllowed();
         _expectEthSendAllowed();
+
+        // Zodiac role permissions — negative tests (scoping verification)
+        _expectUSDCTransferToNonTimelockBlocked();
+        _expectEthSendToNonTimelockBlocked();
     }
 
     function _expectUSDCTransferNotAllowed() internal {
@@ -221,6 +225,26 @@ contract Proposal_ENS_EP_Registrar_Manager_Endowment_Test is ENS_Governance, Saf
 
         uint256 balanceAfter = address(timelock).balance;
         assertEq(balanceAfter, balanceBefore + amount, "ETH balance should increase after transfer");
+    }
+
+    function _expectUSDCTransferToNonTimelockBlocked() internal {
+        address notTimelock = address(0xdead);
+        uint256 amount = 1000000;
+
+        vm.startPrank(karpatkey);
+        bytes memory data = abi.encodeWithSelector(IERC20.transfer.selector, notTimelock, amount);
+        vm.expectRevert();
+        roles.execTransactionWithRole(address(USDC), 0, data, IZodiacRoles.Operation.Call, MANAGER_ROLE, false);
+        vm.stopPrank();
+    }
+
+    function _expectEthSendToNonTimelockBlocked() internal {
+        address notTimelock = address(0xdead);
+
+        vm.startPrank(karpatkey);
+        vm.expectRevert();
+        roles.execTransactionWithRole(notTimelock, 1 ether, "", IZodiacRoles.Operation.Call, MANAGER_ROLE, false);
+        vm.stopPrank();
     }
 
     function _usdcTransferConditions() internal view returns (ConditionFlat[] memory) {
