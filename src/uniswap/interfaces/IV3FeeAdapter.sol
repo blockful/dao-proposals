@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.4;
+pragma solidity >=0.8.25 <0.9.0;
 
 /// @title V3FeeAdapter Interface
 /// @notice Interface for the V3 Fee Adapter that manages Uniswap V3 protocol fees

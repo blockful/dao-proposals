@@ -7,7 +7,7 @@ import { console2 } from "@forge-std/src/console2.sol";
 import { IGovernor } from "@ens/interfaces/IGovernor.sol";
 import { ITimelock } from "@ens/interfaces/ITimelock.sol";
 import { IENSToken } from "@ens/interfaces/IENSToken.sol";
-import { IDAO } from "@contracts/utils/interfaces/IDAO.sol";
+import { CalldataComparison } from "@contracts/base/CalldataComparison.sol";
 
 abstract contract ENSHelper {
     bytes32 constant ROOT_NODE = 0x0000000000000000000000000000000000000000000000000000000000000000;
@@ -44,7 +44,7 @@ abstract contract ENSHelper {
     }
 }
 
-abstract contract ENS_Governance is Test, IDAO, ENSHelper {
+abstract contract ENS_Governance is CalldataComparison, ENSHelper {
     enum ProposalState {
         Pending,
         Active,
@@ -124,8 +124,17 @@ abstract contract ENS_Governance is Test, IDAO, ENSHelper {
         if (bytes(_dirPath).length > 0) {
             string memory jsonPath = string.concat(_dirPath, "/proposalCalldata.json");
             if (vm.isFile(jsonPath)) {
-                callDataComparison();
+                string memory jsonContent = vm.readFile(jsonPath);
+                _compareLiveCalldata(jsonContent, targets, values, calldatas);
             }
+        }
+
+        // Enforce dirPath for live proposals — calldata comparison must not be silently skipped
+        if (_isProposalSubmitted()) {
+            require(
+                bytes(_dirPath).length > 0,
+                "Live proposals must set dirPath() for calldata comparison"
+            );
         }
 
         // Hash the description
@@ -133,7 +142,7 @@ abstract contract ENS_Governance is Test, IDAO, ENSHelper {
 
         // Calculate proposalId
         proposalId = governor.hashProposal(targets, values, calldatas, descriptionHash);
-        
+
         // Store parameters to be validated after execution
         _beforeProposal();
 
@@ -228,133 +237,7 @@ abstract contract ENS_Governance is Test, IDAO, ENSHelper {
         return "";
     }
 
-    function callDataComparison() public {
-        string memory jsonContent = vm.readFile(string.concat(dirPath(), "/proposalCalldata.json"));
-    
-        address[] memory jsonTargets = parseJsonTargets(jsonContent);
-        string[] memory jsonValues = parseJsonValues(jsonContent);
-        bytes[] memory jsonCalldatas = parseJsonCalldatas(jsonContent);
-
-        console2.log("JSON parsed successfully with", jsonTargets.length, "operations");
-
-        // Generate calldata from the contract
-        (
-            address[] memory generatedTargets,
-            uint256[] memory generatedValues,
-            string[] memory generatedSignatures,
-            bytes[] memory generatedCalldatas,
-            string memory generatedDescription
-        ) = _generateCallData();
-        
-        // Compare lengths
-        assertEq(
-            jsonTargets.length,
-            generatedTargets.length,
-            "Number of executable calls mismatch"
-        );
-        
-        // Compare each operation
-        for (uint256 i = 0; i < jsonTargets.length; i++) {
-            // Compare target addresses
-            assertEq(
-                jsonTargets[i],
-                generatedTargets[i],
-                string(abi.encodePacked("Target mismatch at index ", vm.toString(i)))
-            );
-            
-            // Compare values
-            assertEq(
-                vm.parseUint(jsonValues[i]),
-                generatedValues[i],
-                string(abi.encodePacked("Value mismatch at index ", vm.toString(i)))
-            );
-            
-            // Compare calldata
-            assertEq(
-                jsonCalldatas[i],
-                generatedCalldatas[i],
-                string(abi.encodePacked("Calldata mismatch at index ", vm.toString(i)))
-            );
-        }
-
-        assertEq(jsonTargets.length, jsonValues.length, "Targets and values arrays length mismatch");
-        assertEq(jsonTargets.length, jsonCalldatas.length, "Targets and calldata arrays length mismatch");
-    }
-
-    function decodeTargetsArray(string memory jsonContent) public pure returns (address[] memory) {
-        return abi.decode(vm.parseJson(jsonContent, ".executableCalls[*].target"), (address[]));
-    }
-
-    function decodeTargetSingle(string memory jsonContent) public pure returns (address) {
-        return abi.decode(vm.parseJson(jsonContent, ".executableCalls[*].target"), (address));
-    }
-
-    function parseJsonTargets(string memory jsonContent) public returns (address[] memory jsonTargets) {
-        bytes memory data = abi.encodeWithSelector(this.decodeTargetsArray.selector, jsonContent);
-        (bool success, bytes memory returnData) = address(this).call(data);
-
-        if (success) {
-            jsonTargets = abi.decode(returnData, (address[]));
-        } else {
-            bytes memory singleData = abi.encodeWithSelector(this.decodeTargetSingle.selector, jsonContent);
-            (bool ok, bytes memory ret) = address(this).call(singleData);
-            require(ok, "Single decode failed");
-            jsonTargets = new address[](1);
-            jsonTargets[0] = abi.decode(ret, (address));
-        }
-    }
-
-    function decodeValuesArray(string memory jsonContent) public pure returns (string[] memory) {
-        return abi.decode(vm.parseJson(jsonContent, ".executableCalls[*].value"), (string[]));
-    }
-
-    function decodeValueSingle(string memory jsonContent) public pure returns (string memory) {
-        return abi.decode(vm.parseJson(jsonContent, ".executableCalls[*].value"), (string));
-    }   
-    
-    function parseJsonValues(string memory jsonContent) public returns (string[] memory jsonValues) {
-        bytes memory data = abi.encodeWithSelector(this.decodeValuesArray.selector, jsonContent);
-        (bool success, bytes memory returnData) = address(this).call(data);
-
-        if (success) {
-            jsonValues = abi.decode(returnData, (string[]));
-        } else {
-            bytes memory singleData = abi.encodeWithSelector(this.decodeValueSingle.selector, jsonContent);
-            (bool ok, bytes memory ret) = address(this).call(singleData);
-            require(ok, "Single decode failed");
-            jsonValues = new string[](1);
-            jsonValues[0] = abi.decode(ret, (string));
-        }
-    }
-
-    function decodeCalldatasArray(string memory jsonContent) public pure returns (bytes[] memory) {
-        return abi.decode(vm.parseJson(jsonContent, ".executableCalls[*].calldata"), (bytes[]));
-    }
-
-    function decodeCalldataSingle(string memory jsonContent) public pure returns (bytes memory) {
-        return abi.decode(vm.parseJson(jsonContent, ".executableCalls[*].calldata"), (bytes));
-    }
-    
-    function parseJsonCalldatas(string memory jsonContent) public returns (bytes[] memory jsonCalldatas) {
-        bytes memory data = abi.encodeWithSelector(this.decodeCalldatasArray.selector, jsonContent);
-        (bool success, bytes memory returnData) = address(this).call(data);
-
-        if (success) {
-            jsonCalldatas = abi.decode(returnData, (bytes[]));
-        } else {
-            bytes memory singleData = abi.encodeWithSelector(this.decodeCalldataSingle.selector, jsonContent);
-            (bool ok, bytes memory ret) = address(this).call(singleData);
-            require(ok, "Single decode failed");
-            jsonCalldatas = new bytes[](1);
-            jsonCalldatas[0] = abi.decode(ret, (bytes));
-        }
-    }
-
     function getDescriptionFromMarkdown() public returns (string memory) {
-        // Read markdown file
-        string memory markdownPath = string.concat(dirPath(), "/proposalDescription.md");
-        string memory markdownContent = vm.readFile(markdownPath);
-        
-        return markdownContent;
+        return _getDescriptionFromMarkdown(dirPath());
     }
 }
