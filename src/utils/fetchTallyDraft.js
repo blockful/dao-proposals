@@ -99,7 +99,8 @@ query Proposal {
             executableCalls: executableCalls.map(call => ({
                 target: call.target,
                 calldata: call.calldata,
-                value: call.value || "0"
+                value: call.value || "0",
+                signature: ""  // Tally drafts don't include signatures
             }))
         };
 

@@ -3,13 +3,26 @@ const path = require('path');
 
 const TALLY_API_URL = 'https://api.tally.xyz/query';
 const API_KEY = '365b418f59bd6dc4a0d7f23c2e8c12d982f156e9069695a6f0a2dcc3232448df';
-const ENS_GOVERNOR_ID = 'eip155:1:0x323A76393544d5ecca80cd6ef2A560C6a395b7E3';
+
+// Build slug -> governorId lookup from dao-registry.json
+function loadGovernorLookup() {
+    const registryPath = path.resolve(__dirname, '..', 'dao-registry.json');
+    const registry = JSON.parse(fs.readFileSync(registryPath, 'utf-8'));
+    const lookup = {};
+    for (const [key, dao] of Object.entries(registry.daos)) {
+        if (dao.tallySlug && dao.contracts.governor) {
+            lookup[dao.tallySlug] = `eip155:1:${dao.contracts.governor}`;
+        }
+    }
+    return lookup;
+}
 
 function usage() {
     console.log('Usage: node fetchLiveProposal.js <TALLY_URL_OR_ONCHAIN_ID> <OUTPUT_DIR>');
     console.log('');
     console.log('Examples:');
     console.log('  node src/utils/fetchLiveProposal.js https://www.tally.xyz/gov/ens/proposal/10731397... src/ens/proposals/ep-6-32');
+    console.log('  node src/utils/fetchLiveProposal.js https://www.tally.xyz/gov/uniswap/proposal/123... src/uniswap/proposals/proposal-123');
     console.log('  node src/utils/fetchLiveProposal.js 107313977323541760723614084561841045035159333942448750767795024713131429640046 src/ens/proposals/ep-6-32');
     process.exit(1);
 }
@@ -23,7 +36,33 @@ function parseOnchainId(input) {
     process.exit(1);
 }
 
-async function fetchLiveProposal(onchainId, outputDir) {
+function extractSlugFromUrl(input) {
+    // Extract DAO slug from Tally URL: /gov/<slug>/proposal/...
+    const slugMatch = input.match(/\/gov\/([^/]+)\/proposal\//);
+    if (slugMatch) return slugMatch[1];
+    return null;
+}
+
+function resolveGovernorId(input) {
+    const lookup = loadGovernorLookup();
+    const slug = extractSlugFromUrl(input);
+
+    if (slug) {
+        if (!lookup[slug]) {
+            console.error(`Error: DAO slug "${slug}" not found in dao-registry.json`);
+            console.error(`Available DAOs: ${Object.keys(lookup).join(', ')}`);
+            process.exit(1);
+        }
+        console.log(`Detected DAO: ${slug}`);
+        return { governorId: lookup[slug], slug };
+    }
+
+    // Raw numeric ID — fall back to ENS for backwards compatibility
+    console.log(`Detected DAO: ens (default — no slug in input)`);
+    return { governorId: lookup['ens'], slug: 'ens' };
+}
+
+async function fetchLiveProposal(onchainId, outputDir, governorId) {
     const query = `
 query ProposalDetails($input: ProposalInput!) {
     proposal(input: $input) {
@@ -42,7 +81,7 @@ query ProposalDetails($input: ProposalInput!) {
 
     const variables = {
         input: {
-            governorId: ENS_GOVERNOR_ID,
+            governorId: governorId,
             onchainId: onchainId
         }
     };
@@ -150,10 +189,11 @@ if (require.main === module) {
     const args = process.argv.slice(2);
     if (args.length < 2) usage();
 
+    const { governorId, slug } = resolveGovernorId(args[0]);
     const onchainId = parseOnchainId(args[0]);
     const outputDir = args[1];
 
-    fetchLiveProposal(onchainId, outputDir);
+    fetchLiveProposal(onchainId, outputDir, governorId);
 }
 
 module.exports = { fetchLiveProposal };
