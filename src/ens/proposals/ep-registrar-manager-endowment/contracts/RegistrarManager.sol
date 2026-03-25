@@ -6,12 +6,15 @@ import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { IRegistrarController } from "./IRegistrarController.sol";
 
 /// @title RegistrarManager
+/// @author Alex Netto <alex@blockful.io> (https://blockful.io)
 /// @notice Manages a set of ENS registrar controllers, allowing batch withdrawal of accumulated
 ///         ETH and forwarding to a configurable destination address. Provides the owner with
 ///         arbitrary call access to each registrar for administrative operations
 ///         (e.g. transferOwnership, recoverFunds).
 /// @dev Registrars are stored in a singly-linked list (sentinel pattern) for O(1) add and
 ///      gas-efficient enumeration. The sentinel address(0x1) is never a valid registrar.
+/// @custom:security-contact contact@blockful.io
+/// @custom:audit Cyfrin — March 2026 (2 low-severity findings, 19 formally verified invariants)
 contract RegistrarManager is Ownable {
     // -------------------------------------------------------------------------
     // Errors
