@@ -39,15 +39,12 @@ contract Proposal_ENS_EP_Registrar_Manager_Endowment_Test is ENS_Governance, Saf
 
     IRolesModifier public constant ROLES_MOD = IRolesModifier(0x703806E61847984346d2D7DDd853049627e50A40);
 
-    RegistrarManager public manager;
-
-    function setUp() public override {
-        super.setUp();
-        manager = new RegistrarManager(address(timelock), address(endowmentSafe));
-    }
+    /// @dev Deployed RegistrarManager contract.
+    RegistrarManager public constant manager =
+        RegistrarManager(payable(0x62627681d92e36B9AEE1D9a6Bf181373CcD42552));
 
     function _selectFork() public override {
-        vm.createSelectFork({ blockNumber: 24_402_958, urlOrAlias: "mainnet" });
+        vm.createSelectFork({ blockNumber: 24_736_040, urlOrAlias: "mainnet" });
     }
 
     function _proposer() public pure override returns (address) {
