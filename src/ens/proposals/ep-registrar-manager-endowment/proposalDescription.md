@@ -40,12 +40,12 @@ This proposal contains **8** transaction(s) to be executed by the ENS DAO Timelo
  
 ## Detailed Transaction Information
 
-**Note:** The `RegistrarManager` contract should be deployed separately before this proposal executes. The contract will be deployed with the Timelock as owner and Endowment Safe as destination.
+**Note:** The `RegistrarManager` contract has been deployed at [`0x62627681d92e36B9AEE1D9a6Bf181373CcD42552`](https://etherscan.io/address/0x62627681d92e36B9AEE1D9a6Bf181373CcD42552) with the Timelock as owner and Endowment Safe as destination.
 
 ### Transaction 1: Register new ETH Registrar Controller
  
 **Target:** RegistrarManager  
-**Address:** `TBD_REGISTRAR_MANAGER`  
+**Address:** `0x62627681d92e36B9AEE1D9a6Bf181373CcD42552`  
 **Function:** `addRegistrar`
  
 **Parameters:**
@@ -58,7 +58,7 @@ This proposal contains **8** transaction(s) to be executed by the ENS DAO Timelo
  ### Transaction 2: Register legacy ETH Registrar Controller
  
 **Target:** RegistrarManager  
-**Address:** `TBD_REGISTRAR_MANAGER`  
+**Address:** `0x62627681d92e36B9AEE1D9a6Bf181373CcD42552`  
 **Function:** `addRegistrar`
  
 **Parameters:**
@@ -75,7 +75,7 @@ This proposal contains **8** transaction(s) to be executed by the ENS DAO Timelo
 **Function:** `transferOwnership`
  
 **Parameters:**
-* `newOwner`: `TBD_REGISTRAR_MANAGER`
+* `newOwner`: `0x62627681d92e36B9AEE1D9a6Bf181373CcD42552`
  
 **Encoded Calldata:** `TBD`
  
@@ -88,7 +88,7 @@ This proposal contains **8** transaction(s) to be executed by the ENS DAO Timelo
 **Function:** `transferOwnership`
  
 **Parameters:**
-* `newOwner`: `TBD_REGISTRAR_MANAGER`
+* `newOwner`: `0x62627681d92e36B9AEE1D9a6Bf181373CcD42552`
  
 **Encoded Calldata:** `TBD`
  
@@ -145,7 +145,7 @@ This proposal contains **8** transaction(s) to be executed by the ENS DAO Timelo
  
 ## Notes / Assumptions
 
-* `RegistrarManager` contract should be deployed before this proposal executes. The contract will be deployed with constructor arguments `(timelock, endowmentSafe)`.
+* `RegistrarManager` contract deployed at [`0x62627681d92e36B9AEE1D9a6Bf181373CcD42552`](https://etherscan.io/address/0x62627681d92e36B9AEE1D9a6Bf181373CcD42552) with constructor arguments `(timelock, endowmentSafe)`.
 * The Endowment Safe is the owner of the Roles modifier, so Zodiac updates are executed via Safe `execTransaction`.
 
 ## References
