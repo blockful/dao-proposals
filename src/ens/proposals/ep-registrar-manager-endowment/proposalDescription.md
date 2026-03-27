@@ -1,154 +1,73 @@
- # [Executable] Registrar Manager + Endowment Roles Update (Draft)
- 
- ## Abstract
- 
-This proposal introduces a RegistrarManager that can permissionlessly withdraw ETH from ENS registrar controllers and forward funds to a configurable destination (initially the Endowment Safe). It also updates the Endowment Zodiac Roles permissions so the Endowment Manager can transfer ETH and USDC to the ENS Timelock only.
- 
- ## Motivation
- 
-Registrar income currently flows to the Timelock and requires a proposal to move funds into the Endowment. The RegistrarManager removes this bottleneck by allowing permissionless withdrawals from registrars and routing proceeds directly to the Endowment. Separately, limited treasury transfers (ETH/USDC) to the Timelock are required for operational funding; these are scoped to the Timelock only.
- 
- ## Specification
- 
- ### Description
- 
-This proposal:
- 
-1. Deploys `RegistrarManager` contract.
-2. Registers the current and legacy registrar controllers in the manager.
-3. Transfers registrar controller ownership to the manager.
-4. Updates Zodiac Roles for the Endowment Manager (MANAGER role) to allow:
-   - `USDC.transfer(timelock, amount)` with no amount cap.
-   - ETH sends to the Timelock only (empty calldata, send-only).
- 
- ### Transactions Summary
- 
-This proposal contains **8** transaction(s) to be executed by the ENS DAO Timelock.
+# [EP 6.39] [Executable] Treasury Flow Automation
+## Abstract
 
-| # | Contract | Function | Description |
-| - | -------- | -------- | ----------- |
-| 1 | RegistrarManager | `addRegistrar` | Register new ETH Registrar Controller |
-| 2 | RegistrarManager | `addRegistrar` | Register legacy ETH Registrar Controller |
-| 3 | ETH Registrar Controller 2 | `transferOwnership` | Transfer ownership to RegistrarManager |
-| 4 | Old ETH Registrar Controller | `transferOwnership` | Transfer ownership to RegistrarManager |
-| 5 | Endowment Safe | `execTransaction` | Zodiac `scopeTarget` for USDC |
-| 6 | Endowment Safe | `execTransaction` | Zodiac `scopeFunction` for `USDC.transfer(timelock, amount)` |
-| 7 | Endowment Safe | `execTransaction` | Zodiac `scopeTarget` for Timelock |
-| 8 | Endowment Safe | `execTransaction` | Zodiac `allowFunction` for ETH sends to Timelock |
- 
- ---
- 
-## Detailed Transaction Information
+ENS protocol revenue currently requires three separate steps to move from registrar controllers to productive use in the endowment and fund operations. This proposal introduces a Registrar Manager contract that takes ownership of all registrar controllers and enables permissionless withdrawals directly to the endowment. It also configures a Zodiac module permission on the endowment to allow the treasury manager to send ETH and USDC to the timelock without a proposal, following a two-year stablecoin runway policy consistent with the current Investment Policy Statement.
 
-**Note:** The `RegistrarManager` contract has been deployed at [`0x62627681D92e36b9aeE1D9A6BF181373ccd42552`](https://etherscan.io/address/0x62627681D92e36b9aeE1D9A6BF181373ccd42552) with the Timelock as owner and Endowment Safe as destination.
+The result is zero proposals for routine treasury operations, faster yield on collected revenue, permissionless withdrawals, and increased income for the DAO. A conservative estimate suggests that since January 2024, approximately $1 million in yield was missed due to idle capital in registrar controllers and the timelock.
 
-### Transaction 1: Register new ETH Registrar Controller
- 
-**Target:** RegistrarManager  
-**Address:** `0x62627681D92e36b9aeE1D9A6BF181373ccd42552`  
-**Function:** `addRegistrar`
- 
-**Parameters:**
-* `registrar`: `0x59E16fcCd424Cc24e280Be16E11Bcd56fb0CE547`
- 
-**Encoded Calldata:** `TBD`
- 
- ---
- 
- ### Transaction 2: Register legacy ETH Registrar Controller
- 
-**Target:** RegistrarManager  
-**Address:** `0x62627681D92e36b9aeE1D9A6BF181373ccd42552`  
-**Function:** `addRegistrar`
- 
-**Parameters:**
-* `registrar`: `0x283Af0B28c62C092C9727F1Ee09c02CA627EB7F5`
- 
-**Encoded Calldata:** `TBD`
- 
- ---
- 
- ### Transaction 3: Transfer ownership of ETH Registrar Controller 2
- 
-**Target:** ENS: ETH Registrar Controller 2  
-**Address:** `0x59E16fcCd424Cc24e280Be16E11Bcd56fb0CE547`  
-**Function:** `transferOwnership`
- 
-**Parameters:**
-* `newOwner`: `0x62627681D92e36b9aeE1D9A6BF181373ccd42552`
- 
-**Encoded Calldata:** `TBD`
- 
- ---
- 
- ### Transaction 4: Transfer ownership of Old ETH Registrar Controller
- 
-**Target:** ENS: Old ETH Registrar Controller  
-**Address:** `0x283Af0B28c62C092C9727F1Ee09c02CA627EB7F5`  
-**Function:** `transferOwnership`
- 
-**Parameters:**
-* `newOwner`: `0x62627681D92e36b9aeE1D9A6BF181373ccd42552`
- 
-**Encoded Calldata:** `TBD`
- 
- ---
- 
- ### Transaction 5: Zodiac scopeTarget for USDC
- 
-**Target:** ENS Endowment Safe  
-**Address:** `0x4F2083f5fBede34C2714aFfb3105539775f7FE64`  
-**Function:** `execTransaction`
- 
-**Inner Call:** `Roles.scopeTarget(MANAGER_ROLE, USDC)`
- 
-**Encoded Calldata:** `TBD`
- 
- ---
- 
- ### Transaction 6: Zodiac scopeFunction for USDC transfer
- 
-**Target:** ENS Endowment Safe  
-**Address:** `0x4F2083f5fBede34C2714aFfb3105539775f7FE64`  
-**Function:** `execTransaction`
- 
-**Inner Call:** `Roles.scopeFunction(MANAGER_ROLE, USDC, transfer, conditions, options=0)`
- 
-**Conditions:** `USDC.transfer(timelock, amount)`  
-**Encoded Calldata:** `TBD`
- 
- ---
- 
- ### Transaction 7: Zodiac scopeTarget for Timelock
- 
-**Target:** ENS Endowment Safe  
-**Address:** `0x4F2083f5fBede34C2714aFfb3105539775f7FE64`  
-**Function:** `execTransaction`
- 
-**Inner Call:** `Roles.scopeTarget(MANAGER_ROLE, timelock)`
- 
-**Encoded Calldata:** `TBD`
- 
- ---
- 
- ### Transaction 8: Zodiac allowFunction for ETH sends to Timelock
- 
-**Target:** ENS Endowment Safe  
-**Address:** `0x4F2083f5fBede34C2714aFfb3105539775f7FE64`  
-**Function:** `execTransaction`
- 
-**Inner Call:** `Roles.allowFunction(MANAGER_ROLE, timelock, 0x00000000, options=Send)`
- 
-**Encoded Calldata:** `TBD`
- 
- ---
- 
-## Notes / Assumptions
+![](https://discuss.ens.domains/uploads/db9688/original/2X/3/398d621d97bf4820a875d790f220cab125667c48.png)
 
-* `RegistrarManager` contract deployed at [`0x62627681D92e36b9aeE1D9A6BF181373ccd42552`](https://etherscan.io/address/0x62627681D92e36b9aeE1D9A6BF181373ccd42552) with constructor arguments `(timelock, endowmentSafe)`.
-* The Endowment Safe is the owner of the Roles modifier, so Zodiac updates are executed via Safe `execTransaction`.
+## Specification
 
-## References
+### Problem
 
-* ENS Endowment Safe: `0x4F2083f5fBede34C2714aFfb3105539775f7FE64`
-* ENS Timelock: `0xFe89cc7aBB2C4183683ab71653C4cdc9B02D44b7`
+ENS protocol revenue requires three steps to move from collection to productive use.
+Registrar controllers collect ETH from .eth registrations and renewals, and the current controller (controller.ens.eth) already sends withdrawn ETH to the timelock. However, the old registrar controller at 0x283Af0B28c62C092C9727F1Ee09c02CA627eb7F5 holds roughly 772 ETH that requires a dedicated proposal just to withdraw.
+
+Once ETH reaches the timelock, sending it to the endowment (endowment.ensdao.eth) for investment requires another proposal. Capital can sit idle in the timelock for several months before it starts earning yield.
+
+When the DAO needs to fund operational expenses like ENS Labs, the Service Provider Program, or Working Groups, yet another proposal is needed to transfer from the endowment back to the timelock or to execute operations with [twap.ensdao.eth](https://etherscan.io/address/0x02D61347e5c6EA5604f3f814C5b5498421cEBdEB). For context, [EP 6.32](https://discuss.ens.domains/t/ep-6-32-executable-transfer-2-5m-usdc-from-endowment-to-wallet-ensdao-eth/21882) proposed a $2.5M USDC transfer from the endowment to the timelock just to cover Working Group budgets that had already been approved.
+
+On top of that, there is currently roughly 4,148 ETH sitting in the timelock that could be earning yield in the endowment. The operational funding process today is reactive and not smooth. Each transfer requires a full governance cycle, and capital that could be generating yield sits idle throughout.
+
+#### Key Addresses
+
+• Timelock: 0xFe89cc7aBB2C4183683ab71653C4cdc9B02D44b7 (wallet.ensdao.eth)
+• Current Registrar Controller: 0x253553366Da8546fC250F225fE3d25d0C782303b (controller.ens.eth)
+• Old Registrar Controller (~772 ETH): 0x283Af0B28c62C092C9727F1Ee09c02CA627eb7F5
+• Endowment: 0x4F2083f5fBede34C2714aFfb3105539775f7FE64 (endowment.ensdao.eth)
+• Governor: 0x323A76393544d5ecca80cd6ef2A560C6a395b7E3 (governor.ensdao.eth)
+• TWAP safe: 0x02D61347e5c6EA5604f3f814C5b5498421cEBdEB (twap.ensdao.eth)
+
+### Solution
+
+This proposal introduces two components that eliminate all three bottlenecks: a Registrar Manager and an Endowment Zodiac Module permission.
+
+#### Registrar Manager
+
+The Registrar Manager is a contract that becomes the owner of all registrar controllers. Its key properties:
+
+a) Exposes a permissionless withdraw() function that anyone can call. When called, it pulls ETH from each controller and routes it directly to the endowment.
+
+b) The destination address is configurable by the DAO through the timelock, so governance can redirect the flow at any time.
+
+c) Acts as a pass-through for governance calls, meaning the DAO retains full control over controller parameters.
+
+d) New controllers can be added over time.
+
+e) Never holds funds.
+
+[Source code of Registrar Manager contract.](https://github.com/blockful/dao-proposals/blob/ep-registrar-manager-endowment/src/ens/proposals/ep-registrar-manager-endowment/contracts/RegistrarManager.sol)
+
+#### Endowment Zodiac Module
+
+The Zodiac module is already part of how the endowment is managed. This proposal adds a scoped permission that allows the treasury manager (Karpatkey) to send ETH and USDC to wallet.ensdao.eth without a proposal. It cannot send to any other address or use any other token. All other endowment operations remain unchanged.
+
+### Funding Policy
+
+This is the current suggestion for the funding policy.
+
+The timelock maintains a 6 months runway in USDC (~$8M at current spending). Each quarter, Karpatkey calculates the current runway on the timelock. If it falls below 6 months, the endowment sends the shortfall. If it exceeds 6 months, no transfer is needed and the excess stays invested in the endowment. If an additional governance proposal requiring capital is approved, this may trigger an earlier runway evaluation and transfer, consistent with this policy.
+
+The initial policy is included in this executable proposal, so no separate vote is needed to get started.
+Any future changes to the funding policy require a social vote. This establishes clear expectations about responsibilities and decision-making: the treasury manager handles routine rebalancing within the policy, and the community sets the policy itself.
+
+This proposal remains aligned with the IPS. The required three-year stablecoin runway is calculated at the Endowment level, including stablecoins held and deployed there, as is currently done. The expansion guidelines reference transferring 33% of protocol revenue to the Endowment. This proposal modifies that mechanism by routing revenue directly to the Endowment to improve operational efficiency and capital deployment.
+
+### Impact
+
+The operational funding process is reactive, requiring a full governance cycle for each transfer. Meanwhile, capital that could be earning yield sits idle in controllers and the timelock for several months at a time.
+
+With this proposal, capital flows from registrars to the endowment as soon as anyone calls withdraw(). The endowment begins generating yield immediately rather than after several months of governance overhead. Operational funding follows a clear quarterly process based on the two-year runway target, removing the need for ad-hoc proposals.
+
+To put this in perspective: looking at the period from January 2024 until now, and considering ETH staking yields if this capital had been allocated to the endowment, a conservative estimate of $1 million in yield was left on the table. This is based on the balances held in the [timelock](https://etherscan.io/address/0xFe89cc7aBB2C4183683ab71653C4cdc9B02D44b7#analytics), the [current registrar controller](https://etherscan.io/address/0x253553366Da8546fC250F225fE3d25d0C782303b#analytics), and the [old registrar controller](https://etherscan.io/address/0x283Af0B28c62C092C9727F1Ee09c02CA627eb7F5#analytics) (which still have a relevant number of registrations). Going forward, every ETH collected will begin earning yield within days, compounding the DAO's income over time.
