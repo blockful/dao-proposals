@@ -10,19 +10,20 @@ import { ITimelock } from "@ens/interfaces/ITimelock.sol";
 import { IERC20 } from "@contracts/utils/interfaces/IERC20.sol";
 
 import { ENS_Governance } from "@ens/ens.t.sol";
+import { ENSConstants } from "@ens/Constants.sol";
 
 contract Proposal_ENS_EP_5_25_Test is ENS_Governance {
-    IERC20 USDC = IERC20(0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48);
+    IERC20 USDC = IERC20(ENSConstants.USDC);
 
     uint256 USDCbalanceBefore;
     uint256 USDCbalanceAfter;
-    uint256 metagovExpectedUSDCtransfer = 254_000 * 10 ** 6; // USDC decimals
-    uint256 ecosystemExpectedUSDCtransfer = 836_000 * 10 ** 6; // USDC decimals
-    uint256 pgExpectedUSDCtransfer = 226_000 * 10 ** 6; // USDC decimals
+    uint256 metagovExpectedUSDCtransfer = 254_000 * 10 ** ENSConstants.USDC_DECIMALS;
+    uint256 ecosystemExpectedUSDCtransfer = 836_000 * 10 ** ENSConstants.USDC_DECIMALS;
+    uint256 pgExpectedUSDCtransfer = 226_000 * 10 ** ENSConstants.USDC_DECIMALS;
 
-    address metagovMultisig = 0x91c32893216dE3eA0a55ABb9851f581d4503d39b;
-    address ecosystemMultisig = 0x2686A8919Df194aA7673244549E68D42C1685d03;
-    address pgMultisig = 0xcD42b4c4D102cc22864e3A1341Bb0529c17fD87d;
+    address metagovMultisig = ENSConstants.META_GOV_MULTISIG;
+    address ecosystemMultisig = ENSConstants.ECOSYSTEM_MULTISIG;
+    address pgMultisig = ENSConstants.PUBLIC_GOODS_MULTISIG;
 
     function _selectFork() public override {
         vm.createSelectFork({ blockNumber: 21_130_700, urlOrAlias: "mainnet" });
@@ -50,9 +51,9 @@ contract Proposal_ENS_EP_5_25_Test is ENS_Governance {
         uint256 items = 3;
 
         targets = new address[](items);
-        targets[0] = address(0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48);
-        targets[1] = address(0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48);
-        targets[2] = address(0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48);
+        targets[0] = ENSConstants.USDC;
+        targets[1] = ENSConstants.USDC;
+        targets[2] = ENSConstants.USDC;
 
         values = new uint256[](items);
         values[0] = 0;
