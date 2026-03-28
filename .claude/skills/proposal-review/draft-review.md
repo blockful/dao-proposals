@@ -117,8 +117,10 @@ contract Proposal_ENS_EP_Topic_Name_Draft_Test is ENS_Governance {
 | Field | Pre-draft | Draft |
 |-------|-----------|-------|
 | `description` | Hardcoded placeholder | `getDescriptionFromMarkdown()` |
-| `dirPath()` | `""` | `"src/ens/proposals/ep-topic-name"` |
+| `dirPath()` | `""` | `"src/ens/proposals/ep-topic-name"` **(MANDATORY — comparison is silently skipped without it)** |
 | `_proposer()` | Default | From Tally draft |
+
+> **WARNING**: If `dirPath()` returns `""` and `proposalCalldata.json` exists, the calldata comparison is silently skipped — the test will pass without verifying calldata. This is a false positive risk. Always set `dirPath()` for draft reviews.
 
 ### What the test does
 
@@ -126,7 +128,7 @@ contract Proposal_ENS_EP_Topic_Name_Draft_Test is ENS_Governance {
 2. Runs `_beforeProposal()` and `_afterExecution()` assertions
 3. Compares manually generated calldata against `proposalCalldata.json`
 
-If step 3 fails, this is a finding, not a flaky test. Pause approval and investigate the mismatch.
+**If step 3 fails, do not approve the proposal calldata. Report the mismatch as a finding.** This is a security check, not a flaky test — treat any mismatch as critical until investigated.
 
 ## 4. Run Test
 

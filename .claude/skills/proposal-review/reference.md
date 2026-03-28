@@ -18,7 +18,12 @@ Shared reference data for all proposal calldata reviews.
 | Ecosystem Multisig | `0x2686A8919Df194aA7673244549E68D42C1685d03` |
 | Public Goods Multisig | `0xcD42b4c4D102cc22864e3A1341Bb0529c17fD87d` |
 
-For the full list, see `src/ens/Constants.sol` (ENSConstants library).
+For the full list, see `src/ens/Constants.sol` (ENSConstants library):
+
+```solidity
+import { ENSConstants } from "@ens/Constants.sol";
+// Use: ENSConstants.USDC, ENSConstants.TIMELOCK, ENSConstants.META_GOV_MULTISIG, etc.
+```
 
 For other DAOs, see `src/dao-registry.json`.
 

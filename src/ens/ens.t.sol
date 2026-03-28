@@ -119,13 +119,19 @@ abstract contract ENS_Governance is CalldataComparison, ENSHelper {
         // Generate call data
         (targets, values, signatures, calldatas, description) = _generateCallData();
 
-        // Compare generated calldata against proposalCalldata.json when it exists
+        // Compare generated calldata against proposalCalldata.json when it exists.
+        // IMPORTANT: dirPath() MUST be set for both draft and live proposals that have
+        // a proposalCalldata.json. Only pre-draft proposals (no JSON yet) should return "".
+        // If dirPath() is empty, this comparison is silently skipped — which is a false
+        // positive risk if a draft proposal forgets to set it.
         string memory _dirPath = dirPath();
         if (bytes(_dirPath).length > 0) {
             string memory jsonPath = string.concat(_dirPath, "/proposalCalldata.json");
             if (vm.isFile(jsonPath)) {
                 string memory jsonContent = vm.readFile(jsonPath);
                 _compareLiveCalldata(jsonContent, targets, values, calldatas);
+            } else if (_isProposalSubmitted()) {
+                revert("Live proposal has dirPath() set but proposalCalldata.json is missing");
             }
         }
 
