@@ -20,7 +20,17 @@ contract Proposal_ENS_EP_6_19_Test is ENS_Governance {
         return 0x534631Bcf33BDb069fB20A93d2fdb9e4D4dD42CF; // slobo.eth
     }
 
-    function _beforeProposal() public override { }
+    function _beforeProposal() public view override {
+        // The timelock should not yet have an agreement registered in the SafeHarbor
+        assertEq(
+            safeHarbor.getAgreement(address(timelock)),
+            address(0),
+            "Timelock should not have a SafeHarbor agreement before proposal"
+        );
+
+        // The agreement contract should already be owned by the timelock (precondition)
+        assertEq(agreement.owner(), address(timelock), "Agreement owner should be timelock before proposal");
+    }
 
     function _generateCallData()
         public
