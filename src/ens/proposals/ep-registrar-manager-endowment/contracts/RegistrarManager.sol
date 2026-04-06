@@ -8,19 +8,19 @@ import { IRegistrarController } from "./IRegistrarController.sol";
 /// @title RegistrarManager
 /// @notice Manages a set of ENS registrar controllers, allowing batch withdrawal of accumulated
 ///         ETH and forwarding to a configurable destination address. Provides the owner with
-///         arbitrary call access to each registrar for administrative operations
+///         arbitrary call access to each registrar controller for administrative operations
 ///         (e.g. transferOwnership, recoverFunds).
-/// @dev Registrars are stored in a singly-linked list (sentinel pattern) for O(1) add and
-///      gas-efficient enumeration. The sentinel address(0x1) is never a valid registrar.
+/// @dev Registrar controllers are stored in a singly-linked list (sentinel pattern) for O(1) add
+///      and gas-efficient enumeration. The sentinel address(0x1) is never a valid entry.
 contract RegistrarManager is Ownable {
     // -------------------------------------------------------------------------
     // Errors
     // -------------------------------------------------------------------------
 
     error ZeroAddress();
-    error InvalidRegistrar(address registrar);
-    error RegistrarAlreadyExists(address registrar);
-    error RegistrarNotFound(address registrar);
+    error InvalidRegistrarController(address registrarController);
+    error RegistrarControllerAlreadyExists(address registrarController);
+    error RegistrarControllerNotFound(address registrarController);
     error DestinationUnchanged();
     error ForwardFailed();
 
@@ -33,24 +33,23 @@ contract RegistrarManager is Ownable {
     /// @param newDestination The new destination address.
     event DestinationUpdated(address indexed previousDestination, address indexed newDestination);
 
-    /// @notice Emitted when a registrar is added to the managed set.
-    /// @param registrar The registrar address that was added.
-    event RegistrarAdded(address indexed registrar);
+    /// @notice Emitted when a registrar controller is added to the managed set.
+    /// @param registrarController The registrar controller address that was added.
+    event RegistrarControllerAdded(address indexed registrarController);
 
-    /// @notice Emitted when a registrar is removed from the managed set.
-    /// @param registrar The registrar address that was removed.
-    event RegistrarRemoved(address indexed registrar);
+    /// @notice Emitted when a registrar controller is removed from the managed set.
+    /// @param registrarController The registrar controller address that was removed.
+    event RegistrarControllerRemoved(address indexed registrarController);
 
-    /// @notice Emitted for each registrar during `withdrawAll`, indicating success or failure.
-    /// @param registrar The registrar address that was withdrawn from.
+    /// @notice Emitted for each registrar controller during `withdrawAll`, indicating success or failure.
+    /// @param registrarController The registrar controller address that was withdrawn from.
     /// @param success Whether the withdraw call succeeded.
-    event RegistrarWithdrawn(address indexed registrar, bool success);
+    event RegistrarControllerWithdrawn(address indexed registrarController, bool success);
 
-    /// @notice Emitted when an arbitrary call is executed on a registrar via `execOnRegistrar`.
-    /// @param registrar The target registrar address.
-    /// @param data The calldata forwarded to the registrar.
-    /// @param success Whether the low-level call succeeded.
-    event RegistrarCall(address indexed registrar, bytes data, bool success);
+    /// @notice Emitted when an arbitrary call is executed on a registrar controller via `execOnRegistrarController`.
+    /// @param registrarController The target registrar controller address.
+    /// @param data The calldata forwarded to the registrar controller.
+    event RegistrarControllerCall(address indexed registrarController, bytes data);
 
     /// @notice Emitted when the contract's ETH balance is forwarded to the destination.
     /// @param destination The address that received the funds.
@@ -61,7 +60,7 @@ contract RegistrarManager is Ownable {
     // Constants
     // -------------------------------------------------------------------------
 
-    /// @dev Sentinel node for the linked list. Never a valid registrar.
+    /// @dev Sentinel node for the linked list. Never a valid registrar controller.
     address private constant _HEAD = address(0x1);
 
     // -------------------------------------------------------------------------
@@ -71,11 +70,11 @@ contract RegistrarManager is Ownable {
     /// @notice Address that receives ETH after withdrawal.
     address public destination;
 
-    /// @notice Number of registrars currently managed.
-    uint256 public registrarCount;
+    /// @notice Number of registrar controllers currently managed.
+    uint256 public registrarControllerCount;
 
-    /// @dev Linked list: registrar -> next registrar. _HEAD is the sentinel.
-    mapping(address registrar => address nextRegistrar) private _next;
+    /// @dev Linked list: registrarController -> next registrarController. _HEAD is the sentinel.
+    mapping(address registrarController => address nextRegistrarController) private _next;
 
     // -------------------------------------------------------------------------
     // Constructor
@@ -83,69 +82,70 @@ contract RegistrarManager is Ownable {
 
     /// @param owner_ Initial owner of the contract (typically a DAO timelock).
     /// @param destination_ Address that will receive forwarded ETH.
-    constructor(address owner_, address destination_) Ownable(owner_) {
+    /// @param initialControllers Registrar controller addresses to add at deployment.
+    constructor(
+        address owner_,
+        address destination_,
+        address[] memory initialControllers
+    ) Ownable(owner_) {
         if (destination_ == address(0)) revert ZeroAddress();
         destination = destination_;
         _next[_HEAD] = _HEAD;
+
+        for (uint256 i = 0; i < initialControllers.length; ++i) {
+            _addRegistrarController(initialControllers[i]);
+        }
     }
 
     // -------------------------------------------------------------------------
     // Views
     // -------------------------------------------------------------------------
 
-    /// @notice Returns the full ordered list of managed registrars.
-    /// @return registrars Array of registrar addresses.
-    function getRegistrars() external view returns (address[] memory registrars) {
-        registrars = new address[](registrarCount);
+    /// @notice Returns the full ordered list of managed registrar controllers.
+    /// @return controllers Array of registrar controller addresses.
+    function getRegistrarControllers() external view returns (address[] memory controllers) {
+        controllers = new address[](registrarControllerCount);
         address current = _next[_HEAD];
-        for (uint256 i = 0; i < registrarCount; ++i) {
-            registrars[i] = current;
+        for (uint256 i = 0; i < registrarControllerCount; ++i) {
+            controllers[i] = current;
             current = _next[current];
         }
     }
 
-    /// @notice Checks whether an address is a managed registrar.
-    /// @param registrar Address to check.
+    /// @notice Checks whether an address is a managed registrar controller.
+    /// @param registrarController Address to check.
     /// @return True if the address is currently in the managed set.
-    function isRegistrar(address registrar) public view returns (bool) {
-        return registrar != _HEAD && _next[registrar] != address(0);
+    function isRegistrarController(address registrarController) public view returns (bool) {
+        return registrarController != _HEAD && _next[registrarController] != address(0);
     }
 
     // -------------------------------------------------------------------------
-    // Owner-only: Registrar management
+    // Owner-only: Registrar controller management
     // -------------------------------------------------------------------------
 
-    /// @notice Adds a registrar to the managed set.
-    /// @param registrar Address of the registrar controller to add.
-    function addRegistrar(address registrar) external onlyOwner {
-        if (registrar == address(0)) revert ZeroAddress();
-        if (registrar == _HEAD) revert InvalidRegistrar(registrar);
-        if (isRegistrar(registrar)) revert RegistrarAlreadyExists(registrar);
-
-        _next[registrar] = _next[_HEAD];
-        _next[_HEAD] = registrar;
-        ++registrarCount;
-
-        emit RegistrarAdded(registrar);
+    /// @notice Adds a registrar controller to the managed set.
+    /// @param registrarController Address of the registrar controller to add.
+    function addRegistrarController(address registrarController) external onlyOwner {
+        _addRegistrarController(registrarController);
     }
 
-    /// @notice Removes a registrar from the managed set.
+    /// @notice Removes a registrar controller from the managed set.
     /// @dev Traverses the linked list to find the previous node. The list is expected to be
-    ///      small (handful of registrars), so the linear scan is acceptable.
-    /// @param registrar Address of the registrar controller to remove.
-    function removeRegistrar(address registrar) external onlyOwner {
-        if (!isRegistrar(registrar)) revert RegistrarNotFound(registrar);
+    ///      small (handful of registrar controllers), so the linear scan is acceptable.
+    /// @param registrarController Address of the registrar controller to remove.
+    function removeRegistrarController(address registrarController) external onlyOwner {
+        if (!isRegistrarController(registrarController)) revert RegistrarControllerNotFound(registrarController);
 
         address prev = _HEAD;
-        while (_next[prev] != registrar) {
+        while (_next[prev] != registrarController) {
             prev = _next[prev];
         }
 
-        _next[prev] = _next[registrar];
-        delete _next[registrar];
-        --registrarCount;
+        _next[prev] = _next[registrarController];
+        delete _next[registrarController];
+        --registrarControllerCount;
 
-        emit RegistrarRemoved(registrar);
+        emit RegistrarControllerRemoved(registrarController);
     }
 
     // -------------------------------------------------------------------------
@@ -168,61 +168,82 @@ contract RegistrarManager is Ownable {
     // Withdraw
     // -------------------------------------------------------------------------
 
-    /// @notice Calls `withdraw()` on every managed registrar, then forwards the contract's
-    ///         entire ETH balance to `destination`. Permissionless — anyone may trigger this.
-    /// @dev Individual registrar withdrawals that revert are caught and logged; they do not
-    ///      prevent the remaining registrars from being processed.
+    /// @notice Calls `withdraw()` on every managed registrar controller, then forwards the
+    ///         contract's entire ETH balance to `destination`. Permissionless — anyone may
+    ///         trigger this.
+    /// @dev Individual registrar controller withdrawals that revert are caught and logged; they
+    ///      do not prevent the remaining controllers from being processed.
     function withdrawAll() external {
-        address registrar = _next[_HEAD];
-        while (registrar != _HEAD) {
-            bool success = _withdrawRegistrar(registrar);
-            emit RegistrarWithdrawn(registrar, success);
-            registrar = _next[registrar];
+        address controller = _next[_HEAD];
+        while (controller != _HEAD) {
+            bool success = _withdrawRegistrarController(controller);
+            emit RegistrarControllerWithdrawn(controller, success);
+            controller = _next[controller];
         }
         _forwardBalance();
     }
 
     // -------------------------------------------------------------------------
-    // Owner-only: Arbitrary registrar calls
+    // Owner-only: Arbitrary registrar controller calls
     // -------------------------------------------------------------------------
 
-    /// @notice Executes an arbitrary call on a managed registrar.
-    /// @dev Does NOT revert on call failure — the caller can inspect the returned `success`
-    ///      flag and `result` bytes. This is intentional: it allows the owner to observe
-    ///      failure data without the entire transaction reverting.
-    /// @param registrar Target registrar (must be in the managed set).
+    /// @notice Executes an arbitrary call on a managed registrar controller.
+    /// @dev Reverts on call failure, bubbling up the original revert reason. This ensures that
+    ///      when called as part of a governance proposal, a failed controller call causes the
+    ///      entire proposal to revert rather than leaving the system in an inconsistent state.
+    /// @param registrarController Target registrar controller (must be in the managed set).
     /// @param data Calldata to forward.
-    /// @return success Whether the low-level call succeeded.
     /// @return result The raw bytes returned by the call.
-    function execOnRegistrar(
-        address registrar,
+    function execOnRegistrarController(
+        address registrarController,
         bytes calldata data
     )
         external
         onlyOwner
-        returns (bool success, bytes memory result)
+        returns (bytes memory result)
     {
-        if (!isRegistrar(registrar)) revert RegistrarNotFound(registrar);
-        (success, result) = registrar.call(data);
-        emit RegistrarCall(registrar, data, success);
+        if (!isRegistrarController(registrarController)) revert RegistrarControllerNotFound(registrarController);
+
+        bool success;
+        (success, result) = registrarController.call(data);
+        if (!success) {
+            assembly {
+                revert(add(result, 32), mload(result))
+            }
+        }
+
+        emit RegistrarControllerCall(registrarController, data);
     }
 
     // -------------------------------------------------------------------------
     // Receive
     // -------------------------------------------------------------------------
 
-    /// @notice Allows the contract to receive ETH (e.g. from registrar withdrawals).
+    /// @notice Allows the contract to receive ETH (e.g. from registrar controller withdrawals).
     receive() external payable { }
 
     // -------------------------------------------------------------------------
     // Internal
     // -------------------------------------------------------------------------
 
-    /// @notice Attempts to call `withdraw()` on a registrar.
-    /// @param registrar The registrar to call withdraw() on.
+    /// @notice Adds a registrar controller to the managed set (used by constructor and external setter).
+    function _addRegistrarController(address registrarController) internal {
+        if (registrarController == address(0)) revert ZeroAddress();
+        if (registrarController == _HEAD) revert InvalidRegistrarController(registrarController);
+        if (isRegistrarController(registrarController)) revert RegistrarControllerAlreadyExists(registrarController);
+
+        _next[registrarController] = _next[_HEAD];
+        _next[_HEAD] = registrarController;
+        ++registrarControllerCount;
+
+        emit RegistrarControllerAdded(registrarController);
+    }
+
+    /// @notice Attempts to call `withdraw()` on a registrar controller.
+    /// @param controller The registrar controller to call withdraw() on.
     /// @return True if the call succeeded, false if it reverted.
-    function _withdrawRegistrar(address registrar) internal returns (bool) {
-        try IRegistrarController(registrar).withdraw() {
+    function _withdrawRegistrarController(address controller) internal returns (bool) {
+        try IRegistrarController(controller).withdraw() {
             return true;
         } catch {
             return false;
