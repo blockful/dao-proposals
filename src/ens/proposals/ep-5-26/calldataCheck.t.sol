@@ -10,15 +10,16 @@ import { ITimelock } from "@ens/interfaces/ITimelock.sol";
 import { IERC20 } from "@contracts/utils/interfaces/IERC20.sol";
 
 import { ENS_Governance } from "@ens/ens.t.sol";
+import { ENSConstants } from "@ens/Constants.sol";
 
 contract Proposal_ENS_EP_5_26_Test is ENS_Governance {
-    IERC20 ENS = IERC20(0xC18360217D8F7Ab5e7c516566761Ea12Ce7F9D72);
+    IERC20 ENS = IERC20(ENSConstants.ENS_TOKEN);
 
     uint256 ENSbalanceBefore;
     uint256 ENSbalanceAfter;
-    uint256 metagovExpectedENStransfer = 30_000 * 10 ** 18; // ENS decimals
+    uint256 metagovExpectedENStransfer = 30_000 * 10 ** ENSConstants.ENS_DECIMALS;
 
-    address metagovMultisig = 0x91c32893216dE3eA0a55ABb9851f581d4503d39b;
+    address metagovMultisig = ENSConstants.META_GOV_MULTISIG;
 
     function _selectFork() public override {
         vm.createSelectFork({ blockNumber: 21_130_700, urlOrAlias: "mainnet" });
@@ -46,7 +47,7 @@ contract Proposal_ENS_EP_5_26_Test is ENS_Governance {
         uint256 items = 1;
 
         targets = new address[](items);
-        targets[0] = address(0xC18360217D8F7Ab5e7c516566761Ea12Ce7F9D72);
+        targets[0] = ENSConstants.ENS_TOKEN;
 
         values = new uint256[](items);
         values[0] = 0;
