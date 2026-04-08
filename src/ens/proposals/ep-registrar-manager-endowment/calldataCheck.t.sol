@@ -23,9 +23,8 @@ interface IRegistrarController {
  * @title Proposal_ENS_EP_Registrar_Manager_Endowment_Test
  * @notice Calldata review for ENS Draft — Registrar Manager + Endowment Roles Updates
  * @dev This proposal:
- *      1) Registers the new registrar controllers in RegistrarManager.
- *      2) Transfers registrar controller ownership to RegistrarManager.
- *      3) Updates Zodiac Roles (MANAGER) to allow:
+ *      1) Transfers registrar controller ownership to RegistrarManager (pre-initialized).
+ *      2) Updates Zodiac Roles (MANAGER) to allow:
  *         - USDC.transfer(timelock, amount) with unlimited amount.
  *         - ETH transfers to timelock (empty calldata, send-only).
  */
@@ -41,9 +40,19 @@ contract Proposal_ENS_EP_Registrar_Manager_Endowment_Test is ENS_Governance, Saf
 
     IRolesModifier public constant ROLES_MOD = IRolesModifier(0x703806E61847984346d2D7DDd853049627e50A40);
 
-    /// @dev Deployed RegistrarManager contract.
-    RegistrarManager public constant manager =
-        RegistrarManager(payable(0x62627681D92e36b9aeE1D9A6BF181373ccd42552));
+    /// @dev RegistrarManager deployed pre-initialized with all three registrar controllers.
+    ///      Address TBD — contract must be redeployed with updated API.
+    RegistrarManager public manager;
+
+    function setUp() public override {
+        super.setUp();
+
+        address[] memory initialControllers = new address[](3);
+        initialControllers[0] = address(CURRENT_REGISTRAR);
+        initialControllers[1] = address(NEW_REGISTRAR);
+        initialControllers[2] = address(OLD_REGISTRAR);
+        manager = new RegistrarManager(address(timelock), address(endowmentSafe), initialControllers);
+    }
 
     function _selectFork() public override {
         vm.createSelectFork({ blockNumber: 24_736_040, urlOrAlias: "mainnet" });
@@ -54,9 +63,24 @@ contract Proposal_ENS_EP_Registrar_Manager_Endowment_Test is ENS_Governance, Saf
     }
 
     function _beforeProposal() public override {
-        assertEq(CURRENT_REGISTRAR.owner(), address(timelock), "Current registrar owner should be timelock");
-        assertEq(NEW_REGISTRAR.owner(), address(timelock), "New registrar owner should be timelock");
-        assertEq(OLD_REGISTRAR.owner(), address(timelock), "Old registrar owner should be timelock");
+        assertEq(
+            CURRENT_REGISTRAR.owner(), address(timelock), "Current registrar controller owner should be timelock"
+        );
+        assertEq(NEW_REGISTRAR.owner(), address(timelock), "New registrar controller owner should be timelock");
+        assertEq(OLD_REGISTRAR.owner(), address(timelock), "Old registrar controller owner should be timelock");
+
+        assertTrue(
+            manager.isRegistrarController(address(CURRENT_REGISTRAR)),
+            "Current registrar controller should be pre-registered"
+        );
+        assertTrue(
+            manager.isRegistrarController(address(NEW_REGISTRAR)),
+            "New registrar controller should be pre-registered"
+        );
+        assertTrue(
+            manager.isRegistrarController(address(OLD_REGISTRAR)),
+            "Old registrar controller should be pre-registered"
+        );
 
         _expectUSDCTransferNotAllowed();
         _expectEthSendNotAllowed();
@@ -73,7 +97,7 @@ contract Proposal_ENS_EP_Registrar_Manager_Endowment_Test is ENS_Governance, Saf
             string memory
         )
     {
-        uint256 numTransactions = 10;
+        uint256 numTransactions = 7;
 
         targets = new address[](numTransactions);
         values = new uint256[](numTransactions);
@@ -82,66 +106,61 @@ contract Proposal_ENS_EP_Registrar_Manager_Endowment_Test is ENS_Governance, Saf
 
         address managerAddr = address(manager);
 
-        // 1) Register current registrar controller (controller.ens.eth)
-        targets[0] = managerAddr;
-        calldatas[0] = abi.encodeWithSelector(RegistrarManager.addRegistrar.selector, address(CURRENT_REGISTRAR));
+        // 1) Transfer ownership of current registrar controller to RegistrarManager
+        targets[0] = address(CURRENT_REGISTRAR);
+        calldatas[0] = abi.encodeWithSelector(IRegistrarController.transferOwnership.selector, managerAddr);
 
-        // 2) Register new registrar controller
-        targets[1] = managerAddr;
-        calldatas[1] = abi.encodeWithSelector(RegistrarManager.addRegistrar.selector, address(NEW_REGISTRAR));
+        // 2) Transfer ownership of new registrar controller to RegistrarManager
+        targets[1] = address(NEW_REGISTRAR);
+        calldatas[1] = abi.encodeWithSelector(IRegistrarController.transferOwnership.selector, managerAddr);
 
-        // 3) Register old registrar controller
-        targets[2] = managerAddr;
-        calldatas[2] = abi.encodeWithSelector(RegistrarManager.addRegistrar.selector, address(OLD_REGISTRAR));
+        // 3) Transfer ownership of old registrar controller to RegistrarManager
+        targets[2] = address(OLD_REGISTRAR);
+        calldatas[2] = abi.encodeWithSelector(IRegistrarController.transferOwnership.selector, managerAddr);
 
-        // 4) Transfer ownership of current registrar to RegistrarManager
-        targets[3] = address(CURRENT_REGISTRAR);
-        calldatas[3] = abi.encodeWithSelector(IRegistrarController.transferOwnership.selector, managerAddr);
-
-        // 5) Transfer ownership of new registrar to RegistrarManager
-        targets[4] = address(NEW_REGISTRAR);
-        calldatas[4] = abi.encodeWithSelector(IRegistrarController.transferOwnership.selector, managerAddr);
-
-        // 6) Transfer ownership of old registrar to RegistrarManager
-        targets[5] = address(OLD_REGISTRAR);
-        calldatas[5] = abi.encodeWithSelector(IRegistrarController.transferOwnership.selector, managerAddr);
-
-        // 7) Zodiac: scope USDC target
+        // 4) Zodiac: scope USDC target
         {
-            bytes memory inner = abi.encodeWithSelector(IRolesModifier.scopeTarget.selector, MANAGER_ROLE, address(USDC));
-            (targets[6], calldatas[6]) = _buildSafeExecCalldata(
-                address(endowmentSafe), address(ROLES_MOD), inner, address(timelock)
-            );
+            bytes memory inner =
+                abi.encodeWithSelector(IRolesModifier.scopeTarget.selector, MANAGER_ROLE, address(USDC));
+            (targets[3], calldatas[3]) =
+                _buildSafeExecCalldata(address(endowmentSafe), address(ROLES_MOD), inner, address(timelock));
         }
 
-        // 8) Zodiac: allow USDC.transfer(timelock, amount)
+        // 5) Zodiac: allow USDC.transfer(timelock, amount)
         {
             ConditionFlat[] memory conditions = _usdcTransferConditions();
             bytes memory inner = abi.encodeWithSelector(
                 IRolesModifier.scopeFunction.selector,
-                MANAGER_ROLE, address(USDC), IERC20.transfer.selector, conditions, uint8(0)
+                MANAGER_ROLE,
+                address(USDC),
+                IERC20.transfer.selector,
+                conditions,
+                uint8(0)
             );
-            (targets[7], calldatas[7]) = _buildSafeExecCalldata(
-                address(endowmentSafe), address(ROLES_MOD), inner, address(timelock)
-            );
+            (targets[4], calldatas[4]) =
+                _buildSafeExecCalldata(address(endowmentSafe), address(ROLES_MOD), inner, address(timelock));
         }
 
-        // 9) Zodiac: scope timelock target
+        // 6) Zodiac: scope timelock target
         {
-            bytes memory inner = abi.encodeWithSelector(IRolesModifier.scopeTarget.selector, MANAGER_ROLE, address(timelock));
-            (targets[8], calldatas[8]) = _buildSafeExecCalldata(
-                address(endowmentSafe), address(ROLES_MOD), inner, address(timelock)
-            );
+            bytes memory inner =
+                abi.encodeWithSelector(IRolesModifier.scopeTarget.selector, MANAGER_ROLE, address(timelock));
+            (targets[5], calldatas[5]) =
+                _buildSafeExecCalldata(address(endowmentSafe), address(ROLES_MOD), inner, address(timelock));
         }
 
-        // 10) Zodiac: allow ETH sends to timelock (empty calldata, send-only)
+        // 7) Zodiac: allow ETH sends to timelock (empty calldata, send-only)
+        //    bytes4(0) is the Zodiac Roles convention for matching transactions with empty
+        //    calldata (plain ETH transfers). Combined with EXEC_SEND, this grants the role
+        //    permission to send ETH to the timelock without calling any function.
+        //    Ref: Zodiac Roles Modifier — allowFunction with selector 0x00000000 + options=Send
+        //    Verified: _expectEthSendAllowed() confirms this works on a mainnet fork.
         {
             bytes memory inner = abi.encodeWithSelector(
                 IRolesModifier.allowFunction.selector, MANAGER_ROLE, address(timelock), bytes4(0), EXEC_SEND
             );
-            (targets[9], calldatas[9]) = _buildSafeExecCalldata(
-                address(endowmentSafe), address(ROLES_MOD), inner, address(timelock)
-            );
+            (targets[6], calldatas[6]) =
+                _buildSafeExecCalldata(address(endowmentSafe), address(ROLES_MOD), inner, address(timelock));
         }
 
         description = vm.readFile("src/ens/proposals/ep-registrar-manager-endowment/proposalDescription.md");
@@ -153,19 +172,25 @@ contract Proposal_ENS_EP_Registrar_Manager_Endowment_Test is ENS_Governance, Saf
         // RegistrarManager state
         assertEq(manager.owner(), address(timelock), "RegistrarManager owner should be timelock");
         assertEq(manager.destination(), address(endowmentSafe), "Destination should be endowment safe");
-        assertTrue(manager.isRegistrar(address(CURRENT_REGISTRAR)), "Current registrar not registered");
-        assertTrue(manager.isRegistrar(address(NEW_REGISTRAR)), "New registrar not registered");
-        assertTrue(manager.isRegistrar(address(OLD_REGISTRAR)), "Old registrar not registered");
+        assertTrue(
+            manager.isRegistrarController(address(CURRENT_REGISTRAR)), "Current registrar controller not registered"
+        );
+        assertTrue(
+            manager.isRegistrarController(address(NEW_REGISTRAR)), "New registrar controller not registered"
+        );
+        assertTrue(
+            manager.isRegistrarController(address(OLD_REGISTRAR)), "Old registrar controller not registered"
+        );
 
         // Ownership transferred to manager
         address managerAddr = address(manager);
-        assertEq(CURRENT_REGISTRAR.owner(), managerAddr, "Current registrar owner should be manager");
-        assertEq(NEW_REGISTRAR.owner(), managerAddr, "New registrar owner should be manager");
-        assertEq(OLD_REGISTRAR.owner(), managerAddr, "Old registrar owner should be manager");
+        assertEq(CURRENT_REGISTRAR.owner(), managerAddr, "Current registrar controller owner should be manager");
+        assertEq(NEW_REGISTRAR.owner(), managerAddr, "New registrar controller owner should be manager");
+        assertEq(OLD_REGISTRAR.owner(), managerAddr, "Old registrar controller owner should be manager");
 
         // WithdrawAll
         uint256 balanceBefore = address(endowmentSafe).balance;
-        uint256 registrarBalance =
+        uint256 controllerBalance =
             address(CURRENT_REGISTRAR).balance + address(NEW_REGISTRAR).balance + address(OLD_REGISTRAR).balance;
         uint256 managerBalance = address(manager).balance;
         manager.withdrawAll();
@@ -173,7 +198,7 @@ contract Proposal_ENS_EP_Registrar_Manager_Endowment_Test is ENS_Governance, Saf
 
         assertEq(
             balanceAfter,
-            balanceBefore + registrarBalance + managerBalance,
+            balanceBefore + controllerBalance + managerBalance,
             "Endowment balance should increase after withdraw"
         );
 
