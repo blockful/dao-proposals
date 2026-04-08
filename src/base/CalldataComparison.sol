@@ -16,7 +16,7 @@ abstract contract CalldataComparison is Test {
         bytes[] memory generatedCalldatas
     ) internal {
         address[] memory jsonTargets = _parseJsonTargets(jsonContent);
-        string[] memory jsonValues = _parseJsonValues(jsonContent);
+        uint256[] memory jsonValues = _parseJsonUintValues(jsonContent);
         bytes[] memory jsonCalldatas = _parseJsonCalldatas(jsonContent);
 
         console2.log("JSON parsed successfully with", jsonTargets.length, "operations");
@@ -30,7 +30,7 @@ abstract contract CalldataComparison is Test {
                 string(abi.encodePacked("Target mismatch at index ", vm.toString(i)))
             );
             assertEq(
-                vm.parseUint(jsonValues[i]),
+                jsonValues[i],
                 generatedValues[i],
                 string(abi.encodePacked("Value mismatch at index ", vm.toString(i)))
             );
@@ -62,6 +62,28 @@ abstract contract CalldataComparison is Test {
         require(ok2, "JSON target decode failed");
         result = new address[](1);
         result[0] = abi.decode(ret2, (address));
+    }
+
+    /// @notice Decode a single value from JSON, handling Foundry's inconsistent encoding
+    ///         of numeric-looking strings (small numbers as strings, large numbers as uint256).
+    function _decodeValueAsUint(string memory j, string memory path) public pure returns (uint256) {
+        bytes memory encoded = vm.parseJson(j, path);
+        // If encoded as raw uint256 (32 bytes), decode directly
+        if (encoded.length == 32) {
+            return abi.decode(encoded, (uint256));
+        }
+        // Otherwise it's encoded as a string — decode string then parse
+        string memory s = abi.decode(encoded, (string));
+        return vm.parseUint(s);
+    }
+
+    function _parseJsonUintValues(string memory j) internal returns (uint256[] memory result) {
+        address[] memory targets = _parseJsonTargets(j);
+        result = new uint256[](targets.length);
+        for (uint256 i = 0; i < targets.length; i++) {
+            string memory path = string.concat(".executableCalls[", vm.toString(i), "].value");
+            result[i] = _decodeValueAsUint(j, path);
+        }
     }
 
     function _decodeValuesArray(string memory j) public pure returns (string[] memory) {
