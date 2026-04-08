@@ -10,8 +10,8 @@ import { RegistrarManager } from "./RegistrarManager.sol";
 // Mock helpers
 // ---------------------------------------------------------------------------
 
-/// @dev A registrar controller that holds ETH and sends it to its owner on withdraw().
-contract MockRegistrarController {
+/// @dev A registrar that holds ETH and sends it to its owner on withdraw().
+contract MockRegistrar {
     address public owner;
     uint256 public value;
 
@@ -34,11 +34,11 @@ contract MockRegistrarController {
         uint256 bal = address(this).balance;
         if (bal > 0) {
             (bool ok,) = owner.call{ value: bal }("");
-            require(ok, "MockRegistrarController: withdraw failed");
+            require(ok, "MockRegistrar: withdraw failed");
         }
     }
 
-    /// @dev Owner-gated write function to simulate registrar controller admin operations.
+    /// @dev Owner-gated write function to simulate registrar admin operations.
     function setValue(uint256 newValue) external onlyOwner {
         value = newValue;
     }
@@ -46,8 +46,8 @@ contract MockRegistrarController {
     receive() external payable { }
 }
 
-/// @dev A registrar controller whose withdraw() always reverts.
-contract RevertingRegistrarController {
+/// @dev A registrar whose withdraw() always reverts.
+contract RevertingRegistrar {
     function withdraw() external pure {
         revert("I always revert");
     }
@@ -62,8 +62,8 @@ contract RejectingDestination {
     }
 }
 
-/// @dev A registrar controller that attempts re-entrancy on withdrawAll during withdraw().
-contract ReentrantRegistrarController {
+/// @dev A registrar that attempts re-entrancy on withdrawAll during withdraw().
+contract ReentrantRegistrar {
     RegistrarManager public target;
 
     constructor(RegistrarManager target_) {
@@ -90,12 +90,8 @@ contract RegistrarManagerTest is Test {
     address internal destination = makeAddr("destination");
     address internal alice = makeAddr("alice");
 
-    function _emptyControllers() internal pure returns (address[] memory) {
-        return new address[](0);
-    }
-
     function setUp() public {
-        manager = new RegistrarManager(owner, destination, _emptyControllers());
+        manager = new RegistrarManager(owner, destination);
     }
 
     // =====================================================================
@@ -105,230 +101,199 @@ contract RegistrarManagerTest is Test {
     function test_constructor_setsOwnerAndDestination() public view {
         assertEq(manager.owner(), owner);
         assertEq(manager.destination(), destination);
-        assertEq(manager.registrarControllerCount(), 0);
+        assertEq(manager.registrarCount(), 0);
 
-        address[] memory list = manager.getRegistrarControllers();
+        address[] memory list = manager.getRegistrars();
         assertEq(list.length, 0);
     }
 
     function test_constructor_revertsOnZeroDestination() public {
         vm.expectRevert(RegistrarManager.ZeroAddress.selector);
-        new RegistrarManager(owner, address(0), _emptyControllers());
-    }
-
-    function test_constructor_withInitialControllers() public {
-        address r1 = makeAddr("r1");
-        address r2 = makeAddr("r2");
-
-        address[] memory initial = new address[](2);
-        initial[0] = r1;
-        initial[1] = r2;
-
-        RegistrarManager m = new RegistrarManager(owner, destination, initial);
-
-        assertEq(m.registrarControllerCount(), 2);
-        assertTrue(m.isRegistrarController(r1));
-        assertTrue(m.isRegistrarController(r2));
-
-        address[] memory list = m.getRegistrarControllers();
-        assertEq(list.length, 2);
-        // LIFO: last added is first
-        assertEq(list[0], r2);
-        assertEq(list[1], r1);
-    }
-
-    function test_constructor_revertsOnDuplicateInitialController() public {
-        address r = makeAddr("dup");
-        address[] memory initial = new address[](2);
-        initial[0] = r;
-        initial[1] = r;
-
-        vm.expectRevert(abi.encodeWithSelector(RegistrarManager.RegistrarControllerAlreadyExists.selector, r));
-        new RegistrarManager(owner, destination, initial);
+        new RegistrarManager(owner, address(0));
     }
 
     // =====================================================================
-    //  addRegistrarController
+    //  addRegistrar
     // =====================================================================
 
-    function test_addRegistrarController_single() public {
+    function test_addRegistrar_single() public {
         address r = makeAddr("registrar1");
 
         vm.expectEmit();
-        emit RegistrarManager.RegistrarControllerAdded(r);
+        emit RegistrarManager.RegistrarAdded(r);
 
         vm.prank(owner);
-        manager.addRegistrarController(r);
+        manager.addRegistrar(r);
 
-        assertTrue(manager.isRegistrarController(r));
-        assertEq(manager.registrarControllerCount(), 1);
+        assertTrue(manager.isRegistrar(r));
+        assertEq(manager.registrarCount(), 1);
 
-        address[] memory list = manager.getRegistrarControllers();
+        address[] memory list = manager.getRegistrars();
         assertEq(list.length, 1);
         assertEq(list[0], r);
     }
 
-    function test_addRegistrarController_multipleOrdering() public {
+    function test_addRegistrar_multipleOrdering() public {
         address r1 = makeAddr("r1");
         address r2 = makeAddr("r2");
         address r3 = makeAddr("r3");
 
         vm.startPrank(owner);
-        manager.addRegistrarController(r1);
-        manager.addRegistrarController(r2);
-        manager.addRegistrarController(r3);
+        manager.addRegistrar(r1);
+        manager.addRegistrar(r2);
+        manager.addRegistrar(r3);
         vm.stopPrank();
 
-        assertEq(manager.registrarControllerCount(), 3);
+        assertEq(manager.registrarCount(), 3);
 
         // LIFO: last added is first in list
-        address[] memory list = manager.getRegistrarControllers();
+        address[] memory list = manager.getRegistrars();
         assertEq(list.length, 3);
         assertEq(list[0], r3);
         assertEq(list[1], r2);
         assertEq(list[2], r1);
     }
 
-    function test_addRegistrarController_revertsOnZeroAddress() public {
+    function test_addRegistrar_revertsOnZeroAddress() public {
         vm.prank(owner);
         vm.expectRevert(RegistrarManager.ZeroAddress.selector);
-        manager.addRegistrarController(address(0));
+        manager.addRegistrar(address(0));
     }
 
-    function test_addRegistrarController_revertsOnSentinel() public {
+    function test_addRegistrar_revertsOnSentinel() public {
         vm.prank(owner);
-        vm.expectRevert(abi.encodeWithSelector(RegistrarManager.InvalidRegistrarController.selector, address(0x1)));
-        manager.addRegistrarController(address(0x1));
+        vm.expectRevert(abi.encodeWithSelector(RegistrarManager.InvalidRegistrar.selector, address(0x1)));
+        manager.addRegistrar(address(0x1));
     }
 
-    function test_addRegistrarController_revertsOnDuplicate() public {
+    function test_addRegistrar_revertsOnDuplicate() public {
         address r = makeAddr("dup");
 
         vm.startPrank(owner);
-        manager.addRegistrarController(r);
-        vm.expectRevert(abi.encodeWithSelector(RegistrarManager.RegistrarControllerAlreadyExists.selector, r));
-        manager.addRegistrarController(r);
+        manager.addRegistrar(r);
+        vm.expectRevert(abi.encodeWithSelector(RegistrarManager.RegistrarAlreadyExists.selector, r));
+        manager.addRegistrar(r);
         vm.stopPrank();
     }
 
-    function test_addRegistrarController_revertsForNonOwner() public {
+    function test_addRegistrar_revertsForNonOwner() public {
         vm.prank(alice);
         vm.expectRevert(abi.encodeWithSelector(Ownable.OwnableUnauthorizedAccount.selector, alice));
-        manager.addRegistrarController(makeAddr("r"));
+        manager.addRegistrar(makeAddr("r"));
     }
 
     // =====================================================================
-    //  removeRegistrarController
+    //  removeRegistrar
     // =====================================================================
 
-    function test_removeRegistrarController_headOfList() public {
+    function test_removeRegistrar_headOfList() public {
         address r1 = makeAddr("r1");
         address r2 = makeAddr("r2");
 
         vm.startPrank(owner);
-        manager.addRegistrarController(r1);
-        manager.addRegistrarController(r2);
+        manager.addRegistrar(r1);
+        manager.addRegistrar(r2);
         // List: [r2, r1]. Remove r2 (head).
 
         vm.expectEmit();
-        emit RegistrarManager.RegistrarControllerRemoved(r2);
+        emit RegistrarManager.RegistrarRemoved(r2);
 
-        manager.removeRegistrarController(r2);
+        manager.removeRegistrar(r2);
         vm.stopPrank();
 
-        assertFalse(manager.isRegistrarController(r2));
-        assertTrue(manager.isRegistrarController(r1));
-        assertEq(manager.registrarControllerCount(), 1);
+        assertFalse(manager.isRegistrar(r2));
+        assertTrue(manager.isRegistrar(r1));
+        assertEq(manager.registrarCount(), 1);
 
-        address[] memory list = manager.getRegistrarControllers();
+        address[] memory list = manager.getRegistrars();
         assertEq(list.length, 1);
         assertEq(list[0], r1);
     }
 
-    function test_removeRegistrarController_tailOfList() public {
+    function test_removeRegistrar_tailOfList() public {
         address r1 = makeAddr("r1");
         address r2 = makeAddr("r2");
 
         vm.startPrank(owner);
-        manager.addRegistrarController(r1); // tail
-        manager.addRegistrarController(r2); // head
+        manager.addRegistrar(r1); // tail
+        manager.addRegistrar(r2); // head
         // List: [r2, r1]. Remove r1 (tail).
-        manager.removeRegistrarController(r1);
+        manager.removeRegistrar(r1);
         vm.stopPrank();
 
-        assertFalse(manager.isRegistrarController(r1));
-        assertTrue(manager.isRegistrarController(r2));
-        assertEq(manager.registrarControllerCount(), 1);
+        assertFalse(manager.isRegistrar(r1));
+        assertTrue(manager.isRegistrar(r2));
+        assertEq(manager.registrarCount(), 1);
     }
 
-    function test_removeRegistrarController_middleOfList() public {
+    function test_removeRegistrar_middleOfList() public {
         address r1 = makeAddr("r1");
         address r2 = makeAddr("r2");
         address r3 = makeAddr("r3");
 
         vm.startPrank(owner);
-        manager.addRegistrarController(r1);
-        manager.addRegistrarController(r2);
-        manager.addRegistrarController(r3);
+        manager.addRegistrar(r1);
+        manager.addRegistrar(r2);
+        manager.addRegistrar(r3);
         // List: [r3, r2, r1]. Remove r2 (middle).
-        manager.removeRegistrarController(r2);
+        manager.removeRegistrar(r2);
         vm.stopPrank();
 
-        assertFalse(manager.isRegistrarController(r2));
-        assertEq(manager.registrarControllerCount(), 2);
+        assertFalse(manager.isRegistrar(r2));
+        assertEq(manager.registrarCount(), 2);
 
-        address[] memory list = manager.getRegistrarControllers();
+        address[] memory list = manager.getRegistrars();
         assertEq(list[0], r3);
         assertEq(list[1], r1);
     }
 
-    function test_removeRegistrarController_revertsOnNonExistent() public {
+    function test_removeRegistrar_revertsOnNonExistent() public {
         address ghost = makeAddr("ghost");
 
         vm.prank(owner);
-        vm.expectRevert(abi.encodeWithSelector(RegistrarManager.RegistrarControllerNotFound.selector, ghost));
-        manager.removeRegistrarController(ghost);
+        vm.expectRevert(abi.encodeWithSelector(RegistrarManager.RegistrarNotFound.selector, ghost));
+        manager.removeRegistrar(ghost);
     }
 
-    function test_removeRegistrarController_revertsForNonOwner() public {
+    function test_removeRegistrar_revertsForNonOwner() public {
         address r = makeAddr("r");
         vm.prank(owner);
-        manager.addRegistrarController(r);
+        manager.addRegistrar(r);
 
         vm.prank(alice);
         vm.expectRevert(abi.encodeWithSelector(Ownable.OwnableUnauthorizedAccount.selector, alice));
-        manager.removeRegistrarController(r);
+        manager.removeRegistrar(r);
     }
 
     function test_addRemoveAdd_sameAddress() public {
         address r = makeAddr("recycle");
 
         vm.startPrank(owner);
-        manager.addRegistrarController(r);
-        assertTrue(manager.isRegistrarController(r));
+        manager.addRegistrar(r);
+        assertTrue(manager.isRegistrar(r));
 
-        manager.removeRegistrarController(r);
-        assertFalse(manager.isRegistrarController(r));
-        assertEq(manager.registrarControllerCount(), 0);
+        manager.removeRegistrar(r);
+        assertFalse(manager.isRegistrar(r));
+        assertEq(manager.registrarCount(), 0);
 
         // Re-add
-        manager.addRegistrarController(r);
-        assertTrue(manager.isRegistrarController(r));
-        assertEq(manager.registrarControllerCount(), 1);
+        manager.addRegistrar(r);
+        assertTrue(manager.isRegistrar(r));
+        assertEq(manager.registrarCount(), 1);
         vm.stopPrank();
     }
 
     // =====================================================================
-    //  isRegistrarController
+    //  isRegistrar
     // =====================================================================
 
-    function test_isRegistrarController_falseForZeroAndSentinel() public view {
-        assertFalse(manager.isRegistrarController(address(0)));
-        assertFalse(manager.isRegistrarController(address(0x1)));
+    function test_isRegistrar_falseForZeroAndSentinel() public view {
+        assertFalse(manager.isRegistrar(address(0)));
+        assertFalse(manager.isRegistrar(address(0x1)));
     }
 
-    function test_isRegistrarController_falseForUnknown() public view {
-        assertFalse(manager.isRegistrarController(address(0xBEEF)));
+    function test_isRegistrar_falseForUnknown() public view {
+        assertFalse(manager.isRegistrar(address(0xBEEF)));
     }
 
     // =====================================================================
@@ -369,13 +334,13 @@ contract RegistrarManagerTest is Test {
     //  withdrawAll
     // =====================================================================
 
-    function test_withdrawAll_singleRegistrarController() public {
-        MockRegistrarController r = new MockRegistrarController();
+    function test_withdrawAll_singleRegistrar() public {
+        MockRegistrar r = new MockRegistrar();
         r.setOwner(address(manager));
         vm.deal(address(r), 5 ether);
 
         vm.prank(owner);
-        manager.addRegistrarController(address(r));
+        manager.addRegistrar(address(r));
 
         uint256 destBefore = destination.balance;
         manager.withdrawAll();
@@ -384,17 +349,17 @@ contract RegistrarManagerTest is Test {
         assertEq(destAfter - destBefore, 5 ether);
     }
 
-    function test_withdrawAll_multipleRegistrarControllers() public {
-        MockRegistrarController r1 = new MockRegistrarController();
-        MockRegistrarController r2 = new MockRegistrarController();
+    function test_withdrawAll_multipleRegistrars() public {
+        MockRegistrar r1 = new MockRegistrar();
+        MockRegistrar r2 = new MockRegistrar();
         r1.setOwner(address(manager));
         r2.setOwner(address(manager));
         vm.deal(address(r1), 3 ether);
         vm.deal(address(r2), 7 ether);
 
         vm.startPrank(owner);
-        manager.addRegistrarController(address(r1));
-        manager.addRegistrarController(address(r2));
+        manager.addRegistrar(address(r1));
+        manager.addRegistrar(address(r2));
         vm.stopPrank();
 
         uint256 destBefore = destination.balance;
@@ -404,35 +369,35 @@ contract RegistrarManagerTest is Test {
         assertEq(destAfter - destBefore, 10 ether);
     }
 
-    function test_withdrawAll_revertingControllerDoesNotBlock() public {
-        MockRegistrarController good = new MockRegistrarController();
+    function test_withdrawAll_revertingRegistrarDoesNotBlock() public {
+        MockRegistrar good = new MockRegistrar();
         good.setOwner(address(manager));
         vm.deal(address(good), 2 ether);
 
-        RevertingRegistrarController bad = new RevertingRegistrarController();
+        RevertingRegistrar bad = new RevertingRegistrar();
         vm.deal(address(bad), 1 ether);
 
         vm.startPrank(owner);
-        manager.addRegistrarController(address(good));
-        manager.addRegistrarController(address(bad));
+        manager.addRegistrar(address(good));
+        manager.addRegistrar(address(bad));
         vm.stopPrank();
 
-        // Expect RegistrarControllerWithdrawn(bad, false) for the reverting one
+        // Expect RegistrarWithdrawn(bad, false) for the reverting one
         vm.expectEmit();
-        emit RegistrarManager.RegistrarControllerWithdrawn(address(bad), false);
+        emit RegistrarManager.RegistrarWithdrawn(address(bad), false);
 
         vm.expectEmit();
-        emit RegistrarManager.RegistrarControllerWithdrawn(address(good), true);
+        emit RegistrarManager.RegistrarWithdrawn(address(good), true);
 
         uint256 destBefore = destination.balance;
         manager.withdrawAll();
         uint256 destAfter = destination.balance;
 
-        // Only the good controller's ETH was withdrawn. The bad one's ETH stays in the bad controller.
+        // Only the good registrar's ETH was withdrawn. The bad registrar's ETH stays in the bad registrar.
         assertEq(destAfter - destBefore, 2 ether);
     }
 
-    function test_withdrawAll_noControllers_forwardsDirectETH() public {
+    function test_withdrawAll_noRegistrars_forwardsDirectETH() public {
         vm.deal(address(manager), 4 ether);
 
         uint256 destBefore = destination.balance;
@@ -443,14 +408,14 @@ contract RegistrarManagerTest is Test {
     }
 
     function test_withdrawAll_zeroBalance_noOp() public {
-        // No controllers, no balance — should succeed silently.
+        // No registrars, no balance — should succeed silently.
         manager.withdrawAll();
         assertEq(destination.balance, 0);
     }
 
     function test_withdrawAll_rejectsIfDestinationRefusesETH() public {
         RejectingDestination rejector = new RejectingDestination();
-        RegistrarManager m = new RegistrarManager(owner, address(rejector), _emptyControllers());
+        RegistrarManager m = new RegistrarManager(owner, address(rejector));
 
         vm.deal(address(m), 1 ether);
 
@@ -459,12 +424,12 @@ contract RegistrarManagerTest is Test {
     }
 
     function test_withdrawAll_isPermissionless() public {
-        MockRegistrarController r = new MockRegistrarController();
+        MockRegistrar r = new MockRegistrar();
         r.setOwner(address(manager));
         vm.deal(address(r), 1 ether);
 
         vm.prank(owner);
-        manager.addRegistrarController(address(r));
+        manager.addRegistrar(address(r));
 
         // Called by alice (not owner) — should succeed.
         vm.prank(alice);
@@ -473,30 +438,30 @@ contract RegistrarManagerTest is Test {
         assertEq(destination.balance, 1 ether);
     }
 
-    function test_withdrawAll_forwardsControllerAndDirectETH() public {
-        MockRegistrarController r = new MockRegistrarController();
+    function test_withdrawAll_forwardsRegistrarAndDirectETH() public {
+        MockRegistrar r = new MockRegistrar();
         r.setOwner(address(manager));
         vm.deal(address(r), 3 ether);
         vm.deal(address(manager), 2 ether);
 
         vm.prank(owner);
-        manager.addRegistrarController(address(r));
+        manager.addRegistrar(address(r));
 
         uint256 destBefore = destination.balance;
         manager.withdrawAll();
         uint256 destAfter = destination.balance;
 
-        // 3 from controller + 2 direct = 5
+        // 3 from registrar + 2 direct = 5
         assertEq(destAfter - destBefore, 5 ether);
     }
 
     function test_withdrawAll_emitsFundsForwarded() public {
-        MockRegistrarController r = new MockRegistrarController();
+        MockRegistrar r = new MockRegistrar();
         r.setOwner(address(manager));
         vm.deal(address(r), 1 ether);
 
         vm.prank(owner);
-        manager.addRegistrarController(address(r));
+        manager.addRegistrar(address(r));
 
         vm.expectEmit();
         emit RegistrarManager.FundsForwarded(destination, 1 ether);
@@ -507,12 +472,12 @@ contract RegistrarManagerTest is Test {
     function testFuzz_withdrawAll_randomAmounts(uint96 amount) public {
         vm.assume(amount > 0);
 
-        MockRegistrarController r = new MockRegistrarController();
+        MockRegistrar r = new MockRegistrar();
         r.setOwner(address(manager));
         vm.deal(address(r), amount);
 
         vm.prank(owner);
-        manager.addRegistrarController(address(r));
+        manager.addRegistrar(address(r));
 
         uint256 destBefore = destination.balance;
         manager.withdrawAll();
@@ -522,110 +487,126 @@ contract RegistrarManagerTest is Test {
     }
 
     // =====================================================================
-    //  execOnRegistrarController
+    //  execOnRegistrar
     // =====================================================================
 
-    function test_execOnRegistrarController_ownerGatedCall() public {
-        MockRegistrarController r = new MockRegistrarController();
-        // Transfer controller ownership to the manager (realistic setup).
+    function test_execOnRegistrar_ownerGatedCall() public {
+        MockRegistrar r = new MockRegistrar();
+        // Transfer registrar ownership to the manager (realistic setup).
         r.setOwner(address(manager));
 
         vm.prank(owner);
-        manager.addRegistrarController(address(r));
+        manager.addRegistrar(address(r));
 
-        // Use execOnRegistrarController to call an onlyOwner function on the controller.
-        bytes memory data = abi.encodeWithSelector(MockRegistrarController.setValue.selector, 42);
+        // Use execOnRegistrar to call an onlyOwner function on the registrar.
+        bytes memory data = abi.encodeWithSelector(MockRegistrar.setValue.selector, 42);
 
         vm.prank(owner);
-        manager.execOnRegistrarController(address(r), data);
+        (bool success,) = manager.execOnRegistrar(address(r), data);
 
+        assertTrue(success);
         assertEq(r.value(), 42);
     }
 
-    function test_execOnRegistrarController_controllerRejectsNonOwnerCaller() public {
-        MockRegistrarController r = new MockRegistrarController();
+    function test_execOnRegistrar_registrarRejectsNonOwnerCaller() public {
+        MockRegistrar r = new MockRegistrar();
         r.setOwner(address(manager));
 
         vm.prank(owner);
-        manager.addRegistrarController(address(r));
+        manager.addRegistrar(address(r));
 
-        // Direct call from alice should fail — only the manager (owner of controller) can call.
+        // Direct call from alice should fail — only the manager (owner of registrar) can call.
         vm.prank(alice);
-        vm.expectRevert(MockRegistrarController.OnlyOwner.selector);
+        vm.expectRevert(MockRegistrar.OnlyOwner.selector);
         r.setValue(99);
 
-        // But via execOnRegistrarController it works, because msg.sender to the controller is the manager.
-        bytes memory data = abi.encodeWithSelector(MockRegistrarController.setValue.selector, 99);
+        // But via execOnRegistrar it works, because msg.sender to the registrar is the manager.
+        bytes memory data = abi.encodeWithSelector(MockRegistrar.setValue.selector, 99);
         vm.prank(owner);
-        manager.execOnRegistrarController(address(r), data);
+        (bool success,) = manager.execOnRegistrar(address(r), data);
 
+        assertTrue(success);
         assertEq(r.value(), 99);
     }
 
-    function test_execOnRegistrarController_failedCallReverts() public {
-        MockRegistrarController r = new MockRegistrarController();
+    function test_execOnRegistrar_failedCallDoesNotRevert() public {
+        MockRegistrar r = new MockRegistrar();
 
         vm.prank(owner);
-        manager.addRegistrarController(address(r));
+        manager.addRegistrar(address(r));
 
-        // Call setValue without being the registrar's owner — the inner call reverts,
-        // and execOnRegistrarController bubbles up the revert.
-        bytes memory data = abi.encodeWithSelector(MockRegistrarController.setValue.selector, 42);
+        // Call a non-existent selector — will fail but should not revert the outer tx.
+        bytes memory data = abi.encodeWithSelector(bytes4(0xdeadbeef));
 
         vm.prank(owner);
-        vm.expectRevert(MockRegistrarController.OnlyOwner.selector);
-        manager.execOnRegistrarController(address(r), data);
+        (bool success,) = manager.execOnRegistrar(address(r), data);
+
+        assertFalse(success);
     }
 
-    function test_execOnRegistrarController_revertsIfNotController() public {
+    function test_execOnRegistrar_revertsIfNotRegistrar() public {
         address ghost = makeAddr("ghost");
 
         vm.prank(owner);
-        vm.expectRevert(abi.encodeWithSelector(RegistrarManager.RegistrarControllerNotFound.selector, ghost));
-        manager.execOnRegistrarController(ghost, "");
+        vm.expectRevert(abi.encodeWithSelector(RegistrarManager.RegistrarNotFound.selector, ghost));
+        manager.execOnRegistrar(ghost, "");
     }
 
-    function test_execOnRegistrarController_revertsForNonOwner() public {
-        MockRegistrarController r = new MockRegistrarController();
+    function test_execOnRegistrar_revertsForNonOwner() public {
+        MockRegistrar r = new MockRegistrar();
 
         vm.prank(owner);
-        manager.addRegistrarController(address(r));
+        manager.addRegistrar(address(r));
 
         vm.prank(alice);
         vm.expectRevert(abi.encodeWithSelector(Ownable.OwnableUnauthorizedAccount.selector, alice));
-        manager.execOnRegistrarController(address(r), "");
+        manager.execOnRegistrar(address(r), "");
     }
 
-    function test_execOnRegistrarController_doesNotForwardETH() public {
-        MockRegistrarController r = new MockRegistrarController();
+    function test_execOnRegistrar_doesNotForwardETH() public {
+        MockRegistrar r = new MockRegistrar();
 
         vm.prank(owner);
-        manager.addRegistrarController(address(r));
+        manager.addRegistrar(address(r));
 
         vm.deal(address(manager), 5 ether);
 
         vm.prank(owner);
-        manager.execOnRegistrarController(address(r), "");
+        (bool success,) = manager.execOnRegistrar(address(r), "");
 
-        // Contract balance is untouched — execOnRegistrarController never sends ETH
+        assertTrue(success);
+        // Contract balance is untouched — execOnRegistrar never sends ETH
         assertEq(address(r).balance, 0);
         assertEq(address(manager).balance, 5 ether);
     }
 
-    function test_execOnRegistrarController_emitsEvent() public {
-        MockRegistrarController r = new MockRegistrarController();
+    function test_execOnRegistrar_emitsEvent() public {
+        MockRegistrar r = new MockRegistrar();
         r.setOwner(address(manager));
 
         vm.prank(owner);
-        manager.addRegistrarController(address(r));
+        manager.addRegistrar(address(r));
 
-        bytes memory data = abi.encodeWithSelector(MockRegistrarController.setValue.selector, 1);
+        bytes memory data = abi.encodeWithSelector(MockRegistrar.setValue.selector, 1);
 
         vm.expectEmit();
-        emit RegistrarManager.RegistrarControllerCall(address(r), data);
+        emit RegistrarManager.RegistrarCall(address(r), data, true);
 
         vm.prank(owner);
-        manager.execOnRegistrarController(address(r), data);
+        manager.execOnRegistrar(address(r), data);
+    }
+
+    function test_execOnRegistrar_emitsEventWithZeroValue() public {
+        MockRegistrar r = new MockRegistrar();
+
+        vm.prank(owner);
+        manager.addRegistrar(address(r));
+
+        vm.expectEmit();
+        emit RegistrarManager.RegistrarCall(address(r), "", true);
+
+        vm.prank(owner);
+        manager.execOnRegistrar(address(r), "");
     }
 
     // =====================================================================
@@ -644,16 +625,16 @@ contract RegistrarManagerTest is Test {
     //  Re-entrancy
     // =====================================================================
 
-    function test_withdrawAll_reentrancyFromController() public {
-        // A malicious controller that tries to re-enter withdrawAll.
+    function test_withdrawAll_reentrancyFromRegistrar() public {
+        // A malicious registrar that tries to re-enter withdrawAll.
         // The linked list is not mutated during iteration, so re-entrancy
         // should not corrupt state. The inner withdrawAll will simply
         // iterate the same list again and forward whatever balance exists.
         // The outer call will then forward 0 (already forwarded).
-        ReentrantRegistrarController reentrant = new ReentrantRegistrarController(manager);
+        ReentrantRegistrar reentrant = new ReentrantRegistrar(manager);
 
         vm.prank(owner);
-        manager.addRegistrarController(address(reentrant));
+        manager.addRegistrar(address(reentrant));
 
         vm.deal(address(manager), 1 ether);
 
@@ -666,25 +647,25 @@ contract RegistrarManagerTest is Test {
     }
 
     // =====================================================================
-    //  Edge: many registrar controllers
+    //  Edge: many registrars
     // =====================================================================
 
-    function test_withdrawAll_manyControllers() public {
+    function test_withdrawAll_manyRegistrars() public {
         uint256 count = 20;
         uint256 totalETH = 0;
 
         vm.startPrank(owner);
         for (uint256 i = 0; i < count; i++) {
-            MockRegistrarController r = new MockRegistrarController();
+            MockRegistrar r = new MockRegistrar();
             r.setOwner(address(manager));
             uint256 amount = (i + 1) * 0.1 ether;
             vm.deal(address(r), amount);
             totalETH += amount;
-            manager.addRegistrarController(address(r));
+            manager.addRegistrar(address(r));
         }
         vm.stopPrank();
 
-        assertEq(manager.registrarControllerCount(), count);
+        assertEq(manager.registrarCount(), count);
 
         uint256 destBefore = destination.balance;
         manager.withdrawAll();
