@@ -72,7 +72,7 @@ query ProposalDetails($input: ProposalInput!) {
         block { number timestamp }
         start { ... on Block { number timestamp } }
         end { ... on Block { number timestamp } }
-        proposer { address name }
+        creator { address name }
         metadata { description }
         executableCalls { value target calldata }
     }
@@ -130,8 +130,8 @@ query ProposalDetails($input: ProposalInput!) {
         console.log(`  Created at block: ${proposal.block?.number} (${proposal.block?.timestamp})`);
         console.log(`  Voting start block: ${proposal.start?.number} (${proposal.start?.timestamp})`);
         console.log(`  Voting end block: ${proposal.end?.number} (${proposal.end?.timestamp})`);
-        if (proposal.proposer) {
-            console.log(`  Proposer: ${proposal.proposer.name || 'Unknown'} (${proposal.proposer.address})`);
+        if (proposal.creator) {
+            console.log(`  Proposer: ${proposal.creator.name || 'Unknown'} (${proposal.creator.address})`);
         }
 
         // Create the calldata structure

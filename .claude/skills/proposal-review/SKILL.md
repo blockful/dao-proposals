@@ -17,7 +17,7 @@ This system tests proposals that control millions/billions of dollars in DAO tre
 - Build `_generateCallData()` from **manual derivation** of proposal intent and Solidity interfaces.
 - **Never** copy from `proposalCalldata.json`. It is validation, not source.
 - No opaque hex blobs. Every selector from `Interface.method.selector`. Every address from a named constant.
-- `callDataComparison()` validates your manual derivation against the JSON. If they mismatch, **stop — this is a security finding**.
+- The calldata comparison (`_compareLiveCalldata`) validates your manual derivation against the JSON. If they mismatch, **stop — this is a security finding**.
 - Both `_beforeProposal()` and `_afterExecution()` must contain substantive state checks. Empty hooks are never acceptable.
 
 ## Step 1: Detect Phase
