@@ -21,7 +21,7 @@ interface IRegistrarController {
 
 /**
  * @title Proposal_ENS_EP_Registrar_Manager_Endowment_Test
- * @notice Calldata review for ENS Draft — Registrar Manager + Endowment Roles Updates
+ * @notice Calldata review for ENS EP 6.39 — Registrar Manager + Endowment Roles Updates
  * @dev This proposal:
  *      1) Registers the new registrar controllers in RegistrarManager.
  *      2) Transfers registrar controller ownership to RegistrarManager.
@@ -46,11 +46,11 @@ contract Proposal_ENS_EP_Registrar_Manager_Endowment_Test is ENS_Governance, Saf
         RegistrarManager(payable(0x62627681D92e36b9aeE1D9A6BF181373ccd42552));
 
     function _selectFork() public override {
-        vm.createSelectFork({ blockNumber: 24_736_040, urlOrAlias: "mainnet" });
+        vm.createSelectFork({ blockNumber: 24_828_897, urlOrAlias: "mainnet" });
     }
 
     function _proposer() public pure override returns (address) {
-        return 0xb8c2C29ee19D8307cb7255e1Cd9CbDE883A267d5; // nick.eth
+        return 0x1D5460F896521aD685Ea4c3F2c679Ec0b6806359; // coltron.eth
     }
 
     function _beforeProposal() public override {
@@ -80,31 +80,29 @@ contract Proposal_ENS_EP_Registrar_Manager_Endowment_Test is ENS_Governance, Saf
         calldatas = new bytes[](numTransactions);
         signatures = new string[](numTransactions);
 
-        address managerAddr = address(manager);
-
         // 1) Register current registrar controller (controller.ens.eth)
-        targets[0] = managerAddr;
+        targets[0] = address(manager);
         calldatas[0] = abi.encodeWithSelector(RegistrarManager.addRegistrar.selector, address(CURRENT_REGISTRAR));
 
         // 2) Register new registrar controller
-        targets[1] = managerAddr;
+        targets[1] = address(manager);
         calldatas[1] = abi.encodeWithSelector(RegistrarManager.addRegistrar.selector, address(NEW_REGISTRAR));
 
         // 3) Register old registrar controller
-        targets[2] = managerAddr;
+        targets[2] = address(manager);
         calldatas[2] = abi.encodeWithSelector(RegistrarManager.addRegistrar.selector, address(OLD_REGISTRAR));
 
         // 4) Transfer ownership of current registrar to RegistrarManager
         targets[3] = address(CURRENT_REGISTRAR);
-        calldatas[3] = abi.encodeWithSelector(IRegistrarController.transferOwnership.selector, managerAddr);
+        calldatas[3] = abi.encodeWithSelector(IRegistrarController.transferOwnership.selector, address(manager));
 
         // 5) Transfer ownership of new registrar to RegistrarManager
         targets[4] = address(NEW_REGISTRAR);
-        calldatas[4] = abi.encodeWithSelector(IRegistrarController.transferOwnership.selector, managerAddr);
+        calldatas[4] = abi.encodeWithSelector(IRegistrarController.transferOwnership.selector, address(manager));
 
         // 6) Transfer ownership of old registrar to RegistrarManager
         targets[5] = address(OLD_REGISTRAR);
-        calldatas[5] = abi.encodeWithSelector(IRegistrarController.transferOwnership.selector, managerAddr);
+        calldatas[5] = abi.encodeWithSelector(IRegistrarController.transferOwnership.selector, address(manager));
 
         // 7) Zodiac: scope USDC target
         {
@@ -158,10 +156,9 @@ contract Proposal_ENS_EP_Registrar_Manager_Endowment_Test is ENS_Governance, Saf
         assertTrue(manager.isRegistrar(address(OLD_REGISTRAR)), "Old registrar not registered");
 
         // Ownership transferred to manager
-        address managerAddr = address(manager);
-        assertEq(CURRENT_REGISTRAR.owner(), managerAddr, "Current registrar owner should be manager");
-        assertEq(NEW_REGISTRAR.owner(), managerAddr, "New registrar owner should be manager");
-        assertEq(OLD_REGISTRAR.owner(), managerAddr, "Old registrar owner should be manager");
+        assertEq(CURRENT_REGISTRAR.owner(), address(manager), "Current registrar owner should be manager");
+        assertEq(NEW_REGISTRAR.owner(), address(manager), "New registrar owner should be manager");
+        assertEq(OLD_REGISTRAR.owner(), address(manager), "Old registrar owner should be manager");
 
         // WithdrawAll
         uint256 balanceBefore = address(endowmentSafe).balance;
@@ -197,8 +194,12 @@ contract Proposal_ENS_EP_Registrar_Manager_Endowment_Test is ENS_Governance, Saf
     }
 
     function _expectUSDCTransferAllowed() internal {
-        uint256 balanceBefore = USDC.balanceOf(address(timelock));
         uint256 amount = 1000000;
+
+        // Ensure endowment safe has USDC to transfer (may be zero at fork block)
+        deal(address(USDC), address(endowmentSafe), amount);
+
+        uint256 balanceBefore = USDC.balanceOf(address(timelock));
 
         vm.startPrank(karpatkey);
         bytes memory data = abi.encodeWithSelector(IERC20.transfer.selector, address(timelock), amount);
@@ -275,6 +276,6 @@ contract Proposal_ENS_EP_Registrar_Manager_Endowment_Test is ENS_Governance, Saf
     }
 
     function _isProposalSubmitted() public pure override returns (bool) {
-        return false;
+        return true;
     }
 }
