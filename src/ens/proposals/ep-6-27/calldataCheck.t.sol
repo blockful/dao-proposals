@@ -11,9 +11,7 @@ import { IMetaMorphoV1 } from "@ens/interfaces/IMetaMorphoV1.sol";
 import { IMultiSend } from "@ens/interfaces/IMultiSend.sol";
 import { IAnnotationRegistry } from "@ens/interfaces/IAnnotationRegistry.sol";
 import { ENS_Governance } from "@ens/ens.t.sol";
-// NOTE: This contract has 50+ functions after decomposing the hex blob into proper interface calls.
-// The Solc 0.8.25 optimizer hits stack-too-deep with this many functions + ISafe.execTransaction's
-// 10-param encoding. Compile with `--optimize false` or `via_ir = true` when building.
+import { SafeHelper } from "@ens/helpers/SafeHelper.sol";
 import { ZodiacRolesHelper } from "@ens/helpers/ZodiacRolesHelper.sol";
 import { console2 } from "@forge-std/src/console2.sol";
 import { IERC20 } from "@forge-std/src/interfaces/IERC20.sol";
@@ -33,7 +31,7 @@ interface IMorphoBlue {
 }
 
 
-contract Proposal_ENS_EP_6_27_Test is ENS_Governance, ZodiacRolesHelper {
+contract Proposal_ENS_EP_6_27_Test is ENS_Governance, SafeHelper, ZodiacRolesHelper {
     // ─── Core Addresses ─────────────────────────────────────────────────
     address private safe = 0x4F2083f5fBede34C2714aFfb3105539775f7FE64;
     IRolesModifier private constant ROLES_MOD = IRolesModifier(0x703806E61847984346d2D7DDd853049627e50A40);
@@ -822,24 +820,21 @@ contract Proposal_ENS_EP_6_27_Test is ENS_Governance, ZodiacRolesHelper {
         signatures = new string[](1);
 
         targets[0] = safe;
-        calldatas[0] = abi.encodeWithSelector(
-            ISafe.execTransaction.selector,
-            0x9641d764fc13c8B624c04430C7356C1C7C8102e2,
-            0,
-            _buildMultiSendCalldata(),
-            1,
-            0,
-            0,
-            0,
-            0x0000000000000000000000000000000000000000,
-            0x0000000000000000000000000000000000000000,
-            hex"000000000000000000000000fe89cc7abb2c4183683ab71653c4cdc9b02d44b7000000000000000000000000000000000000000000000000000000000000000001"
-        );
-        values[0] = 0;
-        signatures[0] = "";
+        calldatas[0] = _buildFullSafeCalldata();
         description = getDescriptionFromMarkdown();
 
         return (targets, values, signatures, calldatas, description);
+    }
+
+    /// @dev Build the complete Safe execTransaction calldata (DelegateCall to MultiSend).
+    function _buildFullSafeCalldata() internal view returns (bytes memory) {
+        (, bytes memory cd) = _buildSafeExecDelegateCalldata(
+            safe,
+            address(PROPOSAL_MULTI_SEND),
+            _buildMultiSendCalldata(),
+            address(timelock)
+        );
+        return cd;
     }
 
     /// @dev Build the multiSend(bytes) calldata wrapping all 40 packed transactions.
