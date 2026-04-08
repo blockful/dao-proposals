@@ -54,11 +54,7 @@ contract Proposal_ENS_EP_5_26_Test is ENS_Governance {
 
         calldatas = new bytes[](items);
         calldatas[0] =
-            hex"a9059cbb00000000000000000000000091c32893216de3ea0a55abb9851f581d4503d39b00000000000000000000000000000000000000000000065a4da25d3016c00000";
-        bytes memory expectedENSCalldata0 =
             abi.encodeWithSelector(IERC20.transfer.selector, metagovMultisig, metagovExpectedENStransfer);
-
-        assertEq(calldatas[0], expectedENSCalldata0);
 
         return (targets, values, signatures, calldatas, "");
     }

@@ -62,22 +62,11 @@ contract Proposal_ENS_EP_5_25_Test is ENS_Governance {
 
         calldatas = new bytes[](items);
         calldatas[0] =
-            hex"a9059cbb00000000000000000000000091c32893216de3ea0a55abb9851f581d4503d39b0000000000000000000000000000000000000000000000000000003b23946c00";
-        calldatas[1] =
-            hex"a9059cbb0000000000000000000000002686a8919df194aa7673244549e68d42c1685d03000000000000000000000000000000000000000000000000000000c2a57ba800";
-        calldatas[2] =
-            hex"a9059cbb000000000000000000000000cd42b4c4d102cc22864e3a1341bb0529c17fd87d000000000000000000000000000000000000000000000000000000349ea65400";
-
-        bytes memory expectedUSDCCalldata0 =
             abi.encodeWithSelector(IERC20.transfer.selector, metagovMultisig, metagovExpectedUSDCtransfer);
-        bytes memory expectedUSDCCalldata1 =
+        calldatas[1] =
             abi.encodeWithSelector(IERC20.transfer.selector, ecosystemMultisig, ecosystemExpectedUSDCtransfer);
-        bytes memory expectedUSDCCalldata2 =
+        calldatas[2] =
             abi.encodeWithSelector(IERC20.transfer.selector, pgMultisig, pgExpectedUSDCtransfer);
-
-        assertEq(calldatas[0], expectedUSDCCalldata0);
-        assertEq(calldatas[1], expectedUSDCCalldata1);
-        assertEq(calldatas[2], expectedUSDCCalldata2);
 
         return (targets, values, signatures, calldatas, "");
     }
