@@ -22,3 +22,4 @@ broadcast/*/31337/
 # proposal files (should not be committed - root only)
 /proposalDescription.md
 /proposalCalldata.json
+/draftCalldata.json
