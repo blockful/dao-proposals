@@ -13,14 +13,7 @@ interface ISuperfluid {
     )
         external
         returns (bool);
-    function deleteFlow(
-        address token,
-        address sender,
-        address receiver,
-        bytes memory userData
-    )
-        external
-        returns (bool);
+    function deleteFlow(address token, address sender, address receiver, bytes memory userData) external returns (bool);
     function getAccountFlowInfo(
         address token,
         address account

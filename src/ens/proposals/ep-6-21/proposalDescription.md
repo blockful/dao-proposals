@@ -1,4 +1,5 @@
 # [Executable] Set Primary Names for Core DAO Addresses
+
 ## Abstract
 
 Several ENS DAO contracts lack primary names. This proposal establishes reverse records for core DAO addresses.
@@ -7,9 +8,9 @@ Several ENS DAO contracts lack primary names. This proposal establishes reverse 
 
 By setting reverse records for core DAO addresses:
 
-* ENS DAO demonstrates best practices by using its own protocol fully, serving as an example for other DAOs
-* ENS DAO contracts become easier to identify and navigate
-* Names will resolve on sites that list the contracts like [enswallets.xyz](https://www.enswallets.xyz/)
+- ENS DAO demonstrates best practices by using its own protocol fully, serving as an example for other DAOs
+- ENS DAO contracts become easier to identify and navigate
+- Names will resolve on sites that list the contracts like [enswallets.xyz](https://www.enswallets.xyz/)
 
 ## Details
 
@@ -21,11 +22,16 @@ Executing this proposal will set primary names for
 
 ## Specification
 
-Call `setName("wallet.ensdao.eth")` on the Reverse Registrar (reverse.ens.eth) to set the reverse record of 0xFe89cc7aBB2C4183683ab71653C4cdc9B02D44b7.
+Call `setName("wallet.ensdao.eth")` on the Reverse Registrar (reverse.ens.eth) to set the reverse record of
+0xFe89cc7aBB2C4183683ab71653C4cdc9B02D44b7.
 
-Call `setNameForAddr(0xC18360217D8F7Ab5e7c516566761Ea12Ce7F9D72, 0xFe89cc7aBB2C4183683ab71653C4cdc9B02D44b7, 0xF29100983E058B709F3D539b0c765937B804AC15, "token.ensdao.eth")` on the Reverse Registrar to set the reverse record of 0xC18360217D8F7Ab5e7c516566761Ea12Ce7F9D72.
+Call
+`setNameForAddr(0xC18360217D8F7Ab5e7c516566761Ea12Ce7F9D72, 0xFe89cc7aBB2C4183683ab71653C4cdc9B02D44b7, 0xF29100983E058B709F3D539b0c765937B804AC15, "token.ensdao.eth")`
+on the Reverse Registrar to set the reverse record of 0xC18360217D8F7Ab5e7c516566761Ea12Ce7F9D72.
 
-Call `execTransaction()` on the Endowment multisig (endowment.ensdao.eth) with the encoded calldata for `setName("endowment.ensdao.eth")` to set the reverse record of 0x4F2083f5fBede34C2714aFfb3105539775f7FE64. The Safe transaction looks like this:
+Call `execTransaction()` on the Endowment multisig (endowment.ensdao.eth) with the encoded calldata for
+`setName("endowment.ensdao.eth")` to set the reverse record of 0x4F2083f5fBede34C2714aFfb3105539775f7FE64. The Safe
+transaction looks like this:
 
 ```
 To: 0xa58E81fe9b61B5c3fE2AFD33CF304c454AbFc7Cb

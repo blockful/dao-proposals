@@ -28,15 +28,7 @@ interface IGovernor {
 
     function castVote(uint256 proposalId, uint8 support) external returns (uint256);
 
-    function castVoteBySig(
-        uint256 proposalId,
-        uint8 support,
-        uint8 v,
-        bytes32 r,
-        bytes32 s
-    )
-        external
-        returns (uint256);
+    function castVoteBySig(uint256 proposalId, uint8 support, uint8 v, bytes32 r, bytes32 s) external returns (uint256);
 
     function castVoteWithReason(uint256 proposalId, uint8 support, string memory reason) external returns (uint256);
 

@@ -100,9 +100,7 @@ contract Proposal_Shutter_Unclaimed_Vest_Test is Shutter_Governance {
         // Validate the treasury received the claimed tokens
         uint256 treasuryBalanceAfter = SHU.balanceOf(ShutterGnosis);
         assertEq(
-            treasuryBalanceAfter,
-            treasuryBalanceBefore + airdropBalanceBefore,
-            "Treasury should receive claimed tokens"
+            treasuryBalanceAfter, treasuryBalanceBefore + airdropBalanceBefore, "Treasury should receive claimed tokens"
         );
 
         // Validate the module is disabled

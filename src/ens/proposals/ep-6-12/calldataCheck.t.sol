@@ -11,10 +11,9 @@ import { IENSRegistryWithFallback } from "@ens/interfaces/IENSRegistryWithFallba
 contract Proposal_ENS_EP_6_12_Test is ENS_Governance {
     IENSRoot root = IENSRoot(0xaB528d626EC275E3faD363fF1393A41F581c5897);
     IENSRegistryWithFallback ensRegistry = IENSRegistryWithFallback(0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e);
-    
+
     address offchainDNSResolver = 0xF142B308cF687d4358410a4cB885513b30A42025;
     address DNSRegistrar = 0xB32cB5677a7C971689228EC835800432B339bA2B;
-
 
     function _selectFork() public override {
         vm.createSelectFork({ blockNumber: 22_531_399, urlOrAlias: "mainnet" });
@@ -48,14 +47,14 @@ contract Proposal_ENS_EP_6_12_Test is ENS_Governance {
 
         // 1. Set the owner of the ceo TLD to the timelock
         targets[0] = address(root);
-        calldatas[0] =
-            abi.encodeWithSelector(IENSRoot.setSubnodeOwner.selector, labelhash("ceo"), address(timelock));
+        calldatas[0] = abi.encodeWithSelector(IENSRoot.setSubnodeOwner.selector, labelhash("ceo"), address(timelock));
         values[0] = 0;
         signatures[0] = "";
 
         // 2. Set the resolver of the ceo TLD to the offchainDNSResolver
         targets[1] = address(ensRegistry);
-        calldatas[1] = abi.encodeWithSelector(IENSRegistryWithFallback.setResolver.selector, namehash("ceo"), offchainDNSResolver);
+        calldatas[1] =
+            abi.encodeWithSelector(IENSRegistryWithFallback.setResolver.selector, namehash("ceo"), offchainDNSResolver);
         values[1] = 0;
         signatures[1] = "";
 
@@ -64,7 +63,6 @@ contract Proposal_ENS_EP_6_12_Test is ENS_Governance {
         calldatas[2] = abi.encodeWithSelector(IENSRegistryWithFallback.setOwner.selector, namehash("ceo"), DNSRegistrar);
         values[2] = 0;
         signatures[2] = "";
-
 
         return (targets, values, signatures, calldatas, description);
     }

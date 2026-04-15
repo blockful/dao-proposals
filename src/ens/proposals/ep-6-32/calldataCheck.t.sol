@@ -51,13 +51,7 @@ contract Proposal_ENS_EP_6_32_Test is ENS_Governance, SafeHelper {
     function _generateCallData()
         public
         override
-        returns (
-            address[] memory,
-            uint256[] memory,
-            string[] memory,
-            bytes[] memory,
-            string memory
-        )
+        returns (address[] memory, uint256[] memory, string[] memory, bytes[] memory, string memory)
     {
         uint256 numTransactions = 1;
 
@@ -67,19 +61,12 @@ contract Proposal_ENS_EP_6_32_Test is ENS_Governance, SafeHelper {
         signatures = new string[](numTransactions);
 
         // Inner call: USDC.transfer(timelock, 2_500_000e6)
-        bytes memory innerCalldata = abi.encodeWithSelector(
-            USDC.transfer.selector,
-            address(timelock),
-            expectedUSDCTransfer
-        );
+        bytes memory innerCalldata =
+            abi.encodeWithSelector(USDC.transfer.selector, address(timelock), expectedUSDCTransfer);
 
         // 1. Call execTransaction on the Endowment Safe to transfer USDC
-        (targets[0], calldatas[0]) = _buildSafeExecCalldata(
-            address(endowmentSafe),
-            address(USDC),
-            innerCalldata,
-            address(timelock)
-        );
+        (targets[0], calldatas[0]) =
+            _buildSafeExecCalldata(address(endowmentSafe), address(USDC), innerCalldata, address(timelock));
         values[0] = 0;
         signatures[0] = "";
 

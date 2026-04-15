@@ -8,10 +8,7 @@ contract Controllable is Ownable {
     event ControllerChanged(address indexed controller, bool enabled);
 
     modifier onlyController() {
-        require(
-            controllers[msg.sender],
-            "Controllable: Caller is not a controller"
-        );
+        require(controllers[msg.sender], "Controllable: Caller is not a controller");
         _;
     }
 

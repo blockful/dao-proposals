@@ -18,7 +18,6 @@ contract Proposal_ENS_EP_5_27_Test is ENS_Governance {
     // New metadata service proxy address
     address constant metadataProxy = 0xaBB76D7e79de010117B147761013f11630a6799f;
 
-
     function _selectFork() public override {
         vm.createSelectFork({ blockNumber: 21_378_687, urlOrAlias: "mainnet" });
     }

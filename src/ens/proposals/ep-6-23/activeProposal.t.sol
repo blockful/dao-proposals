@@ -500,9 +500,7 @@ contract Proposal_ENS_EP_6_23_Test is ENS_Governance, SafeHelper, ZodiacRolesHel
         }
 
         // SCOPE FUNCTION
-        
 
-        
         {
             {
                 {
@@ -1762,7 +1760,7 @@ contract Proposal_ENS_EP_6_23_Test is ENS_Governance, SafeHelper, ZodiacRolesHel
                         abi.encodeWithSelector(
                             0x095ea7b3, // approve
                             0xd0A61F2963622e992e6534bde4D52fd0a89F39E0, // spender
-                                // condition)
+                            // condition)
                             1 ether // value
                         )
                     );
@@ -2053,7 +2051,9 @@ contract Proposal_ENS_EP_6_23_Test is ENS_Governance, SafeHelper, ZodiacRolesHel
             {
                 vm.expectRevert(
                     abi.encodeWithSelector(
-                        IZodiacRoles.ConditionViolation.selector, IZodiacRoles.Status.TargetAddressNotAllowed, bytes32(0)
+                        IZodiacRoles.ConditionViolation.selector,
+                        IZodiacRoles.Status.TargetAddressNotAllowed,
+                        bytes32(0)
                     )
                 );
                 _safeExecuteTransaction(
@@ -2069,7 +2069,6 @@ contract Proposal_ENS_EP_6_23_Test is ENS_Governance, SafeHelper, ZodiacRolesHel
 
         vm.stopPrank();
     }
-
 
     function _afterExecution() public override {
         vm.startPrank(karpatkey);
@@ -3953,14 +3952,12 @@ contract Proposal_ENS_EP_6_23_Test is ENS_Governance, SafeHelper, ZodiacRolesHel
                 }
             }
         }
-        
+
         address SPK = 0xc20059e0317DE91738d13af027DfC4a50781b066;
         console2.log("SPK Token balance of timelock: ", IERC20(SPK).balanceOf(address(timelock)));
         console2.log("SPK Token balance of safe: ", IERC20(SPK).balanceOf(address(safe)));
         vm.stopPrank();
     }
-
-
 
     // ====================================================================
     // Calldata Generation
@@ -3985,19 +3982,13 @@ contract Proposal_ENS_EP_6_23_Test is ENS_Governance, SafeHelper, ZodiacRolesHel
 
     function _buildFullSafeCalldata() internal view returns (bytes memory) {
         (, bytes memory cd) = _buildSafeExecDelegateCalldata(
-            address(endowmentSafe),
-            address(PROPOSAL_MULTI_SEND),
-            _buildMultiSendCalldata(),
-            address(timelock)
+            address(endowmentSafe), address(PROPOSAL_MULTI_SEND), _buildMultiSendCalldata(), address(timelock)
         );
         return cd;
     }
 
     function _buildMultiSendCalldata() internal pure returns (bytes memory) {
-        return abi.encodeWithSelector(
-            IMultiSend.multiSend.selector,
-            _buildPackedTransactions()
-        );
+        return abi.encodeWithSelector(IMultiSend.multiSend.selector, _buildPackedTransactions());
     }
 
     function _buildPackedTransactions() internal pure returns (bytes memory) {
@@ -4018,68 +4009,272 @@ contract Proposal_ENS_EP_6_23_Test is ENS_Governance, SafeHelper, ZodiacRolesHel
 
     // --- Revoke Block (TX 1-29) ---
     function _packRevokes() internal pure returns (bytes memory) {
-        return abi.encodePacked(
-            _packRevokes_A(),
-            _packRevokes_B(),
-            _packRevokes_C(),
-            _packRevokes_D()
-        );
+        return abi.encodePacked(_packRevokes_A(), _packRevokes_B(), _packRevokes_C(), _packRevokes_D());
     }
 
     function _packRevokes_A() internal pure returns (bytes memory) {
         return abi.encodePacked(
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.revokeTarget.selector, MANAGER_ROLE, 0x893411580e590D62dDBca8a703d61Cc4A8c7b2b9)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.revokeFunction.selector, MANAGER_ROLE, 0x889edC2eDab5f40e902b864aD4d7AdE8E412F9B1, bytes4(0xacf41e4d))),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.revokeFunction.selector, MANAGER_ROLE, 0x889edC2eDab5f40e902b864aD4d7AdE8E412F9B1, bytes4(0x7951b76f))),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.revokeTarget.selector, MANAGER_ROLE, 0xA434D495249abE33E031Fe71a969B81f3c07950D)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.revokeFunction.selector, MANAGER_ROLE, 0xA434D495249abE33E031Fe71a969B81f3c07950D, bytes4(0x474cf53d))),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.revokeFunction.selector, MANAGER_ROLE, 0xA434D495249abE33E031Fe71a969B81f3c07950D, bytes4(0x80500d20))),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.revokeTarget.selector, MANAGER_ROLE, 0x35Cea9e57A393ac66Aaa7E25C391D52C74B5648f)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.revokeFunction.selector, MANAGER_ROLE, 0x35Cea9e57A393ac66Aaa7E25C391D52C74B5648f, bytes4(0x65ca4804)))
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.revokeTarget.selector, MANAGER_ROLE, 0x893411580e590D62dDBca8a703d61Cc4A8c7b2b9
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.revokeFunction.selector,
+                    MANAGER_ROLE,
+                    0x889edC2eDab5f40e902b864aD4d7AdE8E412F9B1,
+                    bytes4(0xacf41e4d)
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.revokeFunction.selector,
+                    MANAGER_ROLE,
+                    0x889edC2eDab5f40e902b864aD4d7AdE8E412F9B1,
+                    bytes4(0x7951b76f)
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.revokeTarget.selector, MANAGER_ROLE, 0xA434D495249abE33E031Fe71a969B81f3c07950D
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.revokeFunction.selector,
+                    MANAGER_ROLE,
+                    0xA434D495249abE33E031Fe71a969B81f3c07950D,
+                    bytes4(0x474cf53d)
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.revokeFunction.selector,
+                    MANAGER_ROLE,
+                    0xA434D495249abE33E031Fe71a969B81f3c07950D,
+                    bytes4(0x80500d20)
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.revokeTarget.selector, MANAGER_ROLE, 0x35Cea9e57A393ac66Aaa7E25C391D52C74B5648f
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.revokeFunction.selector,
+                    MANAGER_ROLE,
+                    0x35Cea9e57A393ac66Aaa7E25C391D52C74B5648f,
+                    bytes4(0x65ca4804)
+                )
+            )
         );
     }
 
     function _packRevokes_B() internal pure returns (bytes memory) {
         return abi.encodePacked(
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.revokeFunction.selector, MANAGER_ROLE, 0x35Cea9e57A393ac66Aaa7E25C391D52C74B5648f, bytes4(0x0e248fea))),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.revokeFunction.selector, MANAGER_ROLE, 0x35Cea9e57A393ac66Aaa7E25C391D52C74B5648f, bytes4(0x3f85d390))),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.revokeFunction.selector, MANAGER_ROLE, 0xa3931d71877C0E7a3148CB7Eb4463524FEc27fbD, bytes4(0x6e553f65))),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.revokeTarget.selector, MANAGER_ROLE, 0x59D9356E565Ab3A36dD77763Fc0d87fEaf85508C)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.revokeFunction.selector, MANAGER_ROLE, 0x59D9356E565Ab3A36dD77763Fc0d87fEaf85508C, bytes4(0x095ea7b3))),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.revokeTarget.selector, MANAGER_ROLE, 0x83F20F44975D03b1b09e64809B757c47f942BEeA)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.revokeFunction.selector, MANAGER_ROLE, 0x83F20F44975D03b1b09e64809B757c47f942BEeA, bytes4(0x095ea7b3))),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.revokeTarget.selector, MANAGER_ROLE, 0x425BfB93370F14fF525aDb6EaEAcfE1f4e3b5802))
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.revokeFunction.selector,
+                    MANAGER_ROLE,
+                    0x35Cea9e57A393ac66Aaa7E25C391D52C74B5648f,
+                    bytes4(0x0e248fea)
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.revokeFunction.selector,
+                    MANAGER_ROLE,
+                    0x35Cea9e57A393ac66Aaa7E25C391D52C74B5648f,
+                    bytes4(0x3f85d390)
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.revokeFunction.selector,
+                    MANAGER_ROLE,
+                    0xa3931d71877C0E7a3148CB7Eb4463524FEc27fbD,
+                    bytes4(0x6e553f65)
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.revokeTarget.selector, MANAGER_ROLE, 0x59D9356E565Ab3A36dD77763Fc0d87fEaf85508C
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.revokeFunction.selector,
+                    MANAGER_ROLE,
+                    0x59D9356E565Ab3A36dD77763Fc0d87fEaf85508C,
+                    bytes4(0x095ea7b3)
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.revokeTarget.selector, MANAGER_ROLE, 0x83F20F44975D03b1b09e64809B757c47f942BEeA
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.revokeFunction.selector,
+                    MANAGER_ROLE,
+                    0x83F20F44975D03b1b09e64809B757c47f942BEeA,
+                    bytes4(0x095ea7b3)
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.revokeTarget.selector, MANAGER_ROLE, 0x425BfB93370F14fF525aDb6EaEAcfE1f4e3b5802
+                )
+            )
         );
     }
 
     function _packRevokes_C() internal pure returns (bytes memory) {
         return abi.encodePacked(
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.revokeFunction.selector, MANAGER_ROLE, 0x425BfB93370F14fF525aDb6EaEAcfE1f4e3b5802, bytes4(0xb72df5de))),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.revokeFunction.selector, MANAGER_ROLE, 0x425BfB93370F14fF525aDb6EaEAcfE1f4e3b5802, bytes4(0xd40ddb8c))),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.revokeFunction.selector, MANAGER_ROLE, 0x425BfB93370F14fF525aDb6EaEAcfE1f4e3b5802, bytes4(0x7706db75))),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.revokeFunction.selector, MANAGER_ROLE, 0x425BfB93370F14fF525aDb6EaEAcfE1f4e3b5802, bytes4(0x1a4d01d2))),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.revokeFunction.selector, MANAGER_ROLE, 0x425BfB93370F14fF525aDb6EaEAcfE1f4e3b5802, bytes4(0x095ea7b3))),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.revokeFunction.selector, MANAGER_ROLE, 0x425BfB93370F14fF525aDb6EaEAcfE1f4e3b5802, bytes4(0x3df02124))),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.revokeTarget.selector, MANAGER_ROLE, 0xcF5136C67fA8A375BaBbDf13c0307EF994b5681D)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.revokeFunction.selector, MANAGER_ROLE, 0xcF5136C67fA8A375BaBbDf13c0307EF994b5681D, bytes4(0xb6b55f25)))
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.revokeFunction.selector,
+                    MANAGER_ROLE,
+                    0x425BfB93370F14fF525aDb6EaEAcfE1f4e3b5802,
+                    bytes4(0xb72df5de)
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.revokeFunction.selector,
+                    MANAGER_ROLE,
+                    0x425BfB93370F14fF525aDb6EaEAcfE1f4e3b5802,
+                    bytes4(0xd40ddb8c)
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.revokeFunction.selector,
+                    MANAGER_ROLE,
+                    0x425BfB93370F14fF525aDb6EaEAcfE1f4e3b5802,
+                    bytes4(0x7706db75)
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.revokeFunction.selector,
+                    MANAGER_ROLE,
+                    0x425BfB93370F14fF525aDb6EaEAcfE1f4e3b5802,
+                    bytes4(0x1a4d01d2)
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.revokeFunction.selector,
+                    MANAGER_ROLE,
+                    0x425BfB93370F14fF525aDb6EaEAcfE1f4e3b5802,
+                    bytes4(0x095ea7b3)
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.revokeFunction.selector,
+                    MANAGER_ROLE,
+                    0x425BfB93370F14fF525aDb6EaEAcfE1f4e3b5802,
+                    bytes4(0x3df02124)
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.revokeTarget.selector, MANAGER_ROLE, 0xcF5136C67fA8A375BaBbDf13c0307EF994b5681D
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.revokeFunction.selector,
+                    MANAGER_ROLE,
+                    0xcF5136C67fA8A375BaBbDf13c0307EF994b5681D,
+                    bytes4(0xb6b55f25)
+                )
+            )
         );
     }
 
     function _packRevokes_D() internal pure returns (bytes memory) {
         return abi.encodePacked(
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.revokeFunction.selector, MANAGER_ROLE, 0xcF5136C67fA8A375BaBbDf13c0307EF994b5681D, bytes4(0x2e1a7d4d))),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.revokeFunction.selector, MANAGER_ROLE, 0xcF5136C67fA8A375BaBbDf13c0307EF994b5681D, bytes4(0xe6f1daf2))),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.revokeFunction.selector, MANAGER_ROLE, 0xBA12222222228d8Ba445958a75a0704d566BF2C8, bytes4(0xfa6e671d))),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.revokeFunction.selector, MANAGER_ROLE, 0x239e55F427D44C3cc793f49bFB507ebe76638a2b, bytes4(0x0de54ba0))),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.revokeFunction.selector, MANAGER_ROLE, 0xbEbc44782C7dB0a1A60Cb6fe97d0b483032FF1C7, bytes4(0x095ea7b3)))
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.revokeFunction.selector,
+                    MANAGER_ROLE,
+                    0xcF5136C67fA8A375BaBbDf13c0307EF994b5681D,
+                    bytes4(0x2e1a7d4d)
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.revokeFunction.selector,
+                    MANAGER_ROLE,
+                    0xcF5136C67fA8A375BaBbDf13c0307EF994b5681D,
+                    bytes4(0xe6f1daf2)
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.revokeFunction.selector,
+                    MANAGER_ROLE,
+                    0xBA12222222228d8Ba445958a75a0704d566BF2C8,
+                    bytes4(0xfa6e671d)
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.revokeFunction.selector,
+                    MANAGER_ROLE,
+                    0x239e55F427D44C3cc793f49bFB507ebe76638a2b,
+                    bytes4(0x0de54ba0)
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.revokeFunction.selector,
+                    MANAGER_ROLE,
+                    0xbEbc44782C7dB0a1A60Cb6fe97d0b483032FF1C7,
+                    bytes4(0x095ea7b3)
+                )
+            )
         );
     }
 
-
     // --- Annotation 1 (TX 30) ---
     function _packAnnotation1() internal pure returns (bytes memory) {
-        string memory annotationJson =
-            "{\"rolesMod\":\"0x703806e61847984346d2d7ddd853049627e50a40\",\"roleKey\":\"0x4d414e414745520000000000000000"
+        string memory annotationJson = "{\"rolesMod\":\"0x703806e61847984346d2d7ddd853049627e50a40\",\"roleKey\":\"0x4d414e414745520000000000000000"
             "0000000000000000000000000000000000\",\"removeAnnotations\":[\"https://kit.karpatkey.com/api/v1/permissio"
             "ns/eth/balancer/deposit?targets=wstETH-WETH-BPT\",\"https://kit.karpatkey.com/api/v1/permissions/eth/b"
             "alancer/stake?targets=wstETH-WETH-BPT\",\"https://kit.karpatkey.com/api/v1/permissions/eth/balancer/de"
@@ -4129,346 +4324,1511 @@ contract Proposal_ENS_EP_6_23_Test is ENS_Governance, SafeHelper, ZodiacRolesHel
 
     // --- Scope Block 1: Token Approvals + Euler (TX 31-43) ---
     function _packScopes1() internal pure returns (bytes memory) {
-        return abi.encodePacked(
-            _packScopes1_A(),
-            _packScopes1_B()
-        );
+        return abi.encodePacked(_packScopes1_A(), _packScopes1_B());
     }
 
     function _packScopes1_A() internal pure returns (bytes memory) {
         return abi.encodePacked(
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.scopeFunction.selector, MANAGER_ROLE, 0x7f39C581F595B53c5cb19bD0b3f8dA6c935E2Ca0, bytes4(0x095ea7b3), _cond_31(), EXEC_NONE)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.scopeFunction.selector, MANAGER_ROLE, 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2, bytes4(0x095ea7b3), _cond_32(), EXEC_NONE)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.scopeFunction.selector, MANAGER_ROLE, 0xae78736Cd615f374D3085123A210448E74Fc6393, bytes4(0x095ea7b3), _cond_33(), EXEC_NONE)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.scopeFunction.selector, MANAGER_ROLE, 0xC13e21B648A5Ee794902342038FF3aDAB66BE987, bytes4(0x5a3b74b9), _cond_34(), EXEC_NONE)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.scopeFunction.selector, MANAGER_ROLE, 0xC13e21B648A5Ee794902342038FF3aDAB66BE987, bytes4(0x617ba037), _cond_35(), EXEC_NONE)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.scopeFunction.selector, MANAGER_ROLE, 0xC13e21B648A5Ee794902342038FF3aDAB66BE987, bytes4(0x69328dec), _cond_36(), EXEC_NONE)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.scopeFunction.selector, MANAGER_ROLE, 0xA35b1B31Ce002FBF2058D22F30f95D405200A15b, bytes4(0x095ea7b3), _cond_37(), EXEC_NONE)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.scopeFunction.selector, MANAGER_ROLE, 0x1B0e765F6224C21223AeA2af16c1C46E38885a40, bytes4(0xb7034f7e), _cond_38(), EXEC_NONE))
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeFunction.selector,
+                    MANAGER_ROLE,
+                    0x7f39C581F595B53c5cb19bD0b3f8dA6c935E2Ca0,
+                    bytes4(0x095ea7b3),
+                    _cond_31(),
+                    EXEC_NONE
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeFunction.selector,
+                    MANAGER_ROLE,
+                    0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2,
+                    bytes4(0x095ea7b3),
+                    _cond_32(),
+                    EXEC_NONE
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeFunction.selector,
+                    MANAGER_ROLE,
+                    0xae78736Cd615f374D3085123A210448E74Fc6393,
+                    bytes4(0x095ea7b3),
+                    _cond_33(),
+                    EXEC_NONE
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeFunction.selector,
+                    MANAGER_ROLE,
+                    0xC13e21B648A5Ee794902342038FF3aDAB66BE987,
+                    bytes4(0x5a3b74b9),
+                    _cond_34(),
+                    EXEC_NONE
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeFunction.selector,
+                    MANAGER_ROLE,
+                    0xC13e21B648A5Ee794902342038FF3aDAB66BE987,
+                    bytes4(0x617ba037),
+                    _cond_35(),
+                    EXEC_NONE
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeFunction.selector,
+                    MANAGER_ROLE,
+                    0xC13e21B648A5Ee794902342038FF3aDAB66BE987,
+                    bytes4(0x69328dec),
+                    _cond_36(),
+                    EXEC_NONE
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeFunction.selector,
+                    MANAGER_ROLE,
+                    0xA35b1B31Ce002FBF2058D22F30f95D405200A15b,
+                    bytes4(0x095ea7b3),
+                    _cond_37(),
+                    EXEC_NONE
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeFunction.selector,
+                    MANAGER_ROLE,
+                    0x1B0e765F6224C21223AeA2af16c1C46E38885a40,
+                    bytes4(0xb7034f7e),
+                    _cond_38(),
+                    EXEC_NONE
+                )
+            )
         );
     }
 
     function _packScopes1_B() internal pure returns (bytes memory) {
         return abi.encodePacked(
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.scopeFunction.selector, MANAGER_ROLE, 0xf1C9acDc66974dFB6dEcB12aA385b9cD01190E38, bytes4(0x095ea7b3), _cond_39(), EXEC_NONE)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.scopeFunction.selector, MANAGER_ROLE, 0xA57b8d98dAE62B26Ec3bcC4a365338157060B234, bytes4(0x43a0d066), _cond_40(), EXEC_NONE)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.scopeFunction.selector, MANAGER_ROLE, 0xdC035D45d973E3EC169d2276DDab16f1e407384F, bytes4(0x095ea7b3), _cond_41(), EXEC_NONE)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.scopeFunction.selector, MANAGER_ROLE, 0x856c4Efb76C1D1AE02e20CEB03A2A6a08b0b8dC3, bytes4(0x095ea7b3), _cond_42(), EXEC_NONE)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.allowFunction.selector, MANAGER_ROLE, 0x856c4Efb76C1D1AE02e20CEB03A2A6a08b0b8dC3, bytes4(0xf51b0fd4), EXEC_NONE))
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeFunction.selector,
+                    MANAGER_ROLE,
+                    0xf1C9acDc66974dFB6dEcB12aA385b9cD01190E38,
+                    bytes4(0x095ea7b3),
+                    _cond_39(),
+                    EXEC_NONE
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeFunction.selector,
+                    MANAGER_ROLE,
+                    0xA57b8d98dAE62B26Ec3bcC4a365338157060B234,
+                    bytes4(0x43a0d066),
+                    _cond_40(),
+                    EXEC_NONE
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeFunction.selector,
+                    MANAGER_ROLE,
+                    0xdC035D45d973E3EC169d2276DDab16f1e407384F,
+                    bytes4(0x095ea7b3),
+                    _cond_41(),
+                    EXEC_NONE
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeFunction.selector,
+                    MANAGER_ROLE,
+                    0x856c4Efb76C1D1AE02e20CEB03A2A6a08b0b8dC3,
+                    bytes4(0x095ea7b3),
+                    _cond_42(),
+                    EXEC_NONE
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.allowFunction.selector,
+                    MANAGER_ROLE,
+                    0x856c4Efb76C1D1AE02e20CEB03A2A6a08b0b8dC3,
+                    bytes4(0xf51b0fd4),
+                    EXEC_NONE
+                )
+            )
         );
     }
 
-
     // --- Scope Block 2: Aave, Convex, 1inch, Uniswap (TX 44-59) ---
     function _packScopes2() internal pure returns (bytes memory) {
-        return abi.encodePacked(
-            _packScopes2_A(),
-            _packScopes2_B(),
-            _packScopes2_C()
-        );
+        return abi.encodePacked(_packScopes2_A(), _packScopes2_B(), _packScopes2_C());
     }
 
     function _packScopes2_A() internal pure returns (bytes memory) {
         return abi.encodePacked(
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.scopeFunction.selector, MANAGER_ROLE, 0xa3931d71877C0E7a3148CB7Eb4463524FEc27fbD, bytes4(0x095ea7b3), _cond_44(), EXEC_NONE)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.scopeFunction.selector, MANAGER_ROLE, 0xa3931d71877C0E7a3148CB7Eb4463524FEc27fbD, bytes4(0x9b8d6d38), _cond_45(), EXEC_NONE)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.scopeFunction.selector, MANAGER_ROLE, 0x87870Bca3F3fD6335C3F4ce8392D69350B4fA4E2, bytes4(0x617ba037), _cond_46(), EXEC_NONE)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.scopeFunction.selector, MANAGER_ROLE, 0x87870Bca3F3fD6335C3F4ce8392D69350B4fA4E2, bytes4(0x69328dec), _cond_47(), EXEC_NONE)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.scopeFunction.selector, MANAGER_ROLE, 0x87870Bca3F3fD6335C3F4ce8392D69350B4fA4E2, bytes4(0x5a3b74b9), _cond_48(), EXEC_NONE)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.scopeFunction.selector, MANAGER_ROLE, 0x4d5F47FA6A74757f35C14fD3a6Ef8E3C9BC514E8, bytes4(0x095ea7b3), _cond_49(), EXEC_NONE)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.scopeFunction.selector, MANAGER_ROLE, 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48, bytes4(0x095ea7b3), _cond_50(), EXEC_NONE)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.scopeFunction.selector, MANAGER_ROLE, 0xdAC17F958D2ee523a2206206994597C13D831ec7, bytes4(0x095ea7b3), _cond_51(), EXEC_NONE))
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeFunction.selector,
+                    MANAGER_ROLE,
+                    0xa3931d71877C0E7a3148CB7Eb4463524FEc27fbD,
+                    bytes4(0x095ea7b3),
+                    _cond_44(),
+                    EXEC_NONE
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeFunction.selector,
+                    MANAGER_ROLE,
+                    0xa3931d71877C0E7a3148CB7Eb4463524FEc27fbD,
+                    bytes4(0x9b8d6d38),
+                    _cond_45(),
+                    EXEC_NONE
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeFunction.selector,
+                    MANAGER_ROLE,
+                    0x87870Bca3F3fD6335C3F4ce8392D69350B4fA4E2,
+                    bytes4(0x617ba037),
+                    _cond_46(),
+                    EXEC_NONE
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeFunction.selector,
+                    MANAGER_ROLE,
+                    0x87870Bca3F3fD6335C3F4ce8392D69350B4fA4E2,
+                    bytes4(0x69328dec),
+                    _cond_47(),
+                    EXEC_NONE
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeFunction.selector,
+                    MANAGER_ROLE,
+                    0x87870Bca3F3fD6335C3F4ce8392D69350B4fA4E2,
+                    bytes4(0x5a3b74b9),
+                    _cond_48(),
+                    EXEC_NONE
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeFunction.selector,
+                    MANAGER_ROLE,
+                    0x4d5F47FA6A74757f35C14fD3a6Ef8E3C9BC514E8,
+                    bytes4(0x095ea7b3),
+                    _cond_49(),
+                    EXEC_NONE
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeFunction.selector,
+                    MANAGER_ROLE,
+                    0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48,
+                    bytes4(0x095ea7b3),
+                    _cond_50(),
+                    EXEC_NONE
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeFunction.selector,
+                    MANAGER_ROLE,
+                    0xdAC17F958D2ee523a2206206994597C13D831ec7,
+                    bytes4(0x095ea7b3),
+                    _cond_51(),
+                    EXEC_NONE
+                )
+            )
         );
     }
 
     function _packScopes2_B() internal pure returns (bytes memory) {
         return abi.encodePacked(
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.scopeFunction.selector, MANAGER_ROLE, 0x239e55F427D44C3cc793f49bFB507ebe76638a2b, bytes4(0x6a627842), _cond_52(), EXEC_NONE)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.scopeFunction.selector, MANAGER_ROLE, 0xF403C135812408BFbE8713b5A23a04b3D48AAE31, bytes4(0x43a0d066), _cond_53(), EXEC_NONE)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.scopeFunction.selector, MANAGER_ROLE, 0xF403C135812408BFbE8713b5A23a04b3D48AAE31, bytes4(0x60759fce), _cond_54(), EXEC_NONE)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.scopeFunction.selector, MANAGER_ROLE, 0xF403C135812408BFbE8713b5A23a04b3D48AAE31, bytes4(0x441a3e70), _cond_55(), EXEC_NONE)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.scopeFunction.selector, MANAGER_ROLE, 0x23dA9AdE38E4477b23770DeD512fD37b12381FAB, bytes4(0x569d3489), _cond_56(), EXEC_DELEGATE_CALL)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.scopeFunction.selector, MANAGER_ROLE, 0xd061D61a4d941c39E5453435B6345Dc261C2fcE0, bytes4(0x6a627842), _cond_57(), EXEC_NONE)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.scopeFunction.selector, MANAGER_ROLE, 0x56C526b0159a258887e0d79ec3a80dfb940d0cD7, bytes4(0x26a38e64), _cond_58(), EXEC_SEND)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.scopeFunction.selector, MANAGER_ROLE, 0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45, bytes4(0x04e45aaf), _cond_59(), EXEC_NONE))
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeFunction.selector,
+                    MANAGER_ROLE,
+                    0x239e55F427D44C3cc793f49bFB507ebe76638a2b,
+                    bytes4(0x6a627842),
+                    _cond_52(),
+                    EXEC_NONE
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeFunction.selector,
+                    MANAGER_ROLE,
+                    0xF403C135812408BFbE8713b5A23a04b3D48AAE31,
+                    bytes4(0x43a0d066),
+                    _cond_53(),
+                    EXEC_NONE
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeFunction.selector,
+                    MANAGER_ROLE,
+                    0xF403C135812408BFbE8713b5A23a04b3D48AAE31,
+                    bytes4(0x60759fce),
+                    _cond_54(),
+                    EXEC_NONE
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeFunction.selector,
+                    MANAGER_ROLE,
+                    0xF403C135812408BFbE8713b5A23a04b3D48AAE31,
+                    bytes4(0x441a3e70),
+                    _cond_55(),
+                    EXEC_NONE
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeFunction.selector,
+                    MANAGER_ROLE,
+                    0x23dA9AdE38E4477b23770DeD512fD37b12381FAB,
+                    bytes4(0x569d3489),
+                    _cond_56(),
+                    EXEC_DELEGATE_CALL
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeFunction.selector,
+                    MANAGER_ROLE,
+                    0xd061D61a4d941c39E5453435B6345Dc261C2fcE0,
+                    bytes4(0x6a627842),
+                    _cond_57(),
+                    EXEC_NONE
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeFunction.selector,
+                    MANAGER_ROLE,
+                    0x56C526b0159a258887e0d79ec3a80dfb940d0cD7,
+                    bytes4(0x26a38e64),
+                    _cond_58(),
+                    EXEC_SEND
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeFunction.selector,
+                    MANAGER_ROLE,
+                    0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45,
+                    bytes4(0x04e45aaf),
+                    _cond_59(),
+                    EXEC_NONE
+                )
+            )
         );
     }
 
     function _packScopes2_C() internal pure returns (bytes memory) {
-        return abi.encodePacked(
-
-        );
+        return abi.encodePacked();
     }
-
 
     // --- Scope Block 3: Lido, Spark, Curve (TX 60-71) ---
     function _packScopes3() internal pure returns (bytes memory) {
-        return abi.encodePacked(
-            _packScopes3_A(),
-            _packScopes3_B()
-        );
+        return abi.encodePacked(_packScopes3_A(), _packScopes3_B());
     }
 
     function _packScopes3_A() internal pure returns (bytes memory) {
         return abi.encodePacked(
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.scopeTarget.selector, MANAGER_ROLE, 0xd01607c3C5eCABa394D8be377a08590149325722)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.scopeFunction.selector, MANAGER_ROLE, 0xd01607c3C5eCABa394D8be377a08590149325722, bytes4(0x474cf53d), _cond_61(), EXEC_SEND)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.scopeFunction.selector, MANAGER_ROLE, 0xd01607c3C5eCABa394D8be377a08590149325722, bytes4(0x80500d20), _cond_62(), EXEC_NONE)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.scopeTarget.selector, MANAGER_ROLE, 0x5D409e56D886231aDAf00c8775665AD0f9897b56)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.scopeFunction.selector, MANAGER_ROLE, 0x5D409e56D886231aDAf00c8775665AD0f9897b56, bytes4(0xf2b9fdb8), _cond_64(), EXEC_NONE)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.scopeFunction.selector, MANAGER_ROLE, 0x5D409e56D886231aDAf00c8775665AD0f9897b56, bytes4(0xf3fef3a3), _cond_65(), EXEC_NONE)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.scopeTarget.selector, MANAGER_ROLE, 0x59Ab5a5b5d617E478a2479B0cAD80DA7e2831492)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.scopeFunction.selector, MANAGER_ROLE, 0x59Ab5a5b5d617E478a2479B0cAD80DA7e2831492, bytes4(0x095ea7b3), _cond_67(), EXEC_NONE))
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeTarget.selector, MANAGER_ROLE, 0xd01607c3C5eCABa394D8be377a08590149325722
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeFunction.selector,
+                    MANAGER_ROLE,
+                    0xd01607c3C5eCABa394D8be377a08590149325722,
+                    bytes4(0x474cf53d),
+                    _cond_61(),
+                    EXEC_SEND
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeFunction.selector,
+                    MANAGER_ROLE,
+                    0xd01607c3C5eCABa394D8be377a08590149325722,
+                    bytes4(0x80500d20),
+                    _cond_62(),
+                    EXEC_NONE
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeTarget.selector, MANAGER_ROLE, 0x5D409e56D886231aDAf00c8775665AD0f9897b56
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeFunction.selector,
+                    MANAGER_ROLE,
+                    0x5D409e56D886231aDAf00c8775665AD0f9897b56,
+                    bytes4(0xf2b9fdb8),
+                    _cond_64(),
+                    EXEC_NONE
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeFunction.selector,
+                    MANAGER_ROLE,
+                    0x5D409e56D886231aDAf00c8775665AD0f9897b56,
+                    bytes4(0xf3fef3a3),
+                    _cond_65(),
+                    EXEC_NONE
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeTarget.selector, MANAGER_ROLE, 0x59Ab5a5b5d617E478a2479B0cAD80DA7e2831492
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeFunction.selector,
+                    MANAGER_ROLE,
+                    0x59Ab5a5b5d617E478a2479B0cAD80DA7e2831492,
+                    bytes4(0x095ea7b3),
+                    _cond_67(),
+                    EXEC_NONE
+                )
+            )
         );
     }
 
     function _packScopes3_B() internal pure returns (bytes memory) {
         return abi.encodePacked(
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.allowFunction.selector, MANAGER_ROLE, 0x59Ab5a5b5d617E478a2479B0cAD80DA7e2831492, bytes4(0x0b4c7e4d), EXEC_SEND)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.allowFunction.selector, MANAGER_ROLE, 0x59Ab5a5b5d617E478a2479B0cAD80DA7e2831492, bytes4(0x5b36389c), EXEC_NONE)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.allowFunction.selector, MANAGER_ROLE, 0x59Ab5a5b5d617E478a2479B0cAD80DA7e2831492, bytes4(0xe3103273), EXEC_NONE)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.allowFunction.selector, MANAGER_ROLE, 0x59Ab5a5b5d617E478a2479B0cAD80DA7e2831492, bytes4(0x1a4d01d2), EXEC_NONE))
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.allowFunction.selector,
+                    MANAGER_ROLE,
+                    0x59Ab5a5b5d617E478a2479B0cAD80DA7e2831492,
+                    bytes4(0x0b4c7e4d),
+                    EXEC_SEND
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.allowFunction.selector,
+                    MANAGER_ROLE,
+                    0x59Ab5a5b5d617E478a2479B0cAD80DA7e2831492,
+                    bytes4(0x5b36389c),
+                    EXEC_NONE
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.allowFunction.selector,
+                    MANAGER_ROLE,
+                    0x59Ab5a5b5d617E478a2479B0cAD80DA7e2831492,
+                    bytes4(0xe3103273),
+                    EXEC_NONE
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.allowFunction.selector,
+                    MANAGER_ROLE,
+                    0x59Ab5a5b5d617E478a2479B0cAD80DA7e2831492,
+                    bytes4(0x1a4d01d2),
+                    EXEC_NONE
+                )
+            )
         );
     }
 
-
     // --- Scope Block 4: Convex Rewards (TX 72-91) ---
     function _packScopes4() internal pure returns (bytes memory) {
-        return abi.encodePacked(
-            _packScopes4_A(),
-            _packScopes4_B(),
-            _packScopes4_C()
-        );
+        return abi.encodePacked(_packScopes4_A(), _packScopes4_B(), _packScopes4_C());
     }
 
     function _packScopes4_A() internal pure returns (bytes memory) {
         return abi.encodePacked(
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.scopeTarget.selector, MANAGER_ROLE, 0x1dF858Ae1fE8F58d6157B8Eb9f7089e62e303982)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.scopeFunction.selector, MANAGER_ROLE, 0x1dF858Ae1fE8F58d6157B8Eb9f7089e62e303982, bytes4(0x095ea7b3), _cond_73(), EXEC_NONE)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.scopeTarget.selector, MANAGER_ROLE, 0x399e111c7209a741B06F8F86Ef0Fdd88fC198D20)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.allowFunction.selector, MANAGER_ROLE, 0x399e111c7209a741B06F8F86Ef0Fdd88fC198D20, bytes4(0xa694fc3a), EXEC_NONE)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.allowFunction.selector, MANAGER_ROLE, 0x399e111c7209a741B06F8F86Ef0Fdd88fC198D20, bytes4(0x38d07436), EXEC_NONE)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.allowFunction.selector, MANAGER_ROLE, 0x399e111c7209a741B06F8F86Ef0Fdd88fC198D20, bytes4(0xc32e7202), EXEC_NONE)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.scopeFunction.selector, MANAGER_ROLE, 0x399e111c7209a741B06F8F86Ef0Fdd88fC198D20, bytes4(0x7050ccd9), _cond_78(), EXEC_NONE)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.scopeTarget.selector, MANAGER_ROLE, 0xe080027Bd47353b5D1639772b4a75E9Ed3658A0d))
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeTarget.selector, MANAGER_ROLE, 0x1dF858Ae1fE8F58d6157B8Eb9f7089e62e303982
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeFunction.selector,
+                    MANAGER_ROLE,
+                    0x1dF858Ae1fE8F58d6157B8Eb9f7089e62e303982,
+                    bytes4(0x095ea7b3),
+                    _cond_73(),
+                    EXEC_NONE
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeTarget.selector, MANAGER_ROLE, 0x399e111c7209a741B06F8F86Ef0Fdd88fC198D20
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.allowFunction.selector,
+                    MANAGER_ROLE,
+                    0x399e111c7209a741B06F8F86Ef0Fdd88fC198D20,
+                    bytes4(0xa694fc3a),
+                    EXEC_NONE
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.allowFunction.selector,
+                    MANAGER_ROLE,
+                    0x399e111c7209a741B06F8F86Ef0Fdd88fC198D20,
+                    bytes4(0x38d07436),
+                    EXEC_NONE
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.allowFunction.selector,
+                    MANAGER_ROLE,
+                    0x399e111c7209a741B06F8F86Ef0Fdd88fC198D20,
+                    bytes4(0xc32e7202),
+                    EXEC_NONE
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeFunction.selector,
+                    MANAGER_ROLE,
+                    0x399e111c7209a741B06F8F86Ef0Fdd88fC198D20,
+                    bytes4(0x7050ccd9),
+                    _cond_78(),
+                    EXEC_NONE
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeTarget.selector, MANAGER_ROLE, 0xe080027Bd47353b5D1639772b4a75E9Ed3658A0d
+                )
+            )
         );
     }
 
     function _packScopes4_B() internal pure returns (bytes memory) {
         return abi.encodePacked(
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.scopeFunction.selector, MANAGER_ROLE, 0xe080027Bd47353b5D1639772b4a75E9Ed3658A0d, bytes4(0x095ea7b3), _cond_80(), EXEC_NONE)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.allowFunction.selector, MANAGER_ROLE, 0xe080027Bd47353b5D1639772b4a75E9Ed3658A0d, bytes4(0xb72df5de), EXEC_NONE)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.allowFunction.selector, MANAGER_ROLE, 0xe080027Bd47353b5D1639772b4a75E9Ed3658A0d, bytes4(0xd40ddb8c), EXEC_NONE)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.allowFunction.selector, MANAGER_ROLE, 0xe080027Bd47353b5D1639772b4a75E9Ed3658A0d, bytes4(0x1a4d01d2), EXEC_NONE)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.allowFunction.selector, MANAGER_ROLE, 0xe080027Bd47353b5D1639772b4a75E9Ed3658A0d, bytes4(0x7706db75), EXEC_NONE)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.scopeTarget.selector, MANAGER_ROLE, 0xE3eA98BD863bEF37D951973743aAC2e56edd99BC)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.scopeFunction.selector, MANAGER_ROLE, 0xE3eA98BD863bEF37D951973743aAC2e56edd99BC, bytes4(0x095ea7b3), _cond_86(), EXEC_NONE)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.scopeTarget.selector, MANAGER_ROLE, 0xBA7eBDEF7723e55c909Ac44226FB87a93625c44e))
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeFunction.selector,
+                    MANAGER_ROLE,
+                    0xe080027Bd47353b5D1639772b4a75E9Ed3658A0d,
+                    bytes4(0x095ea7b3),
+                    _cond_80(),
+                    EXEC_NONE
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.allowFunction.selector,
+                    MANAGER_ROLE,
+                    0xe080027Bd47353b5D1639772b4a75E9Ed3658A0d,
+                    bytes4(0xb72df5de),
+                    EXEC_NONE
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.allowFunction.selector,
+                    MANAGER_ROLE,
+                    0xe080027Bd47353b5D1639772b4a75E9Ed3658A0d,
+                    bytes4(0xd40ddb8c),
+                    EXEC_NONE
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.allowFunction.selector,
+                    MANAGER_ROLE,
+                    0xe080027Bd47353b5D1639772b4a75E9Ed3658A0d,
+                    bytes4(0x1a4d01d2),
+                    EXEC_NONE
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.allowFunction.selector,
+                    MANAGER_ROLE,
+                    0xe080027Bd47353b5D1639772b4a75E9Ed3658A0d,
+                    bytes4(0x7706db75),
+                    EXEC_NONE
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeTarget.selector, MANAGER_ROLE, 0xE3eA98BD863bEF37D951973743aAC2e56edd99BC
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeFunction.selector,
+                    MANAGER_ROLE,
+                    0xE3eA98BD863bEF37D951973743aAC2e56edd99BC,
+                    bytes4(0x095ea7b3),
+                    _cond_86(),
+                    EXEC_NONE
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeTarget.selector, MANAGER_ROLE, 0xBA7eBDEF7723e55c909Ac44226FB87a93625c44e
+                )
+            )
         );
     }
 
     function _packScopes4_C() internal pure returns (bytes memory) {
         return abi.encodePacked(
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.allowFunction.selector, MANAGER_ROLE, 0xBA7eBDEF7723e55c909Ac44226FB87a93625c44e, bytes4(0xa694fc3a), EXEC_NONE)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.allowFunction.selector, MANAGER_ROLE, 0xBA7eBDEF7723e55c909Ac44226FB87a93625c44e, bytes4(0x38d07436), EXEC_NONE)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.allowFunction.selector, MANAGER_ROLE, 0xBA7eBDEF7723e55c909Ac44226FB87a93625c44e, bytes4(0xc32e7202), EXEC_NONE)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.scopeFunction.selector, MANAGER_ROLE, 0xBA7eBDEF7723e55c909Ac44226FB87a93625c44e, bytes4(0x7050ccd9), _cond_91(), EXEC_NONE))
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.allowFunction.selector,
+                    MANAGER_ROLE,
+                    0xBA7eBDEF7723e55c909Ac44226FB87a93625c44e,
+                    bytes4(0xa694fc3a),
+                    EXEC_NONE
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.allowFunction.selector,
+                    MANAGER_ROLE,
+                    0xBA7eBDEF7723e55c909Ac44226FB87a93625c44e,
+                    bytes4(0x38d07436),
+                    EXEC_NONE
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.allowFunction.selector,
+                    MANAGER_ROLE,
+                    0xBA7eBDEF7723e55c909Ac44226FB87a93625c44e,
+                    bytes4(0xc32e7202),
+                    EXEC_NONE
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeFunction.selector,
+                    MANAGER_ROLE,
+                    0xBA7eBDEF7723e55c909Ac44226FB87a93625c44e,
+                    bytes4(0x7050ccd9),
+                    _cond_91(),
+                    EXEC_NONE
+                )
+            )
         );
     }
 
-
     // --- Scope Block 5: CowSwap, TWAP, SPK (TX 92-112) ---
     function _packScopes5() internal pure returns (bytes memory) {
-        return abi.encodePacked(
-            _packScopes5_A(),
-            _packScopes5_B(),
-            _packScopes5_C()
-        );
+        return abi.encodePacked(_packScopes5_A(), _packScopes5_B(), _packScopes5_C());
     }
 
     function _packScopes5_A() internal pure returns (bytes memory) {
         return abi.encodePacked(
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.scopeTarget.selector, MANAGER_ROLE, 0x58D97B57BB95320F9a05dC918Aef65434969c2B2)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.scopeFunction.selector, MANAGER_ROLE, 0x58D97B57BB95320F9a05dC918Aef65434969c2B2, bytes4(0x095ea7b3), _cond_93(), EXEC_NONE)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.scopeTarget.selector, MANAGER_ROLE, 0xc20059e0317DE91738d13af027DfC4a50781b066)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.scopeFunction.selector, MANAGER_ROLE, 0xc20059e0317DE91738d13af027DfC4a50781b066, bytes4(0x095ea7b3), _cond_95(), EXEC_NONE)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.scopeFunction.selector, MANAGER_ROLE, 0xc20059e0317DE91738d13af027DfC4a50781b066, bytes4(0xa9059cbb), _cond_96(), EXEC_NONE)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.scopeTarget.selector, MANAGER_ROLE, 0x4F2083f5fBede34C2714aFfb3105539775f7FE64)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.scopeFunction.selector, MANAGER_ROLE, 0x4F2083f5fBede34C2714aFfb3105539775f7FE64, bytes4(0xf08a0323), _cond_98(), EXEC_NONE)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.scopeFunction.selector, MANAGER_ROLE, 0x4F2083f5fBede34C2714aFfb3105539775f7FE64, bytes4(0x3365582c), _cond_99(), EXEC_NONE))
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeTarget.selector, MANAGER_ROLE, 0x58D97B57BB95320F9a05dC918Aef65434969c2B2
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeFunction.selector,
+                    MANAGER_ROLE,
+                    0x58D97B57BB95320F9a05dC918Aef65434969c2B2,
+                    bytes4(0x095ea7b3),
+                    _cond_93(),
+                    EXEC_NONE
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeTarget.selector, MANAGER_ROLE, 0xc20059e0317DE91738d13af027DfC4a50781b066
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeFunction.selector,
+                    MANAGER_ROLE,
+                    0xc20059e0317DE91738d13af027DfC4a50781b066,
+                    bytes4(0x095ea7b3),
+                    _cond_95(),
+                    EXEC_NONE
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeFunction.selector,
+                    MANAGER_ROLE,
+                    0xc20059e0317DE91738d13af027DfC4a50781b066,
+                    bytes4(0xa9059cbb),
+                    _cond_96(),
+                    EXEC_NONE
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeTarget.selector, MANAGER_ROLE, 0x4F2083f5fBede34C2714aFfb3105539775f7FE64
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeFunction.selector,
+                    MANAGER_ROLE,
+                    0x4F2083f5fBede34C2714aFfb3105539775f7FE64,
+                    bytes4(0xf08a0323),
+                    _cond_98(),
+                    EXEC_NONE
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeFunction.selector,
+                    MANAGER_ROLE,
+                    0x4F2083f5fBede34C2714aFfb3105539775f7FE64,
+                    bytes4(0x3365582c),
+                    _cond_99(),
+                    EXEC_NONE
+                )
+            )
         );
     }
 
     function _packScopes5_B() internal pure returns (bytes memory) {
         return abi.encodePacked(
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.scopeTarget.selector, MANAGER_ROLE, 0xfdaFc9d1902f4e0b84f65F49f244b32b31013b74)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.scopeFunction.selector, MANAGER_ROLE, 0xfdaFc9d1902f4e0b84f65F49f244b32b31013b74, bytes4(0x0d0d9800), _cond_101(), EXEC_NONE)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.scopeTarget.selector, MANAGER_ROLE, 0xA188EEC8F81263234dA3622A406892F3D630f98c)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.scopeFunction.selector, MANAGER_ROLE, 0xA188EEC8F81263234dA3622A406892F3D630f98c, bytes4(0x95991276), _cond_103(), EXEC_NONE)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.scopeFunction.selector, MANAGER_ROLE, 0xA188EEC8F81263234dA3622A406892F3D630f98c, bytes4(0x8d7ef9bb), _cond_104(), EXEC_NONE)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.scopeTarget.selector, MANAGER_ROLE, 0xd0A61F2963622e992e6534bde4D52fd0a89F39E0)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.scopeFunction.selector, MANAGER_ROLE, 0xd0A61F2963622e992e6534bde4D52fd0a89F39E0, bytes4(0x8fba2cee), _cond_106(), EXEC_NONE)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.scopeFunction.selector, MANAGER_ROLE, 0xd0A61F2963622e992e6534bde4D52fd0a89F39E0, bytes4(0x57de6782), _cond_107(), EXEC_NONE))
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeTarget.selector, MANAGER_ROLE, 0xfdaFc9d1902f4e0b84f65F49f244b32b31013b74
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeFunction.selector,
+                    MANAGER_ROLE,
+                    0xfdaFc9d1902f4e0b84f65F49f244b32b31013b74,
+                    bytes4(0x0d0d9800),
+                    _cond_101(),
+                    EXEC_NONE
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeTarget.selector, MANAGER_ROLE, 0xA188EEC8F81263234dA3622A406892F3D630f98c
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeFunction.selector,
+                    MANAGER_ROLE,
+                    0xA188EEC8F81263234dA3622A406892F3D630f98c,
+                    bytes4(0x95991276),
+                    _cond_103(),
+                    EXEC_NONE
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeFunction.selector,
+                    MANAGER_ROLE,
+                    0xA188EEC8F81263234dA3622A406892F3D630f98c,
+                    bytes4(0x8d7ef9bb),
+                    _cond_104(),
+                    EXEC_NONE
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeTarget.selector, MANAGER_ROLE, 0xd0A61F2963622e992e6534bde4D52fd0a89F39E0
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeFunction.selector,
+                    MANAGER_ROLE,
+                    0xd0A61F2963622e992e6534bde4D52fd0a89F39E0,
+                    bytes4(0x8fba2cee),
+                    _cond_106(),
+                    EXEC_NONE
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeFunction.selector,
+                    MANAGER_ROLE,
+                    0xd0A61F2963622e992e6534bde4D52fd0a89F39E0,
+                    bytes4(0x57de6782),
+                    _cond_107(),
+                    EXEC_NONE
+                )
+            )
         );
     }
 
     function _packScopes5_C() internal pure returns (bytes memory) {
         return abi.encodePacked(
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.scopeFunction.selector, MANAGER_ROLE, 0xd0A61F2963622e992e6534bde4D52fd0a89F39E0, bytes4(0x850d6b31), _cond_108(), EXEC_NONE)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.scopeTarget.selector, MANAGER_ROLE, 0xBc65ad17c5C0a2A4D159fa5a503f4992c7B545FE)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.scopeFunction.selector, MANAGER_ROLE, 0xBc65ad17c5C0a2A4D159fa5a503f4992c7B545FE, bytes4(0x095ea7b3), _cond_110(), EXEC_NONE)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.scopeTarget.selector, MANAGER_ROLE, 0xc4Ce391d82D164c166dF9c8336DDF84206b2F812)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.scopeFunction.selector, MANAGER_ROLE, 0xc4Ce391d82D164c166dF9c8336DDF84206b2F812, bytes4(0x095ea7b3), _cond_112(), EXEC_NONE))
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeFunction.selector,
+                    MANAGER_ROLE,
+                    0xd0A61F2963622e992e6534bde4D52fd0a89F39E0,
+                    bytes4(0x850d6b31),
+                    _cond_108(),
+                    EXEC_NONE
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeTarget.selector, MANAGER_ROLE, 0xBc65ad17c5C0a2A4D159fa5a503f4992c7B545FE
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeFunction.selector,
+                    MANAGER_ROLE,
+                    0xBc65ad17c5C0a2A4D159fa5a503f4992c7B545FE,
+                    bytes4(0x095ea7b3),
+                    _cond_110(),
+                    EXEC_NONE
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeTarget.selector, MANAGER_ROLE, 0xc4Ce391d82D164c166dF9c8336DDF84206b2F812
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeFunction.selector,
+                    MANAGER_ROLE,
+                    0xc4Ce391d82D164c166dF9c8336DDF84206b2F812,
+                    bytes4(0x095ea7b3),
+                    _cond_112(),
+                    EXEC_NONE
+                )
+            )
         );
     }
 
-
     // --- Scope Block 6: Permit2, CowSwap TWAP (TX 113-128) ---
     function _packScopes6() internal pure returns (bytes memory) {
-        return abi.encodePacked(
-            _packScopes6_A(),
-            _packScopes6_B(),
-            _packScopes6_C()
-        );
+        return abi.encodePacked(_packScopes6_A(), _packScopes6_B(), _packScopes6_C());
     }
 
     function _packScopes6_A() internal pure returns (bytes memory) {
         return abi.encodePacked(
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.scopeTarget.selector, MANAGER_ROLE, 0xCF370C3279452143f68e350b824714B49593a334)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.allowFunction.selector, MANAGER_ROLE, 0xCF370C3279452143f68e350b824714B49593a334, bytes4(0xc32e7202), EXEC_NONE)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.allowFunction.selector, MANAGER_ROLE, 0xCF370C3279452143f68e350b824714B49593a334, bytes4(0x3d18b912), EXEC_NONE)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.scopeFunction.selector, MANAGER_ROLE, 0xCF370C3279452143f68e350b824714B49593a334, bytes4(0x7050ccd9), _cond_116(), EXEC_NONE)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.scopeTarget.selector, MANAGER_ROLE, 0x57c23c58B1D8C3292c15BEcF07c62C5c52457A42)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.scopeFunction.selector, MANAGER_ROLE, 0x57c23c58B1D8C3292c15BEcF07c62C5c52457A42, bytes4(0x095ea7b3), _cond_118(), EXEC_NONE)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.scopeTarget.selector, MANAGER_ROLE, 0x994BE003de5FD6E41d37c6948f405EB0759149e6)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.allowFunction.selector, MANAGER_ROLE, 0x994BE003de5FD6E41d37c6948f405EB0759149e6, bytes4(0xc32e7202), EXEC_NONE))
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeTarget.selector, MANAGER_ROLE, 0xCF370C3279452143f68e350b824714B49593a334
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.allowFunction.selector,
+                    MANAGER_ROLE,
+                    0xCF370C3279452143f68e350b824714B49593a334,
+                    bytes4(0xc32e7202),
+                    EXEC_NONE
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.allowFunction.selector,
+                    MANAGER_ROLE,
+                    0xCF370C3279452143f68e350b824714B49593a334,
+                    bytes4(0x3d18b912),
+                    EXEC_NONE
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeFunction.selector,
+                    MANAGER_ROLE,
+                    0xCF370C3279452143f68e350b824714B49593a334,
+                    bytes4(0x7050ccd9),
+                    _cond_116(),
+                    EXEC_NONE
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeTarget.selector, MANAGER_ROLE, 0x57c23c58B1D8C3292c15BEcF07c62C5c52457A42
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeFunction.selector,
+                    MANAGER_ROLE,
+                    0x57c23c58B1D8C3292c15BEcF07c62C5c52457A42,
+                    bytes4(0x095ea7b3),
+                    _cond_118(),
+                    EXEC_NONE
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeTarget.selector, MANAGER_ROLE, 0x994BE003de5FD6E41d37c6948f405EB0759149e6
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.allowFunction.selector,
+                    MANAGER_ROLE,
+                    0x994BE003de5FD6E41d37c6948f405EB0759149e6,
+                    bytes4(0xc32e7202),
+                    EXEC_NONE
+                )
+            )
         );
     }
 
     function _packScopes6_B() internal pure returns (bytes memory) {
         return abi.encodePacked(
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.allowFunction.selector, MANAGER_ROLE, 0x994BE003de5FD6E41d37c6948f405EB0759149e6, bytes4(0x3d18b912), EXEC_NONE)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.scopeFunction.selector, MANAGER_ROLE, 0x994BE003de5FD6E41d37c6948f405EB0759149e6, bytes4(0x7050ccd9), _cond_122(), EXEC_NONE)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.scopeTarget.selector, MANAGER_ROLE, 0x000000000022D473030F116dDEE9F6B43aC78BA3)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.scopeFunction.selector, MANAGER_ROLE, 0x000000000022D473030F116dDEE9F6B43aC78BA3, bytes4(0x87517c45), _cond_124(), EXEC_NONE)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.scopeTarget.selector, MANAGER_ROLE, 0xb21A277466e7dB6934556a1Ce12eb3F032815c8A)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.scopeFunction.selector, MANAGER_ROLE, 0xb21A277466e7dB6934556a1Ce12eb3F032815c8A, bytes4(0xe3c3e64f), _cond_126(), EXEC_NONE)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.scopeFunction.selector, MANAGER_ROLE, 0xb21A277466e7dB6934556a1Ce12eb3F032815c8A, bytes4(0xc1da024c), _cond_127(), EXEC_NONE)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.scopeFunction.selector, MANAGER_ROLE, 0xb21A277466e7dB6934556a1Ce12eb3F032815c8A, bytes4(0xd8a7f9fe), _cond_128(), EXEC_NONE))
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.allowFunction.selector,
+                    MANAGER_ROLE,
+                    0x994BE003de5FD6E41d37c6948f405EB0759149e6,
+                    bytes4(0x3d18b912),
+                    EXEC_NONE
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeFunction.selector,
+                    MANAGER_ROLE,
+                    0x994BE003de5FD6E41d37c6948f405EB0759149e6,
+                    bytes4(0x7050ccd9),
+                    _cond_122(),
+                    EXEC_NONE
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeTarget.selector, MANAGER_ROLE, 0x000000000022D473030F116dDEE9F6B43aC78BA3
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeFunction.selector,
+                    MANAGER_ROLE,
+                    0x000000000022D473030F116dDEE9F6B43aC78BA3,
+                    bytes4(0x87517c45),
+                    _cond_124(),
+                    EXEC_NONE
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeTarget.selector, MANAGER_ROLE, 0xb21A277466e7dB6934556a1Ce12eb3F032815c8A
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeFunction.selector,
+                    MANAGER_ROLE,
+                    0xb21A277466e7dB6934556a1Ce12eb3F032815c8A,
+                    bytes4(0xe3c3e64f),
+                    _cond_126(),
+                    EXEC_NONE
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeFunction.selector,
+                    MANAGER_ROLE,
+                    0xb21A277466e7dB6934556a1Ce12eb3F032815c8A,
+                    bytes4(0xc1da024c),
+                    _cond_127(),
+                    EXEC_NONE
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeFunction.selector,
+                    MANAGER_ROLE,
+                    0xb21A277466e7dB6934556a1Ce12eb3F032815c8A,
+                    bytes4(0xd8a7f9fe),
+                    _cond_128(),
+                    EXEC_NONE
+                )
+            )
         );
     }
 
     function _packScopes6_C() internal pure returns (bytes memory) {
-        return abi.encodePacked(
-
-        );
+        return abi.encodePacked();
     }
-
 
     // --- Scope Block 7: Convex/Curve Vaults (TX 129-163) ---
     function _packScopes7() internal pure returns (bytes memory) {
-        return abi.encodePacked(
-            _packScopes7_A(),
-            _packScopes7_B(),
-            _packScopes7_C(),
-            _packScopes7_D(),
-            _packScopes7_E()
-        );
+        return
+            abi.encodePacked(_packScopes7_A(), _packScopes7_B(), _packScopes7_C(), _packScopes7_D(), _packScopes7_E());
     }
 
     function _packScopes7_A() internal pure returns (bytes memory) {
         return abi.encodePacked(
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.scopeTarget.selector, MANAGER_ROLE, 0x4B891340b51889f438a03DC0e8aAAFB0Bc89e7A6)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.allowFunction.selector, MANAGER_ROLE, 0x4B891340b51889f438a03DC0e8aAAFB0Bc89e7A6, bytes4(0xb6b55f25), EXEC_NONE)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.allowFunction.selector, MANAGER_ROLE, 0x4B891340b51889f438a03DC0e8aAAFB0Bc89e7A6, bytes4(0x2e1a7d4d), EXEC_NONE)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.allowFunction.selector, MANAGER_ROLE, 0x4B891340b51889f438a03DC0e8aAAFB0Bc89e7A6, bytes4(0xe6f1daf2), EXEC_NONE)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.scopeTarget.selector, MANAGER_ROLE, 0x70A1c01902DAb7a45dcA1098Ca76A8314dd8aDbA)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.allowFunction.selector, MANAGER_ROLE, 0x70A1c01902DAb7a45dcA1098Ca76A8314dd8aDbA, bytes4(0xb6b55f25), EXEC_NONE)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.allowFunction.selector, MANAGER_ROLE, 0x70A1c01902DAb7a45dcA1098Ca76A8314dd8aDbA, bytes4(0x2e1a7d4d), EXEC_NONE)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.allowFunction.selector, MANAGER_ROLE, 0x70A1c01902DAb7a45dcA1098Ca76A8314dd8aDbA, bytes4(0xe6f1daf2), EXEC_NONE))
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeTarget.selector, MANAGER_ROLE, 0x4B891340b51889f438a03DC0e8aAAFB0Bc89e7A6
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.allowFunction.selector,
+                    MANAGER_ROLE,
+                    0x4B891340b51889f438a03DC0e8aAAFB0Bc89e7A6,
+                    bytes4(0xb6b55f25),
+                    EXEC_NONE
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.allowFunction.selector,
+                    MANAGER_ROLE,
+                    0x4B891340b51889f438a03DC0e8aAAFB0Bc89e7A6,
+                    bytes4(0x2e1a7d4d),
+                    EXEC_NONE
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.allowFunction.selector,
+                    MANAGER_ROLE,
+                    0x4B891340b51889f438a03DC0e8aAAFB0Bc89e7A6,
+                    bytes4(0xe6f1daf2),
+                    EXEC_NONE
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeTarget.selector, MANAGER_ROLE, 0x70A1c01902DAb7a45dcA1098Ca76A8314dd8aDbA
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.allowFunction.selector,
+                    MANAGER_ROLE,
+                    0x70A1c01902DAb7a45dcA1098Ca76A8314dd8aDbA,
+                    bytes4(0xb6b55f25),
+                    EXEC_NONE
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.allowFunction.selector,
+                    MANAGER_ROLE,
+                    0x70A1c01902DAb7a45dcA1098Ca76A8314dd8aDbA,
+                    bytes4(0x2e1a7d4d),
+                    EXEC_NONE
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.allowFunction.selector,
+                    MANAGER_ROLE,
+                    0x70A1c01902DAb7a45dcA1098Ca76A8314dd8aDbA,
+                    bytes4(0xe6f1daf2),
+                    EXEC_NONE
+                )
+            )
         );
     }
 
     function _packScopes7_B() internal pure returns (bytes memory) {
         return abi.encodePacked(
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.scopeTarget.selector, MANAGER_ROLE, 0x4AB7aB316D43345009B2140e0580B072eEc7DF16)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.scopeFunction.selector, MANAGER_ROLE, 0x4AB7aB316D43345009B2140e0580B072eEc7DF16, bytes4(0x095ea7b3), _cond_138(), EXEC_NONE)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.scopeTarget.selector, MANAGER_ROLE, 0x1f3A4C8115629C33A28bF2F97F22D31d256317F6)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.allowFunction.selector, MANAGER_ROLE, 0x1f3A4C8115629C33A28bF2F97F22D31d256317F6, bytes4(0xb6b55f25), EXEC_NONE)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.allowFunction.selector, MANAGER_ROLE, 0x1f3A4C8115629C33A28bF2F97F22D31d256317F6, bytes4(0x2e1a7d4d), EXEC_NONE)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.allowFunction.selector, MANAGER_ROLE, 0x1f3A4C8115629C33A28bF2F97F22D31d256317F6, bytes4(0xe6f1daf2), EXEC_NONE)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.scopeTarget.selector, MANAGER_ROLE, 0x6c3F90f043a72FA612cbac8115EE7e52BDe6E490)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.scopeFunction.selector, MANAGER_ROLE, 0x6c3F90f043a72FA612cbac8115EE7e52BDe6E490, bytes4(0x095ea7b3), _cond_144(), EXEC_NONE))
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeTarget.selector, MANAGER_ROLE, 0x4AB7aB316D43345009B2140e0580B072eEc7DF16
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeFunction.selector,
+                    MANAGER_ROLE,
+                    0x4AB7aB316D43345009B2140e0580B072eEc7DF16,
+                    bytes4(0x095ea7b3),
+                    _cond_138(),
+                    EXEC_NONE
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeTarget.selector, MANAGER_ROLE, 0x1f3A4C8115629C33A28bF2F97F22D31d256317F6
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.allowFunction.selector,
+                    MANAGER_ROLE,
+                    0x1f3A4C8115629C33A28bF2F97F22D31d256317F6,
+                    bytes4(0xb6b55f25),
+                    EXEC_NONE
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.allowFunction.selector,
+                    MANAGER_ROLE,
+                    0x1f3A4C8115629C33A28bF2F97F22D31d256317F6,
+                    bytes4(0x2e1a7d4d),
+                    EXEC_NONE
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.allowFunction.selector,
+                    MANAGER_ROLE,
+                    0x1f3A4C8115629C33A28bF2F97F22D31d256317F6,
+                    bytes4(0xe6f1daf2),
+                    EXEC_NONE
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeTarget.selector, MANAGER_ROLE, 0x6c3F90f043a72FA612cbac8115EE7e52BDe6E490
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeFunction.selector,
+                    MANAGER_ROLE,
+                    0x6c3F90f043a72FA612cbac8115EE7e52BDe6E490,
+                    bytes4(0x095ea7b3),
+                    _cond_144(),
+                    EXEC_NONE
+                )
+            )
         );
     }
 
     function _packScopes7_C() internal pure returns (bytes memory) {
         return abi.encodePacked(
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.scopeTarget.selector, MANAGER_ROLE, 0x7671299eA7B4bbE4f3fD305A994e6443b4be680E)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.allowFunction.selector, MANAGER_ROLE, 0x7671299eA7B4bbE4f3fD305A994e6443b4be680E, bytes4(0xb6b55f25), EXEC_NONE)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.allowFunction.selector, MANAGER_ROLE, 0x7671299eA7B4bbE4f3fD305A994e6443b4be680E, bytes4(0x2e1a7d4d), EXEC_NONE)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.allowFunction.selector, MANAGER_ROLE, 0x7671299eA7B4bbE4f3fD305A994e6443b4be680E, bytes4(0xe6f1daf2), EXEC_NONE)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.scopeTarget.selector, MANAGER_ROLE, 0x63037a4e3305d25D48BAED2022b8462b2807351c)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.allowFunction.selector, MANAGER_ROLE, 0x63037a4e3305d25D48BAED2022b8462b2807351c, bytes4(0xb6b55f25), EXEC_NONE)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.allowFunction.selector, MANAGER_ROLE, 0x63037a4e3305d25D48BAED2022b8462b2807351c, bytes4(0x2e1a7d4d), EXEC_NONE)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.allowFunction.selector, MANAGER_ROLE, 0x63037a4e3305d25D48BAED2022b8462b2807351c, bytes4(0x38d07436), EXEC_NONE))
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeTarget.selector, MANAGER_ROLE, 0x7671299eA7B4bbE4f3fD305A994e6443b4be680E
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.allowFunction.selector,
+                    MANAGER_ROLE,
+                    0x7671299eA7B4bbE4f3fD305A994e6443b4be680E,
+                    bytes4(0xb6b55f25),
+                    EXEC_NONE
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.allowFunction.selector,
+                    MANAGER_ROLE,
+                    0x7671299eA7B4bbE4f3fD305A994e6443b4be680E,
+                    bytes4(0x2e1a7d4d),
+                    EXEC_NONE
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.allowFunction.selector,
+                    MANAGER_ROLE,
+                    0x7671299eA7B4bbE4f3fD305A994e6443b4be680E,
+                    bytes4(0xe6f1daf2),
+                    EXEC_NONE
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeTarget.selector, MANAGER_ROLE, 0x63037a4e3305d25D48BAED2022b8462b2807351c
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.allowFunction.selector,
+                    MANAGER_ROLE,
+                    0x63037a4e3305d25D48BAED2022b8462b2807351c,
+                    bytes4(0xb6b55f25),
+                    EXEC_NONE
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.allowFunction.selector,
+                    MANAGER_ROLE,
+                    0x63037a4e3305d25D48BAED2022b8462b2807351c,
+                    bytes4(0x2e1a7d4d),
+                    EXEC_NONE
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.allowFunction.selector,
+                    MANAGER_ROLE,
+                    0x63037a4e3305d25D48BAED2022b8462b2807351c,
+                    bytes4(0x38d07436),
+                    EXEC_NONE
+                )
+            )
         );
     }
 
     function _packScopes7_D() internal pure returns (bytes memory) {
         return abi.encodePacked(
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.allowFunction.selector, MANAGER_ROLE, 0x63037a4e3305d25D48BAED2022b8462b2807351c, bytes4(0xe6f1daf2), EXEC_NONE)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.scopeTarget.selector, MANAGER_ROLE, 0xcc7d5785AD5755B6164e21495E07aDb0Ff11C2A8)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.allowFunction.selector, MANAGER_ROLE, 0xcc7d5785AD5755B6164e21495E07aDb0Ff11C2A8, bytes4(0xb72df5de), EXEC_NONE)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.allowFunction.selector, MANAGER_ROLE, 0xcc7d5785AD5755B6164e21495E07aDb0Ff11C2A8, bytes4(0xd40ddb8c), EXEC_NONE)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.allowFunction.selector, MANAGER_ROLE, 0xcc7d5785AD5755B6164e21495E07aDb0Ff11C2A8, bytes4(0x7706db75), EXEC_NONE)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.allowFunction.selector, MANAGER_ROLE, 0xcc7d5785AD5755B6164e21495E07aDb0Ff11C2A8, bytes4(0x1a4d01d2), EXEC_NONE)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.scopeFunction.selector, MANAGER_ROLE, 0xcc7d5785AD5755B6164e21495E07aDb0Ff11C2A8, bytes4(0x095ea7b3), _cond_159(), EXEC_NONE)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.scopeTarget.selector, MANAGER_ROLE, 0x36cC1d791704445A5b6b9c36a667e511d4702F3f))
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.allowFunction.selector,
+                    MANAGER_ROLE,
+                    0x63037a4e3305d25D48BAED2022b8462b2807351c,
+                    bytes4(0xe6f1daf2),
+                    EXEC_NONE
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeTarget.selector, MANAGER_ROLE, 0xcc7d5785AD5755B6164e21495E07aDb0Ff11C2A8
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.allowFunction.selector,
+                    MANAGER_ROLE,
+                    0xcc7d5785AD5755B6164e21495E07aDb0Ff11C2A8,
+                    bytes4(0xb72df5de),
+                    EXEC_NONE
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.allowFunction.selector,
+                    MANAGER_ROLE,
+                    0xcc7d5785AD5755B6164e21495E07aDb0Ff11C2A8,
+                    bytes4(0xd40ddb8c),
+                    EXEC_NONE
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.allowFunction.selector,
+                    MANAGER_ROLE,
+                    0xcc7d5785AD5755B6164e21495E07aDb0Ff11C2A8,
+                    bytes4(0x7706db75),
+                    EXEC_NONE
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.allowFunction.selector,
+                    MANAGER_ROLE,
+                    0xcc7d5785AD5755B6164e21495E07aDb0Ff11C2A8,
+                    bytes4(0x1a4d01d2),
+                    EXEC_NONE
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeFunction.selector,
+                    MANAGER_ROLE,
+                    0xcc7d5785AD5755B6164e21495E07aDb0Ff11C2A8,
+                    bytes4(0x095ea7b3),
+                    _cond_159(),
+                    EXEC_NONE
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeTarget.selector, MANAGER_ROLE, 0x36cC1d791704445A5b6b9c36a667e511d4702F3f
+                )
+            )
         );
     }
 
     function _packScopes7_E() internal pure returns (bytes memory) {
         return abi.encodePacked(
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.allowFunction.selector, MANAGER_ROLE, 0x36cC1d791704445A5b6b9c36a667e511d4702F3f, bytes4(0xb6b55f25), EXEC_NONE)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.allowFunction.selector, MANAGER_ROLE, 0x36cC1d791704445A5b6b9c36a667e511d4702F3f, bytes4(0x2e1a7d4d), EXEC_NONE)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.allowFunction.selector, MANAGER_ROLE, 0x36cC1d791704445A5b6b9c36a667e511d4702F3f, bytes4(0xe6f1daf2), EXEC_NONE))
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.allowFunction.selector,
+                    MANAGER_ROLE,
+                    0x36cC1d791704445A5b6b9c36a667e511d4702F3f,
+                    bytes4(0xb6b55f25),
+                    EXEC_NONE
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.allowFunction.selector,
+                    MANAGER_ROLE,
+                    0x36cC1d791704445A5b6b9c36a667e511d4702F3f,
+                    bytes4(0x2e1a7d4d),
+                    EXEC_NONE
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.allowFunction.selector,
+                    MANAGER_ROLE,
+                    0x36cC1d791704445A5b6b9c36a667e511d4702F3f,
+                    bytes4(0xe6f1daf2),
+                    EXEC_NONE
+                )
+            )
         );
     }
 
-
     // --- Scope Block 8: Morpho Blue (TX 164-172) ---
     function _packScopes8() internal pure returns (bytes memory) {
-        return abi.encodePacked(
-            _packScopes8_A(),
-            _packScopes8_B()
-        );
+        return abi.encodePacked(_packScopes8_A(), _packScopes8_B());
     }
 
     function _packScopes8_A() internal pure returns (bytes memory) {
         return abi.encodePacked(
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.scopeTarget.selector, MANAGER_ROLE, 0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.scopeFunction.selector, MANAGER_ROLE, 0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb, bytes4(0xa99aad89), _cond_165(), EXEC_NONE)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.scopeFunction.selector, MANAGER_ROLE, 0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb, bytes4(0x5c2bea49), _cond_166(), EXEC_NONE)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.scopeTarget.selector, MANAGER_ROLE, 0x330eefa8a787552DC5cAd3C3cA644844B1E61Ddb)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.scopeFunction.selector, MANAGER_ROLE, 0x330eefa8a787552DC5cAd3C3cA644844B1E61Ddb, bytes4(0xfabed412), _cond_168(), EXEC_NONE)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.scopeTarget.selector, MANAGER_ROLE, 0x3Ef3D8bA38EBe18DB133cEc108f4D14CE00Dd9Ae)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.scopeFunction.selector, MANAGER_ROLE, 0x3Ef3D8bA38EBe18DB133cEc108f4D14CE00Dd9Ae, bytes4(0x71ee95c0), _cond_170(), EXEC_NONE)),
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.scopeTarget.selector, MANAGER_ROLE, 0x7ac96180C4d6b2A328D3a19ac059D0E7Fc3C6d41))
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeTarget.selector, MANAGER_ROLE, 0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeFunction.selector,
+                    MANAGER_ROLE,
+                    0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb,
+                    bytes4(0xa99aad89),
+                    _cond_165(),
+                    EXEC_NONE
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeFunction.selector,
+                    MANAGER_ROLE,
+                    0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb,
+                    bytes4(0x5c2bea49),
+                    _cond_166(),
+                    EXEC_NONE
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeTarget.selector, MANAGER_ROLE, 0x330eefa8a787552DC5cAd3C3cA644844B1E61Ddb
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeFunction.selector,
+                    MANAGER_ROLE,
+                    0x330eefa8a787552DC5cAd3C3cA644844B1E61Ddb,
+                    bytes4(0xfabed412),
+                    _cond_168(),
+                    EXEC_NONE
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeTarget.selector, MANAGER_ROLE, 0x3Ef3D8bA38EBe18DB133cEc108f4D14CE00Dd9Ae
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeFunction.selector,
+                    MANAGER_ROLE,
+                    0x3Ef3D8bA38EBe18DB133cEc108f4D14CE00Dd9Ae,
+                    bytes4(0x71ee95c0),
+                    _cond_170(),
+                    EXEC_NONE
+                )
+            ),
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeTarget.selector, MANAGER_ROLE, 0x7ac96180C4d6b2A328D3a19ac059D0E7Fc3C6d41
+                )
+            )
         );
     }
 
     function _packScopes8_B() internal pure returns (bytes memory) {
         return abi.encodePacked(
-            _packTx(address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.scopeFunction.selector, MANAGER_ROLE, 0x7ac96180C4d6b2A328D3a19ac059D0E7Fc3C6d41, bytes4(0xef98231e), _cond_172(), EXEC_NONE))
+            _packTx(
+                address(ROLES_MOD),
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeFunction.selector,
+                    MANAGER_ROLE,
+                    0x7ac96180C4d6b2A328D3a19ac059D0E7Fc3C6d41,
+                    bytes4(0xef98231e),
+                    _cond_172(),
+                    EXEC_NONE
+                )
+            )
         );
     }
 
-
     // --- Annotation 2 (TX 173) ---
     function _packAnnotation2() internal pure returns (bytes memory) {
-        string memory annotationJson =
-            "{\"rolesMod\":\"0x703806e61847984346d2d7ddd853049627e50a40\",\"roleKey\":\"0x4d414e414745520000000000000000"
+        string memory annotationJson = "{\"rolesMod\":\"0x703806e61847984346d2d7ddd853049627e50a40\",\"roleKey\":\"0x4d414e414745520000000000000000"
             "0000000000000000000000000000000000\",\"addAnnotations\":[{\"schema\":\"https://kit.karpatkey.com/api/v1/op"
             "enapi.json\",\"uris\":[\"https://kit.karpatkey.com/api/v1/permissions/eth/aave_v3/deposit?market=Core&ta"
             "rgets=ETHx\",\"https://kit.karpatkey.com/api/v1/permissions/eth/balancer_v2/deposit?targets=wstETH-WET"
@@ -4512,7 +5872,6 @@ contract Proposal_ENS_EP_6_23_Test is ENS_Governance, SafeHelper, ZodiacRolesHel
         );
     }
 
-
     // ====================================================================
     // Condition Helpers
     // ====================================================================
@@ -4521,7 +5880,12 @@ contract Proposal_ENS_EP_6_23_Test is ENS_Governance, SafeHelper, ZodiacRolesHel
         return abi.encodePacked(bytes32(uint256(uint160(addr))));
     }
 
-    function _c(uint8 parent, uint8 paramType, uint8 operator, bytes memory compValue)
+    function _c(
+        uint8 parent,
+        uint8 paramType,
+        uint8 operator,
+        bytes memory compValue
+    )
         internal
         pure
         returns (ConditionFlat memory)
@@ -4656,11 +6020,21 @@ contract Proposal_ENS_EP_6_23_Test is ENS_Governance, SafeHelper, ZodiacRolesHel
         c = new ConditionFlat[](7);
         c[0] = _c(0, PARAM_TYPE_CALLDATA, OP_MATCHES, "");
         c[1] = _c(0, PARAM_TYPE_NONE, OP_OR, "");
-        c[2] = _c(1, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"000000000000000000000000000000000000000000000000000000000000006d");
-        c[3] = _c(1, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"0000000000000000000000000000000000000000000000000000000000000099");
-        c[4] = _c(1, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"00000000000000000000000000000000000000000000000000000000000000b3");
-        c[5] = _c(1, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"00000000000000000000000000000000000000000000000000000000000000f0");
-        c[6] = _c(1, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"0000000000000000000000000000000000000000000000000000000000000104");
+        c[2] = _c(
+            1, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"000000000000000000000000000000000000000000000000000000000000006d"
+        );
+        c[3] = _c(
+            1, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"0000000000000000000000000000000000000000000000000000000000000099"
+        );
+        c[4] = _c(
+            1, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"00000000000000000000000000000000000000000000000000000000000000b3"
+        );
+        c[5] = _c(
+            1, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"00000000000000000000000000000000000000000000000000000000000000f0"
+        );
+        c[6] = _c(
+            1, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"0000000000000000000000000000000000000000000000000000000000000104"
+        );
     }
 
     function _cond_41() internal pure returns (ConditionFlat[] memory c) {
@@ -4802,33 +6176,63 @@ contract Proposal_ENS_EP_6_23_Test is ENS_Governance, SafeHelper, ZodiacRolesHel
         c = new ConditionFlat[](7);
         c[0] = _c(0, PARAM_TYPE_CALLDATA, OP_MATCHES, "");
         c[1] = _c(0, PARAM_TYPE_NONE, OP_OR, "");
-        c[2] = _c(1, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"0000000000000000000000000000000000000000000000000000000000000019");
-        c[3] = _c(1, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"00000000000000000000000000000000000000000000000000000000000000ae");
-        c[4] = _c(1, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"00000000000000000000000000000000000000000000000000000000000000b1");
-        c[5] = _c(1, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"00000000000000000000000000000000000000000000000000000000000000e8");
-        c[6] = _c(1, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"000000000000000000000000000000000000000000000000000000000000010c");
+        c[2] = _c(
+            1, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"0000000000000000000000000000000000000000000000000000000000000019"
+        );
+        c[3] = _c(
+            1, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"00000000000000000000000000000000000000000000000000000000000000ae"
+        );
+        c[4] = _c(
+            1, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"00000000000000000000000000000000000000000000000000000000000000b1"
+        );
+        c[5] = _c(
+            1, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"00000000000000000000000000000000000000000000000000000000000000e8"
+        );
+        c[6] = _c(
+            1, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"000000000000000000000000000000000000000000000000000000000000010c"
+        );
     }
 
     function _cond_54() internal pure returns (ConditionFlat[] memory c) {
         c = new ConditionFlat[](7);
         c[0] = _c(0, PARAM_TYPE_CALLDATA, OP_MATCHES, "");
         c[1] = _c(0, PARAM_TYPE_NONE, OP_OR, "");
-        c[2] = _c(1, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"0000000000000000000000000000000000000000000000000000000000000019");
-        c[3] = _c(1, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"00000000000000000000000000000000000000000000000000000000000000ae");
-        c[4] = _c(1, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"00000000000000000000000000000000000000000000000000000000000000b1");
-        c[5] = _c(1, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"00000000000000000000000000000000000000000000000000000000000000e8");
-        c[6] = _c(1, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"000000000000000000000000000000000000000000000000000000000000010c");
+        c[2] = _c(
+            1, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"0000000000000000000000000000000000000000000000000000000000000019"
+        );
+        c[3] = _c(
+            1, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"00000000000000000000000000000000000000000000000000000000000000ae"
+        );
+        c[4] = _c(
+            1, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"00000000000000000000000000000000000000000000000000000000000000b1"
+        );
+        c[5] = _c(
+            1, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"00000000000000000000000000000000000000000000000000000000000000e8"
+        );
+        c[6] = _c(
+            1, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"000000000000000000000000000000000000000000000000000000000000010c"
+        );
     }
 
     function _cond_55() internal pure returns (ConditionFlat[] memory c) {
         c = new ConditionFlat[](7);
         c[0] = _c(0, PARAM_TYPE_CALLDATA, OP_MATCHES, "");
         c[1] = _c(0, PARAM_TYPE_NONE, OP_OR, "");
-        c[2] = _c(1, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"0000000000000000000000000000000000000000000000000000000000000019");
-        c[3] = _c(1, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"00000000000000000000000000000000000000000000000000000000000000ae");
-        c[4] = _c(1, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"00000000000000000000000000000000000000000000000000000000000000b1");
-        c[5] = _c(1, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"00000000000000000000000000000000000000000000000000000000000000e8");
-        c[6] = _c(1, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"000000000000000000000000000000000000000000000000000000000000010c");
+        c[2] = _c(
+            1, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"0000000000000000000000000000000000000000000000000000000000000019"
+        );
+        c[3] = _c(
+            1, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"00000000000000000000000000000000000000000000000000000000000000ae"
+        );
+        c[4] = _c(
+            1, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"00000000000000000000000000000000000000000000000000000000000000b1"
+        );
+        c[5] = _c(
+            1, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"00000000000000000000000000000000000000000000000000000000000000e8"
+        );
+        c[6] = _c(
+            1, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"000000000000000000000000000000000000000000000000000000000000010c"
+        );
     }
 
     function _cond_56() internal pure returns (ConditionFlat[] memory c) {
@@ -4911,7 +6315,9 @@ contract Proposal_ENS_EP_6_23_Test is ENS_Governance, SafeHelper, ZodiacRolesHel
         c[7] = _c(0, PARAM_TYPE_STATIC, OP_PASS, "");
         c[8] = _c(0, PARAM_TYPE_STATIC, OP_PASS, "");
         c[9] = _c(0, PARAM_TYPE_STATIC, OP_PASS, "");
-        c[10] = _c(0, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"0000000000000000000000000000000000000000000000000000000000000000");
+        c[10] = _c(
+            0, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"0000000000000000000000000000000000000000000000000000000000000000"
+        );
         c[11] = _eq(1, 0x21E27a5E5513D6e65C4f830167390997aA84843a);
         c[12] = _eq(1, 0x59Ab5a5b5d617E478a2479B0cAD80DA7e2831492);
         c[13] = _eq(1, 0x94B17476A93b3262d87B9a326965D1E91f9c13E7);
@@ -4933,14 +6339,48 @@ contract Proposal_ENS_EP_6_23_Test is ENS_Governance, SafeHelper, ZodiacRolesHel
         c[29] = _eq(3, 0x79F21BC30632cd40d2aF8134B469a0EB4C9574AA);
         c[30] = _eq(3, 0xbFcF63294aD7105dEa65aA58F8AE5BE2D9d0952A);
         c[31] = _eq(3, 0xd03BE91b1932715709e18021734fcB91BB431715);
-        c[32] = _c(4, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"0000000000000000000000000000000000000000000000000000000000000002");
-        c[33] = _c(4, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"0000000000000000000000000000000000000000000000000000000000000003");
-        c[34] = _c(5, PARAM_TYPE_ARRAY, OP_EQUAL_TO, hex"00000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000002000000000000000000000000856c4efb76c1d1ae02e20ceb03a2a6a08b0b8dc3000000000000000000000000c02aaa39b223fe8d0a0e5c4f27ead9083c756cc2");
-        c[35] = _c(5, PARAM_TYPE_ARRAY, OP_EQUAL_TO, hex"00000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000002000000000000000000000000eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee000000000000000000000000856c4efb76c1d1ae02e20ceb03a2a6a08b0b8dc3");
-        c[36] = _c(5, PARAM_TYPE_ARRAY, OP_EQUAL_TO, hex"00000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000002000000000000000000000000eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee000000000000000000000000a35b1b31ce002fbf2058d22f30f95d405200a15b");
-        c[37] = _c(5, PARAM_TYPE_ARRAY, OP_EQUAL_TO, hex"00000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000002000000000000000000000000eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee000000000000000000000000ae7ab96520de3a18e5e111b5eaab095312d7fe84");
-        c[38] = _c(5, PARAM_TYPE_ARRAY, OP_EQUAL_TO, hex"00000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000002000000000000000000000000f1c9acdc66974dfb6decb12aa385b9cd01190e38000000000000000000000000ae78736cd615f374d3085123a210448e74fc6393");
-        c[39] = _c(5, PARAM_TYPE_ARRAY, OP_EQUAL_TO, hex"000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000030000000000000000000000006b175474e89094c44da98b954eedeac495271d0f000000000000000000000000a0b86991c6218b36c1d19d4a2e9eb0ce3606eb48000000000000000000000000dac17f958d2ee523a2206206994597c13d831ec7");
+        c[32] = _c(
+            4, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"0000000000000000000000000000000000000000000000000000000000000002"
+        );
+        c[33] = _c(
+            4, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"0000000000000000000000000000000000000000000000000000000000000003"
+        );
+        c[34] = _c(
+            5,
+            PARAM_TYPE_ARRAY,
+            OP_EQUAL_TO,
+            hex"00000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000002000000000000000000000000856c4efb76c1d1ae02e20ceb03a2a6a08b0b8dc3000000000000000000000000c02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
+        );
+        c[35] = _c(
+            5,
+            PARAM_TYPE_ARRAY,
+            OP_EQUAL_TO,
+            hex"00000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000002000000000000000000000000eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee000000000000000000000000856c4efb76c1d1ae02e20ceb03a2a6a08b0b8dc3"
+        );
+        c[36] = _c(
+            5,
+            PARAM_TYPE_ARRAY,
+            OP_EQUAL_TO,
+            hex"00000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000002000000000000000000000000eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee000000000000000000000000a35b1b31ce002fbf2058d22f30f95d405200a15b"
+        );
+        c[37] = _c(
+            5,
+            PARAM_TYPE_ARRAY,
+            OP_EQUAL_TO,
+            hex"00000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000002000000000000000000000000eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee000000000000000000000000ae7ab96520de3a18e5e111b5eaab095312d7fe84"
+        );
+        c[38] = _c(
+            5,
+            PARAM_TYPE_ARRAY,
+            OP_EQUAL_TO,
+            hex"00000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000002000000000000000000000000f1c9acdc66974dfb6decb12aa385b9cd01190e38000000000000000000000000ae78736cd615f374d3085123a210448e74fc6393"
+        );
+        c[39] = _c(
+            5,
+            PARAM_TYPE_ARRAY,
+            OP_EQUAL_TO,
+            hex"000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000030000000000000000000000006b175474e89094c44da98b954eedeac495271d0f000000000000000000000000a0b86991c6218b36c1d19d4a2e9eb0ce3606eb48000000000000000000000000dac17f958d2ee523a2206206994597c13d831ec7"
+        );
         c[40] = _c(6, PARAM_TYPE_STATIC, OP_PASS, "");
         c[41] = _c(34, PARAM_TYPE_STATIC, OP_PASS, "");
         c[42] = _c(35, PARAM_TYPE_STATIC, OP_PASS, "");
@@ -4960,7 +6400,9 @@ contract Proposal_ENS_EP_6_23_Test is ENS_Governance, SafeHelper, ZodiacRolesHel
         c[5] = _c(1, PARAM_TYPE_TUPLE, OP_MATCHES, "");
         c[6] = _c(2, PARAM_TYPE_NONE, OP_OR, "");
         c[7] = _c(2, PARAM_TYPE_NONE, OP_OR, "");
-        c[8] = _c(2, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"0000000000000000000000000000000000000000000000000000000000000064");
+        c[8] = _c(
+            2, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"0000000000000000000000000000000000000000000000000000000000000064"
+        );
         c[9] = _c(2, PARAM_TYPE_STATIC, OP_EQUAL_TO_AVATAR, "");
         c[10] = _c(2, PARAM_TYPE_STATIC, OP_PASS, "");
         c[11] = _c(2, PARAM_TYPE_STATIC, OP_PASS, "");
@@ -4994,15 +6436,25 @@ contract Proposal_ENS_EP_6_23_Test is ENS_Governance, SafeHelper, ZodiacRolesHel
         c[39] = _eq(13, 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2);
         c[40] = _eq(14, 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48);
         c[41] = _eq(14, 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2);
-        c[42] = _c(15, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"00000000000000000000000000000000000000000000000000000000000001f4");
-        c[43] = _c(15, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"0000000000000000000000000000000000000000000000000000000000000bb8");
+        c[42] = _c(
+            15, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"00000000000000000000000000000000000000000000000000000000000001f4"
+        );
+        c[43] = _c(
+            15, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"0000000000000000000000000000000000000000000000000000000000000bb8"
+        );
         c[44] = _eq(20, 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2);
         c[45] = _eq(20, 0xdAC17F958D2ee523a2206206994597C13D831ec7);
         c[46] = _eq(21, 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2);
         c[47] = _eq(21, 0xdAC17F958D2ee523a2206206994597C13D831ec7);
-        c[48] = _c(22, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"0000000000000000000000000000000000000000000000000000000000000064");
-        c[49] = _c(22, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"00000000000000000000000000000000000000000000000000000000000001f4");
-        c[50] = _c(22, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"0000000000000000000000000000000000000000000000000000000000000bb8");
+        c[48] = _c(
+            22, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"0000000000000000000000000000000000000000000000000000000000000064"
+        );
+        c[49] = _c(
+            22, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"00000000000000000000000000000000000000000000000000000000000001f4"
+        );
+        c[50] = _c(
+            22, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"0000000000000000000000000000000000000000000000000000000000000bb8"
+        );
         c[51] = _eq(27, 0x48C3399719B582dD63eB5AADf12A40B4C3f52FA2);
         c[52] = _eq(27, 0x4e3FBD56CD56c3e72c1403e103b45Db9da5B9D2B);
         c[53] = _eq(27, 0x58D97B57BB95320F9a05dC918Aef65434969c2B2);
@@ -5139,7 +6591,9 @@ contract Proposal_ENS_EP_6_23_Test is ENS_Governance, SafeHelper, ZodiacRolesHel
     function _cond_99() internal pure returns (ConditionFlat[] memory c) {
         c = new ConditionFlat[](3);
         c[0] = _c(0, PARAM_TYPE_CALLDATA, OP_MATCHES, "");
-        c[1] = _c(0, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"c078f884a2676e1345748b1feace7b0abee5d00ecadb6e574dcdd109a63e8943");
+        c[1] = _c(
+            0, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"c078f884a2676e1345748b1feace7b0abee5d00ecadb6e574dcdd109a63e8943"
+        );
         c[2] = _eq(0, 0xfdaFc9d1902f4e0b84f65F49f244b32b31013b74);
     }
 
@@ -5148,7 +6602,12 @@ contract Proposal_ENS_EP_6_23_Test is ENS_Governance, SafeHelper, ZodiacRolesHel
         c[0] = _c(0, PARAM_TYPE_CALLDATA, OP_MATCHES, "");
         c[1] = _c(0, PARAM_TYPE_TUPLE, OP_MATCHES, "");
         c[2] = _eq(0, 0x52eD56Da04309Aca4c3FECC595298d80C2f16BAc);
-        c[3] = _c(0, PARAM_TYPE_DYNAMIC, OP_EQUAL_TO, hex"00000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000000");
+        c[3] = _c(
+            0,
+            PARAM_TYPE_DYNAMIC,
+            OP_EQUAL_TO,
+            hex"00000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000000"
+        );
         c[4] = _eq(1, 0x6cF1e9cA41f7611dEf408122793c358a3d11E5a5);
         c[5] = _c(1, PARAM_TYPE_STATIC, OP_PASS, "");
         c[6] = _c(1, PARAM_TYPE_ABI_ENCODED, OP_MATCHES, "");
@@ -5164,7 +6623,9 @@ contract Proposal_ENS_EP_6_23_Test is ENS_Governance, SafeHelper, ZodiacRolesHel
         c[16] = _eq(8, 0xdC035D45d973E3EC169d2276DDab16f1e407384F);
         c[17] = _eq(8, 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE);
         c[18] = _c(9, PARAM_TYPE_STATIC, OP_EQUAL_TO_AVATAR, "");
-        c[19] = _c(9, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"0000000000000000000000000000000000000000000000000000000000000000");
+        c[19] = _c(
+            9, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"0000000000000000000000000000000000000000000000000000000000000000"
+        );
     }
 
     function _cond_103() internal pure returns (ConditionFlat[] memory c) {
@@ -5298,7 +6759,12 @@ contract Proposal_ENS_EP_6_23_Test is ENS_Governance, SafeHelper, ZodiacRolesHel
         c[2] = _c(0, PARAM_TYPE_STATIC, OP_PASS, "");
         c[3] = _c(0, PARAM_TYPE_STATIC, OP_PASS, "");
         c[4] = _c(0, PARAM_TYPE_STATIC, OP_EQUAL_TO_AVATAR, "");
-        c[5] = _c(0, PARAM_TYPE_DYNAMIC, OP_EQUAL_TO, hex"00000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000000");
+        c[5] = _c(
+            0,
+            PARAM_TYPE_DYNAMIC,
+            OP_EQUAL_TO,
+            hex"00000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000000"
+        );
         c[6] = _c(1, PARAM_TYPE_TUPLE, OP_MATCHES, "");
         c[7] = _c(1, PARAM_TYPE_TUPLE, OP_MATCHES, "");
         c[8] = _c(1, PARAM_TYPE_TUPLE, OP_MATCHES, "");
@@ -5307,24 +6773,34 @@ contract Proposal_ENS_EP_6_23_Test is ENS_Governance, SafeHelper, ZodiacRolesHel
         c[11] = _eq(6, 0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599);
         c[12] = _eq(6, 0xDddd770BADd886dF3864029e4B377B5F6a2B6b83);
         c[13] = _eq(6, 0x870aC11D48B15DB9a138Cf899d20F13F79Ba00BC);
-        c[14] = _c(6, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"0000000000000000000000000000000000000000000000000bef55718ad60000");
+        c[14] = _c(
+            6, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"0000000000000000000000000000000000000000000000000bef55718ad60000"
+        );
         c[15] = _eq(7, 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48);
         c[16] = _eq(7, 0x7f39C581F595B53c5cb19bD0b3f8dA6c935E2Ca0);
         c[17] = _eq(7, 0x48F7E36EB6B826B2dF4B2E630B62Cd25e89E40e2);
         c[18] = _eq(7, 0x870aC11D48B15DB9a138Cf899d20F13F79Ba00BC);
-        c[19] = _c(7, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"0000000000000000000000000000000000000000000000000bef55718ad60000");
+        c[19] = _c(
+            7, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"0000000000000000000000000000000000000000000000000bef55718ad60000"
+        );
         c[20] = _eq(8, 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48);
         c[21] = _eq(8, 0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf);
         c[22] = _eq(8, 0xA6D6950c9F177F1De7f7757FB33539e3Ec60182a);
         c[23] = _eq(8, 0x870aC11D48B15DB9a138Cf899d20F13F79Ba00BC);
-        c[24] = _c(8, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"0000000000000000000000000000000000000000000000000bef55718ad60000");
+        c[24] = _c(
+            8, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"0000000000000000000000000000000000000000000000000bef55718ad60000"
+        );
         c[25] = _eq(9, 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2);
         c[26] = _eq(9, 0x7f39C581F595B53c5cb19bD0b3f8dA6c935E2Ca0);
         c[27] = _eq(9, 0xbD60A6770b27E084E8617335ddE769241B0e71D8);
         c[28] = _eq(9, 0x870aC11D48B15DB9a138Cf899d20F13F79Ba00BC);
         c[29] = _c(9, PARAM_TYPE_NONE, OP_OR, "");
-        c[30] = _c(29, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"0000000000000000000000000000000000000000000000000d1d507e40be8000");
-        c[31] = _c(29, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"0000000000000000000000000000000000000000000000000d645e6320408000");
+        c[30] = _c(
+            29, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"0000000000000000000000000000000000000000000000000d1d507e40be8000"
+        );
+        c[31] = _c(
+            29, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"0000000000000000000000000000000000000000000000000d645e6320408000"
+        );
     }
 
     function _cond_166() internal pure returns (ConditionFlat[] memory c) {
@@ -5343,24 +6819,34 @@ contract Proposal_ENS_EP_6_23_Test is ENS_Governance, SafeHelper, ZodiacRolesHel
         c[11] = _eq(6, 0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599);
         c[12] = _eq(6, 0xDddd770BADd886dF3864029e4B377B5F6a2B6b83);
         c[13] = _eq(6, 0x870aC11D48B15DB9a138Cf899d20F13F79Ba00BC);
-        c[14] = _c(6, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"0000000000000000000000000000000000000000000000000bef55718ad60000");
+        c[14] = _c(
+            6, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"0000000000000000000000000000000000000000000000000bef55718ad60000"
+        );
         c[15] = _eq(7, 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48);
         c[16] = _eq(7, 0x7f39C581F595B53c5cb19bD0b3f8dA6c935E2Ca0);
         c[17] = _eq(7, 0x48F7E36EB6B826B2dF4B2E630B62Cd25e89E40e2);
         c[18] = _eq(7, 0x870aC11D48B15DB9a138Cf899d20F13F79Ba00BC);
-        c[19] = _c(7, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"0000000000000000000000000000000000000000000000000bef55718ad60000");
+        c[19] = _c(
+            7, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"0000000000000000000000000000000000000000000000000bef55718ad60000"
+        );
         c[20] = _eq(8, 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48);
         c[21] = _eq(8, 0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf);
         c[22] = _eq(8, 0xA6D6950c9F177F1De7f7757FB33539e3Ec60182a);
         c[23] = _eq(8, 0x870aC11D48B15DB9a138Cf899d20F13F79Ba00BC);
-        c[24] = _c(8, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"0000000000000000000000000000000000000000000000000bef55718ad60000");
+        c[24] = _c(
+            8, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"0000000000000000000000000000000000000000000000000bef55718ad60000"
+        );
         c[25] = _eq(9, 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2);
         c[26] = _eq(9, 0x7f39C581F595B53c5cb19bD0b3f8dA6c935E2Ca0);
         c[27] = _eq(9, 0xbD60A6770b27E084E8617335ddE769241B0e71D8);
         c[28] = _eq(9, 0x870aC11D48B15DB9a138Cf899d20F13F79Ba00BC);
         c[29] = _c(9, PARAM_TYPE_NONE, OP_OR, "");
-        c[30] = _c(29, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"0000000000000000000000000000000000000000000000000d1d507e40be8000");
-        c[31] = _c(29, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"0000000000000000000000000000000000000000000000000d645e6320408000");
+        c[30] = _c(
+            29, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"0000000000000000000000000000000000000000000000000d1d507e40be8000"
+        );
+        c[31] = _c(
+            29, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"0000000000000000000000000000000000000000000000000d645e6320408000"
+        );
     }
 
     function _cond_168() internal pure returns (ConditionFlat[] memory c) {
@@ -5373,11 +6859,36 @@ contract Proposal_ENS_EP_6_23_Test is ENS_Governance, SafeHelper, ZodiacRolesHel
         c = new ConditionFlat[](12);
         c[0] = _c(0, PARAM_TYPE_CALLDATA, OP_MATCHES, "");
         c[1] = _c(0, PARAM_TYPE_NONE, OP_OR, "");
-        c[2] = _c(1, PARAM_TYPE_ARRAY, OP_EQUAL_TO, hex"000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000010000000000000000000000004f2083f5fbede34c2714affb3105539775f7fe64");
-        c[3] = _c(1, PARAM_TYPE_ARRAY, OP_EQUAL_TO, hex"000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000020000000000000000000000004f2083f5fbede34c2714affb3105539775f7fe640000000000000000000000004f2083f5fbede34c2714affb3105539775f7fe64");
-        c[4] = _c(1, PARAM_TYPE_ARRAY, OP_EQUAL_TO, hex"000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000030000000000000000000000004f2083f5fbede34c2714affb3105539775f7fe640000000000000000000000004f2083f5fbede34c2714affb3105539775f7fe640000000000000000000000004f2083f5fbede34c2714affb3105539775f7fe64");
-        c[5] = _c(1, PARAM_TYPE_ARRAY, OP_EQUAL_TO, hex"000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000040000000000000000000000004f2083f5fbede34c2714affb3105539775f7fe640000000000000000000000004f2083f5fbede34c2714affb3105539775f7fe640000000000000000000000004f2083f5fbede34c2714affb3105539775f7fe640000000000000000000000004f2083f5fbede34c2714affb3105539775f7fe64");
-        c[6] = _c(1, PARAM_TYPE_ARRAY, OP_EQUAL_TO, hex"000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000050000000000000000000000004f2083f5fbede34c2714affb3105539775f7fe640000000000000000000000004f2083f5fbede34c2714affb3105539775f7fe640000000000000000000000004f2083f5fbede34c2714affb3105539775f7fe640000000000000000000000004f2083f5fbede34c2714affb3105539775f7fe640000000000000000000000004f2083f5fbede34c2714affb3105539775f7fe64");
+        c[2] = _c(
+            1,
+            PARAM_TYPE_ARRAY,
+            OP_EQUAL_TO,
+            hex"000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000010000000000000000000000004f2083f5fbede34c2714affb3105539775f7fe64"
+        );
+        c[3] = _c(
+            1,
+            PARAM_TYPE_ARRAY,
+            OP_EQUAL_TO,
+            hex"000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000020000000000000000000000004f2083f5fbede34c2714affb3105539775f7fe640000000000000000000000004f2083f5fbede34c2714affb3105539775f7fe64"
+        );
+        c[4] = _c(
+            1,
+            PARAM_TYPE_ARRAY,
+            OP_EQUAL_TO,
+            hex"000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000030000000000000000000000004f2083f5fbede34c2714affb3105539775f7fe640000000000000000000000004f2083f5fbede34c2714affb3105539775f7fe640000000000000000000000004f2083f5fbede34c2714affb3105539775f7fe64"
+        );
+        c[5] = _c(
+            1,
+            PARAM_TYPE_ARRAY,
+            OP_EQUAL_TO,
+            hex"000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000040000000000000000000000004f2083f5fbede34c2714affb3105539775f7fe640000000000000000000000004f2083f5fbede34c2714affb3105539775f7fe640000000000000000000000004f2083f5fbede34c2714affb3105539775f7fe640000000000000000000000004f2083f5fbede34c2714affb3105539775f7fe64"
+        );
+        c[6] = _c(
+            1,
+            PARAM_TYPE_ARRAY,
+            OP_EQUAL_TO,
+            hex"000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000050000000000000000000000004f2083f5fbede34c2714affb3105539775f7fe640000000000000000000000004f2083f5fbede34c2714affb3105539775f7fe640000000000000000000000004f2083f5fbede34c2714affb3105539775f7fe640000000000000000000000004f2083f5fbede34c2714affb3105539775f7fe640000000000000000000000004f2083f5fbede34c2714affb3105539775f7fe64"
+        );
         c[7] = _c(2, PARAM_TYPE_STATIC, OP_PASS, "");
         c[8] = _c(3, PARAM_TYPE_STATIC, OP_PASS, "");
         c[9] = _c(4, PARAM_TYPE_STATIC, OP_PASS, "");
@@ -5392,7 +6903,6 @@ contract Proposal_ENS_EP_6_23_Test is ENS_Governance, SafeHelper, ZodiacRolesHel
         c[2] = _c(0, PARAM_TYPE_STATIC, OP_EQUAL_TO_AVATAR, "");
     }
 
-
     // ====================================================================
 
     function _isProposalSubmitted() public view override returns (bool) {
@@ -5402,7 +6912,4 @@ contract Proposal_ENS_EP_6_23_Test is ENS_Governance, SafeHelper, ZodiacRolesHel
     function dirPath() public pure override returns (string memory) {
         return "src/ens/proposals/ep-6-23";
     }
-
-
-
 }

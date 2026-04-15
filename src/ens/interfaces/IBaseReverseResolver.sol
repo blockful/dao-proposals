@@ -24,12 +24,20 @@ interface IBaseReverseResolver {
     function owner() external view returns (address);
     function renounceOwnership() external;
     function resolve(bytes memory name, bytes memory data) external view returns (bytes memory result);
-    function resolveNameCallback(bytes[] memory values, uint8, bytes memory extraData)
+    function resolveNameCallback(
+        bytes[] memory values,
+        uint8,
+        bytes memory extraData
+    )
         external
         view
         returns (bytes memory result);
     function resolveNames(address[] memory addrs, uint8 perPage) external view returns (string[] memory names);
-    function resolveNamesCallback(bytes[] memory values, uint8, bytes memory extraData)
+    function resolveNamesCallback(
+        bytes[] memory values,
+        uint8,
+        bytes memory extraData
+    )
         external
         view
         returns (string[] memory names);
@@ -37,4 +45,4 @@ interface IBaseReverseResolver {
     function setGatewayVerifier(address verifier) external;
     function supportsInterface(bytes4 interfaceId) external view returns (bool);
     function transferOwnership(address newOwner) external;
-} 
+}

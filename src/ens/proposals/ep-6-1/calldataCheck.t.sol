@@ -24,7 +24,6 @@ contract Proposal_ENS_EP_6_1_Test is ENS_Governance {
     uint256 ETHbalanceBeforeRegistrar;
     uint256 ETHbalanceBeforeTimelock;
 
-
     function _selectFork() public override {
         vm.createSelectFork({ blockNumber: 21_723_989, urlOrAlias: "mainnet" });
     }
@@ -70,8 +69,7 @@ contract Proposal_ENS_EP_6_1_Test is ENS_Governance {
     function _afterExecution() public view override {
         uint256 ETHbalanceAfterTimelock = address(timelock).balance;
         assertEq(
-            ETHbalanceAfterTimelock,
-            ETHbalanceBeforeTimelock + ETHbalanceBeforeRegistrar - expectedETHtransferTimelock
+            ETHbalanceAfterTimelock, ETHbalanceBeforeTimelock + ETHbalanceBeforeRegistrar - expectedETHtransferTimelock
         );
 
         uint256 safeBalance = receiver.balance;

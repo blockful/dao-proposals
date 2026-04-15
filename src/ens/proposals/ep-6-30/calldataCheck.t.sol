@@ -28,7 +28,7 @@ contract Proposal_ENS_EP_6_30_Test is ENS_Governance {
     function _selectFork() public override {
         // Fork at the block when the proposal was created
         // Proposal created: block 24324887 (2026-01-27T08:10:47Z)
-        vm.createSelectFork({ blockNumber: 24324887, urlOrAlias: "mainnet" });
+        vm.createSelectFork({ blockNumber: 24_324_887, urlOrAlias: "mainnet" });
     }
 
     function _proposer() public pure override returns (address) {
@@ -42,13 +42,7 @@ contract Proposal_ENS_EP_6_30_Test is ENS_Governance {
     function _generateCallData()
         public
         override
-        returns (
-            address[] memory,
-            uint256[] memory,
-            string[] memory,
-            bytes[] memory,
-            string memory
-        )
+        returns (address[] memory, uint256[] memory, string[] memory, bytes[] memory, string memory)
     {
         uint256 numTransactions = 1;
 
@@ -59,11 +53,7 @@ contract Proposal_ENS_EP_6_30_Test is ENS_Governance {
 
         // Transaction 1: USDC transfer to Meta-Gov WG (125,000 USDC for ENS Retro)
         targets[0] = address(USDC);
-        calldatas[0] = abi.encodeWithSelector(
-            USDC.transfer.selector,
-            metagovMultisig,
-            expectedUSDCtransfer
-        );
+        calldatas[0] = abi.encodeWithSelector(USDC.transfer.selector, metagovMultisig, expectedUSDCtransfer);
         values[0] = 0;
         signatures[0] = "";
 
@@ -75,9 +65,7 @@ contract Proposal_ENS_EP_6_30_Test is ENS_Governance {
     function _afterExecution() public override {
         uint256 USDCmetagovBalanceAfter = USDC.balanceOf(metagovMultisig);
         assertEq(
-            USDCmetagovBalanceBefore + expectedUSDCtransfer,
-            USDCmetagovBalanceAfter,
-            "Meta-Gov USDC balance mismatch"
+            USDCmetagovBalanceBefore + expectedUSDCtransfer, USDCmetagovBalanceAfter, "Meta-Gov USDC balance mismatch"
         );
         assertNotEq(USDCmetagovBalanceAfter, USDCmetagovBalanceBefore, "Meta-Gov balance unchanged");
     }

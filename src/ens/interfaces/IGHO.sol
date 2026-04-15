@@ -27,7 +27,11 @@ interface IGHO {
     function DOMAIN_SEPARATOR() external view returns (bytes32);
     function FACILITATOR_MANAGER_ROLE() external view returns (bytes32);
     function PERMIT_TYPEHASH() external view returns (bytes32);
-    function addFacilitator(address facilitatorAddress, string memory facilitatorLabel, uint128 bucketCapacity)
+    function addFacilitator(
+        address facilitatorAddress,
+        string memory facilitatorLabel,
+        uint128 bucketCapacity
+    )
         external;
     function allowance(address, address) external view returns (uint256);
     function approve(address spender, uint256 amount) external returns (bool);
@@ -43,7 +47,15 @@ interface IGHO {
     function mint(address account, uint256 amount) external;
     function name() external view returns (string memory);
     function nonces(address) external view returns (uint256);
-    function permit(address owner, address spender, uint256 value, uint256 deadline, uint8 v, bytes32 r, bytes32 s)
+    function permit(
+        address owner,
+        address spender,
+        uint256 value,
+        uint256 deadline,
+        uint8 v,
+        bytes32 r,
+        bytes32 s
+    )
         external;
     function removeFacilitator(address facilitatorAddress) external;
     function renounceRole(bytes32 role, address account) external;

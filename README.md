@@ -1,6 +1,6 @@
 # DAO Proposals
 
-This is a collection of DAO proposals developed and mantained by [Blockful](https://github.com/blockful-io). 
+This is a collection of DAO proposals developed and mantained by [Blockful](https://github.com/blockful-io).
 
 ## Getting Started
 

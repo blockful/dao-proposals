@@ -56,7 +56,7 @@ contract Proposal_Shutter_DSR_Allocation_Test is Shutter_Governance {
     }
 
     function _selectFork() public override {
-        vm.createSelectFork({ blockNumber: 20055924, urlOrAlias: "mainnet" });
+        vm.createSelectFork({ blockNumber: 20_055_924, urlOrAlias: "mainnet" });
     }
 
     function _metadata() public pure override returns (string memory) {
@@ -120,17 +120,11 @@ contract Proposal_Shutter_DSR_Allocation_Test is Shutter_Governance {
 
         // Validate if the DAI was transferred to the Shutter Gnosis
         assertGt(
-            SavingsDai.balanceOf(ShutterGnosis),
-            initialDaoSavingsDaibalance,
-            "SavingsDAI balance did not increase"
+            SavingsDai.balanceOf(ShutterGnosis), initialDaoSavingsDaibalance, "SavingsDAI balance did not increase"
         );
 
         // Validate if the USDC was transferred from the DAO
-        assertEq(
-            USDC.balanceOf(ShutterGnosis),
-            initialDaoUSDCbalance - amount * decimalsUSDC,
-            "USDC balance mismatch"
-        );
+        assertEq(USDC.balanceOf(ShutterGnosis), initialDaoUSDCbalance - amount * decimalsUSDC, "USDC balance mismatch");
     }
 }
 

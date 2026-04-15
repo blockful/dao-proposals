@@ -13,14 +13,14 @@ contract Proposal_ENS_EP_6_28_Test is ENS_Governance {
     IENSRoot root = IENSRoot(0xaB528d626EC275E3faD363fF1393A41F581c5897);
     IENSRegistryWithFallback ensRegistry = IENSRegistryWithFallback(0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e);
 
-    string tld = "kred";      
+    string tld = "kred";
     address oldOwner;
     address newOwner = 0xb9ef2c160D908A4F7a9DFcdba46662C4a7EC4FD9;
     bytes32 labelhashBytes = labelhash(tld);
     bytes32 node = namehash(abi.encodePacked(tld));
 
     function _selectFork() public override {
-        vm.createSelectFork({ blockNumber: 24225260, urlOrAlias: "mainnet" });
+        vm.createSelectFork({ blockNumber: 24_225_260, urlOrAlias: "mainnet" });
     }
 
     function _proposer() public pure override returns (address) {
@@ -34,13 +34,7 @@ contract Proposal_ENS_EP_6_28_Test is ENS_Governance {
     function _generateCallData()
         public
         override
-        returns (
-            address[] memory,
-            uint256[] memory,
-            string[] memory,
-            bytes[] memory,
-            string memory
-        )
+        returns (address[] memory, uint256[] memory, string[] memory, bytes[] memory, string memory)
     {
         uint256 numTransactions = 1;
 
@@ -51,8 +45,7 @@ contract Proposal_ENS_EP_6_28_Test is ENS_Governance {
 
         // 1. Set the owner of the .locker TLD to Orange Domains address
         targets[0] = address(root);
-        calldatas[0] =
-            abi.encodeWithSelector(IENSRoot.setSubnodeOwner.selector, labelhashBytes, newOwner);
+        calldatas[0] = abi.encodeWithSelector(IENSRoot.setSubnodeOwner.selector, labelhashBytes, newOwner);
         values[0] = 0;
         signatures[0] = "";
 

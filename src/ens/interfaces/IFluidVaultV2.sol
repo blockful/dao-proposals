@@ -126,7 +126,12 @@ interface IFluidVaultV2 {
     function deposit(uint256 assets, address onBehalf) external returns (uint256);
     function executableAt(bytes memory data) external view returns (uint256);
     function firstTotalAssets() external view returns (uint256);
-    function forceDeallocate(address adapter, bytes memory data, uint256 assets, address onBehalf)
+    function forceDeallocate(
+        address adapter,
+        bytes memory data,
+        uint256 assets,
+        address onBehalf
+    )
         external
         returns (uint256);
     function forceDeallocatePenalty(address adapter) external view returns (uint256);
@@ -153,7 +158,15 @@ interface IFluidVaultV2 {
     function owner() external view returns (address);
     function performanceFee() external view returns (uint96);
     function performanceFeeRecipient() external view returns (address);
-    function permit(address _owner, address spender, uint256 shares, uint256 deadline, uint8 v, bytes32 r, bytes32 s)
+    function permit(
+        address _owner,
+        address spender,
+        uint256 shares,
+        uint256 deadline,
+        uint8 v,
+        bytes32 r,
+        bytes32 s
+    )
         external;
     function previewDeposit(uint256 assets) external view returns (uint256);
     function previewMint(uint256 shares) external view returns (uint256);

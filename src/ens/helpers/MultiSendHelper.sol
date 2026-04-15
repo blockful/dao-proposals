@@ -36,11 +36,12 @@ abstract contract MultiSendHelper is SafeHelper {
         bytes memory packedTransactions,
         address safe,
         address owner
-    ) internal pure returns (address target, bytes memory calldata_) {
-        bytes memory multiSendData = abi.encodeWithSelector(
-            IMultiSend.multiSend.selector,
-            packedTransactions
-        );
+    )
+        internal
+        pure
+        returns (address target, bytes memory calldata_)
+    {
+        bytes memory multiSendData = abi.encodeWithSelector(IMultiSend.multiSend.selector, packedTransactions);
         return _buildSafeExecDelegateCalldata(safe, address(multiSend), multiSendData, owner);
     }
 }

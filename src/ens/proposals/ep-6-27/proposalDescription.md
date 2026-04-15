@@ -1,11 +1,14 @@
 # [EP 6.27] [Executable] Endowment permissions to karpatkey - Update #7
+
 ## Abstract
 
-This proposal introduces a routine update to the permissions for the Endowment Manager. These updates continue to evolve diversification to lending markets. This update also removes a permission no longer needed.
+This proposal introduces a routine update to the permissions for the Endowment Manager. These updates continue to evolve
+diversification to lending markets. This update also removes a permission no longer needed.
 
 ## Motivation
 
-The permissions in this update focus on in increasing the availability of lending markets, specifically Morpho Vaults curated by kpk and others on Fluid Protocol.
+The permissions in this update focus on in increasing the availability of lending markets, specifically Morpho Vaults
+curated by kpk and others on Fluid Protocol.
 
 ## Specification
 
@@ -54,15 +57,20 @@ This proposal adds and removes the following contracts and functions:
 
 To review, the following resources are below:
 
-* **Payload:** [https://github.com/karpatkey/client-configs/blob/main/clients/ens-dao/mainnet/payloads/ensPermissionsUpdate7.json](https://github.com/karpatkey/client-configs/blob/main/clients/ens-dao/mainnet/payloads/ensPermissionsUpdate7.json) (Updated to remove EURc)
-* **Zodiac Diff Visualisation Tool:** [https://roles.gnosisguild.org/eth:0x703806E61847984346d2D7DDd853049627e50A40/roles/MANAGER/diff/fiM5U8aU0VkbG4NglApFoWkapISvh5vuvcfqsVXUJE?annotations=false](https://roles.gnosisguild.org/eth:0x703806E61847984346d2D7DDd853049627e50A40/roles/MANAGER/diff/fiM5U8aU0VkbG4NglApFoWkapISvh5vuvcfqsVXUJE?annotations=false)
+- **Payload:**
+  [https://github.com/karpatkey/client-configs/blob/main/clients/ens-dao/mainnet/payloads/ensPermissionsUpdate7.json](https://github.com/karpatkey/client-configs/blob/main/clients/ens-dao/mainnet/payloads/ensPermissionsUpdate7.json)
+  (Updated to remove EURc)
+- **Zodiac Diff Visualisation Tool:**
+  [https://roles.gnosisguild.org/eth:0x703806E61847984346d2D7DDd853049627e50A40/roles/MANAGER/diff/fiM5U8aU0VkbG4NglApFoWkapISvh5vuvcfqsVXUJE?annotations=false](https://roles.gnosisguild.org/eth:0x703806E61847984346d2D7DDd853049627e50A40/roles/MANAGER/diff/fiM5U8aU0VkbG4NglApFoWkapISvh5vuvcfqsVXUJE?annotations=false)
 
 ## Considerations
 
-The assets in these lending markets are considered to conform to the risk tolerance specified in the [Investment Policy Statement (IPS)](https://copper-added-anglerfish-892.mypinata.cloud/ipfs/bafybeiajihjdrplt75h36upclptjmkqziboekuf7e25fgfuyk2m54sonfi).
+The assets in these lending markets are considered to conform to the risk tolerance specified in the
+[Investment Policy Statement (IPS)](https://copper-added-anglerfish-892.mypinata.cloud/ipfs/bafybeiajihjdrplt75h36upclptjmkqziboekuf7e25fgfuyk2m54sonfi).
 
 Morpho vaults curated by kpk collect no additional fees.
 
 ## Next Steps
 
-The proposal will be introduced in the next meta-governance call. Pending review from Blockful and no revisions following the discussion in during the meta-gov call, this proposal will progress to an on-chain executable vote.
+The proposal will be introduced in the next meta-governance call. Pending review from Blockful and no revisions
+following the discussion in during the meta-gov call, this proposal will progress to an on-chain executable vote.

@@ -42,8 +42,7 @@ contract Proposal_ENS_EP_Registrar_Manager_Endowment_Test is ENS_Governance, Saf
     IRolesModifier public constant ROLES_MOD = IRolesModifier(0x703806E61847984346d2D7DDd853049627e50A40);
 
     /// @dev Deployed RegistrarManager contract.
-    RegistrarManager public constant manager =
-        RegistrarManager(payable(0x62627681D92e36b9aeE1D9A6BF181373ccd42552));
+    RegistrarManager public constant manager = RegistrarManager(payable(0x62627681D92e36b9aeE1D9A6BF181373ccd42552));
 
     function _selectFork() public override {
         vm.createSelectFork({ blockNumber: 24_828_897, urlOrAlias: "mainnet" });
@@ -65,13 +64,7 @@ contract Proposal_ENS_EP_Registrar_Manager_Endowment_Test is ENS_Governance, Saf
     function _generateCallData()
         public
         override
-        returns (
-            address[] memory,
-            uint256[] memory,
-            string[] memory,
-            bytes[] memory,
-            string memory
-        )
+        returns (address[] memory, uint256[] memory, string[] memory, bytes[] memory, string memory)
     {
         uint256 numTransactions = 10;
 
@@ -106,10 +99,10 @@ contract Proposal_ENS_EP_Registrar_Manager_Endowment_Test is ENS_Governance, Saf
 
         // 7) Zodiac: scope USDC target
         {
-            bytes memory inner = abi.encodeWithSelector(IRolesModifier.scopeTarget.selector, MANAGER_ROLE, address(USDC));
-            (targets[6], calldatas[6]) = _buildSafeExecCalldata(
-                address(endowmentSafe), address(ROLES_MOD), inner, address(timelock)
-            );
+            bytes memory inner =
+                abi.encodeWithSelector(IRolesModifier.scopeTarget.selector, MANAGER_ROLE, address(USDC));
+            (targets[6], calldatas[6]) =
+                _buildSafeExecCalldata(address(endowmentSafe), address(ROLES_MOD), inner, address(timelock));
         }
 
         // 8) Zodiac: allow USDC.transfer(timelock, amount)
@@ -117,19 +110,22 @@ contract Proposal_ENS_EP_Registrar_Manager_Endowment_Test is ENS_Governance, Saf
             ConditionFlat[] memory conditions = _usdcTransferConditions();
             bytes memory inner = abi.encodeWithSelector(
                 IRolesModifier.scopeFunction.selector,
-                MANAGER_ROLE, address(USDC), IERC20.transfer.selector, conditions, uint8(0)
+                MANAGER_ROLE,
+                address(USDC),
+                IERC20.transfer.selector,
+                conditions,
+                uint8(0)
             );
-            (targets[7], calldatas[7]) = _buildSafeExecCalldata(
-                address(endowmentSafe), address(ROLES_MOD), inner, address(timelock)
-            );
+            (targets[7], calldatas[7]) =
+                _buildSafeExecCalldata(address(endowmentSafe), address(ROLES_MOD), inner, address(timelock));
         }
 
         // 9) Zodiac: scope timelock target
         {
-            bytes memory inner = abi.encodeWithSelector(IRolesModifier.scopeTarget.selector, MANAGER_ROLE, address(timelock));
-            (targets[8], calldatas[8]) = _buildSafeExecCalldata(
-                address(endowmentSafe), address(ROLES_MOD), inner, address(timelock)
-            );
+            bytes memory inner =
+                abi.encodeWithSelector(IRolesModifier.scopeTarget.selector, MANAGER_ROLE, address(timelock));
+            (targets[8], calldatas[8]) =
+                _buildSafeExecCalldata(address(endowmentSafe), address(ROLES_MOD), inner, address(timelock));
         }
 
         // 10) Zodiac: allow ETH sends to timelock (empty calldata, send-only)
@@ -137,9 +133,8 @@ contract Proposal_ENS_EP_Registrar_Manager_Endowment_Test is ENS_Governance, Saf
             bytes memory inner = abi.encodeWithSelector(
                 IRolesModifier.allowFunction.selector, MANAGER_ROLE, address(timelock), bytes4(0), EXEC_SEND
             );
-            (targets[9], calldatas[9]) = _buildSafeExecCalldata(
-                address(endowmentSafe), address(ROLES_MOD), inner, address(timelock)
-            );
+            (targets[9], calldatas[9]) =
+                _buildSafeExecCalldata(address(endowmentSafe), address(ROLES_MOD), inner, address(timelock));
         }
 
         description = vm.readFile("src/ens/proposals/ep-6-39/proposalDescription.md");
@@ -184,7 +179,7 @@ contract Proposal_ENS_EP_Registrar_Manager_Endowment_Test is ENS_Governance, Saf
     }
 
     function _expectUSDCTransferNotAllowed() internal {
-        uint256 amount = 1000000;
+        uint256 amount = 1_000_000;
 
         vm.startPrank(karpatkey);
         bytes memory data = abi.encodeWithSelector(IERC20.transfer.selector, address(timelock), amount);
@@ -194,7 +189,7 @@ contract Proposal_ENS_EP_Registrar_Manager_Endowment_Test is ENS_Governance, Saf
     }
 
     function _expectUSDCTransferAllowed() internal {
-        uint256 amount = 1000000;
+        uint256 amount = 1_000_000;
 
         // Endowment safe has no USDC at the fork block
         deal(address(USDC), address(endowmentSafe), amount);
@@ -230,7 +225,7 @@ contract Proposal_ENS_EP_Registrar_Manager_Endowment_Test is ENS_Governance, Saf
 
     function _expectUSDCTransferToNonTimelockBlocked() internal {
         address notTimelock = address(0xdead);
-        uint256 amount = 1000000;
+        uint256 amount = 1_000_000;
 
         vm.startPrank(karpatkey);
         bytes memory data = abi.encodeWithSelector(IERC20.transfer.selector, notTimelock, amount);
@@ -250,24 +245,15 @@ contract Proposal_ENS_EP_Registrar_Manager_Endowment_Test is ENS_Governance, Saf
 
     function _usdcTransferConditions() internal view returns (ConditionFlat[] memory) {
         ConditionFlat[] memory conditions = new ConditionFlat[](3);
-        conditions[0] = ConditionFlat({
-            parent: 0,
-            paramType: PARAM_TYPE_CALLDATA,
-            operator: OP_MATCHES,
-            compValue: ""
-        });
+        conditions[0] =
+            ConditionFlat({ parent: 0, paramType: PARAM_TYPE_CALLDATA, operator: OP_MATCHES, compValue: "" });
         conditions[1] = ConditionFlat({
             parent: 0,
             paramType: PARAM_TYPE_STATIC,
             operator: OP_EQUAL_TO,
             compValue: abi.encodePacked(bytes32(uint256(uint160(address(timelock)))))
         });
-        conditions[2] = ConditionFlat({
-            parent: 0,
-            paramType: PARAM_TYPE_STATIC,
-            operator: OP_PASS,
-            compValue: ""
-        });
+        conditions[2] = ConditionFlat({ parent: 0, paramType: PARAM_TYPE_STATIC, operator: OP_PASS, compValue: "" });
         return conditions;
     }
 

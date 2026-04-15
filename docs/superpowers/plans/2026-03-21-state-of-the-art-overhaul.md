@@ -1,10 +1,16 @@
 # State-of-the-Art DAO Proposals Overhaul
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or
+> superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Transform the dao-proposals repo into an AI-agent-native, composable, production-grade governance calldata verification system that makes it trivial to add new DAOs and autonomously review proposals worth millions/billions of dollars.
+**Goal:** Transform the dao-proposals repo into an AI-agent-native, composable, production-grade governance calldata
+verification system that makes it trivial to add new DAOs and autonomously review proposals worth millions/billions of
+dollars.
 
-**Architecture:** Three sequential phases — (C) AI-Agent-Native system with CLAUDE.md orchestration, universal skills, and structured reporting; (B) Bulletproof ENS with shared constants, enforced assertion baselines, and modernized calldata; (A) DAO Factory with abstract base governance, pluggable adapters, scaffold tooling, and process documentation.
+**Architecture:** Three sequential phases — (C) AI-Agent-Native system with CLAUDE.md orchestration, universal skills,
+and structured reporting; (B) Bulletproof ENS with shared constants, enforced assertion baselines, and modernized
+calldata; (A) DAO Factory with abstract base governance, pluggable adapters, scaffold tooling, and process
+documentation.
 
 **Tech Stack:** Solidity 0.8.25+, Foundry (forge), Claude Code skills, Node.js fetch scripts, Tally API
 
@@ -14,44 +20,44 @@
 
 ### Phase C — AI-Agent-Native
 
-| Action | Path | Purpose |
-|--------|------|---------|
-| Create | `CLAUDE.md` | Top-level AI agent orchestration instructions |
-| Create | `src/dao-registry.json` | DAO configuration manifest (addresses, governance type, helpers) |
-| Refactor | `src/ens/skills/ens-live-review/SKILL.md` | Generalize to DAO-generic with registry lookup |
-| Refactor | `src/ens/skills/ens-draft-review/SKILL.md` | Generalize to DAO-generic |
-| Refactor | `src/ens/skills/ens-pre-draft-review/SKILL.md` | Generalize to DAO-generic |
-| Refactor | `src/ens/skills/ens-review-reference/SKILL.md` | Generalize to DAO-generic |
-| Move | `src/ens/skills/` → `src/skills/` | Skills are repo-wide, not ENS-specific |
-| Create | `src/skills/proposal-review/SKILL.md` | Universal entry point: URL → detect DAO → route to correct workflow |
-| Create | `src/skills/report-template.md` | Structured security report template |
+| Action   | Path                                           | Purpose                                                             |
+| -------- | ---------------------------------------------- | ------------------------------------------------------------------- |
+| Create   | `CLAUDE.md`                                    | Top-level AI agent orchestration instructions                       |
+| Create   | `src/dao-registry.json`                        | DAO configuration manifest (addresses, governance type, helpers)    |
+| Refactor | `src/ens/skills/ens-live-review/SKILL.md`      | Generalize to DAO-generic with registry lookup                      |
+| Refactor | `src/ens/skills/ens-draft-review/SKILL.md`     | Generalize to DAO-generic                                           |
+| Refactor | `src/ens/skills/ens-pre-draft-review/SKILL.md` | Generalize to DAO-generic                                           |
+| Refactor | `src/ens/skills/ens-review-reference/SKILL.md` | Generalize to DAO-generic                                           |
+| Move     | `src/ens/skills/` → `src/skills/`              | Skills are repo-wide, not ENS-specific                              |
+| Create   | `src/skills/proposal-review/SKILL.md`          | Universal entry point: URL → detect DAO → route to correct workflow |
+| Create   | `src/skills/report-template.md`                | Structured security report template                                 |
 
 ### Phase B — Bulletproof ENS
 
-| Action | Path | Purpose |
-|--------|------|---------|
-| Create | `src/ens/Constants.sol` | Shared address constants (USDC, Governor, Timelock, etc.) |
-| Create | `src/ens/helpers/MultiSendHelper.sol` | Reusable MultiSend + Safe calldata builder |
-| Modify | `src/ens/ens.t.sol` | Enforce non-empty `dirPath()` for live proposals; enforce non-empty assertion hooks |
-| Modify | `src/ens/proposals/ep-5-16/calldataCheck.t.sol` | Modernize hex blob → interface-based |
-| Modify | `src/ens/proposals/ep-5-22/calldataCheck.t.sol` | Modernize hex blob → interface-based |
-| Modify | `src/ens/proposals/ep-5-25/calldataCheck.t.sol` | Add dirPath, use Constants |
-| Modify | `src/ens/proposals/ep-5-26/calldataCheck.t.sol` | Add dirPath, use Constants |
-| Modify | Multiple proposals | Adopt Constants.sol imports, remove redundant Test imports |
+| Action | Path                                            | Purpose                                                                             |
+| ------ | ----------------------------------------------- | ----------------------------------------------------------------------------------- |
+| Create | `src/ens/Constants.sol`                         | Shared address constants (USDC, Governor, Timelock, etc.)                           |
+| Create | `src/ens/helpers/MultiSendHelper.sol`           | Reusable MultiSend + Safe calldata builder                                          |
+| Modify | `src/ens/ens.t.sol`                             | Enforce non-empty `dirPath()` for live proposals; enforce non-empty assertion hooks |
+| Modify | `src/ens/proposals/ep-5-16/calldataCheck.t.sol` | Modernize hex blob → interface-based                                                |
+| Modify | `src/ens/proposals/ep-5-22/calldataCheck.t.sol` | Modernize hex blob → interface-based                                                |
+| Modify | `src/ens/proposals/ep-5-25/calldataCheck.t.sol` | Add dirPath, use Constants                                                          |
+| Modify | `src/ens/proposals/ep-5-26/calldataCheck.t.sol` | Add dirPath, use Constants                                                          |
+| Modify | Multiple proposals                              | Adopt Constants.sol imports, remove redundant Test imports                          |
 
 ### Phase A — DAO Factory
 
-| Action | Path | Purpose |
-|--------|------|---------|
-| Create | `src/base/BaseGovernance.sol` | Abstract governance lifecycle (propose → vote → queue → execute) |
-| Create | `src/base/adapters/GovernorTimelockAdapter.sol` | Adapter for OZ Governor + Timelock DAOs |
-| Create | `src/base/adapters/AzoriusAdapter.sol` | Adapter for Azorius-based DAOs (Shutter) |
-| Create | `src/base/CalldataComparison.sol` | Extracted JSON calldata comparison logic |
-| Refactor | `src/ens/ens.t.sol` | Inherit from BaseGovernance + GovernorTimelockAdapter |
-| Refactor | `src/uniswap/uniswap.t.sol` | Inherit from BaseGovernance + GovernorTimelockAdapter |
-| Refactor | `src/shutter/shutter.t.sol` | Inherit from BaseGovernance + AzoriusAdapter |
-| Create | `src/skills/dao-scaffold/SKILL.md` | AI skill for scaffolding a new DAO |
-| Create | `docs/ADDING_A_NEW_DAO.md` | Step-by-step process documentation |
+| Action   | Path                                            | Purpose                                                          |
+| -------- | ----------------------------------------------- | ---------------------------------------------------------------- |
+| Create   | `src/base/BaseGovernance.sol`                   | Abstract governance lifecycle (propose → vote → queue → execute) |
+| Create   | `src/base/adapters/GovernorTimelockAdapter.sol` | Adapter for OZ Governor + Timelock DAOs                          |
+| Create   | `src/base/adapters/AzoriusAdapter.sol`          | Adapter for Azorius-based DAOs (Shutter)                         |
+| Create   | `src/base/CalldataComparison.sol`               | Extracted JSON calldata comparison logic                         |
+| Refactor | `src/ens/ens.t.sol`                             | Inherit from BaseGovernance + GovernorTimelockAdapter            |
+| Refactor | `src/uniswap/uniswap.t.sol`                     | Inherit from BaseGovernance + GovernorTimelockAdapter            |
+| Refactor | `src/shutter/shutter.t.sol`                     | Inherit from BaseGovernance + AzoriusAdapter                     |
+| Create   | `src/skills/dao-scaffold/SKILL.md`              | AI skill for scaffolding a new DAO                               |
+| Create   | `docs/ADDING_A_NEW_DAO.md`                      | Step-by-step process documentation                               |
 
 ---
 
@@ -60,6 +66,7 @@
 ### Task 1: Create CLAUDE.md
 
 **Files:**
+
 - Create: `CLAUDE.md`
 
 - [ ] **Step 1: Write CLAUDE.md**
@@ -69,34 +76,31 @@
 
 ## What This Repo Does
 
-This repository independently verifies the calldata of DAO governance proposals. For each proposal, we reconstruct the expected calldata from first principles (interfaces, addresses, parameters) and compare it against the on-chain or draft calldata. If they match, the proposal does what it claims. If not, it's a security finding.
+This repository independently verifies the calldata of DAO governance proposals. For each proposal, we reconstruct the
+expected calldata from first principles (interfaces, addresses, parameters) and compare it against the on-chain or draft
+calldata. If they match, the proposal does what it claims. If not, it's a security finding.
 
-This system tests proposals that control millions/billions of dollars in DAO treasuries. Correctness is paramount. A false positive (approving bad calldata) is the worst possible outcome.
+This system tests proposals that control millions/billions of dollars in DAO treasuries. Correctness is paramount. A
+false positive (approving bad calldata) is the worst possible outcome.
 
 ## Supported DAOs
 
 See `src/dao-registry.json` for the full list. Currently:
+
 - **ENS** — OZ Governor + Timelock (`src/ens/`)
 - **Uniswap** — OZ Governor + Timelock (`src/uniswap/`)
 - **Shutter** — Azorius + LinearERC20Voting (`src/shutter/`)
 
 ## Repo Structure
+```
 
-```
-src/
-  dao-registry.json          # DAO config manifest
-  skills/                    # Claude Code skills (review workflows)
-    proposal-review/         # Universal entry point
-    live-review/             # Live proposal workflow
-    draft-review/            # Draft proposal workflow
-    pre-draft-review/        # Pre-draft workflow
-    review-reference/        # Shared reference data
-  base/                      # Shared governance abstractions (Phase A)
-  ens/                       # ENS-specific proposals, helpers, interfaces
-  uniswap/                   # Uniswap-specific proposals
-  shutter/                   # Shutter-specific proposals
-  utils/                     # Fetch scripts, shared interfaces
-```
+src/ dao-registry.json # DAO config manifest skills/ # Claude Code skills (review workflows) proposal-review/ #
+Universal entry point live-review/ # Live proposal workflow draft-review/ # Draft proposal workflow pre-draft-review/ #
+Pre-draft workflow review-reference/ # Shared reference data base/ # Shared governance abstractions (Phase A) ens/ #
+ENS-specific proposals, helpers, interfaces uniswap/ # Uniswap-specific proposals shutter/ # Shutter-specific proposals
+utils/ # Fetch scripts, shared interfaces
+
+````
 
 ## How to Review a Proposal
 
@@ -136,8 +140,9 @@ node src/utils/fetchLiveProposal.js <TALLY_URL> <OUTPUT_DIR>
 
 # Fetch draft proposal data
 node src/utils/fetchTallyDraft.js <DRAFT_URL> <OUTPUT_DIR>
-```
-```
+````
+
+````
 
 - [ ] **Step 2: Verify CLAUDE.md is valid markdown**
 
@@ -149,13 +154,14 @@ Expected: Shows the title line
 ```bash
 git add CLAUDE.md
 git commit -m "docs: add CLAUDE.md for AI agent orchestration"
-```
+````
 
 ---
 
 ### Task 2: Create DAO Registry
 
 **Files:**
+
 - Create: `src/dao-registry.json`
 
 - [ ] **Step 1: Write the DAO registry**
@@ -245,6 +251,7 @@ git commit -m "feat: add DAO registry manifest for multi-DAO support"
 ### Task 3: Move Skills to Repo-Wide Location
 
 **Files:**
+
 - Move: `src/ens/skills/` → `src/skills/`
 - Modify: Any references to old skill paths
 
@@ -259,6 +266,7 @@ mv src/ens/skills src/skills
 ```bash
 ls src/skills/
 ```
+
 Expected: `ens-draft-review/  ens-live-review/  ens-pre-draft-review/  ens-review-reference/`
 
 - [ ] **Step 3: Check for stale references to old path**
@@ -266,6 +274,7 @@ Expected: `ens-draft-review/  ens-live-review/  ens-pre-draft-review/  ens-revie
 ```bash
 grep -r "src/ens/skills" . --include="*.md" --include="*.json" --include="*.toml" -l
 ```
+
 Expected: No matches (or fix any found)
 
 - [ ] **Step 4: Commit**
@@ -279,9 +288,11 @@ git commit -m "refactor: move skills from src/ens/skills to src/skills (repo-wid
 
 ### Task 4: Generalize Skills from ENS-Specific to DAO-Generic
 
-This task refactors all 4 existing skills to work with any DAO by referencing the DAO registry instead of hardcoding ENS addresses and patterns.
+This task refactors all 4 existing skills to work with any DAO by referencing the DAO registry instead of hardcoding ENS
+addresses and patterns.
 
 **Files:**
+
 - Rename + Modify: `src/skills/ens-live-review/SKILL.md` → `src/skills/live-review/SKILL.md`
 - Rename + Modify: `src/skills/ens-draft-review/SKILL.md` → `src/skills/draft-review/SKILL.md`
 - Rename + Modify: `src/skills/ens-pre-draft-review/SKILL.md` → `src/skills/pre-draft-review/SKILL.md`
@@ -298,16 +309,20 @@ mv src/skills/ens-review-reference src/skills/review-reference
 
 - [ ] **Step 2: Rewrite `src/skills/live-review/SKILL.md`**
 
-Update the frontmatter `name` to `live-review` and `description` to cover any DAO. Replace all ENS-specific paths, addresses, and contract names with parameterized references:
+Update the frontmatter `name` to `live-review` and `description` to cover any DAO. Replace all ENS-specific paths,
+addresses, and contract names with parameterized references:
+
 - Replace hardcoded `ENS_Governance` with `{BaseTestContract}` (looked up from dao-registry.json)
 - Replace `src/ens/proposals/` with `{proposalsPath}` from the registry
 - Replace hardcoded addresses with "See dao-registry.json and the DAO's Constants.sol"
-- Add a "DAO Detection" section: "Identify the DAO from the Tally URL slug (e.g., `/gov/ens/` → ENS, `/gov/uniswap/` → Uniswap)"
+- Add a "DAO Detection" section: "Identify the DAO from the Tally URL slug (e.g., `/gov/ens/` → ENS, `/gov/uniswap/` →
+  Uniswap)"
 - Keep all critical principles (manual derivation, mismatch = finding, assertion baseline)
 
 - [ ] **Step 3: Rewrite `src/skills/draft-review/SKILL.md`**
 
 Same generalization as live-review. Key changes:
+
 - Parameterize branch naming: `{dao}/ep-{topic-name}` instead of `ens/ep-topic-name`
 - Parameterize test class inheritance
 - Parameterize commit messages and PR templates
@@ -315,6 +330,7 @@ Same generalization as live-review. Key changes:
 - [ ] **Step 4: Rewrite `src/skills/pre-draft-review/SKILL.md`**
 
 Same generalization. Key changes:
+
 - Parameterize directory creation path
 - Parameterize contract naming convention
 - Parameterize import paths
@@ -322,6 +338,7 @@ Same generalization. Key changes:
 - [ ] **Step 5: Rewrite `src/skills/review-reference/SKILL.md`**
 
 Replace the single ENS reference table with a structure that says:
+
 - "Look up the DAO in `src/dao-registry.json` for addresses and config"
 - "Each DAO may have a Constants.sol with shared addresses"
 - Keep the helpers section but note which helpers are DAO-specific
@@ -348,11 +365,13 @@ git commit -m "refactor: generalize skills from ENS-specific to DAO-generic"
 ### Task 5: Create Universal Proposal Review Entry Point Skill
 
 **Files:**
+
 - Create: `src/skills/proposal-review/SKILL.md`
 
 - [ ] **Step 1: Write the universal entry point skill**
 
 This skill is the single entry point for all proposal reviews. It:
+
 1. Accepts a Tally URL (or proposal description)
 2. Detects the DAO from the URL slug
 3. Determines the phase (pre-draft/draft/live) from URL pattern
@@ -360,33 +379,38 @@ This skill is the single entry point for all proposal reviews. It:
 5. Routes to the correct sub-skill (live-review, draft-review, pre-draft-review)
 6. After review completes, generates a structured report
 
-```markdown
+````markdown
 ---
 name: proposal-review
-description: Use when reviewing any DAO governance proposal. Accepts a Tally URL or proposal description, detects the DAO and phase, and runs the full autonomous review workflow ending with a structured security report.
+description:
+  Use when reviewing any DAO governance proposal. Accepts a Tally URL or proposal description, detects the DAO and
+  phase, and runs the full autonomous review workflow ending with a structured security report.
 ---
 
 # Proposal Review — Universal Entry Point
 
-Autonomous end-to-end review of DAO governance proposals. Input: a Tally URL or proposal context. Output: a complete security review with structured findings.
+Autonomous end-to-end review of DAO governance proposals. Input: a Tally URL or proposal context. Output: a complete
+security review with structured findings.
 
 ## Step 1: Detect DAO and Phase
 
 **From Tally URL:**
+
 - `/gov/{slug}/proposal/{id}` → Live proposal. Look up `slug` in `src/dao-registry.json` → `daos[key].tallySlug`
 - `/gov/{slug}/draft/{id}` → Draft proposal. Same lookup.
 - No URL → Pre-draft. Ask the user which DAO.
 
 **From dao-registry.json, load:**
+
 - `basePath`, `baseTestContract`, `proposalsPath`, `contractNaming`, `helpers`, `interfacesPath`
 
 ## Step 2: Route to Sub-Skill
 
-| Phase | Skill | Trigger |
-|-------|-------|---------|
-| Live | `live-review` | URL contains `/proposal/` |
-| Draft | `draft-review` | URL contains `/draft/` |
-| Pre-draft | `pre-draft-review` | No Tally URL |
+| Phase     | Skill              | Trigger                   |
+| --------- | ------------------ | ------------------------- |
+| Live      | `live-review`      | URL contains `/proposal/` |
+| Draft     | `draft-review`     | URL contains `/draft/`    |
+| Pre-draft | `pre-draft-review` | No Tally URL              |
 
 Invoke the sub-skill. It handles: branch creation, data fetch, test scaffold, calldata construction, test execution.
 
@@ -395,6 +419,7 @@ Invoke the sub-skill. It handles: branch creation, data fetch, test scaffold, ca
 ```bash
 forge test --match-path "{proposalsPath}/{proposal-dir}/*" -vv
 ```
+````
 
 If tests fail, diagnose using the troubleshooting section in `review-reference`.
 
@@ -403,6 +428,7 @@ If tests fail, diagnose using the troubleshooting section in `review-reference`.
 After successful test execution, produce a report following `src/skills/report-template.md`.
 
 The report must include:
+
 1. **Proposal Summary** — What the proposal does (1-3 sentences)
 2. **Calldata Verification** — PASS/FAIL for each executable call
 3. **Assertion Results** — What was checked before and after execution
@@ -417,25 +443,27 @@ Follow the commit conventions from the sub-skill. Open PR targeting `main`.
 ## Step 6: Forum Post
 
 Generate the forum post text from the sub-skill's template.
-```
+
+````
 
 - [ ] **Step 2: Commit**
 
 ```bash
 git add src/skills/proposal-review/
 git commit -m "feat: add universal proposal-review entry point skill"
-```
+````
 
 ---
 
 ### Task 6: Create Structured Report Template
 
 **Files:**
+
 - Create: `src/skills/report-template.md`
 
 - [ ] **Step 1: Write the report template**
 
-```markdown
+````markdown
 # Security Report Template
 
 Use this template after completing a proposal review. Fill in all sections.
@@ -444,11 +472,8 @@ Use this template after completing a proposal review. Fill in all sections.
 
 ## Proposal: {DAO} EP {number} — {title}
 
-**DAO:** {DAO name}
-**Phase:** {Pre-draft | Draft | Live}
-**Tally URL:** {url or N/A}
-**Reviewer:** Claude Code (autonomous)
-**Date:** {YYYY-MM-DD}
+**DAO:** {DAO name} **Phase:** {Pre-draft | Draft | Live} **Tally URL:** {url or N/A} **Reviewer:** Claude Code
+(autonomous) **Date:** {YYYY-MM-DD}
 
 ---
 
@@ -458,10 +483,10 @@ Use this template after completing a proposal review. Fill in all sections.
 
 ### Calldata Verification
 
-| # | Target | Selector | Status | Notes |
-|---|--------|----------|--------|-------|
-| 0 | `{address}` | `{function}` | MATCH / MISMATCH | {details if mismatch} |
-| 1 | ... | ... | ... | ... |
+| #   | Target      | Selector     | Status           | Notes                 |
+| --- | ----------- | ------------ | ---------------- | --------------------- |
+| 0   | `{address}` | `{function}` | MATCH / MISMATCH | {details if mismatch} |
+| 1   | ...         | ...          | ...              | ...                   |
 
 **Overall:** {N}/{N} calls match — PASS / FAIL
 
@@ -478,12 +503,15 @@ Use this template after completing a proposal review. Fill in all sections.
 ### Findings
 
 #### CRITICAL
+
 {None, or list of critical findings}
 
 #### IMPORTANT
+
 {None, or list of important findings}
 
 #### INFO
+
 {None, or list of informational findings}
 
 ### Recommendation
@@ -500,6 +528,7 @@ cd dao-proposals
 git checkout {commit_hash}
 forge test --match-path "{test_path}" -vv
 ```
+````
 
 ### Forum Post (copy-paste ready)
 
@@ -508,27 +537,32 @@ forge test --match-path "{test_path}" -vv
 
 {Forum post text following the sub-skill's template}
 ```
-```
+
+````
 
 - [ ] **Step 2: Commit**
 
 ```bash
 git add src/skills/report-template.md
 git commit -m "docs: add structured security report template"
-```
+````
 
 ---
 
 ### Task 7: Update foundry.toml fs_permissions for Skills
 
 **Files:**
+
 - Modify: `foundry.toml`
 
-The skills directory moved from `src/ens/skills` to `src/skills`. The foundry.toml fs_permissions already allows read access to `./src`, so `src/skills` is covered. But we should also ensure `src/dao-registry.json` is readable by Foundry's `vm.readFile()`.
+The skills directory moved from `src/ens/skills` to `src/skills`. The foundry.toml fs_permissions already allows read
+access to `./src`, so `src/skills` is covered. But we should also ensure `src/dao-registry.json` is readable by
+Foundry's `vm.readFile()`.
 
 - [ ] **Step 1: Verify fs_permissions in foundry.toml**
 
-Read the current `fs_permissions` setting. If it says `{ access = "read", path = "./src" }`, the new paths are already covered.
+Read the current `fs_permissions` setting. If it says `{ access = "read", path = "./src" }`, the new paths are already
+covered.
 
 - [ ] **Step 2: Commit if changes needed**
 
@@ -541,11 +575,13 @@ Only commit if foundry.toml was modified.
 ### Task 8: Create ENS Constants.sol
 
 **Files:**
+
 - Create: `src/ens/Constants.sol`
 
 - [ ] **Step 1: Identify all duplicated addresses across ENS proposals**
 
 Search for recurring addresses in `src/ens/proposals/`:
+
 - USDC: `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48`
 - USDT: `0xdAC17F958D2ee523a2206206994597C13D831ec7`
 - WETH: `0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2`
@@ -609,8 +645,7 @@ library ENSConstants {
 
 - [ ] **Step 3: Verify it compiles**
 
-Run: `forge build --skip script`
-Expected: Successful compilation
+Run: `forge build --skip script` Expected: Successful compilation
 
 - [ ] **Step 4: Commit**
 
@@ -624,6 +659,7 @@ git commit -m "feat(ens): add shared Constants.sol with centralized addresses"
 ### Task 9: Create MultiSendHelper
 
 **Files:**
+
 - Create: `src/ens/helpers/MultiSendHelper.sol`
 
 - [ ] **Step 1: Examine existing MultiSend patterns in ep-6-38**
@@ -683,8 +719,7 @@ abstract contract MultiSendHelper is SafeHelper {
 
 - [ ] **Step 3: Verify it compiles**
 
-Run: `forge build --skip script`
-Expected: Successful compilation
+Run: `forge build --skip script` Expected: Successful compilation
 
 - [ ] **Step 4: Commit**
 
@@ -698,6 +733,7 @@ git commit -m "feat(ens): add MultiSendHelper for reusable Safe+MultiSend callda
 ### Task 10: Enforce dirPath() and Assertion Hooks in ENS Base Class
 
 **Files:**
+
 - Modify: `src/ens/ens.t.sol`
 
 - [ ] **Step 1: Read current ens.t.sol**
@@ -721,19 +757,20 @@ if (_isProposalSubmitted()) {
 
 - [ ] **Step 3: Verify compilation**
 
-Run: `forge build --skip script`
-Expected: Successful compilation
+Run: `forge build --skip script` Expected: Successful compilation
 
 - [ ] **Step 4: Run ENS tests to check for regressions**
 
-Run: `forge test --match-path "src/ens/proposals/ep-6-38/*" -vv`
-Expected: Tests pass (ep-6-38 has dirPath set)
+Run: `forge test --match-path "src/ens/proposals/ep-6-38/*" -vv` Expected: Tests pass (ep-6-38 has dirPath set)
 
 - [ ] **Step 5: Fix any proposals that fail the new enforcement**
 
-If any live proposals (where `_isProposalSubmitted() == true`) are missing `dirPath()`, add it. Based on exploration, these proposals need fixing: ep-5-16, ep-5-22, ep-5-23, ep-5-25, ep-5-26, ep-5-27, ep-5-28, ep-5-29, ep-6-1, ep-6-2, ep-6-7, ep-6-9, ep-6-11.
+If any live proposals (where `_isProposalSubmitted() == true`) are missing `dirPath()`, add it. Based on exploration,
+these proposals need fixing: ep-5-16, ep-5-22, ep-5-23, ep-5-25, ep-5-26, ep-5-27, ep-5-28, ep-5-29, ep-6-1, ep-6-2,
+ep-6-7, ep-6-9, ep-6-11.
 
 For each, add:
+
 ```solidity
 function dirPath() public pure override returns (string memory) {
     return "src/ens/proposals/ep-X-Y";
@@ -742,8 +779,7 @@ function dirPath() public pure override returns (string memory) {
 
 - [ ] **Step 6: Run all ENS tests to verify**
 
-Run: `forge test --match-path "src/ens/**" -vv`
-Expected: All tests pass
+Run: `forge test --match-path "src/ens/**" -vv` Expected: All tests pass
 
 - [ ] **Step 7: Commit**
 
@@ -757,6 +793,7 @@ git commit -m "feat(ens): enforce dirPath() for live proposals in base class"
 ### Task 11: Adopt Constants.sol in Existing Proposals
 
 **Files:**
+
 - Modify: Multiple proposals that hardcode addresses already in Constants.sol
 
 - [ ] **Step 1: Identify proposals that use hardcoded USDC, USDT, or token addresses**
@@ -770,18 +807,19 @@ grep -r "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48" src/ens/proposals/ -l
 - [ ] **Step 2: Update proposals to import and use ENSConstants**
 
 For each proposal found, add:
+
 ```solidity
 import { ENSConstants } from "@ens/Constants.sol";
 ```
 
 And replace the hardcoded address with `ENSConstants.USDC`, `ENSConstants.USDT`, etc.
 
-**Important:** Only update the address references. Do NOT change any logic, assertions, or calldata construction. This is a pure deduplication refactor.
+**Important:** Only update the address references. Do NOT change any logic, assertions, or calldata construction. This
+is a pure deduplication refactor.
 
 - [ ] **Step 3: Verify all tests still pass**
 
-Run: `forge test --match-path "src/ens/**" -vv`
-Expected: All tests pass
+Run: `forge test --match-path "src/ens/**" -vv` Expected: All tests pass
 
 - [ ] **Step 4: Commit**
 
@@ -795,12 +833,14 @@ git commit -m "refactor(ens): adopt Constants.sol across proposals"
 ### Task 12: Standardize Uniswap Pragma and Naming
 
 **Files:**
+
 - Modify: `src/uniswap/uniswap.t.sol`
 - Modify: `src/uniswap/proposals/93 - UNIfication/activeProposal.t.sol`
 
 - [ ] **Step 1: Update Uniswap pragma to match ENS standard**
 
 Change `pragma solidity ^0.8.13;` to `pragma solidity >=0.8.25 <0.9.0;` in:
+
 - `src/uniswap/uniswap.t.sol`
 - All files under `src/uniswap/`
 
@@ -812,8 +852,7 @@ mv "src/uniswap/proposals/93 - UNIfication/activeProposal.t.sol" "src/uniswap/pr
 
 - [ ] **Step 3: Verify compilation**
 
-Run: `forge build --skip script`
-Expected: Successful compilation
+Run: `forge build --skip script` Expected: Successful compilation
 
 - [ ] **Step 4: Commit**
 
@@ -829,6 +868,7 @@ git commit -m "refactor(uniswap): standardize pragma and rename to calldataCheck
 ### Task 13: Create BaseGovernance Abstract Contract
 
 **Files:**
+
 - Create: `src/base/BaseGovernance.sol`
 
 - [ ] **Step 1: Design the abstract base**
@@ -928,11 +968,13 @@ git commit -m "feat: add BaseGovernance abstract contract for multi-DAO support"
 ### Task 14: Create CalldataComparison Library
 
 **Files:**
+
 - Create: `src/base/CalldataComparison.sol`
 
 - [ ] **Step 1: Extract the JSON parsing and comparison logic**
 
-Both ENS and Uniswap have near-identical `callDataComparison()`, `parseJsonTargets()`, `parseJsonValues()`, `parseJsonCalldatas()` methods. Extract these into a shared contract.
+Both ENS and Uniswap have near-identical `callDataComparison()`, `parseJsonTargets()`, `parseJsonValues()`,
+`parseJsonCalldatas()` methods. Extract these into a shared contract.
 
 ```solidity
 // SPDX-License-Identifier: MIT
@@ -1060,11 +1102,13 @@ git commit -m "feat: extract CalldataComparison into shared base contract"
 ### Task 15: Create GovernorTimelockAdapter
 
 **Files:**
+
 - Create: `src/base/adapters/GovernorTimelockAdapter.sol`
 
 - [ ] **Step 1: Write the adapter**
 
-This adapter implements the BaseGovernance lifecycle methods for OZ Governor + Timelock DAOs (ENS, Uniswap). It contains the shared propose → vote → queue → execute logic.
+This adapter implements the BaseGovernance lifecycle methods for OZ Governor + Timelock DAOs (ENS, Uniswap). It contains
+the shared propose → vote → queue → execute logic.
 
 ```solidity
 // SPDX-License-Identifier: MIT
@@ -1104,7 +1148,10 @@ abstract contract GovernorTimelockAdapter is BaseGovernance, CalldataComparison 
 }
 ```
 
-**Note:** The exact implementation of each lifecycle method differs between ENS and Uniswap Governor interfaces (e.g., `castVote` parameters, `queue` signature, vote counting). The adapter provides the structure; each DAO fills in the specifics. This is intentional — forcing a single adapter to handle both would require complex conditional logic that's harder to audit.
+**Note:** The exact implementation of each lifecycle method differs between ENS and Uniswap Governor interfaces (e.g.,
+`castVote` parameters, `queue` signature, vote counting). The adapter provides the structure; each DAO fills in the
+specifics. This is intentional — forcing a single adapter to handle both would require complex conditional logic that's
+harder to audit.
 
 - [ ] **Step 2: Verify it compiles**
 
@@ -1122,25 +1169,28 @@ git commit -m "feat: add GovernorTimelockAdapter for OZ Governor+Timelock DAOs"
 ### Task 16: Refactor ENS Base Class to Use Shared Infrastructure
 
 **Files:**
+
 - Modify: `src/ens/ens.t.sol`
 
 - [ ] **Step 1: Update ENS_Governance to inherit CalldataComparison**
 
-Replace the duplicated JSON parsing methods in `ens.t.sol` with an import of `CalldataComparison`. Keep `ENSHelper` (namehash, labelhash) as ENS-specific.
+Replace the duplicated JSON parsing methods in `ens.t.sol` with an import of `CalldataComparison`. Keep `ENSHelper`
+(namehash, labelhash) as ENS-specific.
 
 The ENS_Governance should:
+
 1. Import `CalldataComparison` from `@contracts/base/CalldataComparison.sol`
 2. Inherit from `Test, CalldataComparison, ENSHelper` (instead of `Test, IDAO, ENSHelper`)
 3. Remove the duplicated `parseJsonTargets`, `parseJsonValues`, `parseJsonCalldatas`, `decodeTargetsArray`, etc.
 4. Update `callDataComparison()` to call `_compareLiveCalldata()`
 5. Keep `getDescriptionFromMarkdown()` as a thin wrapper around `_getDescriptionFromMarkdown(dirPath())`
 
-**Critical:** Do NOT change the `test_proposal()` lifecycle or any virtual method signatures. Existing proposals must continue to compile and pass without modification.
+**Critical:** Do NOT change the `test_proposal()` lifecycle or any virtual method signatures. Existing proposals must
+continue to compile and pass without modification.
 
 - [ ] **Step 2: Verify all ENS tests pass**
 
-Run: `forge test --match-path "src/ens/**" -vv`
-Expected: All tests pass unchanged
+Run: `forge test --match-path "src/ens/**" -vv` Expected: All tests pass unchanged
 
 - [ ] **Step 3: Commit**
 
@@ -1154,18 +1204,19 @@ git commit -m "refactor(ens): inherit CalldataComparison, remove duplicated JSON
 ### Task 17: Refactor Uniswap Base Class to Use Shared Infrastructure
 
 **Files:**
+
 - Modify: `src/uniswap/uniswap.t.sol`
 
 - [ ] **Step 1: Update UNI_Governance to inherit CalldataComparison**
 
 Same approach as ENS. Remove duplicated JSON parsing methods, import from CalldataComparison.
 
-**Critical:** Keep the Uniswap-specific governance logic (different `castVote`, `queue(proposalId)` vs `queue(targets, values, calldatas, descriptionHash)`).
+**Critical:** Keep the Uniswap-specific governance logic (different `castVote`, `queue(proposalId)` vs
+`queue(targets, values, calldatas, descriptionHash)`).
 
 - [ ] **Step 2: Verify Uniswap tests pass**
 
-Run: `forge test --match-path "src/uniswap/**" -vv`
-Expected: Tests pass
+Run: `forge test --match-path "src/uniswap/**" -vv` Expected: Tests pass
 
 - [ ] **Step 3: Commit**
 
@@ -1179,14 +1230,17 @@ git commit -m "refactor(uniswap): inherit CalldataComparison, remove duplicated 
 ### Task 18: Create DAO Scaffold Skill
 
 **Files:**
+
 - Create: `src/skills/dao-scaffold/SKILL.md`
 
 - [ ] **Step 1: Write the scaffold skill**
 
-```markdown
+````markdown
 ---
 name: dao-scaffold
-description: Use when adding a new DAO to the repository. Scaffolds all required files — base test class, interfaces directory, proposals directory, constants, and registry entry.
+description:
+  Use when adding a new DAO to the repository. Scaffolds all required files — base test class, interfaces directory,
+  proposals directory, constants, and registry entry.
 ---
 
 # DAO Scaffold
@@ -1208,20 +1262,23 @@ mkdir -p src/{dao-name}/interfaces
 mkdir -p src/{dao-name}/helpers
 mkdir -p src/{dao-name}/proposals
 ```
+````
 
 ## Step 2: Add Remapping
 
 Add to `remappings.txt`:
+
 ```
 @{dao-name}/=src/{dao-name}/
 ```
 
 ## Step 3: Create Base Test Class
 
-For **Governor+Timelock DAOs**, use `src/ens/ens.t.sol` as the template.
-For **Azorius DAOs**, use `src/shutter/shutter.t.sol` as the template.
+For **Governor+Timelock DAOs**, use `src/ens/ens.t.sol` as the template. For **Azorius DAOs**, use
+`src/shutter/shutter.t.sol` as the template.
 
 The base class MUST implement:
+
 - `setUp()` with contract initialization and labeling
 - `test_proposal()` with full governance lifecycle
 - `_selectFork()`, `_proposer()`, `_voters()` — virtual with defaults
@@ -1235,6 +1292,7 @@ The base class MUST implement:
 ## Step 4: Create Governance Interfaces
 
 At minimum, create interface files for:
+
 - The governance token (`IToken.sol`)
 - The governor contract (`IGovernor.sol`)
 - The timelock or treasury (`ITimelock.sol` or `ITreasury.sol`)
@@ -1261,20 +1319,22 @@ forge build --skip script
 git add src/{dao-name}/ remappings.txt src/dao-registry.json
 git commit -m "feat({dao-name}): scaffold DAO governance test infrastructure"
 ```
-```
+
+````
 
 - [ ] **Step 2: Commit**
 
 ```bash
 git add src/skills/dao-scaffold/
 git commit -m "feat: add dao-scaffold skill for bootstrapping new DAOs"
-```
+````
 
 ---
 
 ### Task 19: Write Process Documentation for Adding New DAOs
 
 **Files:**
+
 - Create: `docs/ADDING_A_NEW_DAO.md`
 
 - [ ] **Step 1: Write comprehensive process documentation**
@@ -1282,14 +1342,17 @@ git commit -m "feat: add dao-scaffold skill for bootstrapping new DAOs"
 ```markdown
 # Adding a New DAO to the Repository
 
-This guide walks through adding a new DAO to the governance calldata verification system. By the end, you'll have a working test infrastructure that can verify any proposal for this DAO.
+This guide walks through adding a new DAO to the governance calldata verification system. By the end, you'll have a
+working test infrastructure that can verify any proposal for this DAO.
 
 ## Quick Start (AI Agent)
 
 If you're an AI agent, use the `dao-scaffold` skill:
 ```
+
 /dao-scaffold
-```
+
+````
 
 It will interactively guide you through the process.
 
@@ -1317,11 +1380,12 @@ Before starting, collect:
 mkdir -p src/{dao-name}/interfaces
 mkdir -p src/{dao-name}/helpers
 mkdir -p src/{dao-name}/proposals
-```
+````
 
 ### 3. Add Remapping
 
 In `remappings.txt`, add:
+
 ```
 @{dao-name}/=src/{dao-name}/
 ```
@@ -1341,10 +1405,12 @@ Clean up: keep only the functions you need, add proper SPDX headers and pragma.
 ### 5. Write Base Test Class
 
 Copy the closest existing base class:
+
 - For OZ Governor+Timelock: copy `src/ens/ens.t.sol`
 - For Azorius: copy `src/shutter/shutter.t.sol`
 
 Adapt:
+
 - Replace contract addresses
 - Replace token interface methods (e.g., `getVotes` vs `getCurrentVotes` vs `delegate`)
 - Replace governance parameters (voting delay, voting period, quorum)
@@ -1387,11 +1453,11 @@ git push origin feat/{dao-name}-scaffold
 
 ## Governance Type Reference
 
-| Type | Governor | Timelock | Example |
-|------|----------|----------|---------|
-| OZ Governor + Timelock | `IGovernor.propose(targets, values, calldatas, description)` | `ITimelock.hashOperationBatch(...)` | ENS, Uniswap |
-| Azorius | `IAzorius.submitProposal(strategy, data, transactions, metadata)` | N/A (Safe-based) | Shutter |
-| Compound Governor Alpha | `GovernorAlpha.propose(targets, values, signatures, calldatas, description)` | `Timelock.queueTransaction(...)` | (future) |
+| Type                    | Governor                                                                     | Timelock                            | Example      |
+| ----------------------- | ---------------------------------------------------------------------------- | ----------------------------------- | ------------ |
+| OZ Governor + Timelock  | `IGovernor.propose(targets, values, calldatas, description)`                 | `ITimelock.hashOperationBatch(...)` | ENS, Uniswap |
+| Azorius                 | `IAzorius.submitProposal(strategy, data, transactions, metadata)`            | N/A (Safe-based)                    | Shutter      |
+| Compound Governor Alpha | `GovernorAlpha.propose(targets, values, signatures, calldatas, description)` | `Timelock.queueTransaction(...)`    | (future)     |
 
 ## Checklist
 
@@ -1402,20 +1468,22 @@ git push origin feat/{dao-name}-scaffold
 - [ ] DAO registry entry added
 - [ ] First proposal test passes
 - [ ] PR opened and merged
-```
+
+````
 
 - [ ] **Step 2: Commit**
 
 ```bash
 git add docs/ADDING_A_NEW_DAO.md
 git commit -m "docs: add comprehensive guide for adding new DAOs"
-```
+````
 
 ---
 
 ### Task 20: Update TODO.md to Reflect Completed Items
 
 **Files:**
+
 - Modify: `src/ens/TODO.md`
 
 - [ ] **Step 1: Mark completed items and add new ones**
@@ -1437,24 +1505,22 @@ git commit -m "docs(ens): update TODO.md with overhaul progress"
 
 - [ ] **Step 1: Build entire project**
 
-Run: `forge build --skip script`
-Expected: Successful compilation, no errors
+Run: `forge build --skip script` Expected: Successful compilation, no errors
 
 - [ ] **Step 2: Run all ENS tests**
 
-Run: `forge test --match-path "src/ens/**" -vv`
-Expected: All pass
+Run: `forge test --match-path "src/ens/**" -vv` Expected: All pass
 
 - [ ] **Step 3: Run Uniswap tests**
 
-Run: `forge test --match-path "src/uniswap/**" -vv`
-Expected: All pass
+Run: `forge test --match-path "src/uniswap/**" -vv` Expected: All pass
 
 - [ ] **Step 4: Verify skills are in correct locations**
 
 ```bash
 ls src/skills/*/SKILL.md
 ```
+
 Expected: proposal-review, live-review, draft-review, pre-draft-review, review-reference, dao-scaffold
 
 - [ ] **Step 5: Verify CLAUDE.md references are correct**
@@ -1463,4 +1529,5 @@ Read CLAUDE.md and check that all file paths it mentions actually exist.
 
 - [ ] **Step 6: Verify dao-registry.json is consistent**
 
-Check that every `basePath`, `baseTestFile`, `proposalsPath`, and `interfacesPath` in the registry points to real directories.
+Check that every `basePath`, `baseTestFile`, `proposalsPath`, and `interfacesPath` in the registry points to real
+directories.

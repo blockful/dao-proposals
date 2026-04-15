@@ -1,17 +1,29 @@
 # [Executable] Enable L2 Reverse Registrars and new .eth registrar controller
+
 # Abstract
 
-This proposal enables five chain-specific reverse resolvers for L2 EVM networks, and one default reverse resolver as a fallback mechanism. The five chains are Arbitrum, Base, Linea, OP Mainnet and Scroll.
+This proposal enables five chain-specific reverse resolvers for L2 EVM networks, and one default reverse resolver as a
+fallback mechanism. The five chains are Arbitrum, Base, Linea, OP Mainnet and Scroll.
 
-This proposal also enables a new .eth registrar controller and sets the reverse record of some currently un-named ENS contracts.
+This proposal also enables a new .eth registrar controller and sets the reverse record of some currently un-named ENS
+contracts.
 
 # Motivation
 
-The current implementation of reverse resolution is limited to Ethereum Mainnet and assumes that every entity (a generic smart contract or user account) has the same address across every EVM chain. This has been falling out of line with reality given the rise in smart contract accounts, indicating that reverse resolution should be resolved via a namespace for each chain, rather than a single reverse namespace for the Ethereum ecosystem at large.
+The current implementation of reverse resolution is limited to Ethereum Mainnet and assumes that every entity (a generic
+smart contract or user account) has the same address across every EVM chain. This has been falling out of line with
+reality given the rise in smart contract accounts, indicating that reverse resolution should be resolved via a namespace
+for each chain, rather than a single reverse namespace for the Ethereum ecosystem at large.
 
-This functionality defined formally in [ENSIP-19](https://docs.ens.domains/ensip/19/), combined with [ENSIP-11](https://docs.ens.domains/ensip/11/), enables “L2 Primary Names,” meaning developers can build end-to-end ENS experiences without forcing their users to transact on Ethereum Mainnet.
+This functionality defined formally in [ENSIP-19](https://docs.ens.domains/ensip/19/), combined
+with [ENSIP-11](https://docs.ens.domains/ensip/11/), enables “L2 Primary Names,” meaning developers can build end-to-end
+ENS experiences without forcing their users to transact on Ethereum Mainnet.
 
-To support optionally setting the default reverse record at registration time, a new .eth registrar controller must also be enabled. Since new controllers have significant overhead, we are also taking advantage of this opportunity to add a `referrer` field for registrations and renewals. This field is emitted unchanged from the registration and renewal events and allows clients to convey information about the source of a registration or renewal for potential DAO-based referral reward schemes (not defined in this proposal).
+To support optionally setting the default reverse record at registration time, a new .eth registrar controller must also
+be enabled. Since new controllers have significant overhead, we are also taking advantage of this opportunity to add
+a `referrer` field for registrations and renewals. This field is emitted unchanged from the registration and renewal
+events and allows clients to convey information about the source of a registration or renewal for potential DAO-based
+referral reward schemes (not defined in this proposal).
 
 # Specification
 
@@ -23,24 +35,24 @@ Batch transaction for ENS DAO execution
 
 This proposal contains **16** transaction(s) to be executed by the ENS DAO Timelock.
 
-| #  | Contract                  | Function             | Description                                                      |
-| -- | ------------------------- | -------------------- | ---------------------------------------------------------------- |
-| 1  | registry.ens.eth          | `setResolver`        | Call setResolver on registry.ens.eth                             |
-| 2  | registry.ens.eth          | `setSubnodeRecord`   | Set Arbitrum reverse namespace                                   |
-| 3  | registry.ens.eth          | `setSubnodeRecord`   | Set Base reverse namespace                                       |
-| 4  | registry.ens.eth          | `setSubnodeRecord`   | Set Linea reverse namespace                                      |
-| 5  | registry.ens.eth          | `setSubnodeRecord`   | Set Optimism reverse namespace                                   |
-| 6  | registry.ens.eth          | `setSubnodeRecord`   | Set Scroll reverse namespace                                     |
-| 7  | ETH Registrar             | `addController`      | Authorise new controller on registrar                            |
-| 8  | Reverse Registrar         | `setController`      | Authorise new controller on reverse registrar                    |
-| 9  | Default Reverse Registrar | `setController`      | Authorise new controller on new default reverse registrar        |
-| 10 | .eth Resolver             | `setInterface`       | Set new controller interface to new controller on .eth resolver  |
-| 11 | Reverse Registrar         | `setDefaultResolver` | Set default resolver to new public resolver on reverse registrar |
-| 12 | Reverse Registrar         | `setNameForAddr`     | Set primary name for DNSSEC contract                             |
-| 13 | Reverse Registrar         | `setNameForAddr`     | Set primary name for registrar                                   |
-| 14 | Reverse Registrar         | `setNameForAddr`     | Set primary name for root                                        |
-| 15 | Reverse Registrar         | `setNameForAddr`     | Set primary name for new controller                              |
-| 16 | Reverse Registrar         | `setNameForAddr`     | Set primary name for default reverse registrar                   |
+| #   | Contract                  | Function             | Description                                                      |
+| --- | ------------------------- | -------------------- | ---------------------------------------------------------------- |
+| 1   | registry.ens.eth          | `setResolver`        | Call setResolver on registry.ens.eth                             |
+| 2   | registry.ens.eth          | `setSubnodeRecord`   | Set Arbitrum reverse namespace                                   |
+| 3   | registry.ens.eth          | `setSubnodeRecord`   | Set Base reverse namespace                                       |
+| 4   | registry.ens.eth          | `setSubnodeRecord`   | Set Linea reverse namespace                                      |
+| 5   | registry.ens.eth          | `setSubnodeRecord`   | Set Optimism reverse namespace                                   |
+| 6   | registry.ens.eth          | `setSubnodeRecord`   | Set Scroll reverse namespace                                     |
+| 7   | ETH Registrar             | `addController`      | Authorise new controller on registrar                            |
+| 8   | Reverse Registrar         | `setController`      | Authorise new controller on reverse registrar                    |
+| 9   | Default Reverse Registrar | `setController`      | Authorise new controller on new default reverse registrar        |
+| 10  | .eth Resolver             | `setInterface`       | Set new controller interface to new controller on .eth resolver  |
+| 11  | Reverse Registrar         | `setDefaultResolver` | Set default resolver to new public resolver on reverse registrar |
+| 12  | Reverse Registrar         | `setNameForAddr`     | Set primary name for DNSSEC contract                             |
+| 13  | Reverse Registrar         | `setNameForAddr`     | Set primary name for registrar                                   |
+| 14  | Reverse Registrar         | `setNameForAddr`     | Set primary name for root                                        |
+| 15  | Reverse Registrar         | `setNameForAddr`     | Set primary name for new controller                              |
+| 16  | Reverse Registrar         | `setNameForAddr`     | Set primary name for default reverse registrar                   |
 
 ## Detailed Transaction Information
 
@@ -52,24 +64,24 @@ Batch transaction for ENS DAO execution
 
 This proposal contains **16** transaction(s) to be executed by the ENS DAO Timelock.
 
-| # | Contract | Function | Description |
-|---|----------|----------|--------------|
-| 1 | registry.ens.eth | `setResolver` | Call setResolver on registry.ens.eth |
-| 2 | registry.ens.eth | `setSubnodeRecord` | Set Arbitrum reverse namespace |
-| 3 | registry.ens.eth | `setSubnodeRecord` | Set Base reverse namespace |
-| 4 | registry.ens.eth | `setSubnodeRecord` | Set Linea reverse namespace |
-| 5 | registry.ens.eth | `setSubnodeRecord` | Set Optimism reverse namespace |
-| 6 | registry.ens.eth | `setSubnodeRecord` | Set Scroll reverse namespace |
-| 7 | ETH Registrar | `addController` | Authorise new controller on registrar |
-| 8 | Reverse Registrar | `setController` | Authorise new controller on reverse registrar |
-| 9 | Default Reverse Registrar | `setController` | Authorise new controller on new default reverse registrar |
-| 10 | .eth Resolver | `setInterface` | Set new controller interface to new controller on .eth resolver |
-| 11 | Reverse Registrar | `setDefaultResolver` | Set default resolver to new public resolver on reverse registrar |
-| 12 | Reverse Registrar | `setNameForAddr` | Set primary name for DNSSEC contract |
-| 13 | Reverse Registrar | `setNameForAddr` | Set primary name for registrar |
-| 14 | Reverse Registrar | `setNameForAddr` | Set primary name for root |
-| 15 | Reverse Registrar | `setNameForAddr` | Set primary name for new controller |
-| 16 | Reverse Registrar | `setNameForAddr` | Set primary name for default reverse registrar |
+| #   | Contract                  | Function             | Description                                                      |
+| --- | ------------------------- | -------------------- | ---------------------------------------------------------------- |
+| 1   | registry.ens.eth          | `setResolver`        | Call setResolver on registry.ens.eth                             |
+| 2   | registry.ens.eth          | `setSubnodeRecord`   | Set Arbitrum reverse namespace                                   |
+| 3   | registry.ens.eth          | `setSubnodeRecord`   | Set Base reverse namespace                                       |
+| 4   | registry.ens.eth          | `setSubnodeRecord`   | Set Linea reverse namespace                                      |
+| 5   | registry.ens.eth          | `setSubnodeRecord`   | Set Optimism reverse namespace                                   |
+| 6   | registry.ens.eth          | `setSubnodeRecord`   | Set Scroll reverse namespace                                     |
+| 7   | ETH Registrar             | `addController`      | Authorise new controller on registrar                            |
+| 8   | Reverse Registrar         | `setController`      | Authorise new controller on reverse registrar                    |
+| 9   | Default Reverse Registrar | `setController`      | Authorise new controller on new default reverse registrar        |
+| 10  | .eth Resolver             | `setInterface`       | Set new controller interface to new controller on .eth resolver  |
+| 11  | Reverse Registrar         | `setDefaultResolver` | Set default resolver to new public resolver on reverse registrar |
+| 12  | Reverse Registrar         | `setNameForAddr`     | Set primary name for DNSSEC contract                             |
+| 13  | Reverse Registrar         | `setNameForAddr`     | Set primary name for registrar                                   |
+| 14  | Reverse Registrar         | `setNameForAddr`     | Set primary name for root                                        |
+| 15  | Reverse Registrar         | `setNameForAddr`     | Set primary name for new controller                              |
+| 16  | Reverse Registrar         | `setNameForAddr`     | Set primary name for default reverse registrar                   |
 
 ## Detailed Transaction Information
 
@@ -85,6 +97,7 @@ This proposal contains **16** transaction(s) to be executed by the ENS DAO Timel
 - `address resolver`: `0xA7d635c8de9a58a228AA69353a1699C7Cc240DCF`
 
 **Encoded Calldata:**
+
 ```
 0x1896f70aa097f6721ce401e757d1223a763fef49b8b5f90bb18567ddb86fd205dff71d34000000000000000000000000a7d635c8de9a58a228aa69353a1699c7cc240dcf
 ```
@@ -106,6 +119,7 @@ This proposal contains **16** transaction(s) to be executed by the ENS DAO Timel
 - `uint64 ttl`: `0`
 
 **Encoded Calldata:**
+
 ```
 0x5ef2c7f0a097f6721ce401e757d1223a763fef49b8b5f90bb18567ddb86fd205dff71d34a7f8a095a00b663580c29f964c4bfc4ce8f41776d9ea5b70e2e08e69327a77bc000000000000000000000000fe89cc7abb2c4183683ab71653c4cdc9b02d44b70000000000000000000000004b9572c03aaa8b0efa4b4b0f0cc0f0992bedb8980000000000000000000000000000000000000000000000000000000000000000
 ```
@@ -127,6 +141,7 @@ This proposal contains **16** transaction(s) to be executed by the ENS DAO Timel
 - `uint64 ttl`: `0`
 
 **Encoded Calldata:**
+
 ```
 0x5ef2c7f0a097f6721ce401e757d1223a763fef49b8b5f90bb18567ddb86fd205dff71d3472c29f4186361a46935e4e9c3af71d1cf73cac00186fceb1cd1945ed9ed3dec1000000000000000000000000fe89cc7abb2c4183683ab71653c4cdc9b02d44b7000000000000000000000000c800dbc8ff9796e58efba2d7b35028ddd1997e5e0000000000000000000000000000000000000000000000000000000000000000
 ```
@@ -148,6 +163,7 @@ This proposal contains **16** transaction(s) to be executed by the ENS DAO Timel
 - `uint64 ttl`: `0`
 
 **Encoded Calldata:**
+
 ```
 0x5ef2c7f0a097f6721ce401e757d1223a763fef49b8b5f90bb18567ddb86fd205dff71d34f5b2aa07eebc1b04c9923c2e20c5988f7ec95c4150e7fb00a49f74cf73ff795a000000000000000000000000fe89cc7abb2c4183683ab71653c4cdc9b02d44b70000000000000000000000000ce08a41bdb10420fb5cac7da8ca508ea313aef80000000000000000000000000000000000000000000000000000000000000000
 ```
@@ -169,6 +185,7 @@ This proposal contains **16** transaction(s) to be executed by the ENS DAO Timel
 - `uint64 ttl`: `0`
 
 **Encoded Calldata:**
+
 ```
 0x5ef2c7f0a097f6721ce401e757d1223a763fef49b8b5f90bb18567ddb86fd205dff71d3477f44888a7cd760c9d34db42bba63325958f70077f99de6be6b318dd388d22c2000000000000000000000000fe89cc7abb2c4183683ab71653c4cdc9b02d44b7000000000000000000000000f9edb1a21867ac11b023ce34abad916d29abf1070000000000000000000000000000000000000000000000000000000000000000
 ```
@@ -190,6 +207,7 @@ This proposal contains **16** transaction(s) to be executed by the ENS DAO Timel
 - `uint64 ttl`: `0`
 
 **Encoded Calldata:**
+
 ```
 0x5ef2c7f0a097f6721ce401e757d1223a763fef49b8b5f90bb18567ddb86fd205dff71d34fc94dc633606a32d73e903a0aa85e12fbe1cabc6e53ee69c1893547fda6d9691000000000000000000000000fe89cc7abb2c4183683ab71653c4cdc9b02d44b7000000000000000000000000c4842814ca523e481ca5aa85f719fed1e9cac6140000000000000000000000000000000000000000000000000000000000000000
 ```
@@ -207,6 +225,7 @@ This proposal contains **16** transaction(s) to be executed by the ENS DAO Timel
 - `address controller`: `0x59E16fcCd424Cc24e280Be16E11Bcd56fb0CE547`
 
 **Encoded Calldata:**
+
 ```
 0xa7fc7a0700000000000000000000000059e16fccd424cc24e280be16e11bcd56fb0ce547
 ```
@@ -225,6 +244,7 @@ This proposal contains **16** transaction(s) to be executed by the ENS DAO Timel
 - `bool enabled`: `true`
 
 **Encoded Calldata:**
+
 ```
 0xe0dba60f00000000000000000000000059e16fccd424cc24e280be16e11bcd56fb0ce5470000000000000000000000000000000000000000000000000000000000000001
 ```
@@ -243,6 +263,7 @@ This proposal contains **16** transaction(s) to be executed by the ENS DAO Timel
 - `bool enabled`: `true`
 
 **Encoded Calldata:**
+
 ```
 0xe0dba60f00000000000000000000000059e16fccd424cc24e280be16e11bcd56fb0ce5470000000000000000000000000000000000000000000000000000000000000001
 ```
@@ -262,6 +283,7 @@ This proposal contains **16** transaction(s) to be executed by the ENS DAO Timel
 - `address implementer`: `0x59E16fcCd424Cc24e280Be16E11Bcd56fb0CE547`
 
 **Encoded Calldata:**
+
 ```
 0xe59d895d93cdeb708b7545dc668eb9280176169d1c33cfd8ed6f04690a0bcc88a93fc4aee4f37f790000000000000000000000000000000000000000000000000000000000000000000000000000000059e16fccd424cc24e280be16e11bcd56fb0ce547
 ```
@@ -279,6 +301,7 @@ This proposal contains **16** transaction(s) to be executed by the ENS DAO Timel
 - `address resolver`: `0xF29100983E058B709F3D539b0c765937B804AC15`
 
 **Encoded Calldata:**
+
 ```
 0xc66485b2000000000000000000000000f29100983e058b709f3d539b0c765937b804ac15
 ```
@@ -299,6 +322,7 @@ This proposal contains **16** transaction(s) to be executed by the ENS DAO Timel
 - `string name`: `dnssec.ens.eth`
 
 **Encoded Calldata:**
+
 ```
 0x7a806d6b0000000000000000000000000fc3152971714e5ed7723fafa650f86a4baf30c5000000000000000000000000fe89cc7abb2c4183683ab71653c4cdc9b02d44b7000000000000000000000000f29100983e058b709f3d539b0c765937b804ac150000000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000000000e646e737365632e656e732e657468000000000000000000000000000000000000
 ```
@@ -319,6 +343,7 @@ This proposal contains **16** transaction(s) to be executed by the ENS DAO Timel
 - `string name`: `registrar.ens.eth`
 
 **Encoded Calldata:**
+
 ```
 0x7a806d6b00000000000000000000000057f1887a8bf19b14fc0df6fd9b2acc9af147ea85000000000000000000000000fe89cc7abb2c4183683ab71653c4cdc9b02d44b7000000000000000000000000f29100983e058b709f3d539b0c765937b804ac15000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000000000117265676973747261722e656e732e657468000000000000000000000000000000
 ```
@@ -339,6 +364,7 @@ This proposal contains **16** transaction(s) to be executed by the ENS DAO Timel
 - `string name`: `root.ens.eth`
 
 **Encoded Calldata:**
+
 ```
 0x7a806d6b000000000000000000000000ab528d626ec275e3fad363ff1393a41f581c5897000000000000000000000000fe89cc7abb2c4183683ab71653c4cdc9b02d44b7000000000000000000000000f29100983e058b709f3d539b0c765937b804ac150000000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000000000c726f6f742e656e732e6574680000000000000000000000000000000000000000
 ```
@@ -359,6 +385,7 @@ This proposal contains **16** transaction(s) to be executed by the ENS DAO Timel
 - `string name`: `controller.ens.eth`
 
 **Encoded Calldata:**
+
 ```
 0x7a806d6b00000000000000000000000059e16fccd424cc24e280be16e11bcd56fb0ce547000000000000000000000000fe89cc7abb2c4183683ab71653c4cdc9b02d44b7000000000000000000000000f29100983e058b709f3d539b0c765937b804ac1500000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000000012636f6e74726f6c6c65722e656e732e6574680000000000000000000000000000
 ```
@@ -379,6 +406,7 @@ This proposal contains **16** transaction(s) to be executed by the ENS DAO Timel
 - `string name`: `default.reverse.ens.eth`
 
 **Encoded Calldata:**
+
 ```
 0x7a806d6b000000000000000000000000283f227c4bd38ece252c4ae7ece650b0e913f1f9000000000000000000000000fe89cc7abb2c4183683ab71653c4cdc9b02d44b7000000000000000000000000f29100983e058b709f3d539b0c765937b804ac150000000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000000001764656661756c742e726576657273652e656e732e657468000000000000000000
 ```

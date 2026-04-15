@@ -4,7 +4,8 @@ Common issues encountered during proposal calldata reviews.
 
 ## Description Mismatch ("Governor: unknown proposal id")
 
-The description hash doesn't match the on-chain proposal. This happens when the Tally API returns a slightly different description than what was submitted on-chain (e.g., trailing newline).
+The description hash doesn't match the on-chain proposal. This happens when the Tally API returns a slightly different
+description than what was submitted on-chain (e.g., trailing newline).
 
 **Fix**: Extract the exact on-chain description from the `ProposalCreated` event:
 
@@ -36,7 +37,8 @@ forge test --match-contract Proposal_ENS_EP_X_Y_Test --skip FileName -vvv
 
 ## Fork Block Issues
 
-Always use the `blockNumber` from `proposalCalldata.json` in `_selectFork()`. This ensures the fork is at the same state as when the proposal was created.
+Always use the `blockNumber` from `proposalCalldata.json` in `_selectFork()`. This ensures the fork is at the same state
+as when the proposal was created.
 
 For pre-draft reviews (no JSON), use a recent mainnet block.
 
@@ -44,4 +46,5 @@ For pre-draft reviews (no JSON), use a recent mainnet block.
 
 - **Wrong pragma**: Must be `>=0.8.25 <0.9.0`
 - **Import not found**: Check `remappings.txt` — ENS uses `@ens/`, Uniswap uses `@uniswap/`
-- **Redeclared variable**: Do NOT redeclare `targets`, `values`, `calldatas`, `signatures`, `description`, `ensToken`, `governor`, `timelock` — these are inherited from the base class
+- **Redeclared variable**: Do NOT redeclare `targets`, `values`, `calldatas`, `signatures`, `description`, `ensToken`,
+  `governor`, `timelock` — these are inherited from the base class

@@ -39,7 +39,13 @@ interface IFluidMerkleDistributor {
     event Unpaused(address account);
 
     function TOKEN() external view returns (address);
-    function approveRoot(bytes32 root_, bytes32 contentHash_, uint40 cycle_, uint40 startBlock_, uint40 endBlock_)
+    function approveRoot(
+        bytes32 root_,
+        bytes32 contentHash_,
+        uint40 cycle_,
+        uint40 startBlock_,
+        uint40 endBlock_
+    )
         external;
     function claim(
         address recipient_,
@@ -49,7 +55,8 @@ interface IFluidMerkleDistributor {
         uint256 cycle_,
         bytes32[] memory merkleProof_,
         bytes memory metadata_
-    ) external;
+    )
+        external;
     function claimed(address, bytes32) external view returns (uint256);
     function currentMerkleCycle() external view returns (Structs.MerkleCycle memory);
     function encodeClaim(
@@ -59,7 +66,10 @@ interface IFluidMerkleDistributor {
         bytes32 positionId_,
         uint256 cycle_,
         bytes memory metadata_
-    ) external pure returns (bytes memory encoded_, bytes32 hash_);
+    )
+        external
+        pure
+        returns (bytes memory encoded_, bytes32 hash_);
     function hasPendingRoot() external view returns (bool);
     function isApprover(address approver_) external view returns (bool);
     function isProposer(address proposer_) external view returns (bool);
@@ -69,7 +79,13 @@ interface IFluidMerkleDistributor {
     function paused() external view returns (bool);
     function pendingMerkleCycle() external view returns (Structs.MerkleCycle memory);
     function previousMerkleRoot() external view returns (bytes32);
-    function proposeRoot(bytes32 root_, bytes32 contentHash_, uint40 cycle_, uint40 startBlock_, uint40 endBlock_)
+    function proposeRoot(
+        bytes32 root_,
+        bytes32 contentHash_,
+        uint40 cycle_,
+        uint40 startBlock_,
+        uint40 endBlock_
+    )
         external;
     function spell(address[] memory targets_, bytes[] memory calldatas_) external;
     function transferOwnership(address newOwner) external;

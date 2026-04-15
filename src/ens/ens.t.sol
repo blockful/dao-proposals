@@ -137,10 +137,7 @@ abstract contract ENS_Governance is CalldataComparison, ENSHelper {
 
         // Enforce dirPath for live proposals — calldata comparison must not be silently skipped
         if (_isProposalSubmitted()) {
-            require(
-                bytes(_dirPath).length > 0,
-                "Live proposals must set dirPath() for calldata comparison"
-            );
+            require(bytes(_dirPath).length > 0, "Live proposals must set dirPath() for calldata comparison");
         }
 
         // Hash the description
@@ -197,7 +194,6 @@ abstract contract ENS_Governance is CalldataComparison, ENSHelper {
 
         // Assert parameters modified after execution
         _afterExecution();
-
     }
 
     function _selectFork() public virtual {

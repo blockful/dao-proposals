@@ -157,7 +157,15 @@ interface IMetaMorphoV1 {
     function pendingGuardian() external view returns (address value, uint64 validAt);
     function pendingOwner() external view returns (address);
     function pendingTimelock() external view returns (uint192 value, uint64 validAt);
-    function permit(address owner, address spender, uint256 value, uint256 deadline, uint8 v, bytes32 r, bytes32 s)
+    function permit(
+        address owner,
+        address spender,
+        uint256 value,
+        uint256 deadline,
+        uint8 v,
+        bytes32 r,
+        bytes32 s
+    )
         external;
     function previewDeposit(uint256 assets) external view returns (uint256);
     function previewMint(uint256 shares) external view returns (uint256);

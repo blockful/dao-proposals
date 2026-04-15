@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.25 <0.9.0;
 
-import {IENSRoot} from "@ens/interfaces/IENSRoot.sol";
-import {IENSRegistryWithFallback} from "@ens/interfaces/IENSRegistryWithFallback.sol";
-import {Ownable} from "./vendor/oz-v4/Ownable.sol";
-import {ERC165} from "./vendor/oz-v4/ERC165.sol";
+import { IENSRoot } from "@ens/interfaces/IENSRoot.sol";
+import { IENSRegistryWithFallback } from "@ens/interfaces/IENSRegistryWithFallback.sol";
+import { Ownable } from "./vendor/oz-v4/Ownable.sol";
+import { ERC165 } from "./vendor/oz-v4/ERC165.sol";
 
 /// @title RootSecurityController
 /// @notice Break-glass controller for ENS root operations.

@@ -14,11 +14,11 @@ contract Proposal_ENS_EP_6_13_Test is ENS_Governance {
     IERC20 public constant USDC = IERC20(0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48);
     IUSDCx public constant USDCx = IUSDCx(0x1BA8603DA702602A8657980e825A6DAa03Dee93a);
     CFAv1Forwarder public constant SUPERFLUID = CFAv1Forwarder(0xcfA132E353cB4E398080B9700609bb008eceB125);
-    
+
     // Flow parameters
     address public streamPod = 0xB162Bf7A7fD64eF32b787719335d06B2780e31D1;
     address public autowrapper = 0x1D65c6d3AD39d454Ea8F682c49aE7744706eA96d;
-    
+
     // Amounts and flow rates
     uint256 public constant INITIAL_USDC_AMOUNT = 375_000_000_000; // 375,000 USDC (6 decimals)
     uint256 public constant UPGRADE_AMOUNT = 375_000_000_000_000_000_000_000; // 375,000 USDCx (18 decimals)
@@ -30,7 +30,6 @@ contract Proposal_ENS_EP_6_13_Test is ENS_Governance {
     uint256 currentUSDCxBalanceStreamPod;
     uint256 currentUSDCApproval;
     uint256 currentAutowrapAllowance;
-    
 
     function _selectFork() public override {
         vm.createSelectFork({ blockNumber: 22_784_697, urlOrAlias: "mainnet" });
@@ -45,35 +44,29 @@ contract Proposal_ENS_EP_6_13_Test is ENS_Governance {
         currentFlowRate = SUPERFLUID.getFlowrate(address(USDCx), address(timelock), streamPod);
         assertLt(currentFlowRate, NEW_FLOW_RATE);
         console2.log("current flow rate USDCx from timelock -> streamPod:", currentFlowRate);
-        
+
         // Check USDCx balance before upgrade
         currentUSDCxBalanceTimelock = USDCx.balanceOf(address(timelock));
-        console2.log("current USDCx balance on timelock:", currentUSDCxBalanceTimelock/1e18);
-        
+        console2.log("current USDCx balance on timelock:", currentUSDCxBalanceTimelock / 1e18);
+
         // current USDC approval for USDCx
         currentUSDCApproval = USDC.allowance(address(timelock), address(USDCx));
-        console2.log("current USDC approval from timelock -> USDCx:", currentUSDCApproval/1e6);
-        
+        console2.log("current USDC approval from timelock -> USDCx:", currentUSDCApproval / 1e6);
+
         // current USDCx balance on streamPod
         currentUSDCxBalanceStreamPod = USDCx.balanceOf(address(streamPod));
-        console2.log("current USDCx balance on streamPod:", currentUSDCxBalanceStreamPod/1e18);
+        console2.log("current USDCx balance on streamPod:", currentUSDCxBalanceStreamPod / 1e18);
         console2.log("timestamp:", block.timestamp);
 
         // current Autowrap allowance
         currentAutowrapAllowance = USDC.allowance(address(timelock), autowrapper);
-        console2.log("current USDC approval timelock -> autowrapper:", currentAutowrapAllowance/1e6);
+        console2.log("current USDC approval timelock -> autowrapper:", currentAutowrapAllowance / 1e6);
     }
 
     function _generateCallData()
         public
         override
-        returns (
-            address[] memory,
-            uint256[] memory,
-            string[] memory,
-            bytes[] memory,
-            string memory
-        )
+        returns (address[] memory, uint256[] memory, string[] memory, bytes[] memory, string memory)
     {
         description = getDescriptionFromMarkdown();
 
@@ -133,29 +126,28 @@ contract Proposal_ENS_EP_6_13_Test is ENS_Governance {
 
         // Validate flowrate
         assertEq(newFlowRate, NEW_FLOW_RATE);
-        
+
         // Check USDCx balance before upgrade
         uint256 newUSDCxBalanceTimelock = USDCx.balanceOf(address(timelock));
-        console2.log("new USDCx balance on timelock:", newUSDCxBalanceTimelock/1e18);
-        
+        console2.log("new USDCx balance on timelock:", newUSDCxBalanceTimelock / 1e18);
+
         // Validate USDCx balance on timelock was increased
         assertGt(newUSDCxBalanceTimelock, currentUSDCxBalanceTimelock);
-        
+
         // new USDC approval for USDCx
         uint256 newUSDCApproval = USDC.allowance(address(timelock), address(USDCx));
-        console2.log("new USDC approval from timelock -> USDCx:", newUSDCApproval/1e6);
-        
+        console2.log("new USDC approval from timelock -> USDCx:", newUSDCApproval / 1e6);
+
         uint256 newUSDCxBalanceStreamPod = USDCx.balanceOf(address(streamPod));
-        console2.log("new USDCx balance on streamPod:", newUSDCxBalanceStreamPod/1e18);
+        console2.log("new USDCx balance on streamPod:", newUSDCxBalanceStreamPod / 1e18);
         console2.log("timestamp:", block.timestamp);
 
         // new Autowrap allowance
         uint256 newAutowrapAllowance = USDC.allowance(address(timelock), autowrapper);
-        console2.log("new USDC approval timelock -> autowrapper:", newAutowrapAllowance/1e6);
-        
+        console2.log("new USDC approval timelock -> autowrapper:", newAutowrapAllowance / 1e6);
+
         // Validate USDC approval on autowrapper was set to $6.375M
         assertEq(newAutowrapAllowance, AUTOWRAP_ALLOWANCE);
-
     }
 
     function _isProposalSubmitted() public pure override returns (bool) {

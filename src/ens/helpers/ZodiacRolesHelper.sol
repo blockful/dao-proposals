@@ -15,14 +15,16 @@ abstract contract ZodiacRolesHelper is Test {
     bytes32 internal constant MANAGER_ROLE = 0x4d414e4147455200000000000000000000000000000000000000000000000000;
     address internal constant karpatkey = 0xb423e0f6E7430fa29500c5cC9bd83D28c8BD8978;
 
-    // ─── Zodiac Condition: Param Types ─────────────────────────────────
+    // ─── Zodiac Condition: Param Types
+    // ─────────────────────────────────
 
     uint8 internal constant PARAM_TYPE_NONE = 0;
     uint8 internal constant PARAM_TYPE_STATIC = 1;
     uint8 internal constant PARAM_TYPE_TUPLE = 3;
     uint8 internal constant PARAM_TYPE_CALLDATA = 5;
 
-    // ─── Zodiac Condition: Operators ───────────────────────────────────
+    // ─── Zodiac Condition: Operators
+    // ───────────────────────────────────
 
     uint8 internal constant OP_PASS = 0;
     uint8 internal constant OP_OR = 2;
@@ -30,7 +32,8 @@ abstract contract ZodiacRolesHelper is Test {
     uint8 internal constant OP_EQUAL_TO_AVATAR = 15;
     uint8 internal constant OP_EQUAL_TO = 16;
 
-    // ─── Zodiac Condition: Execution Options ──────────────────────────
+    // ─── Zodiac Condition: Execution Options
+    // ──────────────────────────
 
     uint8 internal constant EXEC_NONE = 0;
     uint8 internal constant EXEC_SEND = 1;
@@ -55,13 +58,7 @@ abstract contract ZodiacRolesHelper is Test {
      * @param status The expected violation status (e.g., TargetAddressNotAllowed)
      */
     function _expectConditionViolation(IZodiacRoles.Status status) internal {
-        vm.expectRevert(
-            abi.encodeWithSelector(
-                IZodiacRoles.ConditionViolation.selector,
-                status,
-                bytes32(0)
-            )
-        );
+        vm.expectRevert(abi.encodeWithSelector(IZodiacRoles.ConditionViolation.selector, status, bytes32(0)));
     }
 
     /**

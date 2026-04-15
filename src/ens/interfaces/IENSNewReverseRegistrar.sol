@@ -22,7 +22,8 @@ interface IENSNewReverseRegistrar {
         uint256 signatureExpiry,
         string memory name,
         bytes memory signature
-    ) external;
+    )
+        external;
     function supportsInterface(bytes4 interfaceID) external view returns (bool);
     function transferOwnership(address newOwner) external;
 }

@@ -9,5 +9,6 @@ interface ISparkRewards {
         uint256 amount,
         bytes32 root,
         bytes32[] calldata proof
-    ) external;
+    )
+        external;
 }

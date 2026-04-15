@@ -33,13 +33,7 @@ contract Proposal_ENS_EP_6_17_Test is ENS_Governance {
     function _generateCallData()
         public
         override
-        returns (
-            address[] memory,
-            uint256[] memory,
-            string[] memory,
-            bytes[] memory,
-            string memory
-        )
+        returns (address[] memory, uint256[] memory, string[] memory, bytes[] memory, string memory)
     {
         uint256 numTransactions = 1;
 
@@ -50,8 +44,7 @@ contract Proposal_ENS_EP_6_17_Test is ENS_Governance {
 
         // 1. Set the owner of the .locker TLD to Orange Domains address
         targets[0] = address(root);
-        calldatas[0] =
-            abi.encodeWithSelector(IENSRoot.setSubnodeOwner.selector, labelhashBytes, newOwner);
+        calldatas[0] = abi.encodeWithSelector(IENSRoot.setSubnodeOwner.selector, labelhashBytes, newOwner);
         values[0] = 0;
         signatures[0] = "";
 

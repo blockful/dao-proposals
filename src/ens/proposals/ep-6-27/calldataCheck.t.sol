@@ -30,20 +30,22 @@ interface IMorphoBlue {
     function withdraw(MarketParams memory, uint256, uint256, address, address) external returns (uint256, uint256);
 }
 
-
 contract Proposal_ENS_EP_6_27_Test is ENS_Governance, SafeHelper, ZodiacRolesHelper {
-    // ─── Core Addresses ─────────────────────────────────────────────────
+    // ─── Core Addresses
+    // ─────────────────────────────────────────────────
     address private safe = 0x4F2083f5fBede34C2714aFfb3105539775f7FE64;
     IRolesModifier private constant ROLES_MOD = IRolesModifier(0x703806E61847984346d2D7DDd853049627e50A40);
 
     // ─── MultiSend used by this proposal (differs from the default in MultiSendHelper) ──
     IMultiSend private constant PROPOSAL_MULTI_SEND = IMultiSend(0x9641d764fc13c8B624c04430C7356C1C7C8102e2);
 
-    // ─── Annotation Registry ────────────────────────────────────────────
+    // ─── Annotation Registry
+    // ────────────────────────────────────────────
     IAnnotationRegistry private constant ANNOTATION_REGISTRY =
         IAnnotationRegistry(0x000000000000cd17345801aa8147b8D3950260FF);
 
-    // ─── Protocol Targets ───────────────────────────────────────────────
+    // ─── Protocol Targets
+    // ───────────────────────────────────────────────
     address private UniversalRewardsDistributor = 0x330eefa8a787552DC5cAd3C3cA644844B1E61Ddb;
     address private USDT = 0xdAC17F958D2ee523a2206206994597C13D831ec7;
     address private FluidUSDT = 0x5C20B550819128074FD538Edf79791733ccEdd18;
@@ -58,7 +60,8 @@ contract Proposal_ENS_EP_6_27_Test is ENS_Governance, SafeHelper, ZodiacRolesHel
     address private kpkUSDCPrime = 0xe108fbc04852B5df72f9E44d7C29F47e7A993aDd;
     address private FluidMerklDistributor = 0x7060FE0Dd3E31be01EFAc6B28C8D38018fD163B0;
 
-    // ─── Morpho Blue ────────────────────────────────────────────────────
+    // ─── Morpho Blue
+    // ────────────────────────────────────────────────────
     IMorphoBlue private constant MORPHO_BLUE = IMorphoBlue(0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb);
 
     // ─── Additional DeFi Addresses (used in approve conditions) ────────
@@ -78,11 +81,12 @@ contract Proposal_ENS_EP_6_27_Test is ENS_Governance, SafeHelper, ZodiacRolesHel
     address private constant D0A6_ADDR = 0xd0A61F2963622e992e6534bde4D52fd0a89F39E0;
     address private constant AAVE_USDT = 0x3Afdc9BCA9213A35503b077a6072F3D0d5AB0840;
 
-    // ─── Zodiac Condition: Additional Param Types ─────────────────────
+    // ─── Zodiac Condition: Additional Param Types
+    // ─────────────────────
     uint8 private constant PARAM_TYPE_DYNAMIC = 2;
 
     function _selectFork() public override {
-        vm.createSelectFork({ blockNumber: 24023538, urlOrAlias: "mainnet" });
+        vm.createSelectFork({ blockNumber: 24_023_538, urlOrAlias: "mainnet" });
     }
 
     function _proposer() public pure override returns (address) {
@@ -98,11 +102,7 @@ contract Proposal_ENS_EP_6_27_Test is ENS_Governance, SafeHelper, ZodiacRolesHel
             _safeExecuteTransaction(
                 UniversalRewardsDistributor,
                 abi.encodeWithSelector(
-                    IUniversalRewardsDistributor.claim.selector,
-                    safe,
-                    ensToken,
-                    new bytes32[](1),
-                    1 ether
+                    IUniversalRewardsDistributor.claim.selector, safe, ensToken, new bytes32[](1), 1 ether
                 )
             );
         }
@@ -112,11 +112,7 @@ contract Proposal_ENS_EP_6_27_Test is ENS_Governance, SafeHelper, ZodiacRolesHel
             _safeExecuteTransaction(
                 UniversalRewardsDistributor,
                 abi.encodeWithSelector(
-                    IUniversalRewardsDistributor.claim.selector,
-                    safe,
-                    ensToken,
-                    new bytes32[](1),
-                    1 ether
+                    IUniversalRewardsDistributor.claim.selector, safe, ensToken, new bytes32[](1), 1 ether
                 )
             );
         }
@@ -126,96 +122,48 @@ contract Proposal_ENS_EP_6_27_Test is ENS_Governance, SafeHelper, ZodiacRolesHel
             {
                 {
                     vm.expectRevert();
+                    _safeExecuteTransaction(USDT, abi.encodeWithSelector(IERC20.approve.selector, FluidUSDT, 1 ether));
+                }
+                {
+                    _expectConditionViolation(IZodiacRoles.Status.TargetAddressNotAllowed);
                     _safeExecuteTransaction(
-                        USDT,
-                        abi.encodeWithSelector(
-                            IERC20.approve.selector,
-                            FluidUSDT,
-                            1 ether
-                        )
+                        kpkUSDCv2, abi.encodeWithSelector(IFluidVaultV2.deposit.selector, 1 ether, safe)
                     );
                 }
                 {
                     _expectConditionViolation(IZodiacRoles.Status.TargetAddressNotAllowed);
                     _safeExecuteTransaction(
-                        kpkUSDCv2,
-                        abi.encodeWithSelector(
-                            IFluidVaultV2.deposit.selector,
-                            1 ether,
-                            safe
-                        )
-                    );
-                }
-                {
-                    _expectConditionViolation(IZodiacRoles.Status.TargetAddressNotAllowed);
-                    _safeExecuteTransaction(
-                        kpkUSDCv2,
-                        abi.encodeWithSelector(
-                            IFluidVaultV2.redeem.selector,
-                            1 ether,
-                            safe,
-                            safe
-                        )
+                        kpkUSDCv2, abi.encodeWithSelector(IFluidVaultV2.redeem.selector, 1 ether, safe, safe)
                     );
                 }
             }
             {
                 _expectConditionViolation(IZodiacRoles.Status.TargetAddressNotAllowed);
                 _safeExecuteTransaction(
-                    kpkUSDCv2,
-                    abi.encodeWithSelector(
-                        IFluidVaultV2.redeem.selector,
-                        1 ether,
-                        safe,
-                        safe
-                    )
+                    kpkUSDCv2, abi.encodeWithSelector(IFluidVaultV2.redeem.selector, 1 ether, safe, safe)
                 );
             }
             {
                 _expectConditionViolation(IZodiacRoles.Status.TargetAddressNotAllowed);
-                _safeExecuteTransaction(
-                    GHO,
-                    abi.encodeWithSelector(
-                        IERC20.approve.selector,
-                        FluidGHO,
-                        1 ether
-                    )
-                );
+                _safeExecuteTransaction(GHO, abi.encodeWithSelector(IERC20.approve.selector, FluidGHO, 1 ether));
             }
             {
                 {
                     _expectConditionViolation(IZodiacRoles.Status.TargetAddressNotAllowed);
                     _safeExecuteTransaction(
-                        FluidGHO,
-                        abi.encodeWithSelector(
-                            IFluidVaultV2.deposit.selector,
-                            1 ether,
-                            safe
-                        )
+                        FluidGHO, abi.encodeWithSelector(IFluidVaultV2.deposit.selector, 1 ether, safe)
                     );
                 }
                 {
                     _expectConditionViolation(IZodiacRoles.Status.TargetAddressNotAllowed);
                     _safeExecuteTransaction(
-                        FluidGHO,
-                        abi.encodeWithSelector(
-                            IFluidVaultV2.withdraw.selector,
-                            1 ether,
-                            safe,
-                            safe
-                        )
+                        FluidGHO, abi.encodeWithSelector(IFluidVaultV2.withdraw.selector, 1 ether, safe, safe)
                     );
                 }
                 {
                     _expectConditionViolation(IZodiacRoles.Status.TargetAddressNotAllowed);
                     _safeExecuteTransaction(
-                        FluidGHO,
-                        abi.encodeWithSelector(
-                            IFluidVaultV2.redeem.selector,
-                            1 ether,
-                            safe,
-                            safe
-                        )
+                        FluidGHO, abi.encodeWithSelector(IFluidVaultV2.redeem.selector, 1 ether, safe, safe)
                     );
                 }
             }
@@ -241,36 +189,19 @@ contract Proposal_ENS_EP_6_27_Test is ENS_Governance, SafeHelper, ZodiacRolesHel
                 {
                     _expectConditionViolation(IZodiacRoles.Status.TargetAddressNotAllowed);
                     _safeExecuteTransaction(
-                        FluidUSDC,
-                        abi.encodeWithSelector(
-                            IFluidVaultV2.deposit.selector,
-                            1 ether,
-                            safe
-                        )
+                        FluidUSDC, abi.encodeWithSelector(IFluidVaultV2.deposit.selector, 1 ether, safe)
                     );
                 }
                 {
                     _expectConditionViolation(IZodiacRoles.Status.TargetAddressNotAllowed);
                     _safeExecuteTransaction(
-                        FluidUSDC,
-                        abi.encodeWithSelector(
-                            IFluidVaultV2.withdraw.selector,
-                            1 ether,
-                            safe,
-                            safe
-                        )
+                        FluidUSDC, abi.encodeWithSelector(IFluidVaultV2.withdraw.selector, 1 ether, safe, safe)
                     );
                 }
                 {
                     _expectConditionViolation(IZodiacRoles.Status.TargetAddressNotAllowed);
                     _safeExecuteTransaction(
-                        FluidUSDC,
-                        abi.encodeWithSelector(
-                            IFluidVaultV2.redeem.selector,
-                            1 ether,
-                            safe,
-                            safe
-                        )
+                        FluidUSDC, abi.encodeWithSelector(IFluidVaultV2.redeem.selector, 1 ether, safe, safe)
                     );
                 }
             }
@@ -281,14 +212,15 @@ contract Proposal_ENS_EP_6_27_Test is ENS_Governance, SafeHelper, ZodiacRolesHel
                             IZodiacRoles.ConditionViolation.selector, IZodiacRoles.Status.OrViolation, bytes32(0)
                         )
                     );
-                    _safeExecuteTransaction(
-                        USDC,
+                    _safeExecuteTransaction(USDC, abi.encodeWithSelector(IERC20.approve.selector, kpkUSDCv2, 1 ether));
+                }
+                {
+                    vm.expectRevert(
                         abi.encodeWithSelector(
-                            IERC20.approve.selector,
-                            kpkUSDCv2,
-                            1 ether
+                            IZodiacRoles.ConditionViolation.selector, IZodiacRoles.Status.OrViolation, bytes32(0)
                         )
                     );
+                    _safeExecuteTransaction(USDC, abi.encodeWithSelector(IERC20.approve.selector, FluidUSDC, 1 ether));
                 }
                 {
                     vm.expectRevert(
@@ -297,27 +229,7 @@ contract Proposal_ENS_EP_6_27_Test is ENS_Governance, SafeHelper, ZodiacRolesHel
                         )
                     );
                     _safeExecuteTransaction(
-                        USDC,
-                        abi.encodeWithSelector(
-                            IERC20.approve.selector,
-                            FluidUSDC,
-                            1 ether
-                        )
-                    );
-                }
-                {
-                    vm.expectRevert(
-                        abi.encodeWithSelector(
-                            IZodiacRoles.ConditionViolation.selector, IZodiacRoles.Status.OrViolation, bytes32(0)
-                        )
-                    );
-                    _safeExecuteTransaction(
-                        USDC,
-                        abi.encodeWithSelector(
-                            IERC20.approve.selector,
-                            kpkUSDCPrime,
-                            1 ether
-                        )
+                        USDC, abi.encodeWithSelector(IERC20.approve.selector, kpkUSDCPrime, 1 ether)
                     );
                 }
             }
@@ -325,36 +237,19 @@ contract Proposal_ENS_EP_6_27_Test is ENS_Governance, SafeHelper, ZodiacRolesHel
                 {
                     _expectConditionViolation(IZodiacRoles.Status.TargetAddressNotAllowed);
                     _safeExecuteTransaction(
-                        kpkETHv2,
-                        abi.encodeWithSelector(
-                            IFluidVaultV2.deposit.selector,
-                            1 ether,
-                            safe
-                        )
+                        kpkETHv2, abi.encodeWithSelector(IFluidVaultV2.deposit.selector, 1 ether, safe)
                     );
                 }
                 {
                     _expectConditionViolation(IZodiacRoles.Status.TargetAddressNotAllowed);
                     _safeExecuteTransaction(
-                        kpkETHv2,
-                        abi.encodeWithSelector(
-                            IFluidVaultV2.withdraw.selector,
-                            1 ether,
-                            safe,
-                            safe
-                        )
+                        kpkETHv2, abi.encodeWithSelector(IFluidVaultV2.withdraw.selector, 1 ether, safe, safe)
                     );
                 }
                 {
                     _expectConditionViolation(IZodiacRoles.Status.TargetAddressNotAllowed);
                     _safeExecuteTransaction(
-                        kpkETHv2,
-                        abi.encodeWithSelector(
-                            IFluidVaultV2.redeem.selector,
-                            1 ether,
-                            safe,
-                            safe
-                        )
+                        kpkETHv2, abi.encodeWithSelector(IFluidVaultV2.redeem.selector, 1 ether, safe, safe)
                     );
                 }
             }
@@ -362,36 +257,19 @@ contract Proposal_ENS_EP_6_27_Test is ENS_Governance, SafeHelper, ZodiacRolesHel
                 {
                     _expectConditionViolation(IZodiacRoles.Status.TargetAddressNotAllowed);
                     _safeExecuteTransaction(
-                        kpkUSDCPrime,
-                        abi.encodeWithSelector(
-                            IMetaMorphoV1.deposit.selector,
-                            1 ether,
-                            safe
-                        )
+                        kpkUSDCPrime, abi.encodeWithSelector(IMetaMorphoV1.deposit.selector, 1 ether, safe)
                     );
                 }
                 {
                     _expectConditionViolation(IZodiacRoles.Status.TargetAddressNotAllowed);
                     _safeExecuteTransaction(
-                        kpkUSDCPrime,
-                        abi.encodeWithSelector(
-                            IMetaMorphoV1.withdraw.selector,
-                            1 ether,
-                            safe,
-                            safe
-                        )
+                        kpkUSDCPrime, abi.encodeWithSelector(IMetaMorphoV1.withdraw.selector, 1 ether, safe, safe)
                     );
                 }
                 {
                     _expectConditionViolation(IZodiacRoles.Status.TargetAddressNotAllowed);
                     _safeExecuteTransaction(
-                        kpkUSDCPrime,
-                        abi.encodeWithSelector(
-                            IMetaMorphoV1.redeem.selector,
-                            1 ether,
-                            safe,
-                            safe
-                        )
+                        kpkUSDCPrime, abi.encodeWithSelector(IMetaMorphoV1.redeem.selector, 1 ether, safe, safe)
                     );
                 }
             }
@@ -401,49 +279,25 @@ contract Proposal_ENS_EP_6_27_Test is ENS_Governance, SafeHelper, ZodiacRolesHel
                         IZodiacRoles.ConditionViolation.selector, IZodiacRoles.Status.OrViolation, bytes32(0)
                     )
                 );
-                _safeExecuteTransaction(
-                    USDT,
-                    abi.encodeWithSelector(
-                        IERC20.approve.selector,
-                        FluidUSDT,
-                        1 ether
-                    )
-                );
+                _safeExecuteTransaction(USDT, abi.encodeWithSelector(IERC20.approve.selector, FluidUSDT, 1 ether));
             }
             {
                 {
                     _expectConditionViolation(IZodiacRoles.Status.TargetAddressNotAllowed);
                     _safeExecuteTransaction(
-                        kpkETHPrime,
-                        abi.encodeWithSelector(
-                            IMetaMorphoV1.deposit.selector,
-                            1 ether,
-                            safe
-                        )
+                        kpkETHPrime, abi.encodeWithSelector(IMetaMorphoV1.deposit.selector, 1 ether, safe)
                     );
                 }
                 {
                     _expectConditionViolation(IZodiacRoles.Status.TargetAddressNotAllowed);
                     _safeExecuteTransaction(
-                        kpkETHPrime,
-                        abi.encodeWithSelector(
-                            IMetaMorphoV1.withdraw.selector,
-                            1 ether,
-                            safe,
-                            safe
-                        )
+                        kpkETHPrime, abi.encodeWithSelector(IMetaMorphoV1.withdraw.selector, 1 ether, safe, safe)
                     );
                 }
                 {
                     _expectConditionViolation(IZodiacRoles.Status.TargetAddressNotAllowed);
                     _safeExecuteTransaction(
-                        kpkETHPrime,
-                        abi.encodeWithSelector(
-                            IMetaMorphoV1.redeem.selector,
-                            1 ether,
-                            safe,
-                            safe
-                        )
+                        kpkETHPrime, abi.encodeWithSelector(IMetaMorphoV1.redeem.selector, 1 ether, safe, safe)
                     );
                 }
             }
@@ -453,27 +307,13 @@ contract Proposal_ENS_EP_6_27_Test is ENS_Governance, SafeHelper, ZodiacRolesHel
                         IZodiacRoles.ConditionViolation.selector, IZodiacRoles.Status.OrViolation, bytes32(0)
                     )
                 );
-                _safeExecuteTransaction(
-                    WETH,
-                    abi.encodeWithSelector(
-                        IERC20.approve.selector,
-                        kpkETHv2,
-                        1 ether
-                    )
-                );
+                _safeExecuteTransaction(WETH, abi.encodeWithSelector(IERC20.approve.selector, kpkETHv2, 1 ether));
                 vm.expectRevert(
                     abi.encodeWithSelector(
                         IZodiacRoles.ConditionViolation.selector, IZodiacRoles.Status.OrViolation, bytes32(0)
                     )
                 );
-                _safeExecuteTransaction(
-                    WETH,
-                    abi.encodeWithSelector(
-                        IERC20.approve.selector,
-                        kpkETHPrime,
-                        1 ether
-                    )
-                );
+                _safeExecuteTransaction(WETH, abi.encodeWithSelector(IERC20.approve.selector, kpkETHPrime, 1 ether));
             }
         }
 
@@ -509,85 +349,35 @@ contract Proposal_ENS_EP_6_27_Test is ENS_Governance, SafeHelper, ZodiacRolesHel
         // SCOPE FUNCTION
         {
             {
-                _safeExecuteTransaction(
-                    USDT,
-                    abi.encodeWithSelector(
-                        IERC20.approve.selector,
-                        FluidUSDT,
-                        1 ether
-                    )
-                );
+                _safeExecuteTransaction(USDT, abi.encodeWithSelector(IERC20.approve.selector, FluidUSDT, 1 ether));
             }
             {
                 {
                     _safeExecuteTransaction(
-                        kpkUSDCv2,
-                        abi.encodeWithSelector(
-                            IFluidVaultV2.deposit.selector,
-                            1 ether,
-                            safe
-                        )
+                        kpkUSDCv2, abi.encodeWithSelector(IFluidVaultV2.deposit.selector, 1 ether, safe)
                     );
                 }
                 {
                     _safeExecuteTransaction(
-                        kpkUSDCv2,
-                        abi.encodeWithSelector(
-                            IFluidVaultV2.redeem.selector,
-                            1 ether,
-                            safe,
-                            safe
-                        )
+                        kpkUSDCv2, abi.encodeWithSelector(IFluidVaultV2.redeem.selector, 1 ether, safe, safe)
                     );
                 }
                 {
                     _safeExecuteTransaction(
-                        kpkUSDCv2,
-                        abi.encodeWithSelector(
-                            IFluidVaultV2.redeem.selector,
-                            1 ether,
-                            safe,
-                            safe
-                        )
+                        kpkUSDCv2, abi.encodeWithSelector(IFluidVaultV2.redeem.selector, 1 ether, safe, safe)
                     );
                 }
             }
             {
-                _safeExecuteTransaction(
-                    GHO,
-                    abi.encodeWithSelector(
-                        IERC20.approve.selector,
-                        FluidGHO,
-                        1 ether
-                    )
-                );
+                _safeExecuteTransaction(GHO, abi.encodeWithSelector(IERC20.approve.selector, FluidGHO, 1 ether));
             }
             {
+                _safeExecuteTransaction(FluidGHO, abi.encodeWithSelector(IFluidVaultV2.deposit.selector, 1 ether, safe));
                 _safeExecuteTransaction(
-                    FluidGHO,
-                    abi.encodeWithSelector(
-                        IFluidVaultV2.deposit.selector,
-                        1 ether,
-                        safe
-                    )
+                    FluidGHO, abi.encodeWithSelector(IFluidVaultV2.withdraw.selector, 1 ether, safe, safe)
                 );
                 _safeExecuteTransaction(
-                    FluidGHO,
-                    abi.encodeWithSelector(
-                        IFluidVaultV2.withdraw.selector,
-                        1 ether,
-                        safe,
-                        safe
-                    )
-                );
-                _safeExecuteTransaction(
-                    FluidGHO,
-                    abi.encodeWithSelector(
-                        IFluidVaultV2.redeem.selector,
-                        1 ether,
-                        safe,
-                        safe
-                    )
+                    FluidGHO, abi.encodeWithSelector(IFluidVaultV2.redeem.selector, 1 ether, safe, safe)
                 );
             }
             {
@@ -608,206 +398,98 @@ contract Proposal_ENS_EP_6_27_Test is ENS_Governance, SafeHelper, ZodiacRolesHel
             {
                 {
                     _safeExecuteTransaction(
-                        FluidUSDC,
-                        abi.encodeWithSelector(
-                            IFluidVaultV2.deposit.selector,
-                            1 ether,
-                            safe
-                        )
+                        FluidUSDC, abi.encodeWithSelector(IFluidVaultV2.deposit.selector, 1 ether, safe)
                     );
                 }
                 {
                     _safeExecuteTransaction(
-                        FluidUSDC,
-                        abi.encodeWithSelector(
-                            IFluidVaultV2.withdraw.selector,
-                            1 ether,
-                            safe,
-                            safe
-                        )
+                        FluidUSDC, abi.encodeWithSelector(IFluidVaultV2.withdraw.selector, 1 ether, safe, safe)
                     );
                 }
                 {
                     _safeExecuteTransaction(
-                        FluidUSDC,
-                        abi.encodeWithSelector(
-                            IFluidVaultV2.redeem.selector,
-                            1 ether,
-                            safe,
-                            safe
-                        )
+                        FluidUSDC, abi.encodeWithSelector(IFluidVaultV2.redeem.selector, 1 ether, safe, safe)
+                    );
+                }
+            }
+            {
+                {
+                    _safeExecuteTransaction(USDC, abi.encodeWithSelector(IERC20.approve.selector, kpkUSDCv2, 1 ether));
+                }
+                {
+                    _safeExecuteTransaction(USDC, abi.encodeWithSelector(IERC20.approve.selector, FluidUSDC, 1 ether));
+                }
+                {
+                    _safeExecuteTransaction(
+                        USDC, abi.encodeWithSelector(IERC20.approve.selector, kpkUSDCPrime, 1 ether)
                     );
                 }
             }
             {
                 {
                     _safeExecuteTransaction(
-                        USDC,
-                        abi.encodeWithSelector(
-                            IERC20.approve.selector,
-                            kpkUSDCv2,
-                            1 ether
-                        )
+                        kpkETHv2, abi.encodeWithSelector(IFluidVaultV2.deposit.selector, 1 ether, safe)
                     );
                 }
                 {
                     _safeExecuteTransaction(
-                        USDC,
-                        abi.encodeWithSelector(
-                            IERC20.approve.selector,
-                            FluidUSDC,
-                            1 ether
-                        )
+                        kpkETHv2, abi.encodeWithSelector(IFluidVaultV2.withdraw.selector, 1 ether, safe, safe)
                     );
                 }
                 {
                     _safeExecuteTransaction(
-                        USDC,
-                        abi.encodeWithSelector(
-                            IERC20.approve.selector,
-                            kpkUSDCPrime,
-                            1 ether
-                        )
+                        kpkETHv2, abi.encodeWithSelector(IFluidVaultV2.redeem.selector, 1 ether, safe, safe)
                     );
                 }
             }
             {
                 {
                     _safeExecuteTransaction(
-                        kpkETHv2,
-                        abi.encodeWithSelector(
-                            IFluidVaultV2.deposit.selector,
-                            1 ether,
-                            safe
-                        )
+                        kpkUSDCPrime, abi.encodeWithSelector(IMetaMorphoV1.deposit.selector, 1 ether, safe)
                     );
                 }
                 {
                     _safeExecuteTransaction(
-                        kpkETHv2,
-                        abi.encodeWithSelector(
-                            IFluidVaultV2.withdraw.selector,
-                            1 ether,
-                            safe,
-                            safe
-                        )
+                        kpkUSDCPrime, abi.encodeWithSelector(IMetaMorphoV1.withdraw.selector, 1 ether, safe, safe)
                     );
                 }
                 {
                     _safeExecuteTransaction(
-                        kpkETHv2,
-                        abi.encodeWithSelector(
-                            IFluidVaultV2.redeem.selector,
-                            1 ether,
-                            safe,
-                            safe
-                        )
+                        kpkUSDCPrime, abi.encodeWithSelector(IMetaMorphoV1.redeem.selector, 1 ether, safe, safe)
                     );
                 }
             }
             {
-                {
-                    _safeExecuteTransaction(
-                        kpkUSDCPrime,
-                        abi.encodeWithSelector(
-                            IMetaMorphoV1.deposit.selector,
-                            1 ether,
-                            safe
-                        )
-                    );
-                }
-                {
-                    _safeExecuteTransaction(
-                        kpkUSDCPrime,
-                        abi.encodeWithSelector(
-                            IMetaMorphoV1.withdraw.selector,
-                            1 ether,
-                            safe,
-                            safe
-                        )
-                    );
-                }
-                {
-                    _safeExecuteTransaction(
-                        kpkUSDCPrime,
-                        abi.encodeWithSelector(
-                            IMetaMorphoV1.redeem.selector,
-                            1 ether,
-                            safe,
-                            safe
-                        )
-                    );
-                }
-            }
-            {
-                _safeExecuteTransaction(
-                    USDT,
-                    abi.encodeWithSelector(
-                        IERC20.approve.selector,
-                        FluidUSDT,
-                        1 ether
-                    )
-                );
+                _safeExecuteTransaction(USDT, abi.encodeWithSelector(IERC20.approve.selector, FluidUSDT, 1 ether));
             }
             {
                 {
                     _safeExecuteTransaction(
-                        kpkETHPrime,
-                        abi.encodeWithSelector(
-                            IMetaMorphoV1.deposit.selector,
-                            1 ether,
-                            safe
-                        )
+                        kpkETHPrime, abi.encodeWithSelector(IMetaMorphoV1.deposit.selector, 1 ether, safe)
                     );
                 }
                 {
                     _safeExecuteTransaction(
-                        kpkETHPrime,
-                        abi.encodeWithSelector(
-                            IMetaMorphoV1.withdraw.selector,
-                            1 ether,
-                            safe,
-                            safe
-                        )
+                        kpkETHPrime, abi.encodeWithSelector(IMetaMorphoV1.withdraw.selector, 1 ether, safe, safe)
                     );
                 }
                 {
                     _safeExecuteTransaction(
-                        kpkETHPrime,
-                        abi.encodeWithSelector(
-                            IMetaMorphoV1.redeem.selector,
-                            1 ether,
-                            safe,
-                            safe
-                        )
+                        kpkETHPrime, abi.encodeWithSelector(IMetaMorphoV1.redeem.selector, 1 ether, safe, safe)
                     );
                 }
             }
             {
-                _safeExecuteTransaction(
-                    WETH,
-                    abi.encodeWithSelector(
-                        IERC20.approve.selector,
-                        kpkETHv2,
-                        1 ether
-                    )
-                );
-                _safeExecuteTransaction(
-                    WETH,
-                    abi.encodeWithSelector(
-                        IERC20.approve.selector,
-                        kpkETHPrime,
-                        1 ether
-                    )
-                );
+                _safeExecuteTransaction(WETH, abi.encodeWithSelector(IERC20.approve.selector, kpkETHv2, 1 ether));
+                _safeExecuteTransaction(WETH, abi.encodeWithSelector(IERC20.approve.selector, kpkETHPrime, 1 ether));
             }
         }
 
         vm.stopPrank();
     }
 
-
-    // ─── Calldata Generation ────────────────────────────────────────────
+    // ─── Calldata Generation
+    // ────────────────────────────────────────────
 
     function _generateCallData()
         public
@@ -829,23 +511,18 @@ contract Proposal_ENS_EP_6_27_Test is ENS_Governance, SafeHelper, ZodiacRolesHel
     /// @dev Build the complete Safe execTransaction calldata (DelegateCall to MultiSend).
     function _buildFullSafeCalldata() internal view returns (bytes memory) {
         (, bytes memory cd) = _buildSafeExecDelegateCalldata(
-            safe,
-            address(PROPOSAL_MULTI_SEND),
-            _buildMultiSendCalldata(),
-            address(timelock)
+            safe, address(PROPOSAL_MULTI_SEND), _buildMultiSendCalldata(), address(timelock)
         );
         return cd;
     }
 
     /// @dev Build the multiSend(bytes) calldata wrapping all 40 packed transactions.
     function _buildMultiSendCalldata() internal view returns (bytes memory) {
-        return abi.encodeWithSelector(
-            IMultiSend.multiSend.selector,
-            _buildPackedTransactions()
-        );
+        return abi.encodeWithSelector(IMultiSend.multiSend.selector, _buildPackedTransactions());
     }
 
-    // ─── MultiSend Payload ──────────────────────────────────────────────
+    // ─── MultiSend Payload
+    // ──────────────────────────────────────────────
 
     function _buildPackedTransactions() internal view returns (bytes memory) {
         return abi.encodePacked(
@@ -863,16 +540,15 @@ contract Proposal_ENS_EP_6_27_Test is ENS_Governance, SafeHelper, ZodiacRolesHel
         );
     }
 
-    // ─── Revoke + Approve Block (TX 1-5) ────────────────────────────────
+    // ─── Revoke + Approve Block (TX 1-5)
+    // ────────────────────────────────
 
     function _packRevokeAndApproveBlock() internal view returns (bytes memory) {
-        return abi.encodePacked(
-            _packRevokeBlock(),
-            _packApproveBlock()
-        );
+        return abi.encodePacked(_packRevokeBlock(), _packApproveBlock());
     }
 
-    // ─── Revoke Block (TX 1-2) ──────────────────────────────────────────
+    // ─── Revoke Block (TX 1-2)
+    // ──────────────────────────────────────────
 
     function _packRevokeBlock() internal view returns (bytes memory) {
         return abi.encodePacked(
@@ -894,14 +570,11 @@ contract Proposal_ENS_EP_6_27_Test is ENS_Governance, SafeHelper, ZodiacRolesHel
         );
     }
 
-    // ─── Approve Scope Block (TX 3-5) ───────────────────────────────────
+    // ─── Approve Scope Block (TX 3-5)
+    // ───────────────────────────────────
 
     function _packApproveBlock() internal view returns (bytes memory) {
-        return abi.encodePacked(
-            _packWethApprove(),
-            _packUsdcApprove(),
-            _packUsdtApprove()
-        );
+        return abi.encodePacked(_packWethApprove(), _packUsdcApprove(), _packUsdtApprove());
     }
 
     function _packWethApprove() internal view returns (bytes memory) {
@@ -949,7 +622,8 @@ contract Proposal_ENS_EP_6_27_Test is ENS_Governance, SafeHelper, ZodiacRolesHel
         );
     }
 
-    // ─── Morpho Blue Block (TX 6-7) ─────────────────────────────────────
+    // ─── Morpho Blue Block (TX 6-7)
+    // ─────────────────────────────────────
 
     function _packMorphoBlock() internal view returns (bytes memory) {
         return abi.encodePacked(
@@ -980,31 +654,37 @@ contract Proposal_ENS_EP_6_27_Test is ENS_Governance, SafeHelper, ZodiacRolesHel
         );
     }
 
-    // ─── GHO Block (TX 8-13) ────────────────────────────────────────────
+    // ─── GHO Block (TX 8-13)
+    // ────────────────────────────────────────────
 
     function _packGhoBlock() internal view returns (bytes memory) {
-        bytes memory a = _packScopeTarget(GHO);                                                   // TX 8
-        bytes memory b = _packScopeApprove(GHO, _singleSpenderApproveConditions(FluidGHO));        // TX 9
-        bytes memory d = _packScopeTarget(FluidGHO);                                               // TX 10
-        return abi.encodePacked(a, b, d, _packVaultDWR(FluidGHO, true));                           // TX 11-13
+        bytes memory a = _packScopeTarget(GHO); // TX 8
+        bytes memory b = _packScopeApprove(GHO, _singleSpenderApproveConditions(FluidGHO)); // TX 9
+        bytes memory d = _packScopeTarget(FluidGHO); // TX 10
+        return abi.encodePacked(a, b, d, _packVaultDWR(FluidGHO, true)); // TX 11-13
     }
 
-    // ─── FluidMerkl Block (TX 14-15) ────────────────────────────────────
+    // ─── FluidMerkl Block (TX 14-15)
+    // ────────────────────────────────────
 
     function _packFluidMerklBlock() internal view returns (bytes memory) {
         bytes memory a = _packScopeTarget(FluidMerklDistributor);
-        bytes memory b = _packScopeFunction(FluidMerklDistributor, IFluidMerkleDistributor.claim.selector, _fluidMerklClaimConditions());
+        bytes memory b = _packScopeFunction(
+            FluidMerklDistributor, IFluidMerkleDistributor.claim.selector, _fluidMerklClaimConditions()
+        );
         return abi.encodePacked(a, b);
     }
 
-    // ─── FluidUSDC Block (TX 16-19) ─────────────────────────────────────
+    // ─── FluidUSDC Block (TX 16-19)
+    // ─────────────────────────────────────
 
     function _packFluidUsdcBlock() internal view returns (bytes memory) {
         bytes memory a = _packScopeTarget(FluidUSDC);
         return abi.encodePacked(a, _packVaultDWR(FluidUSDC, true));
     }
 
-    // ─── FluidUSDT Block (TX 20-23) ─────────────────────────────────────
+    // ─── FluidUSDT Block (TX 20-23)
+    // ─────────────────────────────────────
 
     function _packFluidUsdtBlock() internal view returns (bytes memory) {
         bytes memory a = _packScopeTarget(FluidUSDT);
@@ -1018,7 +698,8 @@ contract Proposal_ENS_EP_6_27_Test is ENS_Governance, SafeHelper, ZodiacRolesHel
         return abi.encodePacked(a, _packVaultDWR(kpkETHPrime, false));
     }
 
-    // ─── kpkETHv2 Block (TX 28-31) — Fluid Vault ───────────────────────
+    // ─── kpkETHv2 Block (TX 28-31) — Fluid Vault
+    // ───────────────────────
 
     function _packKpkEthV2Block() internal view returns (bytes memory) {
         bytes memory a = _packScopeTarget(kpkETHv2);
@@ -1032,20 +713,21 @@ contract Proposal_ENS_EP_6_27_Test is ENS_Governance, SafeHelper, ZodiacRolesHel
         return abi.encodePacked(a, _packVaultDWR(kpkUSDCPrime, false));
     }
 
-    // ─── kpkUSDCv2 Block (TX 36-39) — Fluid Vault ──────────────────────
+    // ─── kpkUSDCv2 Block (TX 36-39) — Fluid Vault
+    // ──────────────────────
 
     function _packKpkUsdcV2Block() internal view returns (bytes memory) {
         bytes memory a = _packScopeTarget(kpkUSDCv2);
         return abi.encodePacked(a, _packVaultDWR(kpkUSDCv2, true));
     }
 
-    // ─── Reusable Pack Helpers ────────────────────────────────────────────
+    // ─── Reusable Pack Helpers
+    // ────────────────────────────────────────────
 
     /// @dev Pack a scopeTarget call for the MANAGER role
     function _packScopeTarget(address target) internal pure returns (bytes memory) {
         return _packTx(
-            address(ROLES_MOD),
-            abi.encodeWithSelector(IRolesModifier.scopeTarget.selector, MANAGER_ROLE, target)
+            address(ROLES_MOD), abi.encodeWithSelector(IRolesModifier.scopeTarget.selector, MANAGER_ROLE, target)
         );
     }
 
@@ -1055,13 +737,21 @@ contract Proposal_ENS_EP_6_27_Test is ENS_Governance, SafeHelper, ZodiacRolesHel
             address(ROLES_MOD),
             abi.encodeWithSelector(
                 IRolesModifier.scopeFunction.selector,
-                MANAGER_ROLE, target, IERC20.approve.selector, conditions, EXEC_NONE
+                MANAGER_ROLE,
+                target,
+                IERC20.approve.selector,
+                conditions,
+                EXEC_NONE
             )
         );
     }
 
     /// @dev Pack a scopeFunction call for the MANAGER role (arbitrary selector)
-    function _packScopeFunction(address target, bytes4 sel, ConditionFlat[] memory conditions)
+    function _packScopeFunction(
+        address target,
+        bytes4 sel,
+        ConditionFlat[] memory conditions
+    )
         internal
         pure
         returns (bytes memory)
@@ -1069,8 +759,7 @@ contract Proposal_ENS_EP_6_27_Test is ENS_Governance, SafeHelper, ZodiacRolesHel
         return _packTx(
             address(ROLES_MOD),
             abi.encodeWithSelector(
-                IRolesModifier.scopeFunction.selector,
-                MANAGER_ROLE, target, sel, conditions, EXEC_NONE
+                IRolesModifier.scopeFunction.selector, MANAGER_ROLE, target, sel, conditions, EXEC_NONE
             )
         );
     }
@@ -1088,14 +777,14 @@ contract Proposal_ENS_EP_6_27_Test is ENS_Governance, SafeHelper, ZodiacRolesHel
         return abi.encodePacked(a, b, d);
     }
 
-    // ─── Annotation (TX 40) ─────────────────────────────────────────────
+    // ─── Annotation (TX 40)
+    // ─────────────────────────────────────────────
 
     function _packAnnotation() internal pure returns (bytes memory) {
         // TX 40: post annotation to AnnotationRegistry
         string memory annotationJson = '{"rolesMod":"0x703806e61847984346d2d7ddd853049627e50a40",'
             '"roleKey":"0x4d414e4147455200000000000000000000000000000000000000000000000000",'
-            '"addAnnotations":[{"schema":"https://kit.karpatkey.com/api/v1/openapi.json",'
-            '"uris":['
+            '"addAnnotations":[{"schema":"https://kit.karpatkey.com/api/v1/openapi.json",' '"uris":['
             '"https://kit.karpatkey.com/api/v1/permissions/eth/fluid/deposit?targets=GHO",'
             '"https://kit.karpatkey.com/api/v1/permissions/eth/fluid/deposit?targets=USDC",'
             '"https://kit.karpatkey.com/api/v1/permissions/eth/fluid/deposit?targets=USDT",'
@@ -1108,12 +797,11 @@ contract Proposal_ENS_EP_6_27_Test is ENS_Governance, SafeHelper, ZodiacRolesHel
             '"https://kit.karpatkey.com/api/v1/permissions/eth/morphoVaults/deposit?targets=0xBb50A5341368751024ddf33385BA8cf61fE65FF9",'
             '"https://kit.karpatkey.com/api/v1/permissions/eth/morphoVaults/deposit?targets=0xe108fbc04852B5df72f9E44d7C29F47e7A993aDd",'
             '"https://kit.karpatkey.com/api/v1/permissions/eth/morphoVaults/deposit?targets=0x4Ef53d2cAa51C447fdFEEedee8F07FD1962C9ee6"'
-            ']}]}';
+            "]}]}";
         string memory tag = "ROLES_PERMISSION_ANNOTATION";
 
         return _packTx(
-            address(ANNOTATION_REGISTRY),
-            abi.encodeWithSelector(IAnnotationRegistry.post.selector, annotationJson, tag)
+            address(ANNOTATION_REGISTRY), abi.encodeWithSelector(IAnnotationRegistry.post.selector, annotationJson, tag)
         );
     }
 
@@ -1127,7 +815,12 @@ contract Proposal_ENS_EP_6_27_Test is ENS_Governance, SafeHelper, ZodiacRolesHel
     }
 
     /// @dev Compact condition constructor to save stack space
-    function _c(uint8 parent, uint8 paramType, uint8 operator, bytes memory compValue)
+    function _c(
+        uint8 parent,
+        uint8 paramType,
+        uint8 operator,
+        bytes memory compValue
+    )
         internal
         pure
         returns (ConditionFlat memory)
@@ -1140,21 +833,22 @@ contract Proposal_ENS_EP_6_27_Test is ENS_Governance, SafeHelper, ZodiacRolesHel
         return _c(parent, PARAM_TYPE_STATIC, OP_EQUAL_TO, _addrComp(addr));
     }
 
-    // ─── approve() Conditions ───────────────────────────────────────────
+    // ─── approve() Conditions
+    // ───────────────────────────────────────────
 
     /// @dev WETH.approve conditions: spender must be one of 13 whitelisted addresses (OR)
     function _wethApproveConditions() internal view returns (ConditionFlat[] memory c) {
         c = new ConditionFlat[](15);
         c[0] = _c(0, PARAM_TYPE_CALLDATA, OP_MATCHES, "");
         c[1] = _c(0, PARAM_TYPE_NONE, OP_OR, "");
-        c[2]  = _eq(1, PERMIT2);
-        c[3]  = _eq(1, SPARK_LEND_V3);
-        c[4]  = _eq(1, ONE_INCH_V6);
-        c[5]  = _eq(1, UNISWAP_V3_ROUTER);
-        c[6]  = _eq(1, AAVE_V3_POOL);
-        c[7]  = _eq(1, AURA_REWARDS);
-        c[8]  = _eq(1, BALANCER_VAULT);
-        c[9]  = _eq(1, kpkETHv2);
+        c[2] = _eq(1, PERMIT2);
+        c[3] = _eq(1, SPARK_LEND_V3);
+        c[4] = _eq(1, ONE_INCH_V6);
+        c[5] = _eq(1, UNISWAP_V3_ROUTER);
+        c[6] = _eq(1, AAVE_V3_POOL);
+        c[7] = _eq(1, AURA_REWARDS);
+        c[8] = _eq(1, BALANCER_VAULT);
+        c[9] = _eq(1, kpkETHv2);
         c[10] = _eq(1, address(MORPHO_BLUE));
         c[11] = _eq(1, EULER_V2);
         c[12] = _eq(1, COWSWAP_RELAYER);
@@ -1167,14 +861,14 @@ contract Proposal_ENS_EP_6_27_Test is ENS_Governance, SafeHelper, ZodiacRolesHel
         c = new ConditionFlat[](16);
         c[0] = _c(0, PARAM_TYPE_CALLDATA, OP_MATCHES, "");
         c[1] = _c(0, PARAM_TYPE_NONE, OP_OR, "");
-        c[2]  = _eq(1, kpkUSDCv2);
-        c[3]  = _eq(1, ONE_INCH_V6);
-        c[4]  = _eq(1, UNISWAP_V3_ROUTER);
-        c[5]  = _eq(1, AAVE_V3_POOL);
-        c[6]  = _eq(1, FluidUSDC);
-        c[7]  = _eq(1, A188_ADDR);
-        c[8]  = _eq(1, BALANCER_VAULT);
-        c[9]  = _eq(1, address(MORPHO_BLUE));
+        c[2] = _eq(1, kpkUSDCv2);
+        c[3] = _eq(1, ONE_INCH_V6);
+        c[4] = _eq(1, UNISWAP_V3_ROUTER);
+        c[5] = _eq(1, AAVE_V3_POOL);
+        c[6] = _eq(1, FluidUSDC);
+        c[7] = _eq(1, A188_ADDR);
+        c[8] = _eq(1, BALANCER_VAULT);
+        c[9] = _eq(1, address(MORPHO_BLUE));
         c[10] = _eq(1, CURVE_3POOL);
         c[11] = _eq(1, EULER_V2);
         c[12] = _eq(1, COMPOUND_USDC);
@@ -1188,18 +882,19 @@ contract Proposal_ENS_EP_6_27_Test is ENS_Governance, SafeHelper, ZodiacRolesHel
         c = new ConditionFlat[](11);
         c[0] = _c(0, PARAM_TYPE_CALLDATA, OP_MATCHES, "");
         c[1] = _c(0, PARAM_TYPE_NONE, OP_OR, "");
-        c[2]  = _eq(1, AAVE_USDT);
-        c[3]  = _eq(1, ONE_INCH_V6);
-        c[4]  = _eq(1, FluidUSDT);
-        c[5]  = _eq(1, UNISWAP_V3_ROUTER);
-        c[6]  = _eq(1, AAVE_V3_POOL);
-        c[7]  = _eq(1, BALANCER_VAULT);
-        c[8]  = _eq(1, CURVE_3POOL);
-        c[9]  = _eq(1, EULER_V2);
+        c[2] = _eq(1, AAVE_USDT);
+        c[3] = _eq(1, ONE_INCH_V6);
+        c[4] = _eq(1, FluidUSDT);
+        c[5] = _eq(1, UNISWAP_V3_ROUTER);
+        c[6] = _eq(1, AAVE_V3_POOL);
+        c[7] = _eq(1, BALANCER_VAULT);
+        c[8] = _eq(1, CURVE_3POOL);
+        c[9] = _eq(1, EULER_V2);
         c[10] = _eq(1, COWSWAP_RELAYER);
     }
 
-    // ─── Morpho Blue Conditions ─────────────────────────────────────────
+    // ─── Morpho Blue Conditions
+    // ─────────────────────────────────────────
 
     /// @dev Morpho Blue supply conditions — 5 allowed market tuples, onBehalf = avatar, empty callback data
     function _morphoSupplyConditions() internal view returns (ConditionFlat[] memory c) {
@@ -1236,10 +931,10 @@ contract Proposal_ENS_EP_6_27_Test is ENS_Governance, SafeHelper, ZodiacRolesHel
     }
 
     function _setMorphoTupleHeaders(ConditionFlat[] memory c) internal pure {
-        c[6]  = _c(1, PARAM_TYPE_TUPLE, OP_MATCHES, "");
-        c[7]  = _c(1, PARAM_TYPE_TUPLE, OP_MATCHES, "");
-        c[8]  = _c(1, PARAM_TYPE_TUPLE, OP_MATCHES, "");
-        c[9]  = _c(1, PARAM_TYPE_TUPLE, OP_MATCHES, "");
+        c[6] = _c(1, PARAM_TYPE_TUPLE, OP_MATCHES, "");
+        c[7] = _c(1, PARAM_TYPE_TUPLE, OP_MATCHES, "");
+        c[8] = _c(1, PARAM_TYPE_TUPLE, OP_MATCHES, "");
+        c[9] = _c(1, PARAM_TYPE_TUPLE, OP_MATCHES, "");
         c[10] = _c(1, PARAM_TYPE_TUPLE, OP_MATCHES, "");
     }
 
@@ -1253,7 +948,10 @@ contract Proposal_ENS_EP_6_27_Test is ENS_Governance, SafeHelper, ZodiacRolesHel
 
     function _setMorphoMarket1(ConditionFlat[] memory c) internal view {
         // Market 1: USDC / WBTC
-        _setMarketTupleConditions(c, 6, 11,
+        _setMarketTupleConditions(
+            c,
+            6,
+            11,
             USDC,
             0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599,
             0xDddd770BADd886dF3864029e4B377B5F6a2B6b83,
@@ -1264,7 +962,10 @@ contract Proposal_ENS_EP_6_27_Test is ENS_Governance, SafeHelper, ZodiacRolesHel
 
     function _setMorphoMarket2(ConditionFlat[] memory c) internal view {
         // Market 2: USDC / wstETH
-        _setMarketTupleConditions(c, 7, 16,
+        _setMarketTupleConditions(
+            c,
+            7,
+            16,
             USDC,
             0x7f39C581F595B53c5cb19bD0b3f8dA6c935E2Ca0,
             0x48F7E36EB6B826B2dF4B2E630B62Cd25e89E40e2,
@@ -1275,7 +976,10 @@ contract Proposal_ENS_EP_6_27_Test is ENS_Governance, SafeHelper, ZodiacRolesHel
 
     function _setMorphoMarket3(ConditionFlat[] memory c) internal view {
         // Market 3: USDC / cbBTC
-        _setMarketTupleConditions(c, 8, 21,
+        _setMarketTupleConditions(
+            c,
+            8,
+            21,
             USDC,
             0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf,
             0xA6D6950c9F177F1De7f7757FB33539e3Ec60182a,
@@ -1286,7 +990,10 @@ contract Proposal_ENS_EP_6_27_Test is ENS_Governance, SafeHelper, ZodiacRolesHel
 
     function _setMorphoMarket4(ConditionFlat[] memory c) internal view {
         // Market 4: WETH / wstETH
-        _setMarketTupleConditions(c, 9, 26,
+        _setMarketTupleConditions(
+            c,
+            9,
+            26,
             WETH,
             0x7f39C581F595B53c5cb19bD0b3f8dA6c935E2Ca0,
             0xbD60A6770b27E084E8617335ddE769241B0e71D8,
@@ -1297,7 +1004,10 @@ contract Proposal_ENS_EP_6_27_Test is ENS_Governance, SafeHelper, ZodiacRolesHel
 
     function _setMorphoMarket5(ConditionFlat[] memory c) internal view {
         // Market 5: WETH / wstETH (different lltv)
-        _setMarketTupleConditions(c, 10, 31,
+        _setMarketTupleConditions(
+            c,
+            10,
+            31,
             WETH,
             0x7f39C581F595B53c5cb19bD0b3f8dA6c935E2Ca0,
             0xbD60A6770b27E084E8617335ddE769241B0e71D8,
@@ -1316,8 +1026,11 @@ contract Proposal_ENS_EP_6_27_Test is ENS_Governance, SafeHelper, ZodiacRolesHel
         address oracle,
         address irm,
         uint256 lltv
-    ) internal pure {
-        c[startIdx]     = _eq(parent, loanToken);
+    )
+        internal
+        pure
+    {
+        c[startIdx] = _eq(parent, loanToken);
         c[startIdx + 1] = _eq(parent, collateralToken);
         c[startIdx + 2] = _eq(parent, oracle);
         c[startIdx + 3] = _eq(parent, irm);

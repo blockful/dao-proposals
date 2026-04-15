@@ -19,6 +19,7 @@ interface IRolesModifier {
         bytes4 selector,
         ConditionFlat[] calldata conditions,
         uint8 options
-    ) external;
+    )
+        external;
     function allowFunction(bytes32 roleKey, address targetAddress, bytes4 selector, uint8 options) external;
 }

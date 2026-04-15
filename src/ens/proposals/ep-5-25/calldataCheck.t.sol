@@ -40,13 +40,7 @@ contract Proposal_ENS_EP_5_25_Test is ENS_Governance {
     function _generateCallData()
         public
         override
-        returns (
-            address[] memory,
-            uint256[] memory,
-            string[] memory,
-            bytes[] memory,
-            string memory
-        )
+        returns (address[] memory, uint256[] memory, string[] memory, bytes[] memory, string memory)
     {
         uint256 items = 3;
 
@@ -61,12 +55,10 @@ contract Proposal_ENS_EP_5_25_Test is ENS_Governance {
         values[2] = 0;
 
         calldatas = new bytes[](items);
-        calldatas[0] =
-            abi.encodeWithSelector(IERC20.transfer.selector, metagovMultisig, metagovExpectedUSDCtransfer);
+        calldatas[0] = abi.encodeWithSelector(IERC20.transfer.selector, metagovMultisig, metagovExpectedUSDCtransfer);
         calldatas[1] =
             abi.encodeWithSelector(IERC20.transfer.selector, ecosystemMultisig, ecosystemExpectedUSDCtransfer);
-        calldatas[2] =
-            abi.encodeWithSelector(IERC20.transfer.selector, pgMultisig, pgExpectedUSDCtransfer);
+        calldatas[2] = abi.encodeWithSelector(IERC20.transfer.selector, pgMultisig, pgExpectedUSDCtransfer);
 
         return (targets, values, signatures, calldatas, "");
     }

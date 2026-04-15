@@ -14,7 +14,9 @@ abstract contract CalldataComparison is Test {
         address[] memory generatedTargets,
         uint256[] memory generatedValues,
         bytes[] memory generatedCalldatas
-    ) internal {
+    )
+        internal
+    {
         address[] memory jsonTargets = _parseJsonTargets(jsonContent);
         uint256[] memory jsonValues = _parseJsonUintValues(jsonContent);
         bytes[] memory jsonCalldatas = _parseJsonCalldatas(jsonContent);
@@ -30,9 +32,7 @@ abstract contract CalldataComparison is Test {
                 string(abi.encodePacked("Target mismatch at index ", vm.toString(i)))
             );
             assertEq(
-                jsonValues[i],
-                generatedValues[i],
-                string(abi.encodePacked("Value mismatch at index ", vm.toString(i)))
+                jsonValues[i], generatedValues[i], string(abi.encodePacked("Value mismatch at index ", vm.toString(i)))
             );
             assertEq(
                 jsonCalldatas[i],
@@ -53,9 +53,7 @@ abstract contract CalldataComparison is Test {
     }
 
     function _parseJsonTargets(string memory j) internal returns (address[] memory result) {
-        (bool ok, bytes memory ret) = address(this).call(
-            abi.encodeWithSelector(this._decodeTargetsArray.selector, j)
-        );
+        (bool ok, bytes memory ret) = address(this).call(abi.encodeWithSelector(this._decodeTargetsArray.selector, j));
         if (ok) return abi.decode(ret, (address[]));
 
         (bool ok2, bytes memory ret2) = address(this).call(abi.encodeWithSelector(this._decodeTargetSingle.selector, j));
@@ -95,9 +93,7 @@ abstract contract CalldataComparison is Test {
     }
 
     function _parseJsonValues(string memory j) internal returns (string[] memory result) {
-        (bool ok, bytes memory ret) = address(this).call(
-            abi.encodeWithSelector(this._decodeValuesArray.selector, j)
-        );
+        (bool ok, bytes memory ret) = address(this).call(abi.encodeWithSelector(this._decodeValuesArray.selector, j));
         if (ok) return abi.decode(ret, (string[]));
 
         (bool ok2, bytes memory ret2) = address(this).call(abi.encodeWithSelector(this._decodeValueSingle.selector, j));
@@ -115,12 +111,11 @@ abstract contract CalldataComparison is Test {
     }
 
     function _parseJsonCalldatas(string memory j) internal returns (bytes[] memory result) {
-        (bool ok, bytes memory ret) = address(this).call(
-            abi.encodeWithSelector(this._decodeCalldatasArray.selector, j)
-        );
+        (bool ok, bytes memory ret) = address(this).call(abi.encodeWithSelector(this._decodeCalldatasArray.selector, j));
         if (ok) return abi.decode(ret, (bytes[]));
 
-        (bool ok2, bytes memory ret2) = address(this).call(abi.encodeWithSelector(this._decodeCalldataSingle.selector, j));
+        (bool ok2, bytes memory ret2) =
+            address(this).call(abi.encodeWithSelector(this._decodeCalldataSingle.selector, j));
         require(ok2, "JSON calldata decode failed");
         result = new bytes[](1);
         result[0] = abi.decode(ret2, (bytes));

@@ -16,28 +16,33 @@ interface IDNSRegistrar {
 }
 
 contract Proposal_ENS_EP_6_35_Test is ENS_Governance {
-    // ── Contracts ──────────────────────────────────────────────────────
+    // ── Contracts
+    // ──────────────────────────────────────────────────────
     IDNSSECImpl public constant dnssecImpl = IDNSSECImpl(0x0fc3152971714E5ed7723FAFa650F86A4BaF30C5);
     IENSRoot public constant ensRoot = IENSRoot(0xaB528d626EC275E3faD363fF1393A41F581c5897);
     IDNSRegistrar public constant dnsRegistrar = IDNSRegistrar(0xB32cB5677a7C971689228EC835800432B339bA2B);
     IENSRegistryWithFallback public constant ensRegistry =
         IENSRegistryWithFallback(0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e);
 
-    // ── DNSSEC Algorithm IDs (RFC 8624) ────────────────────────────────
+    // ── DNSSEC Algorithm IDs (RFC 8624)
+    // ────────────────────────────────
     uint8 public constant ALGO_RSASHA1 = 5;
     uint8 public constant ALGO_RSASHA256 = 8;
     uint8 public constant ALGO_P256SHA256 = 13;
 
-    // ── New algorithm contract addresses ───────────────────────────────
+    // ── New algorithm contract addresses
+    // ───────────────────────────────
     address public constant NEW_RSASHA1 = 0x58E0383E21f25DaB957F6664240445A514E9f5e8;
     address public constant NEW_RSASHA256 = 0xaee0E2c4d5AB2fc164C8b0Cc8D3118C1c752C95E;
     address public constant NEW_P256SHA256 = 0xB091C4F6FAc16eDDA5Ee1E0f4738f80011905878;
 
-    // ── TLD labels ────────────────────────────────────────────────────
+    // ── TLD labels
+    // ────────────────────────────────────────────────────
     string public constant CC_LABEL = "cc";
     string public constant NAME_LABEL = "name";
 
-    // ── Derived hashes (computed in setUp) ─────────────────────────────
+    // ── Derived hashes (computed in setUp)
+    // ─────────────────────────────
     bytes32 public ccLabelhash;
     bytes32 public nameLabelhash;
     bytes32 public ccNode;
@@ -45,7 +50,8 @@ contract Proposal_ENS_EP_6_35_Test is ENS_Governance {
     bytes public ccDnsName;
     bytes public nameDnsName;
 
-    // ── State captured before execution ────────────────────────────────
+    // ── State captured before execution
+    // ────────────────────────────────
     address public oldRSASHA1;
     address public oldRSASHA256;
     address public oldP256SHA256;

@@ -1,6 +1,8 @@
 ---
 name: dao-scaffold
-description: Scaffold a new DAO into the governance calldata verification system. Creates directory structure, interfaces, base test class, and registry entry. Use when adding support for a new DAO.
+description:
+  Scaffold a new DAO into the governance calldata verification system. Creates directory structure, interfaces, base
+  test class, and registry entry. Use when adding support for a new DAO.
 disable-model-invocation: true
 argument-hint: <dao-name>
 ---
@@ -14,6 +16,7 @@ Scaffold the complete directory structure and boilerplate for adding a new DAO.
 ## Prerequisites
 
 Before starting, gather:
+
 - DAO name and governance type (OZ Governor+Timelock or Azorius)
 - Governor/Azorius contract address
 - Timelock/Treasury contract address
@@ -34,6 +37,7 @@ mkdir -p src/$ARGUMENTS/interfaces src/$ARGUMENTS/helpers src/$ARGUMENTS/proposa
 ### 2. Add remapping
 
 Append to `remappings.txt`:
+
 ```
 @$ARGUMENTS/=src/$ARGUMENTS/
 ```
@@ -50,8 +54,8 @@ Clean up: add SPDX header, set `pragma solidity >=0.8.25 <0.9.0;`, keep only nee
 
 ### 4. Write base test class
 
-For **Governor+Timelock DAOs**: use `src/ens/ens.t.sol` as the template.
-For **Azorius DAOs**: use `src/shutter/shutter.t.sol` as the template.
+For **Governor+Timelock DAOs**: use `src/ens/ens.t.sol` as the template. For **Azorius DAOs**: use
+`src/shutter/shutter.t.sol` as the template.
 
 Create `src/$ARGUMENTS/$ARGUMENTS.t.sol` inheriting `CalldataComparison` from `@contracts/base/CalldataComparison.sol`.
 

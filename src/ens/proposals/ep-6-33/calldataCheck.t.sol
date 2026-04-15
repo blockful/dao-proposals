@@ -28,25 +28,29 @@ import { RootSecurityController } from "./RootSecurityController.sol";
  *        - Verify the DAO (via RegistrarSecurityController owner) retains full control.
  */
 contract Proposal_ENS_EP_6_33_Test is ENS_Governance {
-    // ── ENS core contracts ───────────────────────────────────────────────
+    // ── ENS core contracts
+    // ───────────────────────────────────────────────
     IENSRoot public root = IENSRoot(0xaB528d626EC275E3faD363fF1393A41F581c5897);
     IENSRegistrar public baseRegistrar = IENSRegistrar(0x57f1887a8BF19b14fC0dF6Fd9B2acc9Af147eA85);
     IENSRegistryWithFallback public ensRegistry = IENSRegistryWithFallback(0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e);
 
-    // ── Security controllers (already deployed) ──────────────────────────
+    // ── Security controllers (already deployed)
+    // ──────────────────────────
     RootSecurityController public rootSecurityController =
         RootSecurityController(0x95123B1ec97df0d3c52c728aB38FBbb7A3ca6da6);
     RegistrarSecurityController public registrarSecurityController =
         RegistrarSecurityController(0x7dd4d97653A67C2FD7fbA0a84825eC09524D4E1b);
 
-    // ── Test actors ──────────────────────────────────────────────────────
+    // ── Test actors
+    // ──────────────────────────────────────────────────────
     address public securityCouncilMultisig = 0xaA5cD05f6B62C3af58AE9c4F3F7A2aCC2Cdc2Cc7;
     address public unauthorizedCaller;
 
     // ── Simulated problematic controller (added pre-proposal for testing) ─
     address public problematicController;
 
-    // ── State tracking ───────────────────────────────────────────────────
+    // ── State tracking
+    // ───────────────────────────────────────────────────
     address registrarOwnerBefore;
     bool rootControllerEnabledBefore;
     address rootSecurityControllerOwnerBefore;
@@ -93,7 +97,9 @@ contract Proposal_ENS_EP_6_33_Test is ENS_Governance {
         // Verify preconditions
         assertEq(registrarOwnerBefore, address(timelock), "Registrar should be owned by timelock before proposal");
         assertFalse(rootControllerEnabledBefore, "RootSecurityController should not be a root controller yet");
-        assertEq(rootSecurityControllerOwnerBefore, address(timelock), "RootSecurityController should be timelock-owned");
+        assertEq(
+            rootSecurityControllerOwnerBefore, address(timelock), "RootSecurityController should be timelock-owned"
+        );
         assertFalse(
             registrarSecurityControllerEnabledBefore,
             "Security council should not be enabled on RegistrarSecurityController before proposal"
@@ -123,9 +129,8 @@ contract Proposal_ENS_EP_6_33_Test is ENS_Governance {
 
         // Transaction 2: Transfer base registrar ownership to RegistrarSecurityController
         targets[1] = address(baseRegistrar);
-        calldatas[1] = abi.encodeWithSelector(
-            IENSRegistrar.transferOwnership.selector, address(registrarSecurityController)
-        );
+        calldatas[1] =
+            abi.encodeWithSelector(IENSRegistrar.transferOwnership.selector, address(registrarSecurityController));
         values[1] = 0;
         signatures[1] = "";
 
@@ -134,8 +139,7 @@ contract Proposal_ENS_EP_6_33_Test is ENS_Governance {
 
         // Transaction 3: Transfer RootSecurityController ownership to Security Council
         targets[2] = address(rootSecurityController);
-        calldatas[2] =
-            abi.encodeWithSelector(bytes4(keccak256("transferOwnership(address)")), securityCouncilMultisig);
+        calldatas[2] = abi.encodeWithSelector(bytes4(keccak256("transferOwnership(address)")), securityCouncilMultisig);
         values[2] = 0;
         signatures[2] = "";
 
@@ -144,9 +148,8 @@ contract Proposal_ENS_EP_6_33_Test is ENS_Governance {
 
         // Transaction 4: Enable Security Council as RegistrarSecurityController controller
         targets[3] = address(registrarSecurityController);
-        calldatas[3] = abi.encodeWithSelector(
-            bytes4(keccak256("setController(address,bool)")), securityCouncilMultisig, true
-        );
+        calldatas[3] =
+            abi.encodeWithSelector(bytes4(keccak256("setController(address,bool)")), securityCouncilMultisig, true);
         values[3] = 0;
         signatures[3] = "";
 
@@ -160,7 +163,8 @@ contract Proposal_ENS_EP_6_33_Test is ENS_Governance {
     }
 
     function _afterExecution() public override {
-        // ── Verify governance execution results ──────────────────────────
+        // ── Verify governance execution results
+        // ──────────────────────────
 
         // 1. RootSecurityController is now a controller on Root
         assertTrue(
@@ -302,11 +306,7 @@ contract Proposal_ENS_EP_6_33_Test is ENS_Governance {
         );
 
         // Verify TLD resolver is cleared
-        assertEq(
-            ensRegistry.resolver(xyzNode),
-            address(0),
-            "TLD resolver should be cleared after disable"
-        );
+        assertEq(ensRegistry.resolver(xyzNode), address(0), "TLD resolver should be cleared after disable");
 
         console2.log("[PASS] Security council successfully disabled TLD");
         console2.log("  TLD owner before:", tldOwnerBefore);

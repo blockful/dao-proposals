@@ -101,4 +101,3 @@ $ forge test --match-path "src/shutter/proposals/dsr-allocation/**" -vvv
 # Parameter 2 Value: 0x36bD3044ab68f600f6d3e081056F34f2a58432c4
 # Transaction Value: 0
 ```
-
