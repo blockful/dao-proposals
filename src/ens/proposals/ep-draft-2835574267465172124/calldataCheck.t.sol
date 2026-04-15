@@ -23,7 +23,7 @@ contract Proposal_ENS_EP_6_40_Draft_Test is ENS_Governance {
     address public algo7Before;
 
     function _selectFork() public override {
-        vm.createSelectFork({ urlOrAlias: "mainnet" });
+        vm.createSelectFork({ blockNumber: 24_884_091, urlOrAlias: "mainnet" });
     }
 
     function _proposer() public pure override returns (address) {
