@@ -9,7 +9,7 @@ interface IDNSSECImpl {
     function owner() external view returns (address);
 }
 
-contract Proposal_ENS_EP_6_40_Draft_Test is ENS_Governance {
+contract Proposal_ENS_EP_6_40_Test is ENS_Governance {
     IDNSSECImpl public constant dnssecImpl = IDNSSECImpl(0x0fc3152971714E5ed7723FAFa650F86A4BaF30C5);
 
     uint8 public constant ALGO_RSASHA1 = 5;
@@ -23,7 +23,7 @@ contract Proposal_ENS_EP_6_40_Draft_Test is ENS_Governance {
     address public algo7Before;
 
     function _selectFork() public override {
-        vm.createSelectFork({ blockNumber: 24_884_091, urlOrAlias: "mainnet" });
+        vm.createSelectFork({ blockNumber: 24_884_455, urlOrAlias: "mainnet" });
     }
 
     function _proposer() public pure override returns (address) {
@@ -45,13 +45,7 @@ contract Proposal_ENS_EP_6_40_Draft_Test is ENS_Governance {
     function _generateCallData()
         public
         override
-        returns (
-            address[] memory,
-            uint256[] memory,
-            string[] memory,
-            bytes[] memory,
-            string memory
-        )
+        returns (address[] memory, uint256[] memory, string[] memory, bytes[] memory, string memory)
     {
         uint256 numTransactions = 1;
 
@@ -64,11 +58,8 @@ contract Proposal_ENS_EP_6_40_Draft_Test is ENS_Governance {
         targets[0] = address(dnssecImpl);
         values[0] = 0;
         signatures[0] = "";
-        calldatas[0] = abi.encodeWithSelector(
-            IDNSSECImpl.setAlgorithm.selector,
-            ALGO_RSASHA1_NSEC3_SHA1,
-            PATCHED_RSASHA1
-        );
+        calldatas[0] =
+            abi.encodeWithSelector(IDNSSECImpl.setAlgorithm.selector, ALGO_RSASHA1_NSEC3_SHA1, PATCHED_RSASHA1);
 
         description = getDescriptionFromMarkdown();
 
@@ -86,10 +77,10 @@ contract Proposal_ENS_EP_6_40_Draft_Test is ENS_Governance {
     }
 
     function _isProposalSubmitted() public pure override returns (bool) {
-        return false;
+        return true;
     }
 
     function dirPath() public pure override returns (string memory) {
-        return "src/ens/proposals/ep-draft-2835574267465172124";
+        return "src/ens/proposals/ep-6-40";
     }
 }
