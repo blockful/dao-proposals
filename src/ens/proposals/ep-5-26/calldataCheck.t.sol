@@ -36,13 +36,7 @@ contract Proposal_ENS_EP_5_26_Test is ENS_Governance {
     function _generateCallData()
         public
         override
-        returns (
-            address[] memory,
-            uint256[] memory,
-            string[] memory,
-            bytes[] memory,
-            string memory
-        )
+        returns (address[] memory, uint256[] memory, string[] memory, bytes[] memory, string memory)
     {
         uint256 items = 1;
 
@@ -53,18 +47,14 @@ contract Proposal_ENS_EP_5_26_Test is ENS_Governance {
         values[0] = 0;
 
         calldatas = new bytes[](items);
-        calldatas[0] =
-            abi.encodeWithSelector(IERC20.transfer.selector, metagovMultisig, metagovExpectedENStransfer);
+        calldatas[0] = abi.encodeWithSelector(IERC20.transfer.selector, metagovMultisig, metagovExpectedENStransfer);
 
         return (targets, values, signatures, calldatas, "");
     }
 
     function _afterExecution() public override {
         ENSbalanceAfter = ENS.balanceOf(address(timelock));
-        assertEq(
-            ENSbalanceBefore,
-            ENSbalanceAfter + metagovExpectedENStransfer
-        );
+        assertEq(ENSbalanceBefore, ENSbalanceAfter + metagovExpectedENStransfer);
         assertNotEq(ENSbalanceAfter, ENSbalanceBefore);
     }
 

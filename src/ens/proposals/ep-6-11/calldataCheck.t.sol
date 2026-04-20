@@ -26,7 +26,6 @@ contract Proposal_ENS_EP_6_11_Test is ENS_Governance {
     uint256 USDCbalanceBefore;
     uint256 ENSbalanceBefore;
 
-
     function _selectFork() public override {
         vm.createSelectFork({ blockNumber: 22_532_129, urlOrAlias: "mainnet" });
     }

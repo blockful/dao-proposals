@@ -17,7 +17,7 @@ contract Proposal_ENS_EP_6_20_Test is ENS_Governance {
     address receiver = 0xB352bB4E2A4f27683435f153A259f1B207218b1b;
 
     function _selectFork() public override {
-        vm.createSelectFork({ blockNumber: 23442264, urlOrAlias: "mainnet" });
+        vm.createSelectFork({ blockNumber: 23_442_264, urlOrAlias: "mainnet" });
     }
 
     function _proposer() public pure override returns (address) {
@@ -31,13 +31,7 @@ contract Proposal_ENS_EP_6_20_Test is ENS_Governance {
     function _generateCallData()
         public
         override
-        returns (
-            address[] memory,
-            uint256[] memory,
-            string[] memory,
-            bytes[] memory,
-            string memory
-        )
+        returns (address[] memory, uint256[] memory, string[] memory, bytes[] memory, string memory)
     {
         uint256 numTransactions = 1;
 
@@ -47,11 +41,7 @@ contract Proposal_ENS_EP_6_20_Test is ENS_Governance {
         signatures = new string[](numTransactions);
 
         targets[0] = address(USDC);
-        calldatas[0] = abi.encodeWithSelector(
-            USDC.transfer.selector,
-            receiver,
-            expectedUSDCtransfer
-        );
+        calldatas[0] = abi.encodeWithSelector(USDC.transfer.selector, receiver, expectedUSDCtransfer);
         values[0] = 0;
         signatures[0] = "";
 

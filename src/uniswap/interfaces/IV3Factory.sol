@@ -5,11 +5,7 @@ interface IV3Factory {
     event FeeAmountEnabled(uint24 indexed fee, int24 indexed tickSpacing);
     event OwnerChanged(address indexed oldOwner, address indexed newOwner);
     event PoolCreated(
-        address indexed token0,
-        address indexed token1,
-        uint24 indexed fee,
-        int24 tickSpacing,
-        address pool
+        address indexed token0, address indexed token1, uint24 indexed fee, int24 tickSpacing, address pool
     );
 
     function createPool(address tokenA, address tokenB, uint24 fee) external returns (address pool);

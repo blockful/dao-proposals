@@ -182,10 +182,7 @@ interface SuperToken {
     function settleBalance(address account, int256 delta) external;
     function symbol() external view returns (string memory);
     function terminateAgreement(bytes32 id, uint256 dataLength) external;
-    function toUnderlyingAmount(uint256 amount)
-        external
-        view
-        returns (uint256 underlyingAmount, uint256 adjustedAmount);
+    function toUnderlyingAmount(uint256 amount) external view returns (uint256 underlyingAmount, uint256 adjustedAmount);
     function totalSupply() external view returns (uint256);
     function transfer(address recipient, uint256 amount) external returns (bool);
     function transferAll(address recipient) external;

@@ -51,7 +51,15 @@ interface IUSDC {
     function paused() external view returns (bool);
     function pauser() external view returns (address);
     function permit(address owner, address spender, uint256 value, uint256 deadline, bytes memory signature) external;
-    function permit(address owner, address spender, uint256 value, uint256 deadline, uint8 v, bytes32 r, bytes32 s)
+    function permit(
+        address owner,
+        address spender,
+        uint256 value,
+        uint256 deadline,
+        uint8 v,
+        bytes32 r,
+        bytes32 s
+    )
         external;
     function receiveWithAuthorization(
         address from,
@@ -61,7 +69,8 @@ interface IUSDC {
         uint256 validBefore,
         bytes32 nonce,
         bytes memory signature
-    ) external;
+    )
+        external;
     function receiveWithAuthorization(
         address from,
         address to,
@@ -72,7 +81,8 @@ interface IUSDC {
         uint8 v,
         bytes32 r,
         bytes32 s
-    ) external;
+    )
+        external;
     function removeMinter(address minter) external returns (bool);
     function rescueERC20(address tokenContract, address to, uint256 amount) external;
     function rescuer() external view returns (address);
@@ -89,7 +99,8 @@ interface IUSDC {
         uint256 validBefore,
         bytes32 nonce,
         bytes memory signature
-    ) external;
+    )
+        external;
     function transferWithAuthorization(
         address from,
         address to,
@@ -100,7 +111,8 @@ interface IUSDC {
         uint8 v,
         bytes32 r,
         bytes32 s
-    ) external;
+    )
+        external;
     function unBlacklist(address _account) external;
     function unpause() external;
     function updateBlacklister(address _newBlacklister) external;

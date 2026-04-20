@@ -24,7 +24,6 @@ contract Proposal_ENS_EP_5_22_Test is ENS_Governance {
 
     uint256 timelockUSDCbalanceBefore;
 
-
     function _selectFork() public override {
         vm.createSelectFork({ blockNumber: 21_086_802, urlOrAlias: "mainnet" });
     }

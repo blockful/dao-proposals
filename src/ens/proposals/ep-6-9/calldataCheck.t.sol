@@ -16,7 +16,6 @@ contract Proposal_ENS_EP_6_9_Test is ENS_Governance {
     IENSRoot root = IENSRoot(0xaB528d626EC275E3faD363fF1393A41F581c5897);
     address legacyMultisig = 0xCF60916b6CB4753f58533808fA610FcbD4098Ec0;
 
-
     function _selectFork() public override {
         vm.createSelectFork({ blockNumber: 22_337_300, urlOrAlias: "mainnet" });
     }

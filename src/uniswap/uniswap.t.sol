@@ -242,7 +242,9 @@ abstract contract UNI_Governance is CalldataComparison, IDAO {
         uint256[] memory generatedValues,
         string[] memory generatedSignatures,
         bytes[] memory generatedCalldatas
-    ) internal {
+    )
+        internal
+    {
         address[] memory jsonTargets = _parseJsonTargets(jsonContent);
         string[] memory jsonValues = _parseJsonValues(jsonContent);
         string[] memory jsonSignatures = _parseJsonSignatures(jsonContent);
@@ -293,14 +295,12 @@ abstract contract UNI_Governance is CalldataComparison, IDAO {
     }
 
     function _parseJsonSignatures(string memory j) internal returns (string[] memory result) {
-        (bool ok, bytes memory ret) = address(this).call(
-            abi.encodeWithSelector(this._decodeSignaturesArray.selector, j)
-        );
+        (bool ok, bytes memory ret) =
+            address(this).call(abi.encodeWithSelector(this._decodeSignaturesArray.selector, j));
         if (ok) return abi.decode(ret, (string[]));
 
-        (bool ok2, bytes memory ret2) = address(this).call(
-            abi.encodeWithSelector(this._decodeSignatureSingle.selector, j)
-        );
+        (bool ok2, bytes memory ret2) =
+            address(this).call(abi.encodeWithSelector(this._decodeSignatureSingle.selector, j));
         require(ok2, "JSON signature decode failed");
         result = new string[](1);
         result[0] = abi.decode(ret2, (string));

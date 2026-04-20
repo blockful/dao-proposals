@@ -35,24 +35,27 @@ interface IRegistrarSecurityController {
  *      transiently (steps 1-4 execute atomically within the same proposal).
  */
 contract Proposal_ENS_EP_6_36_Test is ENS_Governance {
-    // ── Contracts ──────────────────────────────────────────────────────
+    // ── Contracts
+    // ──────────────────────────────────────────────────────
     IRegistrarSecurityController public constant registrarSecurityController =
         IRegistrarSecurityController(0x7dd4d97653A67C2FD7fbA0a84825eC09524D4E1b);
-    IENSRegistrar public constant baseRegistrar =
-        IENSRegistrar(0x57f1887a8BF19b14fC0dF6Fd9B2acc9Af147eA85);
+    IENSRegistrar public constant baseRegistrar = IENSRegistrar(0x57f1887a8BF19b14fC0dF6Fd9B2acc9Af147eA85);
     IENSRegistryWithFallback public constant ensRegistry =
         IENSRegistryWithFallback(0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e);
 
-    // ── Constants ──────────────────────────────────────────────────────
+    // ── Constants
+    // ──────────────────────────────────────────────────────
     address public constant DAO_WALLET = 0xFe89cc7aBB2C4183683ab71653C4cdc9B02D44b7; // ENS Timelock
     address public constant CHAIN_RESOLVER = 0x2a9B5787207863cf2d63d20172ed1F7bB2c9487A;
     uint256 public constant REGISTRATION_DURATION = 315_360_000; // ~10 years
 
-    // ── Derived hashes ─────────────────────────────────────────────────
+    // ── Derived hashes
+    // ─────────────────────────────────────────────────
     bytes32 public onLabelhash;
     bytes32 public onNode;
 
-    // ── State captured before execution ────────────────────────────────
+    // ── State captured before execution
+    // ────────────────────────────────
     bool public timelockIsControllerBefore;
     address public onOwnerBefore;
     address public onResolverBefore;
@@ -102,10 +105,7 @@ contract Proposal_ENS_EP_6_36_Test is ENS_Governance {
 
         // Timelock should NOT be a registrar controller before the proposal
         timelockIsControllerBefore = baseRegistrar.controllers(DAO_WALLET);
-        assertFalse(
-            timelockIsControllerBefore,
-            "Timelock should not be a registrar controller before proposal"
-        );
+        assertFalse(timelockIsControllerBefore, "Timelock should not be a registrar controller before proposal");
 
         // ChainResolver should be deployed
         assertGt(CHAIN_RESOLVER.code.length, 0, "ChainResolver should be deployed");
@@ -116,16 +116,12 @@ contract Proposal_ENS_EP_6_36_Test is ENS_Governance {
 
         // Verify labelhash("on") matches expected value from calldata
         assertEq(
-            onLabelhash,
-            0x6460d40e0362f6a2c743f205df8181010b7f26e76d5606847fb7be7fb6d135f9,
-            "labelhash('on') mismatch"
+            onLabelhash, 0x6460d40e0362f6a2c743f205df8181010b7f26e76d5606847fb7be7fb6d135f9, "labelhash('on') mismatch"
         );
 
         // Verify namehash("on.eth") matches expected value from calldata
         assertEq(
-            onNode,
-            0xcabf8262fe531c2a7e8cd86e06342bc27fc0591ecd562fbac88280abc18ef899,
-            "namehash('on.eth') mismatch"
+            onNode, 0xcabf8262fe531c2a7e8cd86e06342bc27fc0591ecd562fbac88280abc18ef899, "namehash('on.eth') mismatch"
         );
     }
 
@@ -145,40 +141,27 @@ contract Proposal_ENS_EP_6_36_Test is ENS_Governance {
         targets[0] = address(registrarSecurityController);
         values[0] = 0;
         signatures[0] = "";
-        calldatas[0] = abi.encodeWithSelector(
-            IRegistrarSecurityController.addRegistrarController.selector,
-            DAO_WALLET
-        );
+        calldatas[0] = abi.encodeWithSelector(IRegistrarSecurityController.addRegistrarController.selector, DAO_WALLET);
 
         // TX2: Register "on.eth" to the DAO wallet for ~10 years
         targets[1] = address(baseRegistrar);
         values[1] = 0;
         signatures[1] = "";
-        calldatas[1] = abi.encodeWithSelector(
-            IENSRegistrar.register.selector,
-            onLabelhash,
-            DAO_WALLET,
-            REGISTRATION_DURATION
-        );
+        calldatas[1] =
+            abi.encodeWithSelector(IENSRegistrar.register.selector, onLabelhash, DAO_WALLET, REGISTRATION_DURATION);
 
         // TX3: Set the ChainResolver as the resolver for on.eth
         targets[2] = address(ensRegistry);
         values[2] = 0;
         signatures[2] = "";
-        calldatas[2] = abi.encodeWithSelector(
-            IENSRegistryWithFallback.setResolver.selector,
-            onNode,
-            CHAIN_RESOLVER
-        );
+        calldatas[2] = abi.encodeWithSelector(IENSRegistryWithFallback.setResolver.selector, onNode, CHAIN_RESOLVER);
 
         // TX4: Remove DAO wallet as controller on BaseRegistrar via RegistrarSecurityController
         targets[3] = address(registrarSecurityController);
         values[3] = 0;
         signatures[3] = "";
-        calldatas[3] = abi.encodeWithSelector(
-            IRegistrarSecurityController.removeRegistrarController.selector,
-            DAO_WALLET
-        );
+        calldatas[3] =
+            abi.encodeWithSelector(IRegistrarSecurityController.removeRegistrarController.selector, DAO_WALLET);
 
         description = getDescriptionFromMarkdown();
 
@@ -188,23 +171,14 @@ contract Proposal_ENS_EP_6_36_Test is ENS_Governance {
     function _afterExecution() public override {
         // 1. Timelock should NOT be a registrar controller after execution
         assertFalse(
-            baseRegistrar.controllers(DAO_WALLET),
-            "Timelock should not be a registrar controller after proposal"
+            baseRegistrar.controllers(DAO_WALLET), "Timelock should not be a registrar controller after proposal"
         );
 
         // 2. on.eth should be owned by the DAO wallet in the ENS Registry
-        assertEq(
-            ensRegistry.owner(onNode),
-            DAO_WALLET,
-            "on.eth should be owned by the DAO wallet"
-        );
+        assertEq(ensRegistry.owner(onNode), DAO_WALLET, "on.eth should be owned by the DAO wallet");
 
         // 3. on.eth resolver should be set to the ChainResolver
-        assertEq(
-            ensRegistry.resolver(onNode),
-            CHAIN_RESOLVER,
-            "on.eth resolver should be the ChainResolver"
-        );
+        assertEq(ensRegistry.resolver(onNode), CHAIN_RESOLVER, "on.eth resolver should be the ChainResolver");
 
         // 4. RegistrarSecurityController should still own the BaseRegistrar
         assertEq(

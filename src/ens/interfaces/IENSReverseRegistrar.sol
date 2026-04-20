@@ -19,7 +19,12 @@ interface IENSReverseRegistrar {
     function setController(address controller, bool enabled) external;
     function setDefaultResolver(address resolver) external;
     function setName(string memory name) external returns (bytes32);
-    function setNameForAddr(address addr, address owner, address resolver, string memory name)
+    function setNameForAddr(
+        address addr,
+        address owner,
+        address resolver,
+        string memory name
+    )
         external
         returns (bytes32);
     function transferOwnership(address newOwner) external;

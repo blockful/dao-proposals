@@ -23,8 +23,8 @@ abstract contract SafeHelper {
     function _buildPreApprovedSignature(address owner) internal pure returns (bytes memory) {
         return abi.encodePacked(
             bytes32(uint256(uint160(owner))), // r = padded owner address
-            bytes32(0),                       // s = 0
-            uint8(1)                          // v = 1 (pre-approved)
+            bytes32(0), // s = 0
+            uint8(1) // v = 1 (pre-approved)
         );
     }
 
@@ -42,20 +42,24 @@ abstract contract SafeHelper {
         address to,
         bytes memory data,
         address owner
-    ) internal pure returns (address target, bytes memory calldata_) {
+    )
+        internal
+        pure
+        returns (address target, bytes memory calldata_)
+    {
         target = safe;
         calldata_ = abi.encodeWithSelector(
             ISafe.execTransaction.selector,
-            to,                                   // to
-            uint256(0),                           // value
-            data,                                 // data
-            uint8(0),                             // operation: Call
-            uint256(0),                           // safeTxGas
-            uint256(0),                           // baseGas
-            uint256(0),                           // gasPrice
-            address(0),                           // gasToken
-            address(0),                           // refundReceiver
-            _buildPreApprovedSignature(owner)     // signatures
+            to, // to
+            uint256(0), // value
+            data, // data
+            uint8(0), // operation: Call
+            uint256(0), // safeTxGas
+            uint256(0), // baseGas
+            uint256(0), // gasPrice
+            address(0), // gasToken
+            address(0), // refundReceiver
+            _buildPreApprovedSignature(owner) // signatures
         );
     }
 
@@ -73,20 +77,24 @@ abstract contract SafeHelper {
         address to,
         bytes memory data,
         address owner
-    ) internal pure returns (address target, bytes memory calldata_) {
+    )
+        internal
+        pure
+        returns (address target, bytes memory calldata_)
+    {
         target = safe;
         calldata_ = abi.encodeWithSelector(
             ISafe.execTransaction.selector,
-            to,                                   // to
-            uint256(0),                           // value
-            data,                                 // data
-            uint8(1),                             // operation: DelegateCall
-            uint256(0),                           // safeTxGas
-            uint256(0),                           // baseGas
-            uint256(0),                           // gasPrice
-            address(0),                           // gasToken
-            address(0),                           // refundReceiver
-            _buildPreApprovedSignature(owner)     // signatures
+            to, // to
+            uint256(0), // value
+            data, // data
+            uint8(1), // operation: DelegateCall
+            uint256(0), // safeTxGas
+            uint256(0), // baseGas
+            uint256(0), // gasPrice
+            address(0), // gasToken
+            address(0), // refundReceiver
+            _buildPreApprovedSignature(owner) // signatures
         );
     }
 }

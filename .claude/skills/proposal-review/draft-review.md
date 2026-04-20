@@ -1,6 +1,7 @@
 # Draft Calldata Review
 
-Use this workflow when a proposal exists as a **Tally draft** (URL contains `/draft/`). This covers fetching the draft data, writing or updating the test, and verifying calldata.
+Use this workflow when a proposal exists as a **Tally draft** (URL contains `/draft/`). This covers fetching the draft
+data, writing or updating the test, and verifying calldata.
 
 ## 1. Create Branch (if new)
 
@@ -17,12 +18,14 @@ node ${CLAUDE_SKILL_DIR}/scripts/fetchTallyDraft.js <DRAFT_URL_OR_ID> <OUTPUT_DI
 ```
 
 Examples:
+
 ```bash
 node ${CLAUDE_SKILL_DIR}/scripts/fetchTallyDraft.js https://www.tally.xyz/gov/ens/draft/2786603872288769996 src/ens/proposals/ep-topic-name
 node ${CLAUDE_SKILL_DIR}/scripts/fetchTallyDraft.js 2786603872288769996 src/ens/proposals/ep-topic-name
 ```
 
 This creates:
+
 - `proposalCalldata.json` — executable calls from the draft
 - `proposalDescription.md` — proposal description
 
@@ -34,14 +37,14 @@ Create `calldataCheck.t.sol` (or update the existing one from the pre-draft phas
 
 The base contract (`src/ens/ens.t.sol`) provides these variables — do NOT redeclare them:
 
-| Variable | Type | Address | Notes |
-|----------|------|---------|-------|
-| `ensToken` | `IENSToken` | `0xC18360217D8F7Ab5e7c516566761Ea12Ce7F9D72` | ENS governance token |
-| `governor` | `IGovernor` | `0x323A76393544d5ecca80cd6ef2A560C6a395b7E3` | ENS Governor contract |
-| `timelock` | `ITimelock` | `0xFe89cc7aBB2C4183683ab71653C4cdc9B02D44b7` | ENS Timelock (= wallet.ensdao.eth) |
-| `proposer` | `address` | Set by `_proposer()` | Proposal submitter |
-| `voters` | `address[]` | Set by `_voters()` | Default voter set with quorum |
-| `targets`, `values`, `signatures`, `calldatas`, `description` | — | — | Proposal parameters |
+| Variable                                                      | Type        | Address                                      | Notes                              |
+| ------------------------------------------------------------- | ----------- | -------------------------------------------- | ---------------------------------- |
+| `ensToken`                                                    | `IENSToken` | `0xC18360217D8F7Ab5e7c516566761Ea12Ce7F9D72` | ENS governance token               |
+| `governor`                                                    | `IGovernor` | `0x323A76393544d5ecca80cd6ef2A560C6a395b7E3` | ENS Governor contract              |
+| `timelock`                                                    | `ITimelock` | `0xFe89cc7aBB2C4183683ab71653C4cdc9B02D44b7` | ENS Timelock (= wallet.ensdao.eth) |
+| `proposer`                                                    | `address`   | Set by `_proposer()`                         | Proposal submitter                 |
+| `voters`                                                      | `address[]` | Set by `_voters()`                           | Default voter set with quorum      |
+| `targets`, `values`, `signatures`, `calldatas`, `description` | —           | —                                            | Proposal parameters                |
 
 **Important**: Use `address(timelock)` instead of hardcoding the timelock/wallet address.
 
@@ -114,13 +117,15 @@ contract Proposal_ENS_EP_Topic_Name_Draft_Test is ENS_Governance {
 
 ### What changes from pre-draft
 
-| Field | Pre-draft | Draft |
-|-------|-----------|-------|
-| `description` | Hardcoded placeholder | `getDescriptionFromMarkdown()` |
-| `dirPath()` | `""` | `"src/ens/proposals/ep-topic-name"` **(MANDATORY — comparison is silently skipped without it)** |
-| `_proposer()` | Default | From Tally draft |
+| Field         | Pre-draft             | Draft                                                                                           |
+| ------------- | --------------------- | ----------------------------------------------------------------------------------------------- |
+| `description` | Hardcoded placeholder | `getDescriptionFromMarkdown()`                                                                  |
+| `dirPath()`   | `""`                  | `"src/ens/proposals/ep-topic-name"` **(MANDATORY — comparison is silently skipped without it)** |
+| `_proposer()` | Default               | From Tally draft                                                                                |
 
-> **WARNING**: If `dirPath()` returns `""` and `proposalCalldata.json` exists, the calldata comparison is silently skipped — the test will pass without verifying calldata. This is a false positive risk. Always set `dirPath()` for draft reviews.
+> **WARNING**: If `dirPath()` returns `""` and `proposalCalldata.json` exists, the calldata comparison is silently
+> skipped — the test will pass without verifying calldata. This is a false positive risk. Always set `dirPath()` for
+> draft reviews.
 
 ### What the test does
 
@@ -128,7 +133,8 @@ contract Proposal_ENS_EP_Topic_Name_Draft_Test is ENS_Governance {
 2. Runs `_beforeProposal()` and `_afterExecution()` assertions
 3. Compares manually generated calldata against `proposalCalldata.json`
 
-**If step 3 fails, do not approve the proposal calldata. Report the mismatch as a finding.** This is a security check, not a flaky test — treat any mismatch as critical until investigated.
+**If step 3 fails, do not approve the proposal calldata. Report the mismatch as a finding.** This is a security check,
+not a flaky test — treat any mismatch as critical until investigated.
 
 ## 4. Run Test
 
@@ -151,9 +157,12 @@ Open PR targeting `main`. Merge after review.
 ```markdown
 ## Draft proposal calldata security review
 
-The calldata draft executes successfully and achieves the expected outcome of the proposal. All simulations and tests are available [here](https://github.com/blockful/dao-proposals/blob/COMMIT_HASH/src/ens/proposals/ep-topic-name/calldataCheck.t.sol).
+The calldata draft executes successfully and achieves the expected outcome of the proposal. All simulations and tests
+are available
+[here](https://github.com/blockful/dao-proposals/blob/COMMIT_HASH/src/ens/proposals/ep-topic-name/calldataCheck.t.sol).
 
 To verify locally:
+
 1. Clone: `git clone https://github.com/blockful/dao-proposals.git`
 2. Checkout: `git checkout SHORT_HASH`
 3. Run: `forge test --match-path "src/ens/proposals/ep-topic-name/*" -vv`

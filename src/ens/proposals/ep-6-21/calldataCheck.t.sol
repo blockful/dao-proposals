@@ -16,7 +16,7 @@ contract Proposal_ENS_EP_6_21_Test is ENS_Governance, SafeHelper {
     address token = 0xC18360217D8F7Ab5e7c516566761Ea12Ce7F9D72;
 
     function _selectFork() public override {
-        vm.createSelectFork({ blockNumber: 23520356, urlOrAlias: "mainnet" });
+        vm.createSelectFork({ blockNumber: 23_520_356, urlOrAlias: "mainnet" });
     }
 
     function _proposer() public pure override returns (address) {
@@ -32,13 +32,7 @@ contract Proposal_ENS_EP_6_21_Test is ENS_Governance, SafeHelper {
     function _generateCallData()
         public
         override
-        returns (
-            address[] memory,
-            uint256[] memory,
-            string[] memory,
-            bytes[] memory,
-            string memory
-        )
+        returns (address[] memory, uint256[] memory, string[] memory, bytes[] memory, string memory)
     {
         uint256 numTransactions = 3;
 
@@ -48,20 +42,13 @@ contract Proposal_ENS_EP_6_21_Test is ENS_Governance, SafeHelper {
         signatures = new string[](numTransactions);
 
         targets[0] = address(reverseRegistrar);
-        calldatas[0] = abi.encodeWithSelector(
-            reverseRegistrar.setName.selector,
-            "wallet.ensdao.eth"
-        );
+        calldatas[0] = abi.encodeWithSelector(reverseRegistrar.setName.selector, "wallet.ensdao.eth");
         values[0] = 0;
         signatures[0] = "";
 
         targets[1] = address(reverseRegistrar);
         calldatas[1] = abi.encodeWithSelector(
-            reverseRegistrar.setNameForAddr.selector,
-            token,
-            timelock,
-            resolver,
-            "token.ensdao.eth"
+            reverseRegistrar.setNameForAddr.selector, token, timelock, resolver, "token.ensdao.eth"
         );
         values[1] = 0;
         signatures[1] = "";

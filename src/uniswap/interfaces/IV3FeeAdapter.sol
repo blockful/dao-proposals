@@ -32,9 +32,7 @@ interface IV3FeeAdapter {
     function FACTORY() external view returns (address);
     function TOKEN_JAR() external view returns (address);
     function batchTriggerFeeUpdate(Pair[] memory pairs, bytes32[] memory proof, bool[] memory proofFlags) external;
-    function collect(CollectParams[] memory collectParams)
-        external
-        returns (Collected[] memory amountsCollected);
+    function collect(CollectParams[] memory collectParams) external returns (Collected[] memory amountsCollected);
     function defaultFees(uint24 feeTier) external view returns (uint8 defaultFeeValue);
     function enableFeeAmount(uint24 fee, int24 tickSpacing) external;
     function feeSetter() external view returns (address);

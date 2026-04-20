@@ -1,16 +1,19 @@
-# [EP 6.38] [Executable] Endowment permissions to karpatkey - Update #8 
+# [EP 6.38] [Executable] Endowment permissions to karpatkey - Update #8
+
 ## Abstract
 
-This proposal introduces a **routine update** to the Endowment Manager’s permissions. The changes remove deprecated permissions no longer required and upgrade the Roles instance to the latest version.
+This proposal introduces a **routine update** to the Endowment Manager’s permissions. The changes remove deprecated
+permissions no longer required and upgrade the Roles instance to the latest version.
 
 ## Specification
 
-This proposal updates the Zodiac Roles Modifier configuration for the ENS Endowment by disabling the Roles V1 instance, updating the Roles V2 instance, and revoking token permissions that are no longer required.
+This proposal updates the Zodiac Roles Modifier configuration for the ENS Endowment by disabling the Roles V1 instance,
+updating the Roles V2 instance, and revoking token permissions that are no longer required.
 
 The following permissions are added:
 
-* Buy and sell GHO/FLUID via CoW Swap
-* Claim rewards from the Fluid Merkle Incentive distributor
+- Buy and sell GHO/FLUID via CoW Swap
+- Claim rewards from the Fluid Merkle Incentive distributor
 
 ### Summary of Updates
 
@@ -29,8 +32,8 @@ The following permissions are added:
 | Roles v2          | `sell`       | 0x6f40d4a6237c257fff2db00fa0510deeecd303eb |
 | Roles v2          | `claim`      | 0xF398E66B1273a34558AeBbEC550DccaF4AcC7714 |
 
-> Added permission to Buy GHO and Sell GHO/FLUID through Cowswap
-> Added permission to be able to claim GHO rewards from the Fluid Merkle Incentive
+> Added permission to Buy GHO and Sell GHO/FLUID through Cowswap Added permission to be able to claim GHO rewards from
+> the Fluid Merkle Incentive
 
 #### **3. Permission Removals**
 
@@ -44,9 +47,11 @@ The following permissions are added:
 
 To review, the following resources are below:
 
-* **Payload:** [link here](https://github.com/karpatkey/client-configs/blob/main/clients/ens-dao/mainnet/payloads/ensPermissionsUpdate8.json)
-* **Zodiac Diff Page:** [link here](https://roles.gnosisguild.org/eth:0x703806E61847984346d2D7DDd853049627e50A40/roles/MANAGER/diff/44zkxJCEz3H0WcK87fvtfsKSrqb3KtOdlx2NJlAWiw?annotations=false)
+- **Payload:** [link here](https://github.com/karpatkey/client-configs/blob/main/clients/ens-dao/mainnet/payloads/ensPermissionsUpdate8.json)
+- **Zodiac Diff
+  Page:** [link here](https://roles.gnosisguild.org/eth:0x703806E61847984346d2D7DDd853049627e50A40/roles/MANAGER/diff/44zkxJCEz3H0WcK87fvtfsKSrqb3KtOdlx2NJlAWiw?annotations=false)
 
 ## Next Steps
 
-The proposal will be introduced in the next meta-governance call. Pending review from Blockful and no revisions following the discussion in during the meta-gov call, this proposal will progress to an on-chain executable vote.
+The proposal will be introduced in the next meta-governance call. Pending review from Blockful and no revisions
+following the discussion in during the meta-gov call, this proposal will progress to an on-chain executable vote.

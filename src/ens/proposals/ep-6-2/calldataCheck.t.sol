@@ -22,7 +22,8 @@ interface IAllowanceModule {
         uint96 allowanceAmount,
         uint16 resetTimeMin,
         uint32 resetBaseMin
-    ) external;
+    )
+        external;
 
     function allowances(address owner, address delegate, address token) external view returns (Allowance memory);
 }
@@ -40,7 +41,6 @@ contract Proposal_ENS_EP_6_2_Test is ENS_Governance, SafeHelper {
     IAllowanceModule allowanceModule = IAllowanceModule(0xCFbFaC74C26F8647cBDb8c5caf80BB5b32E43134);
 
     uint256 ETHbalanceBefore;
-
 
     function _selectFork() public override {
         vm.createSelectFork({ blockNumber: 21_724_691, urlOrAlias: "mainnet" });
@@ -83,12 +83,8 @@ contract Proposal_ENS_EP_6_2_Test is ENS_Governance, SafeHelper {
             28_825_613 // resetBaseMin
         );
 
-        (, calldatas[1]) = _buildSafeExecCalldata(
-            address(endowmentSafe),
-            address(allowanceModule),
-            callData,
-            address(timelock)
-        );
+        (, calldatas[1]) =
+            _buildSafeExecCalldata(address(endowmentSafe), address(allowanceModule), callData, address(timelock));
         targets[1] = address(endowmentSafe);
         values[1] = 0;
         signatures[1] = "";
@@ -103,9 +99,7 @@ contract Proposal_ENS_EP_6_2_Test is ENS_Governance, SafeHelper {
         assertEq(ETHbalanceBefore, ETHbalanceAfter + expectedETHtransfer);
 
         Allowance memory allowance = allowanceModule.allowances(
-            address(endowmentSafe),
-            0x91c32893216dE3eA0a55ABb9851f581d4503d39b,
-            address(0)
+            address(endowmentSafe), 0x91c32893216dE3eA0a55ABb9851f581d4503d39b, address(0)
         );
 
         assertEq(allowance.amount, 30 ether);

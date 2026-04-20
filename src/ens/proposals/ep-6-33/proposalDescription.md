@@ -1,18 +1,27 @@
 # Enable Root and Registrar Security Controllers
+
 ## Abstract
 
 This proposal enables two break-glass security controllers:
 
-* `RootSecurityController`, which can disable a TLD by taking ownership and clearing its resolver.
-* `RegistrarSecurityController`, which can disable a .eth registrar controller.
+- `RootSecurityController`, which can disable a TLD by taking ownership and clearing its resolver.
+- `RegistrarSecurityController`, which can disable a .eth registrar controller.
 
 ## Motivation
 
-At present, remediating a compromise or security vulnerability in critical parts of the ENS contracts requires a DAO vote, which takes a minimum of 9 days. This provides a significant window during which an attacker could take advantage of a vulnerability with no way to stop it. This proposal introduces two security controllers, which permit the security council to disable ENS functionality in an emergency, without granting them broad powers over the ENS system.
+At present, remediating a compromise or security vulnerability in critical parts of the ENS contracts requires a DAO
+vote, which takes a minimum of 9 days. This provides a significant window during which an attacker could take advantage
+of a vulnerability with no way to stop it. This proposal introduces two security controllers, which permit the security
+council to disable ENS functionality in an emergency, without granting them broad powers over the ENS system.
 
-Enabling the `RootSecurityController` allows rapid deactivation of a compromised TLD by transferring its ownership to the controller and clearing its resolver. Enabling the `RegistrarSecurityController` allows the security council to disable problematic registrar controllers, while still retaining DAO control over the base registrar.
+Enabling the `RootSecurityController` allows rapid deactivation of a compromised TLD by transferring its ownership to
+the controller and clearing its resolver. Enabling the `RegistrarSecurityController` allows the security council to
+disable problematic registrar controllers, while still retaining DAO control over the base registrar.
 
-These 'negative' powers are in line with the security council's existing remit to veto DAO votes, but constitute an expansion of their powers; unlike the veto power, this one is not time-limited and would require a DAO vote to remove. However, we believe these powers are proportional and necessary. As they are subject to DAO review, the DAO can easily countermand any changes made by the council and/or remove the council's ability to make further changes.
+These 'negative' powers are in line with the security council's existing remit to veto DAO votes, but constitute an
+expansion of their powers; unlike the veto power, this one is not time-limited and would require a DAO vote to remove.
+However, we believe these powers are proportional and necessary. As they are subject to DAO review, the DAO can easily
+countermand any changes made by the council and/or remove the council's ability to make further changes.
 
 ## Specification
 
@@ -24,12 +33,12 @@ Batch transaction for ENS DAO execution to enable and configure the security con
 
 This proposal contains **4** transactions to be executed by the ENS DAO Timelock.
 
-| # | Contract                      | Function            | Description                                                                     |
-| - | ----------------------------- | ------------------- | ------------------------------------------------------------------------------- |
-| 1 | Root                          | `setController`     | Enable `RootSecurityController` as a root controller                            |
-| 2 | Base Registrar                | `transferOwnership` | Transfer registrar ownership to `RegistrarSecurityController`                   |
-| 3 | Root Security Controller      | `transferOwnership` | Transfer ownership of `RootSecurityController` to Security Council Multisig     |
-| 4 | Registrar Security Controller | `setController`     | Add Security Council Multisig as a controller of  `RegistrarSecurityController` |
+| #   | Contract                      | Function            | Description                                                                    |
+| --- | ----------------------------- | ------------------- | ------------------------------------------------------------------------------ |
+| 1   | Root                          | `setController`     | Enable `RootSecurityController` as a root controller                           |
+| 2   | Base Registrar                | `transferOwnership` | Transfer registrar ownership to `RegistrarSecurityController`                  |
+| 3   | Root Security Controller      | `transferOwnership` | Transfer ownership of `RootSecurityController` to Security Council Multisig    |
+| 4   | Registrar Security Controller | `setController`     | Add Security Council Multisig as a controller of `RegistrarSecurityController` |
 
 ## Detailed Transaction Information
 
@@ -43,12 +52,12 @@ This proposal contains **4** transactions to be executed by the ENS DAO Timelock
 
 **Parameters:**
 
-* `address controller`: `0x95123B1ec97df0d3c52c728aB38FBbb7A3ca6da6`
-* `bool enabled`: `true`
+- `address controller`: `0x95123B1ec97df0d3c52c728aB38FBbb7A3ca6da6`
+- `bool enabled`: `true`
 
 **Encoded Calldata:** `<TBD>`
 
-***
+---
 
 ### Transaction 2: Transfer Base Registrar ownership to RegistrarSecurityController
 
@@ -60,11 +69,11 @@ This proposal contains **4** transactions to be executed by the ENS DAO Timelock
 
 **Parameters:**
 
-* `address newOwner`: `0x7dd4d97653A67C2FD7fbA0a84825eC09524D4E1b`
+- `address newOwner`: `0x7dd4d97653A67C2FD7fbA0a84825eC09524D4E1b`
 
 **Encoded Calldata:** `<TBD>`
 
-***
+---
 
 ### Transaction 3: Transfer ownership of `RootSecurityController` to Security Council Multisig
 
@@ -76,13 +85,13 @@ This proposal contains **4** transactions to be executed by the ENS DAO Timelock
 
 **Parameters:**
 
-* `address newOwner`: `0xaA5cD05f6B62C3af58AE9c4F3F7A2aCC2Cdc2Cc7`
+- `address newOwner`: `0xaA5cD05f6B62C3af58AE9c4F3F7A2aCC2Cdc2Cc7`
 
 **Encoded Calldata:** `<TBD>`
 
-***
+---
 
-### Transaction 4: Add Security Council Multisig as a controller of  `RegistrarSecurityController`
+### Transaction 4: Add Security Council Multisig as a controller of `RegistrarSecurityController`
 
 **Target:** RegistrarSecurityController
 
@@ -92,14 +101,14 @@ This proposal contains **4** transactions to be executed by the ENS DAO Timelock
 
 **Parameters:**
 
-* `address controller`: `0xaA5cD05f6B62C3af58AE9c4F3F7A2aCC2Cdc2Cc7`
-* `bool enabled`: `true`
+- `address controller`: `0xaA5cD05f6B62C3af58AE9c4F3F7A2aCC2Cdc2Cc7`
+- `bool enabled`: `true`
 
 **Encoded Calldata:** `<TBD>`
 
-***
+---
 
 ## Notes / Assumptions
 
-* `RootSecurityController` and `RegistrarSecurityController` are already deployed.
-* Controller ownership is already held by the DAO prior to execution.
+- `RootSecurityController` and `RegistrarSecurityController` are already deployed.
+- Controller ownership is already held by the DAO prior to execution.

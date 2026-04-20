@@ -11,7 +11,12 @@ interface IUniversalRewardsDistributor {
     event TimelockSet(uint256 newTimelock);
 
     function acceptRoot() external;
-    function claim(address account, address reward, uint256 claimable, bytes32[] memory proof)
+    function claim(
+        address account,
+        address reward,
+        uint256 claimable,
+        bytes32[] memory proof
+    )
         external
         returns (uint256 amount);
     function claimed(address account, address reward) external view returns (uint256 amount);

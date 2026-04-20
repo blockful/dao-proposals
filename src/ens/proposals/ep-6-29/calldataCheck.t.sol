@@ -40,7 +40,7 @@ contract Proposal_ENS_EP_6_29_Test is ENS_Governance {
         // Proposal created: block 24293146 (2026-01-22T21:55:11Z)
         // Voting start: block 24293147
         // Voting end: block 24338965
-        vm.createSelectFork({ blockNumber: 24293146, urlOrAlias: "mainnet" });
+        vm.createSelectFork({ blockNumber: 24_293_146, urlOrAlias: "mainnet" });
     }
 
     function _proposer() public pure override returns (address) {
@@ -59,13 +59,7 @@ contract Proposal_ENS_EP_6_29_Test is ENS_Governance {
     function _generateCallData()
         public
         override
-        returns (
-            address[] memory,
-            uint256[] memory,
-            string[] memory,
-            bytes[] memory,
-            string memory
-        )
+        returns (address[] memory, uint256[] memory, string[] memory, bytes[] memory, string memory)
     {
         uint256 numTransactions = 4;
 
@@ -76,31 +70,19 @@ contract Proposal_ENS_EP_6_29_Test is ENS_Governance {
 
         // Transaction 1: USDC transfer to Meta-Governance WG (379,000 USDC)
         targets[0] = address(USDC);
-        calldatas[0] = abi.encodeWithSelector(
-            USDC.transfer.selector,
-            metagovMultisig,
-            metagovExpectedUSDCtransfer
-        );
+        calldatas[0] = abi.encodeWithSelector(USDC.transfer.selector, metagovMultisig, metagovExpectedUSDCtransfer);
         values[0] = 0;
         signatures[0] = "";
 
         // Transaction 2: USDC transfer to Ecosystem WG (470,000 USDC)
         targets[1] = address(USDC);
-        calldatas[1] = abi.encodeWithSelector(
-            USDC.transfer.selector,
-            ecosystemMultisig,
-            ecosystemExpectedUSDCtransfer
-        );
+        calldatas[1] = abi.encodeWithSelector(USDC.transfer.selector, ecosystemMultisig, ecosystemExpectedUSDCtransfer);
         values[1] = 0;
         signatures[1] = "";
 
         // Transaction 3: USDC transfer to Public Goods WG (110,000 USDC)
         targets[2] = address(USDC);
-        calldatas[2] = abi.encodeWithSelector(
-            USDC.transfer.selector,
-            pgMultisig,
-            pgExpectedUSDCtransfer
-        );
+        calldatas[2] = abi.encodeWithSelector(USDC.transfer.selector, pgMultisig, pgExpectedUSDCtransfer);
         values[2] = 0;
         signatures[2] = "";
 
@@ -136,20 +118,12 @@ contract Proposal_ENS_EP_6_29_Test is ENS_Governance {
 
         // Verify Public Goods received USDC
         uint256 USDCpgBalanceAfter = USDC.balanceOf(pgMultisig);
-        assertEq(
-            USDCpgBalanceBefore + pgExpectedUSDCtransfer,
-            USDCpgBalanceAfter,
-            "Public Goods USDC balance mismatch"
-        );
+        assertEq(USDCpgBalanceBefore + pgExpectedUSDCtransfer, USDCpgBalanceAfter, "Public Goods USDC balance mismatch");
         assertNotEq(USDCpgBalanceAfter, USDCpgBalanceBefore, "Public Goods USDC balance unchanged");
 
         // Verify Public Goods received ETH
         uint256 ETHpgBalanceAfter = address(pgMultisig).balance;
-        assertEq(
-            ETHpgBalanceBefore + pgExpectedETHtransfer,
-            ETHpgBalanceAfter,
-            "Public Goods ETH balance mismatch"
-        );
+        assertEq(ETHpgBalanceBefore + pgExpectedETHtransfer, ETHpgBalanceAfter, "Public Goods ETH balance mismatch");
         assertNotEq(ETHpgBalanceAfter, ETHpgBalanceBefore, "Public Goods ETH balance unchanged");
     }
 

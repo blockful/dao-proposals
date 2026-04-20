@@ -48,4 +48,3 @@ $ forge test --match-path "src/shutter/proposals/unclaimed-vest/**" -vvv
 # Parameter 2 Value: 0xD724DBe7e230E400fe7390885e16957Ec246d716
 # Transaction Value: 0
 ```
-

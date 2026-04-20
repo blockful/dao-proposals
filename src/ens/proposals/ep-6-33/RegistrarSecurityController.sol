@@ -1,16 +1,15 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.25 <0.9.0;
 
-import {IENSRegistrar} from "@ens/interfaces/IENSRegistrar.sol";
-import {Controllable} from "./Controllable.sol";
-import {ERC165} from "./vendor/oz-v4/ERC165.sol";
+import { IENSRegistrar } from "@ens/interfaces/IENSRegistrar.sol";
+import { Controllable } from "./Controllable.sol";
+import { ERC165 } from "./vendor/oz-v4/ERC165.sol";
 
 /// @title RegistrarSecurityController
 /// @notice Break-glass controller for the base registrar.
 /// @dev Acts as a pass-through for the base registrar, but with the ability for
 ///      security controllers to disable registrar controllers.
 contract RegistrarSecurityController is Controllable, ERC165 {
-
     /// @notice The registrar this controller manages.
     IENSRegistrar public registrar;
 

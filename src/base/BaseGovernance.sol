@@ -9,11 +9,13 @@ import { Test } from "@forge-std/src/Test.sol";
 ///         Governance-specific logic (propose, vote, queue, execute) is delegated
 ///         to adapter methods that each DAO implements.
 abstract contract BaseGovernance is Test {
-    // ─── Proposal State ─────────────────────────────────────────────────
+    // ─── Proposal State
+    // ─────────────────────────────────────────────────
     address public proposer;
     address[] public voters;
 
-    // ─── Lifecycle ──────────────────────────────────────────────────────
+    // ─── Lifecycle
+    // ──────────────────────────────────────────────────────
 
     /// @notice Override in DAO base class to initialize governance contracts
     function setUp() public virtual {
@@ -23,7 +25,8 @@ abstract contract BaseGovernance is Test {
         _labelContracts();
     }
 
-    // ─── Abstract: Must be implemented by each DAO ──────────────────────
+    // ─── Abstract: Must be implemented by each DAO
+    // ──────────────────────
 
     /// @notice Select the fork (chain + block) for the test
     function _selectFork() public virtual;

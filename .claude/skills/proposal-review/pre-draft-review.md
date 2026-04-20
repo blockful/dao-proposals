@@ -1,6 +1,7 @@
 # Pre-Draft Proposal Review
 
-Use this workflow when a proposal is being **discussed or designed** but has no Tally draft yet. This covers deploying custom contracts, testing an idea, or building calldata before it goes to Tally.
+Use this workflow when a proposal is being **discussed or designed** but has no Tally draft yet. This covers deploying
+custom contracts, testing an idea, or building calldata before it goes to Tally.
 
 ## 1. Create Branch
 
@@ -38,14 +39,14 @@ Create `calldataCheck.t.sol` extending `ENS_Governance`.
 
 The base contract (`src/ens/ens.t.sol`) provides these variables via `setUp()` — do NOT redeclare them:
 
-| Variable | Type | Address | Notes |
-|----------|------|---------|-------|
-| `ensToken` | `IENSToken` | `0xC18360217D8F7Ab5e7c516566761Ea12Ce7F9D72` | ENS governance token |
-| `governor` | `IGovernor` | `0x323A76393544d5ecca80cd6ef2A560C6a395b7E3` | ENS Governor contract |
-| `timelock` | `ITimelock` | `0xFe89cc7aBB2C4183683ab71653C4cdc9B02D44b7` | ENS Timelock (= wallet.ensdao.eth) |
-| `proposer` | `address` | Set by `_proposer()` | Proposal submitter |
-| `voters` | `address[]` | Set by `_voters()` | Default voter set with quorum |
-| `targets`, `values`, `signatures`, `calldatas`, `description` | — | — | Proposal parameters |
+| Variable                                                      | Type        | Address                                      | Notes                              |
+| ------------------------------------------------------------- | ----------- | -------------------------------------------- | ---------------------------------- |
+| `ensToken`                                                    | `IENSToken` | `0xC18360217D8F7Ab5e7c516566761Ea12Ce7F9D72` | ENS governance token               |
+| `governor`                                                    | `IGovernor` | `0x323A76393544d5ecca80cd6ef2A560C6a395b7E3` | ENS Governor contract              |
+| `timelock`                                                    | `ITimelock` | `0xFe89cc7aBB2C4183683ab71653C4cdc9B02D44b7` | ENS Timelock (= wallet.ensdao.eth) |
+| `proposer`                                                    | `address`   | Set by `_proposer()`                         | Proposal submitter                 |
+| `voters`                                                      | `address[]` | Set by `_voters()`                           | Default voter set with quorum      |
+| `targets`, `values`, `signatures`, `calldatas`, `description` | —           | —                                            | Proposal parameters                |
 
 **Important**: `address(timelock)` is `wallet.ensdao.eth` (`0xFe89cc7aBB2C4183683ab71653C4cdc9B02D44b7`).
 
@@ -146,9 +147,9 @@ git push origin ens/ep-topic-name
 
 When the proposal is created on Tally, re-run `/proposal-review` with the draft URL. Changes needed:
 
-| Field | Pre-draft | Draft |
-|-------|-----------|-------|
-| `description` | Hardcoded placeholder | `getDescriptionFromMarkdown()` |
-| `dirPath()` | `""` | `"src/ens/proposals/ep-topic-name"` |
-| `_proposer()` | Default | From Tally draft |
-| New files | None | `proposalCalldata.json`, `proposalDescription.md` (fetched) |
+| Field         | Pre-draft             | Draft                                                       |
+| ------------- | --------------------- | ----------------------------------------------------------- |
+| `description` | Hardcoded placeholder | `getDescriptionFromMarkdown()`                              |
+| `dirPath()`   | `""`                  | `"src/ens/proposals/ep-topic-name"`                         |
+| `_proposer()` | Default               | From Tally draft                                            |
+| New files     | None                  | `proposalCalldata.json`, `proposalDescription.md` (fetched) |

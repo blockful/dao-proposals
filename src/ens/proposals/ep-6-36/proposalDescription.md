@@ -1,11 +1,17 @@
 # [EP 6.36][Executable] Register on.eth to the ENS DAO wallet and set the resolver
+
 # Previous Context
 
-This proposal passed as [EP 6.34](https://www.tally.xyz/gov/ens/proposal/69304512515872868228453463730257567312488838925636819022683533220991373699419 "EP 6.34") and was queued for execution. Unfortunately, that proposal cannot be executed on-chain in its current form.
+This proposal passed as
+[EP 6.34](https://www.tally.xyz/gov/ens/proposal/69304512515872868228453463730257567312488838925636819022683533220991373699419 "EP 6.34")
+and was queued for execution. Unfortunately, that proposal cannot be executed on-chain in its current form.
 
-Whilst the calldata was correct, and the simulations passed as expected, the calldata was generated against the blockchain state at the time and did not give consideration to other ongoing executable proposals.
+Whilst the calldata was correct, and the simulations passed as expected, the calldata was generated against the
+blockchain state at the time and did not give consideration to other ongoing executable proposals.
 
-Alongside this proposal, another proposal was in motion ([Tally | ENS | Enable Root and Registrar Security Controllers](https://www.tally.xyz/gov/ens/proposal/7432320732701654700329828389963546575346476886035742386260284098817526767149 "Enable Root and Registrar Security Controllers")), which passed and was executed prior to 6.34.
+Alongside this proposal, another proposal was in motion
+([Tally | ENS | Enable Root and Registrar Security Controllers](https://www.tally.xyz/gov/ens/proposal/7432320732701654700329828389963546575346476886035742386260284098817526767149 "Enable Root and Registrar Security Controllers")),
+which passed and was executed prior to 6.34.
 
 That proposal changed a dependency on which 6.34 relied - specifically, the ownership of the Base Registrar.&#x20;
 
@@ -13,44 +19,38 @@ This proposal is the updated proposal with calldata that gives appropriate consi
 
 **There are no material changes.**
 
+# Description
 
-Description
-===========
-
-This proposal registers the \`on.eth\` ENS name to the ENS DAO wallet (`0xfe89cc7abb2c4183683ab71653c4cdc9b02d44b7`) and sets the resolver to an on-chain registry-resolver contract (`0x2a9B5787207863cf2d63d20172ed1F7bB2c9487A`).
+This proposal registers the \`on.eth\` ENS name to the ENS DAO wallet (`0xfe89cc7abb2c4183683ab71653c4cdc9b02d44b7`) and
+sets the resolver to an on-chain registry-resolver contract (`0x2a9B5787207863cf2d63d20172ed1F7bB2c9487A`).
 
 # Motivation
 
-The Chain Registry-Resolver is a smart contract that acts as a **canonical, on-chain registry** for blockchain metadata. It serves as the resolver for the `on.eth` namespace and enables applications and users to retrieve metadata for **any** blockchain using a single human-readable identifier, such as \`base\` or \`solana\`.
+The Chain Registry-Resolver is a smart contract that acts as a **canonical, on-chain registry** for blockchain metadata.
+It serves as the resolver for the `on.eth` namespace and enables applications and users to retrieve metadata
+for **any** blockchain using a single human-readable identifier, such as \`base\` or \`solana\`.
 
-Historically, blockchain metadata has been stored in centralized, fragmented repositories maintained by third parties. The Chain Registry-Resolver brings this metadata on-chain into a single, extensible registry, where control and update authority are delegated to the relevant chain operators.
-
+Historically, blockchain metadata has been stored in centralized, fragmented repositories maintained by third parties.
+The Chain Registry-Resolver brings this metadata on-chain into a single, extensible registry, where control and update
+authority are delegated to the relevant chain operators.
 
 # Specification
 
 ## Additional Relevant Contracts
 
+- `RegistrarSecurityController` • `0x7dd4d97653A67C2FD7fbA0a84825eC09524D4E1b` •
+  [Etherscan](https://etherscan.io/address/0x7dd4d97653A67C2FD7fbA0a84825eC09524D4E1b#code)
 
-
-* `RegistrarSecurityController` • `0x7dd4d97653A67C2FD7fbA0a84825eC09524D4E1b` • [Etherscan](https://etherscan.io/address/0x7dd4d97653A67C2FD7fbA0a84825eC09524D4E1b#code)
-
-
-
-Please see [https://discuss.ens.domains/t/executable-enable-root-and-registrar-security-controllers/21872](https://discuss.ens.domains/t/executable-enable-root-and-registrar-security-controllers/21872) for additional context.
-
-
+Please see
+[https://discuss.ens.domains/t/executable-enable-root-and-registrar-security-controllers/21872](https://discuss.ens.domains/t/executable-enable-root-and-registrar-security-controllers/21872)
+for additional context.
 
 ## Updated Proposal
 
-
-
 This proposal includes four components.
 
-
-
-**1. Adding the DAO wallet as a controller on the \`BaseRegistrarImplementation\` smart contract through the RegistrarSecurityController.**
-
-
+**1. Adding the DAO wallet as a controller on the \`BaseRegistrarImplementation\` smart contract through the
+RegistrarSecurityController.**
 
 `To: 0x7dd4d97653A67C2FD7fbA0a84825eC09524D4E1b`
 
@@ -58,15 +58,10 @@ This proposal includes four components.
 
 `Calldata: 0xb229e85e000000000000000000000000fe89cc7abb2c4183683ab71653c4cdc9b02d44b7`
 
-
-
-Simulation: [https://www.tdly.co/shared/simulation/d0d646ce-ca82-4e1b-9777-e207292f5ee8](https://www.tdly.co/shared/simulation/d0d646ce-ca82-4e1b-9777-e207292f5ee8)
-
-
+Simulation:
+[https://www.tdly.co/shared/simulation/d0d646ce-ca82-4e1b-9777-e207292f5ee8](https://www.tdly.co/shared/simulation/d0d646ce-ca82-4e1b-9777-e207292f5ee8)
 
 **2. Registering the name \`on.eth\` to the DAO wallet.**
-
-
 
 `To: 0x57f1887a8BF19b14fC0dF6Fd9B2acc9Af147eA85`
 
@@ -74,15 +69,10 @@ Simulation: [https://www.tdly.co/shared/simulation/d0d646ce-ca82-4e1b-9777-e2072
 
 `Calldata: 0xfca247ac6460d40e0362f6a2c743f205df8181010b7f26e76d5606847fb7be7fb6d135f9000000000000000000000000fe89cc7abb2c4183683ab71653c4cdc9b02d44b70000000000000000000000000000000000000000000000000000000012cc0300`
 
-
-
-Simulation: [https://www.tdly.co/shared/simulation/457f778d-110b-4ff3-a120-ac0801a7ac9a](https://www.tdly.co/shared/simulation/457f778d-110b-4ff3-a120-ac0801a7ac9a)
-
-
+Simulation:
+[https://www.tdly.co/shared/simulation/457f778d-110b-4ff3-a120-ac0801a7ac9a](https://www.tdly.co/shared/simulation/457f778d-110b-4ff3-a120-ac0801a7ac9a)
 
 **3. Setting the deployed \`ChainResolver\` as the resolver for**` on.eth`
-
-
 
 `To: 0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e`
 
@@ -90,15 +80,11 @@ Simulation: [https://www.tdly.co/shared/simulation/457f778d-110b-4ff3-a120-ac080
 
 `Calldata: 0x1896f70acabf8262fe531c2a7e8cd86e06342bc27fc0591ecd562fbac88280abc18ef8990000000000000000000000002a9b5787207863cf2d63d20172ed1f7bb2c9487a`
 
+Simulation:
+[https://www.tdly.co/shared/simulation/aaa4c105-0efb-4f5a-92a0-bfea8fa376c8](https://www.tdly.co/shared/simulation/aaa4c105-0efb-4f5a-92a0-bfea8fa376c8)
 
-
-Simulation: [https://www.tdly.co/shared/simulation/aaa4c105-0efb-4f5a-92a0-bfea8fa376c8](https://www.tdly.co/shared/simulation/aaa4c105-0efb-4f5a-92a0-bfea8fa376c8)
-
-
-
-**4. Removing the DAO wallet as a controller on the \`BaseRegistrarImplementation\` smart contract through the RegistrarSecurityController.**
-
-
+**4. Removing the DAO wallet as a controller on the \`BaseRegistrarImplementation\` smart contract through the
+RegistrarSecurityController.**
 
 `To: 0x7dd4d97653A67C2FD7fbA0a84825eC09524D4E1b`
 
@@ -106,15 +92,14 @@ Simulation: [https://www.tdly.co/shared/simulation/aaa4c105-0efb-4f5a-92a0-bfea8
 
 `Calldata: 0x246b813e000000000000000000000000fe89cc7abb2c4183683ab71653c4cdc9b02d44b7`
 
-
-
-Simulation: [https://www.tdly.co/shared/simulation/264b8117-23a3-47e4-b84e-be49d8ffc4b4](https://www.tdly.co/shared/simulation/264b8117-23a3-47e4-b84e-be49d8ffc4b4)
-
-
+Simulation:
+[https://www.tdly.co/shared/simulation/264b8117-23a3-47e4-b84e-be49d8ffc4b4](https://www.tdly.co/shared/simulation/264b8117-23a3-47e4-b84e-be49d8ffc4b4)
 
 ## Notes
 
-
-
-* For complete clarity, what differentiates this updated proposal from the original is that transactions 1, and 4 target **the RegistrarSecurityController**. The new security model for the \`BaseRegistrarImplementation\` proxies the addition and removal of controllers through this contract.
-* Explicit consideration has been given to other ongoing executable proposals. The only current proposal is [https://www.tally.xyz/gov/ens/proposal/28252712932062322633429808688780331957150867173093906455161078029287649387260](https://www.tally.xyz/gov/ens/proposal/28252712932062322633429808688780331957150867173093906455161078029287649387260) which does not modify any dependencies on which this proposal relies.
+- For complete clarity, what differentiates this updated proposal from the original is that transactions 1, and 4 target
+  **the RegistrarSecurityController**. The new security model for the \`BaseRegistrarImplementation\` proxies the
+  addition and removal of controllers through this contract.
+- Explicit consideration has been given to other ongoing executable proposals. The only current proposal is
+  [https://www.tally.xyz/gov/ens/proposal/28252712932062322633429808688780331957150867173093906455161078029287649387260](https://www.tally.xyz/gov/ens/proposal/28252712932062322633429808688780331957150867173093906455161078029287649387260)
+  which does not modify any dependencies on which this proposal relies.

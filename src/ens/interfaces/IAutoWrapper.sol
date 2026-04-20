@@ -54,17 +54,26 @@ interface IAutoWrapper {
         uint64 expiry,
         uint64 lowerLimit,
         uint64 upperLimit
-    ) external;
+    )
+        external;
     function deleteWrapSchedule(address user, address superToken, address liquidityToken) external;
     function deleteWrapScheduleByIndex(bytes32 index) external;
     function executeWrap(address user, address superToken, address liquidityToken) external;
     function executeWrapByIndex(bytes32 index) external;
-    function getWrapSchedule(address user, address superToken, address liquidityToken)
+    function getWrapSchedule(
+        address user,
+        address superToken,
+        address liquidityToken
+    )
         external
         view
         returns (AutoWrapper.WrapSchedule memory);
     function getWrapScheduleByIndex(bytes32 index) external view returns (AutoWrapper.WrapSchedule memory);
-    function getWrapScheduleIndex(address user, address superToken, address liquidityToken)
+    function getWrapScheduleIndex(
+        address user,
+        address superToken,
+        address liquidityToken
+    )
         external
         pure
         returns (bytes32);

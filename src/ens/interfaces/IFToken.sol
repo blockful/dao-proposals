@@ -50,14 +50,18 @@ interface IFToken {
         uint256 minAmountOut_,
         IAllowanceTransfer.PermitSingle memory permit_,
         bytes memory signature_
-    ) external returns (uint256 shares_);
+    )
+        external
+        returns (uint256 shares_);
     function depositWithSignatureEIP2612(
         uint256 assets_,
         address receiver_,
         uint256 minAmountOut_,
         uint256 deadline_,
         bytes memory signature_
-    ) external returns (uint256 shares_);
+    )
+        external
+        returns (uint256 shares_);
     function getData()
         external
         view
@@ -87,24 +91,41 @@ interface IFToken {
         uint256 maxAssets_,
         IAllowanceTransfer.PermitSingle memory permit_,
         bytes memory signature_
-    ) external returns (uint256 assets_);
+    )
+        external
+        returns (uint256 assets_);
     function mintWithSignatureEIP2612(
         uint256 shares_,
         address receiver_,
         uint256 maxAssets_,
         uint256 deadline_,
         bytes memory signature_
-    ) external returns (uint256 assets_);
+    )
+        external
+        returns (uint256 assets_);
     function name() external view returns (string memory);
     function nonces(address owner) external view returns (uint256);
-    function permit(address owner, address spender, uint256 value, uint256 deadline, uint8 v, bytes32 r, bytes32 s)
+    function permit(
+        address owner,
+        address spender,
+        uint256 value,
+        uint256 deadline,
+        uint8 v,
+        bytes32 r,
+        bytes32 s
+    )
         external;
     function previewDeposit(uint256 assets_) external view returns (uint256);
     function previewMint(uint256 shares_) external view returns (uint256);
     function previewRedeem(uint256 shares_) external view returns (uint256);
     function previewWithdraw(uint256 assets_) external view returns (uint256);
     function rebalance() external payable returns (uint256 assets_);
-    function redeem(uint256 shares_, address receiver_, address owner_, uint256 minAmountOut_)
+    function redeem(
+        uint256 shares_,
+        address receiver_,
+        address owner_,
+        uint256 minAmountOut_
+    )
         external
         returns (uint256 assets_);
     function redeem(uint256 shares_, address receiver_, address owner_) external returns (uint256 assets_);
@@ -115,7 +136,9 @@ interface IFToken {
         uint256 minAmountOut_,
         uint256 deadline_,
         bytes memory signature_
-    ) external returns (uint256 assets_);
+    )
+        external
+        returns (uint256 assets_);
     function rescueFunds(address token_) external;
     function symbol() external view returns (string memory);
     function totalAssets() external view returns (uint256);
@@ -125,7 +148,12 @@ interface IFToken {
     function updateRates() external returns (uint256 tokenExchangePrice_, uint256 liquidityExchangePrice_);
     function updateRebalancer(address newRebalancer_) external;
     function updateRewards(address rewardsRateModel_) external;
-    function withdraw(uint256 assets_, address receiver_, address owner_, uint256 maxSharesBurn_)
+    function withdraw(
+        uint256 assets_,
+        address receiver_,
+        address owner_,
+        uint256 maxSharesBurn_
+    )
         external
         returns (uint256 shares_);
     function withdraw(uint256 assets_, address receiver_, address owner_) external returns (uint256 shares_);
@@ -137,5 +165,7 @@ interface IFToken {
         uint256 maxSharesBurn_,
         uint256 deadline_,
         bytes memory signature_
-    ) external returns (uint256 shares_);
+    )
+        external
+        returns (uint256 shares_);
 }

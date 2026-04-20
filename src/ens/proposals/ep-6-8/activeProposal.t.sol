@@ -28,8 +28,9 @@ interface AaveV3 {
 }
 
 interface IAsset {
-// solhint-disable-previous-line no-empty-blocks
-}
+    // solhint-disable-previous-line no-empty-blocks
+
+    }
 
 interface Balancer {
     enum SwapKind {
@@ -174,14 +175,17 @@ contract Proposal_ENS_EP_6_8_Test is ENS_Governance, SafeHelper, ZodiacRolesHelp
     address OETH = 0x856c4Efb76C1D1AE02e20CEB03A2A6a08b0b8dC3;
     address osETH = 0xf1C9acDc66974dFB6dEcB12aA385b9cD01190E38;
 
-    // ─── MultiSend + Annotation ────────────────────────────────────────
+    // ─── MultiSend + Annotation
+    // ────────────────────────────────────────
     IMultiSend private constant PROPOSAL_MULTI_SEND = IMultiSend(0x9641d764fc13c8B624c04430C7356C1C7C8102e2);
     address private constant ANNOTATION_REGISTRY = 0x000000000000cd17345801aa8147b8D3950260FF;
 
-    // ─── Zodiac Roles Modifier ──────────────────────────────────────────
+    // ─── Zodiac Roles Modifier
+    // ──────────────────────────────────────────
     IRolesModifier private constant ROLES_MOD = IRolesModifier(0x703806E61847984346d2D7DDd853049627e50A40);
 
-    // ─── Protocol Targets ───────────────────────────────────────────────
+    // ─── Protocol Targets
+    // ───────────────────────────────────────────────
     address private constant AAVE_REWARDS_CONTROLLER = 0x8164Cc65827dcFe994AB23944CBC90e0aa80bFcb;
     address private constant AAVE_WETH_GATEWAY_V2 = 0xA434D495249abE33E031Fe71a969B81f3c07950D;
     address private constant SKY_USDS_ACTIONS = 0x35Cea9e57A393ac66Aaa7E25C391D52C74B5648f;
@@ -898,10 +902,7 @@ contract Proposal_ENS_EP_6_8_Test is ENS_Governance, SafeHelper, ZodiacRolesHelp
                         userData: bytes("")
                     }),
                     Balancer.FundManagement({
-                        sender: safe,
-                        fromInternalBalance: false,
-                        recipient: payable(safe),
-                        toInternalBalance: false
+                        sender: safe, fromInternalBalance: false, recipient: payable(safe), toInternalBalance: false
                     }),
                     1 ether,
                     1 ether
@@ -920,10 +921,7 @@ contract Proposal_ENS_EP_6_8_Test is ENS_Governance, SafeHelper, ZodiacRolesHelp
                         userData: bytes("")
                     }),
                     Balancer.FundManagement({
-                        sender: safe,
-                        fromInternalBalance: false,
-                        recipient: payable(safe),
-                        toInternalBalance: false
+                        sender: safe, fromInternalBalance: false, recipient: payable(safe), toInternalBalance: false
                     }),
                     1 ether,
                     1 ether
@@ -942,10 +940,7 @@ contract Proposal_ENS_EP_6_8_Test is ENS_Governance, SafeHelper, ZodiacRolesHelp
                         userData: bytes("")
                     }),
                     Balancer.FundManagement({
-                        sender: safe,
-                        fromInternalBalance: false,
-                        recipient: payable(safe),
-                        toInternalBalance: false
+                        sender: safe, fromInternalBalance: false, recipient: payable(safe), toInternalBalance: false
                     }),
                     1 ether,
                     1 ether
@@ -964,10 +959,7 @@ contract Proposal_ENS_EP_6_8_Test is ENS_Governance, SafeHelper, ZodiacRolesHelp
                         userData: bytes("")
                     }),
                     Balancer.FundManagement({
-                        sender: safe,
-                        fromInternalBalance: false,
-                        recipient: payable(safe),
-                        toInternalBalance: false
+                        sender: safe, fromInternalBalance: false, recipient: payable(safe), toInternalBalance: false
                     }),
                     1 ether,
                     1 ether
@@ -986,10 +978,7 @@ contract Proposal_ENS_EP_6_8_Test is ENS_Governance, SafeHelper, ZodiacRolesHelp
                         userData: bytes("")
                     }),
                     Balancer.FundManagement({
-                        sender: safe,
-                        fromInternalBalance: false,
-                        recipient: payable(safe),
-                        toInternalBalance: false
+                        sender: safe, fromInternalBalance: false, recipient: payable(safe), toInternalBalance: false
                     }),
                     1 ether,
                     1 ether
@@ -1008,10 +997,7 @@ contract Proposal_ENS_EP_6_8_Test is ENS_Governance, SafeHelper, ZodiacRolesHelp
                         userData: bytes("")
                     }),
                     Balancer.FundManagement({
-                        sender: safe,
-                        fromInternalBalance: false,
-                        recipient: payable(safe),
-                        toInternalBalance: false
+                        sender: safe, fromInternalBalance: false, recipient: payable(safe), toInternalBalance: false
                     }),
                     1 ether,
                     1 ether
@@ -1030,10 +1016,7 @@ contract Proposal_ENS_EP_6_8_Test is ENS_Governance, SafeHelper, ZodiacRolesHelp
                         userData: bytes("")
                     }),
                     Balancer.FundManagement({
-                        sender: safe,
-                        fromInternalBalance: false,
-                        recipient: payable(safe),
-                        toInternalBalance: false
+                        sender: safe, fromInternalBalance: false, recipient: payable(safe), toInternalBalance: false
                     }),
                     1 ether,
                     1 ether
@@ -1052,10 +1035,7 @@ contract Proposal_ENS_EP_6_8_Test is ENS_Governance, SafeHelper, ZodiacRolesHelp
                         userData: bytes("")
                     }),
                     Balancer.FundManagement({
-                        sender: safe,
-                        fromInternalBalance: false,
-                        recipient: payable(safe),
-                        toInternalBalance: false
+                        sender: safe, fromInternalBalance: false, recipient: payable(safe), toInternalBalance: false
                     }),
                     1 ether,
                     1 ether
@@ -1074,10 +1054,7 @@ contract Proposal_ENS_EP_6_8_Test is ENS_Governance, SafeHelper, ZodiacRolesHelp
                         userData: bytes("")
                     }),
                     Balancer.FundManagement({
-                        sender: safe,
-                        fromInternalBalance: false,
-                        recipient: payable(safe),
-                        toInternalBalance: false
+                        sender: safe, fromInternalBalance: false, recipient: payable(safe), toInternalBalance: false
                     }),
                     1 ether,
                     1 ether
@@ -1097,10 +1074,7 @@ contract Proposal_ENS_EP_6_8_Test is ENS_Governance, SafeHelper, ZodiacRolesHelp
                         userData: bytes("")
                     }),
                     Balancer.FundManagement({
-                        sender: safe,
-                        fromInternalBalance: false,
-                        recipient: payable(safe),
-                        toInternalBalance: false
+                        sender: safe, fromInternalBalance: false, recipient: payable(safe), toInternalBalance: false
                     }),
                     1 ether,
                     1 ether
@@ -1120,10 +1094,7 @@ contract Proposal_ENS_EP_6_8_Test is ENS_Governance, SafeHelper, ZodiacRolesHelp
                         userData: bytes("")
                     }),
                     Balancer.FundManagement({
-                        sender: safe,
-                        fromInternalBalance: false,
-                        recipient: payable(safe),
-                        toInternalBalance: false
+                        sender: safe, fromInternalBalance: false, recipient: payable(safe), toInternalBalance: false
                     }),
                     1 ether,
                     1 ether
@@ -1143,10 +1114,7 @@ contract Proposal_ENS_EP_6_8_Test is ENS_Governance, SafeHelper, ZodiacRolesHelp
                         userData: bytes("")
                     }),
                     Balancer.FundManagement({
-                        sender: safe,
-                        fromInternalBalance: false,
-                        recipient: payable(safe),
-                        toInternalBalance: false
+                        sender: safe, fromInternalBalance: false, recipient: payable(safe), toInternalBalance: false
                     }),
                     1 ether,
                     1 ether
@@ -1166,10 +1134,7 @@ contract Proposal_ENS_EP_6_8_Test is ENS_Governance, SafeHelper, ZodiacRolesHelp
                         userData: bytes("")
                     }),
                     Balancer.FundManagement({
-                        sender: safe,
-                        fromInternalBalance: false,
-                        recipient: payable(safe),
-                        toInternalBalance: false
+                        sender: safe, fromInternalBalance: false, recipient: payable(safe), toInternalBalance: false
                     }),
                     1 ether,
                     1 ether
@@ -1188,10 +1153,7 @@ contract Proposal_ENS_EP_6_8_Test is ENS_Governance, SafeHelper, ZodiacRolesHelp
                         userData: bytes("")
                     }),
                     Balancer.FundManagement({
-                        sender: safe,
-                        fromInternalBalance: false,
-                        recipient: payable(safe),
-                        toInternalBalance: false
+                        sender: safe, fromInternalBalance: false, recipient: payable(safe), toInternalBalance: false
                     }),
                     1 ether,
                     1 ether
@@ -1210,10 +1172,7 @@ contract Proposal_ENS_EP_6_8_Test is ENS_Governance, SafeHelper, ZodiacRolesHelp
                         userData: bytes("")
                     }),
                     Balancer.FundManagement({
-                        sender: safe,
-                        fromInternalBalance: false,
-                        recipient: payable(safe),
-                        toInternalBalance: false
+                        sender: safe, fromInternalBalance: false, recipient: payable(safe), toInternalBalance: false
                     }),
                     1 ether,
                     1 ether
@@ -1232,10 +1191,7 @@ contract Proposal_ENS_EP_6_8_Test is ENS_Governance, SafeHelper, ZodiacRolesHelp
                         userData: bytes("")
                     }),
                     Balancer.FundManagement({
-                        sender: safe,
-                        fromInternalBalance: false,
-                        recipient: payable(safe),
-                        toInternalBalance: false
+                        sender: safe, fromInternalBalance: false, recipient: payable(safe), toInternalBalance: false
                     }),
                     1 ether,
                     1 ether
@@ -1254,10 +1210,7 @@ contract Proposal_ENS_EP_6_8_Test is ENS_Governance, SafeHelper, ZodiacRolesHelp
                         userData: bytes("")
                     }),
                     Balancer.FundManagement({
-                        sender: safe,
-                        fromInternalBalance: false,
-                        recipient: payable(safe),
-                        toInternalBalance: false
+                        sender: safe, fromInternalBalance: false, recipient: payable(safe), toInternalBalance: false
                     }),
                     1 ether,
                     1 ether
@@ -1276,10 +1229,7 @@ contract Proposal_ENS_EP_6_8_Test is ENS_Governance, SafeHelper, ZodiacRolesHelp
                         userData: bytes("")
                     }),
                     Balancer.FundManagement({
-                        sender: safe,
-                        fromInternalBalance: false,
-                        recipient: payable(safe),
-                        toInternalBalance: false
+                        sender: safe, fromInternalBalance: false, recipient: payable(safe), toInternalBalance: false
                     }),
                     1 ether,
                     1 ether
@@ -1298,10 +1248,7 @@ contract Proposal_ENS_EP_6_8_Test is ENS_Governance, SafeHelper, ZodiacRolesHelp
                         userData: bytes("")
                     }),
                     Balancer.FundManagement({
-                        sender: safe,
-                        fromInternalBalance: false,
-                        recipient: payable(safe),
-                        toInternalBalance: false
+                        sender: safe, fromInternalBalance: false, recipient: payable(safe), toInternalBalance: false
                     }),
                     1 ether,
                     1 ether
@@ -1320,10 +1267,7 @@ contract Proposal_ENS_EP_6_8_Test is ENS_Governance, SafeHelper, ZodiacRolesHelp
                         userData: bytes("")
                     }),
                     Balancer.FundManagement({
-                        sender: safe,
-                        fromInternalBalance: false,
-                        recipient: payable(safe),
-                        toInternalBalance: false
+                        sender: safe, fromInternalBalance: false, recipient: payable(safe), toInternalBalance: false
                     }),
                     1 ether,
                     1 ether
@@ -1342,10 +1286,7 @@ contract Proposal_ENS_EP_6_8_Test is ENS_Governance, SafeHelper, ZodiacRolesHelp
                         userData: bytes("")
                     }),
                     Balancer.FundManagement({
-                        sender: safe,
-                        fromInternalBalance: false,
-                        recipient: payable(safe),
-                        toInternalBalance: false
+                        sender: safe, fromInternalBalance: false, recipient: payable(safe), toInternalBalance: false
                     }),
                     1 ether,
                     1 ether
@@ -2033,10 +1974,7 @@ contract Proposal_ENS_EP_6_8_Test is ENS_Governance, SafeHelper, ZodiacRolesHelp
                         userData: bytes("")
                     }),
                     Balancer.FundManagement({
-                        sender: safe,
-                        fromInternalBalance: false,
-                        recipient: payable(safe),
-                        toInternalBalance: false
+                        sender: safe, fromInternalBalance: false, recipient: payable(safe), toInternalBalance: false
                     }),
                     1 ether,
                     1 ether
@@ -2055,10 +1993,7 @@ contract Proposal_ENS_EP_6_8_Test is ENS_Governance, SafeHelper, ZodiacRolesHelp
                         userData: bytes("")
                     }),
                     Balancer.FundManagement({
-                        sender: safe,
-                        fromInternalBalance: false,
-                        recipient: payable(safe),
-                        toInternalBalance: false
+                        sender: safe, fromInternalBalance: false, recipient: payable(safe), toInternalBalance: false
                     }),
                     1 ether,
                     1 ether
@@ -2077,10 +2012,7 @@ contract Proposal_ENS_EP_6_8_Test is ENS_Governance, SafeHelper, ZodiacRolesHelp
                         userData: bytes("")
                     }),
                     Balancer.FundManagement({
-                        sender: safe,
-                        fromInternalBalance: false,
-                        recipient: payable(safe),
-                        toInternalBalance: false
+                        sender: safe, fromInternalBalance: false, recipient: payable(safe), toInternalBalance: false
                     }),
                     1 ether,
                     1 ether
@@ -2099,10 +2031,7 @@ contract Proposal_ENS_EP_6_8_Test is ENS_Governance, SafeHelper, ZodiacRolesHelp
                         userData: bytes("")
                     }),
                     Balancer.FundManagement({
-                        sender: safe,
-                        fromInternalBalance: false,
-                        recipient: payable(safe),
-                        toInternalBalance: false
+                        sender: safe, fromInternalBalance: false, recipient: payable(safe), toInternalBalance: false
                     }),
                     1 ether,
                     1 ether
@@ -2121,10 +2050,7 @@ contract Proposal_ENS_EP_6_8_Test is ENS_Governance, SafeHelper, ZodiacRolesHelp
                         userData: bytes("")
                     }),
                     Balancer.FundManagement({
-                        sender: safe,
-                        fromInternalBalance: false,
-                        recipient: payable(safe),
-                        toInternalBalance: false
+                        sender: safe, fromInternalBalance: false, recipient: payable(safe), toInternalBalance: false
                     }),
                     1 ether,
                     1 ether
@@ -2143,10 +2069,7 @@ contract Proposal_ENS_EP_6_8_Test is ENS_Governance, SafeHelper, ZodiacRolesHelp
                         userData: bytes("")
                     }),
                     Balancer.FundManagement({
-                        sender: safe,
-                        fromInternalBalance: false,
-                        recipient: payable(safe),
-                        toInternalBalance: false
+                        sender: safe, fromInternalBalance: false, recipient: payable(safe), toInternalBalance: false
                     }),
                     1 ether,
                     1 ether
@@ -2165,10 +2088,7 @@ contract Proposal_ENS_EP_6_8_Test is ENS_Governance, SafeHelper, ZodiacRolesHelp
                         userData: bytes("")
                     }),
                     Balancer.FundManagement({
-                        sender: safe,
-                        fromInternalBalance: false,
-                        recipient: payable(safe),
-                        toInternalBalance: false
+                        sender: safe, fromInternalBalance: false, recipient: payable(safe), toInternalBalance: false
                     }),
                     1 ether,
                     1 ether
@@ -2187,10 +2107,7 @@ contract Proposal_ENS_EP_6_8_Test is ENS_Governance, SafeHelper, ZodiacRolesHelp
                         userData: bytes("")
                     }),
                     Balancer.FundManagement({
-                        sender: safe,
-                        fromInternalBalance: false,
-                        recipient: payable(safe),
-                        toInternalBalance: false
+                        sender: safe, fromInternalBalance: false, recipient: payable(safe), toInternalBalance: false
                     }),
                     1 ether,
                     1 ether
@@ -2209,10 +2126,7 @@ contract Proposal_ENS_EP_6_8_Test is ENS_Governance, SafeHelper, ZodiacRolesHelp
                         userData: bytes("")
                     }),
                     Balancer.FundManagement({
-                        sender: safe,
-                        fromInternalBalance: false,
-                        recipient: payable(safe),
-                        toInternalBalance: false
+                        sender: safe, fromInternalBalance: false, recipient: payable(safe), toInternalBalance: false
                     }),
                     1 ether,
                     1 ether
@@ -2231,10 +2145,7 @@ contract Proposal_ENS_EP_6_8_Test is ENS_Governance, SafeHelper, ZodiacRolesHelp
                         userData: bytes("")
                     }),
                     Balancer.FundManagement({
-                        sender: safe,
-                        fromInternalBalance: false,
-                        recipient: payable(safe),
-                        toInternalBalance: false
+                        sender: safe, fromInternalBalance: false, recipient: payable(safe), toInternalBalance: false
                     }),
                     1 ether,
                     1 ether
@@ -2253,10 +2164,7 @@ contract Proposal_ENS_EP_6_8_Test is ENS_Governance, SafeHelper, ZodiacRolesHelp
                         userData: bytes("")
                     }),
                     Balancer.FundManagement({
-                        sender: safe,
-                        fromInternalBalance: false,
-                        recipient: payable(safe),
-                        toInternalBalance: false
+                        sender: safe, fromInternalBalance: false, recipient: payable(safe), toInternalBalance: false
                     }),
                     1 ether,
                     1 ether
@@ -2275,10 +2183,7 @@ contract Proposal_ENS_EP_6_8_Test is ENS_Governance, SafeHelper, ZodiacRolesHelp
                         userData: bytes("")
                     }),
                     Balancer.FundManagement({
-                        sender: safe,
-                        fromInternalBalance: false,
-                        recipient: payable(safe),
-                        toInternalBalance: false
+                        sender: safe, fromInternalBalance: false, recipient: payable(safe), toInternalBalance: false
                     }),
                     1 ether,
                     1 ether
@@ -2297,10 +2202,7 @@ contract Proposal_ENS_EP_6_8_Test is ENS_Governance, SafeHelper, ZodiacRolesHelp
                         userData: bytes("")
                     }),
                     Balancer.FundManagement({
-                        sender: safe,
-                        fromInternalBalance: false,
-                        recipient: payable(safe),
-                        toInternalBalance: false
+                        sender: safe, fromInternalBalance: false, recipient: payable(safe), toInternalBalance: false
                     }),
                     1 ether,
                     1 ether
@@ -2319,10 +2221,7 @@ contract Proposal_ENS_EP_6_8_Test is ENS_Governance, SafeHelper, ZodiacRolesHelp
                         userData: bytes("")
                     }),
                     Balancer.FundManagement({
-                        sender: safe,
-                        fromInternalBalance: false,
-                        recipient: payable(safe),
-                        toInternalBalance: false
+                        sender: safe, fromInternalBalance: false, recipient: payable(safe), toInternalBalance: false
                     }),
                     1 ether,
                     1 ether
@@ -2341,10 +2240,7 @@ contract Proposal_ENS_EP_6_8_Test is ENS_Governance, SafeHelper, ZodiacRolesHelp
                         userData: bytes("")
                     }),
                     Balancer.FundManagement({
-                        sender: safe,
-                        fromInternalBalance: false,
-                        recipient: payable(safe),
-                        toInternalBalance: false
+                        sender: safe, fromInternalBalance: false, recipient: payable(safe), toInternalBalance: false
                     }),
                     1 ether,
                     1 ether
@@ -2363,10 +2259,7 @@ contract Proposal_ENS_EP_6_8_Test is ENS_Governance, SafeHelper, ZodiacRolesHelp
                         userData: bytes("")
                     }),
                     Balancer.FundManagement({
-                        sender: safe,
-                        fromInternalBalance: false,
-                        recipient: payable(safe),
-                        toInternalBalance: false
+                        sender: safe, fromInternalBalance: false, recipient: payable(safe), toInternalBalance: false
                     }),
                     1 ether,
                     1 ether
@@ -2385,10 +2278,7 @@ contract Proposal_ENS_EP_6_8_Test is ENS_Governance, SafeHelper, ZodiacRolesHelp
                         userData: bytes("")
                     }),
                     Balancer.FundManagement({
-                        sender: safe,
-                        fromInternalBalance: false,
-                        recipient: payable(safe),
-                        toInternalBalance: false
+                        sender: safe, fromInternalBalance: false, recipient: payable(safe), toInternalBalance: false
                     }),
                     1 ether,
                     1 ether
@@ -2407,10 +2297,7 @@ contract Proposal_ENS_EP_6_8_Test is ENS_Governance, SafeHelper, ZodiacRolesHelp
                         userData: bytes("")
                     }),
                     Balancer.FundManagement({
-                        sender: safe,
-                        fromInternalBalance: false,
-                        recipient: payable(safe),
-                        toInternalBalance: false
+                        sender: safe, fromInternalBalance: false, recipient: payable(safe), toInternalBalance: false
                     }),
                     1 ether,
                     1 ether
@@ -2429,10 +2316,7 @@ contract Proposal_ENS_EP_6_8_Test is ENS_Governance, SafeHelper, ZodiacRolesHelp
                         userData: bytes("")
                     }),
                     Balancer.FundManagement({
-                        sender: safe,
-                        fromInternalBalance: false,
-                        recipient: payable(safe),
-                        toInternalBalance: false
+                        sender: safe, fromInternalBalance: false, recipient: payable(safe), toInternalBalance: false
                     }),
                     1 ether,
                     1 ether
@@ -2451,10 +2335,7 @@ contract Proposal_ENS_EP_6_8_Test is ENS_Governance, SafeHelper, ZodiacRolesHelp
                         userData: bytes("")
                     }),
                     Balancer.FundManagement({
-                        sender: safe,
-                        fromInternalBalance: false,
-                        recipient: payable(safe),
-                        toInternalBalance: false
+                        sender: safe, fromInternalBalance: false, recipient: payable(safe), toInternalBalance: false
                     }),
                     1 ether,
                     1 ether
@@ -2473,10 +2354,7 @@ contract Proposal_ENS_EP_6_8_Test is ENS_Governance, SafeHelper, ZodiacRolesHelp
                         userData: bytes("")
                     }),
                     Balancer.FundManagement({
-                        sender: safe,
-                        fromInternalBalance: false,
-                        recipient: payable(safe),
-                        toInternalBalance: false
+                        sender: safe, fromInternalBalance: false, recipient: payable(safe), toInternalBalance: false
                     }),
                     1 ether,
                     1 ether
@@ -9430,7 +9308,8 @@ contract Proposal_ENS_EP_6_8_Test is ENS_Governance, SafeHelper, ZodiacRolesHelp
         return true;
     }
 
-    // ─── Calldata Generation ────────────────────────────────────────────
+    // ─── Calldata Generation
+    // ────────────────────────────────────────────
 
     function _generateCallData()
         public
@@ -9452,32 +9331,21 @@ contract Proposal_ENS_EP_6_8_Test is ENS_Governance, SafeHelper, ZodiacRolesHelp
     /// @dev Build the complete Safe execTransaction calldata (DelegateCall to MultiSend).
     function _buildFullSafeCalldata() internal view returns (bytes memory) {
         (, bytes memory cd) = _buildSafeExecDelegateCalldata(
-            safe,
-            address(PROPOSAL_MULTI_SEND),
-            _buildMultiSendCalldata(),
-            address(timelock)
+            safe, address(PROPOSAL_MULTI_SEND), _buildMultiSendCalldata(), address(timelock)
         );
         return cd;
     }
 
     /// @dev Build the multiSend(bytes) calldata wrapping all 116 packed transactions.
     function _buildMultiSendCalldata() internal view returns (bytes memory) {
-        return abi.encodeWithSelector(
-            IMultiSend.multiSend.selector,
-            _buildPackedTransactions()
-        );
+        return abi.encodeWithSelector(IMultiSend.multiSend.selector, _buildPackedTransactions());
     }
 
-    // ─── MultiSend Payload ──────────────────────────────────────────────
+    // ─── MultiSend Payload
+    // ──────────────────────────────────────────────
 
     function _buildPackedTransactions() internal view returns (bytes memory) {
-        return abi.encodePacked(
-            _buildChunk1(),
-            _buildChunk2(),
-            _buildChunk3(),
-            _buildChunk4(),
-            _packAnnotation()
-        );
+        return abi.encodePacked(_buildChunk1(), _buildChunk2(), _buildChunk3(), _buildChunk4(), _packAnnotation());
     }
 
     function _buildChunk1() internal view returns (bytes memory) {
@@ -9536,7 +9404,8 @@ contract Proposal_ENS_EP_6_8_Test is ENS_Governance, SafeHelper, ZodiacRolesHelp
         );
     }
 
-    // ─── Protocol Block Pack Functions ───────────────────────────────────
+    // ─── Protocol Block Pack Functions
+    // ───────────────────────────────────
 
     /// @dev TX 0-1: Revoke
     function _pack_Revoke() internal view returns (bytes memory) {
@@ -9565,7 +9434,14 @@ contract Proposal_ENS_EP_6_8_Test is ENS_Governance, SafeHelper, ZodiacRolesHelp
             // TX 3: scopeFunction sel=0x236300dc
             _packTx(
                 address(roles),
-                abi.encodeWithSelector(IRolesModifier.scopeFunction.selector, MANAGER_ROLE, AAVE_REWARDS_CONTROLLER, bytes4(0x236300dc), _conditions_0(), EXEC_NONE)
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeFunction.selector,
+                    MANAGER_ROLE,
+                    AAVE_REWARDS_CONTROLLER,
+                    bytes4(0x236300dc),
+                    _conditions_0(),
+                    EXEC_NONE
+                )
             )
         );
     }
@@ -9581,12 +9457,26 @@ contract Proposal_ENS_EP_6_8_Test is ENS_Governance, SafeHelper, ZodiacRolesHelp
             // TX 5: scopeFunction sel=0x474cf53d
             _packTx(
                 address(roles),
-                abi.encodeWithSelector(IRolesModifier.scopeFunction.selector, MANAGER_ROLE, AAVE_WETH_GATEWAY_V2, bytes4(0x474cf53d), _conditions_1(), EXEC_SEND)
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeFunction.selector,
+                    MANAGER_ROLE,
+                    AAVE_WETH_GATEWAY_V2,
+                    bytes4(0x474cf53d),
+                    _conditions_1(),
+                    EXEC_SEND
+                )
             ),
             // TX 6: scopeFunction sel=0x80500d20
             _packTx(
                 address(roles),
-                abi.encodeWithSelector(IRolesModifier.scopeFunction.selector, MANAGER_ROLE, AAVE_WETH_GATEWAY_V2, bytes4(0x80500d20), _conditions_2(), EXEC_NONE)
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeFunction.selector,
+                    MANAGER_ROLE,
+                    AAVE_WETH_GATEWAY_V2,
+                    bytes4(0x80500d20),
+                    _conditions_2(),
+                    EXEC_NONE
+                )
             )
         );
     }
@@ -9595,14 +9485,18 @@ contract Proposal_ENS_EP_6_8_Test is ENS_Governance, SafeHelper, ZodiacRolesHelp
     function _pack_USDS() internal view returns (bytes memory) {
         return abi.encodePacked(
             // TX 7: scopeTarget
-            _packTx(
-                address(roles),
-                abi.encodeWithSelector(IRolesModifier.scopeTarget.selector, MANAGER_ROLE, USDS)
-            ),
+            _packTx(address(roles), abi.encodeWithSelector(IRolesModifier.scopeTarget.selector, MANAGER_ROLE, USDS)),
             // TX 8: scopeFunction sel=0x095ea7b3
             _packTx(
                 address(roles),
-                abi.encodeWithSelector(IRolesModifier.scopeFunction.selector, MANAGER_ROLE, USDS, bytes4(0x095ea7b3), _conditions_3(), EXEC_NONE)
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeFunction.selector,
+                    MANAGER_ROLE,
+                    USDS,
+                    bytes4(0x095ea7b3),
+                    _conditions_3(),
+                    EXEC_NONE
+                )
             )
         );
     }
@@ -9618,17 +9512,38 @@ contract Proposal_ENS_EP_6_8_Test is ENS_Governance, SafeHelper, ZodiacRolesHelp
             // TX 10: scopeFunction sel=0x65ca4804
             _packTx(
                 address(roles),
-                abi.encodeWithSelector(IRolesModifier.scopeFunction.selector, MANAGER_ROLE, SKY_USDS_ACTIONS, bytes4(0x65ca4804), _conditions_4(), EXEC_NONE)
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeFunction.selector,
+                    MANAGER_ROLE,
+                    SKY_USDS_ACTIONS,
+                    bytes4(0x65ca4804),
+                    _conditions_4(),
+                    EXEC_NONE
+                )
             ),
             // TX 11: scopeFunction sel=0x0e248fea
             _packTx(
                 address(roles),
-                abi.encodeWithSelector(IRolesModifier.scopeFunction.selector, MANAGER_ROLE, SKY_USDS_ACTIONS, bytes4(0x0e248fea), _conditions_5(), EXEC_NONE)
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeFunction.selector,
+                    MANAGER_ROLE,
+                    SKY_USDS_ACTIONS,
+                    bytes4(0x0e248fea),
+                    _conditions_5(),
+                    EXEC_NONE
+                )
             ),
             // TX 12: scopeFunction sel=0x3f85d390
             _packTx(
                 address(roles),
-                abi.encodeWithSelector(IRolesModifier.scopeFunction.selector, MANAGER_ROLE, SKY_USDS_ACTIONS, bytes4(0x3f85d390), _conditions_6(), EXEC_NONE)
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeFunction.selector,
+                    MANAGER_ROLE,
+                    SKY_USDS_ACTIONS,
+                    bytes4(0x3f85d390),
+                    _conditions_6(),
+                    EXEC_NONE
+                )
             )
         );
     }
@@ -9644,32 +9559,49 @@ contract Proposal_ENS_EP_6_8_Test is ENS_Governance, SafeHelper, ZodiacRolesHelp
             // TX 14: scopeFunction sel=0x095ea7b3
             _packTx(
                 address(roles),
-                abi.encodeWithSelector(IRolesModifier.scopeFunction.selector, MANAGER_ROLE, CURVE_3POOL_LP, bytes4(0x095ea7b3), _conditions_7(), EXEC_NONE)
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeFunction.selector,
+                    MANAGER_ROLE,
+                    CURVE_3POOL_LP,
+                    bytes4(0x095ea7b3),
+                    _conditions_7(),
+                    EXEC_NONE
+                )
             ),
             // TX 15: allowFunction sel=0x0b4c7e4d
             _packTx(
                 address(roles),
-                abi.encodeWithSelector(IRolesModifier.allowFunction.selector, MANAGER_ROLE, CURVE_3POOL_LP, bytes4(0x0b4c7e4d), EXEC_SEND)
+                abi.encodeWithSelector(
+                    IRolesModifier.allowFunction.selector, MANAGER_ROLE, CURVE_3POOL_LP, bytes4(0x0b4c7e4d), EXEC_SEND
+                )
             ),
             // TX 16: allowFunction sel=0x5b36389c
             _packTx(
                 address(roles),
-                abi.encodeWithSelector(IRolesModifier.allowFunction.selector, MANAGER_ROLE, CURVE_3POOL_LP, bytes4(0x5b36389c), EXEC_NONE)
+                abi.encodeWithSelector(
+                    IRolesModifier.allowFunction.selector, MANAGER_ROLE, CURVE_3POOL_LP, bytes4(0x5b36389c), EXEC_NONE
+                )
             ),
             // TX 17: allowFunction sel=0xe3103273
             _packTx(
                 address(roles),
-                abi.encodeWithSelector(IRolesModifier.allowFunction.selector, MANAGER_ROLE, CURVE_3POOL_LP, bytes4(0xe3103273), EXEC_NONE)
+                abi.encodeWithSelector(
+                    IRolesModifier.allowFunction.selector, MANAGER_ROLE, CURVE_3POOL_LP, bytes4(0xe3103273), EXEC_NONE
+                )
             ),
             // TX 18: allowFunction sel=0x1a4d01d2
             _packTx(
                 address(roles),
-                abi.encodeWithSelector(IRolesModifier.allowFunction.selector, MANAGER_ROLE, CURVE_3POOL_LP, bytes4(0x1a4d01d2), EXEC_NONE)
+                abi.encodeWithSelector(
+                    IRolesModifier.allowFunction.selector, MANAGER_ROLE, CURVE_3POOL_LP, bytes4(0x1a4d01d2), EXEC_NONE
+                )
             ),
             // TX 19: allowFunction sel=0x3df02124
             _packTx(
                 address(roles),
-                abi.encodeWithSelector(IRolesModifier.allowFunction.selector, MANAGER_ROLE, CURVE_3POOL_LP, bytes4(0x3df02124), EXEC_SEND)
+                abi.encodeWithSelector(
+                    IRolesModifier.allowFunction.selector, MANAGER_ROLE, CURVE_3POOL_LP, bytes4(0x3df02124), EXEC_SEND
+                )
             )
         );
     }
@@ -9685,7 +9617,14 @@ contract Proposal_ENS_EP_6_8_Test is ENS_Governance, SafeHelper, ZodiacRolesHelp
             // TX 21: scopeFunction sel=0x095ea7b3
             _packTx(
                 address(roles),
-                abi.encodeWithSelector(IRolesModifier.scopeFunction.selector, MANAGER_ROLE, CURVE_STETH_LP, bytes4(0x095ea7b3), _conditions_8(), EXEC_NONE)
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeFunction.selector,
+                    MANAGER_ROLE,
+                    CURVE_STETH_LP,
+                    bytes4(0x095ea7b3),
+                    _conditions_8(),
+                    EXEC_NONE
+                )
             )
         );
     }
@@ -9701,22 +9640,35 @@ contract Proposal_ENS_EP_6_8_Test is ENS_Governance, SafeHelper, ZodiacRolesHelp
             // TX 23: allowFunction sel=0xa694fc3a
             _packTx(
                 address(roles),
-                abi.encodeWithSelector(IRolesModifier.allowFunction.selector, MANAGER_ROLE, BaseRewardPool, bytes4(0xa694fc3a), EXEC_NONE)
+                abi.encodeWithSelector(
+                    IRolesModifier.allowFunction.selector, MANAGER_ROLE, BaseRewardPool, bytes4(0xa694fc3a), EXEC_NONE
+                )
             ),
             // TX 24: allowFunction sel=0x38d07436
             _packTx(
                 address(roles),
-                abi.encodeWithSelector(IRolesModifier.allowFunction.selector, MANAGER_ROLE, BaseRewardPool, bytes4(0x38d07436), EXEC_NONE)
+                abi.encodeWithSelector(
+                    IRolesModifier.allowFunction.selector, MANAGER_ROLE, BaseRewardPool, bytes4(0x38d07436), EXEC_NONE
+                )
             ),
             // TX 25: allowFunction sel=0xc32e7202
             _packTx(
                 address(roles),
-                abi.encodeWithSelector(IRolesModifier.allowFunction.selector, MANAGER_ROLE, BaseRewardPool, bytes4(0xc32e7202), EXEC_NONE)
+                abi.encodeWithSelector(
+                    IRolesModifier.allowFunction.selector, MANAGER_ROLE, BaseRewardPool, bytes4(0xc32e7202), EXEC_NONE
+                )
             ),
             // TX 26: scopeFunction sel=0x7050ccd9
             _packTx(
                 address(roles),
-                abi.encodeWithSelector(IRolesModifier.scopeFunction.selector, MANAGER_ROLE, BaseRewardPool, bytes4(0x7050ccd9), _conditions_9(), EXEC_NONE)
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeFunction.selector,
+                    MANAGER_ROLE,
+                    BaseRewardPool,
+                    bytes4(0x7050ccd9),
+                    _conditions_9(),
+                    EXEC_NONE
+                )
             )
         );
     }
@@ -9725,14 +9677,18 @@ contract Proposal_ENS_EP_6_8_Test is ENS_Governance, SafeHelper, ZodiacRolesHelp
     function _pack_OETH() internal view returns (bytes memory) {
         return abi.encodePacked(
             // TX 27: scopeTarget
-            _packTx(
-                address(roles),
-                abi.encodeWithSelector(IRolesModifier.scopeTarget.selector, MANAGER_ROLE, OETH)
-            ),
+            _packTx(address(roles), abi.encodeWithSelector(IRolesModifier.scopeTarget.selector, MANAGER_ROLE, OETH)),
             // TX 28: scopeFunction sel=0x095ea7b3
             _packTx(
                 address(roles),
-                abi.encodeWithSelector(IRolesModifier.scopeFunction.selector, MANAGER_ROLE, OETH, bytes4(0x095ea7b3), _conditions_10(), EXEC_NONE)
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeFunction.selector,
+                    MANAGER_ROLE,
+                    OETH,
+                    bytes4(0x095ea7b3),
+                    _conditions_10(),
+                    EXEC_NONE
+                )
             )
         );
     }
@@ -9742,28 +9698,55 @@ contract Proposal_ENS_EP_6_8_Test is ENS_Governance, SafeHelper, ZodiacRolesHelp
         return abi.encodePacked(
             // TX 29: scopeTarget
             _packTx(
-                address(roles),
-                abi.encodeWithSelector(IRolesModifier.scopeTarget.selector, MANAGER_ROLE, LIDO_WSTETH)
+                address(roles), abi.encodeWithSelector(IRolesModifier.scopeTarget.selector, MANAGER_ROLE, LIDO_WSTETH)
             ),
             // TX 30: scopeFunction sel=0x095ea7b3
             _packTx(
                 address(roles),
-                abi.encodeWithSelector(IRolesModifier.scopeFunction.selector, MANAGER_ROLE, LIDO_WSTETH, bytes4(0x095ea7b3), _conditions_11(), EXEC_NONE)
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeFunction.selector,
+                    MANAGER_ROLE,
+                    LIDO_WSTETH,
+                    bytes4(0x095ea7b3),
+                    _conditions_11(),
+                    EXEC_NONE
+                )
             ),
             // TX 31: scopeFunction sel=0x6e553f65
             _packTx(
                 address(roles),
-                abi.encodeWithSelector(IRolesModifier.scopeFunction.selector, MANAGER_ROLE, LIDO_WSTETH, bytes4(0x6e553f65), _conditions_12(), EXEC_NONE)
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeFunction.selector,
+                    MANAGER_ROLE,
+                    LIDO_WSTETH,
+                    bytes4(0x6e553f65),
+                    _conditions_12(),
+                    EXEC_NONE
+                )
             ),
             // TX 32: scopeFunction sel=0xb460af94
             _packTx(
                 address(roles),
-                abi.encodeWithSelector(IRolesModifier.scopeFunction.selector, MANAGER_ROLE, LIDO_WSTETH, bytes4(0xb460af94), _conditions_13(), EXEC_NONE)
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeFunction.selector,
+                    MANAGER_ROLE,
+                    LIDO_WSTETH,
+                    bytes4(0xb460af94),
+                    _conditions_13(),
+                    EXEC_NONE
+                )
             ),
             // TX 33: scopeFunction sel=0xba087652
             _packTx(
                 address(roles),
-                abi.encodeWithSelector(IRolesModifier.scopeFunction.selector, MANAGER_ROLE, LIDO_WSTETH, bytes4(0xba087652), _conditions_14(), EXEC_NONE)
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeFunction.selector,
+                    MANAGER_ROLE,
+                    LIDO_WSTETH,
+                    bytes4(0xba087652),
+                    _conditions_14(),
+                    EXEC_NONE
+                )
             )
         );
     }
@@ -9773,13 +9756,19 @@ contract Proposal_ENS_EP_6_8_Test is ENS_Governance, SafeHelper, ZodiacRolesHelp
         return abi.encodePacked(
             // TX 34: scopeTarget
             _packTx(
-                address(roles),
-                abi.encodeWithSelector(IRolesModifier.scopeTarget.selector, MANAGER_ROLE, OSETH_TOKEN)
+                address(roles), abi.encodeWithSelector(IRolesModifier.scopeTarget.selector, MANAGER_ROLE, OSETH_TOKEN)
             ),
             // TX 35: scopeFunction sel=0x095ea7b3
             _packTx(
                 address(roles),
-                abi.encodeWithSelector(IRolesModifier.scopeFunction.selector, MANAGER_ROLE, OSETH_TOKEN, bytes4(0x095ea7b3), _conditions_15(), EXEC_NONE)
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeFunction.selector,
+                    MANAGER_ROLE,
+                    OSETH_TOKEN,
+                    bytes4(0x095ea7b3),
+                    _conditions_15(),
+                    EXEC_NONE
+                )
             )
         );
     }
@@ -9789,23 +9778,43 @@ contract Proposal_ENS_EP_6_8_Test is ENS_Governance, SafeHelper, ZodiacRolesHelp
         return abi.encodePacked(
             // TX 36: scopeTarget
             _packTx(
-                address(roles),
-                abi.encodeWithSelector(IRolesModifier.scopeTarget.selector, MANAGER_ROLE, SKY_FARM)
+                address(roles), abi.encodeWithSelector(IRolesModifier.scopeTarget.selector, MANAGER_ROLE, SKY_FARM)
             ),
             // TX 37: scopeFunction sel=0xb9f8aeb2
             _packTx(
                 address(roles),
-                abi.encodeWithSelector(IRolesModifier.scopeFunction.selector, MANAGER_ROLE, SKY_FARM, bytes4(0xb9f8aeb2), _conditions_16(), EXEC_NONE)
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeFunction.selector,
+                    MANAGER_ROLE,
+                    SKY_FARM,
+                    bytes4(0xb9f8aeb2),
+                    _conditions_16(),
+                    EXEC_NONE
+                )
             ),
             // TX 38: scopeFunction sel=0x68dea913
             _packTx(
                 address(roles),
-                abi.encodeWithSelector(IRolesModifier.scopeFunction.selector, MANAGER_ROLE, SKY_FARM, bytes4(0x68dea913), _conditions_17(), EXEC_NONE)
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeFunction.selector,
+                    MANAGER_ROLE,
+                    SKY_FARM,
+                    bytes4(0x68dea913),
+                    _conditions_17(),
+                    EXEC_NONE
+                )
             ),
             // TX 39: scopeFunction sel=0x9b67f733
             _packTx(
                 address(roles),
-                abi.encodeWithSelector(IRolesModifier.scopeFunction.selector, MANAGER_ROLE, SKY_FARM, bytes4(0x9b67f733), _conditions_18(), EXEC_NONE)
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeFunction.selector,
+                    MANAGER_ROLE,
+                    SKY_FARM,
+                    bytes4(0x9b67f733),
+                    _conditions_18(),
+                    EXEC_NONE
+                )
             )
         );
     }
@@ -9815,28 +9824,35 @@ contract Proposal_ENS_EP_6_8_Test is ENS_Governance, SafeHelper, ZodiacRolesHelp
         return abi.encodePacked(
             // TX 40: scopeTarget
             _packTx(
-                address(roles),
-                abi.encodeWithSelector(IRolesModifier.scopeTarget.selector, MANAGER_ROLE, SKY_REWARDS)
+                address(roles), abi.encodeWithSelector(IRolesModifier.scopeTarget.selector, MANAGER_ROLE, SKY_REWARDS)
             ),
             // TX 41: allowFunction sel=0x42ea02c1
             _packTx(
                 address(roles),
-                abi.encodeWithSelector(IRolesModifier.allowFunction.selector, MANAGER_ROLE, SKY_REWARDS, bytes4(0x42ea02c1), EXEC_NONE)
+                abi.encodeWithSelector(
+                    IRolesModifier.allowFunction.selector, MANAGER_ROLE, SKY_REWARDS, bytes4(0x42ea02c1), EXEC_NONE
+                )
             ),
             // TX 42: allowFunction sel=0x2e1a7d4d
             _packTx(
                 address(roles),
-                abi.encodeWithSelector(IRolesModifier.allowFunction.selector, MANAGER_ROLE, SKY_REWARDS, bytes4(0x2e1a7d4d), EXEC_NONE)
+                abi.encodeWithSelector(
+                    IRolesModifier.allowFunction.selector, MANAGER_ROLE, SKY_REWARDS, bytes4(0x2e1a7d4d), EXEC_NONE
+                )
             ),
             // TX 43: allowFunction sel=0xe9fad8ee
             _packTx(
                 address(roles),
-                abi.encodeWithSelector(IRolesModifier.allowFunction.selector, MANAGER_ROLE, SKY_REWARDS, bytes4(0xe9fad8ee), EXEC_NONE)
+                abi.encodeWithSelector(
+                    IRolesModifier.allowFunction.selector, MANAGER_ROLE, SKY_REWARDS, bytes4(0xe9fad8ee), EXEC_NONE
+                )
             ),
             // TX 44: allowFunction sel=0x3d18b912
             _packTx(
                 address(roles),
-                abi.encodeWithSelector(IRolesModifier.allowFunction.selector, MANAGER_ROLE, SKY_REWARDS, bytes4(0x3d18b912), EXEC_NONE)
+                abi.encodeWithSelector(
+                    IRolesModifier.allowFunction.selector, MANAGER_ROLE, SKY_REWARDS, bytes4(0x3d18b912), EXEC_NONE
+                )
             )
         );
     }
@@ -9852,12 +9868,26 @@ contract Proposal_ENS_EP_6_8_Test is ENS_Governance, SafeHelper, ZodiacRolesHelp
             // TX 46: scopeFunction sel=0xf2b9fdb8
             _packTx(
                 address(roles),
-                abi.encodeWithSelector(IRolesModifier.scopeFunction.selector, MANAGER_ROLE, AAVE_USDT_SUPPLY, bytes4(0xf2b9fdb8), _conditions_19(), EXEC_NONE)
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeFunction.selector,
+                    MANAGER_ROLE,
+                    AAVE_USDT_SUPPLY,
+                    bytes4(0xf2b9fdb8),
+                    _conditions_19(),
+                    EXEC_NONE
+                )
             ),
             // TX 47: scopeFunction sel=0xf3fef3a3
             _packTx(
                 address(roles),
-                abi.encodeWithSelector(IRolesModifier.scopeFunction.selector, MANAGER_ROLE, AAVE_USDT_SUPPLY, bytes4(0xf3fef3a3), _conditions_20(), EXEC_NONE)
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeFunction.selector,
+                    MANAGER_ROLE,
+                    AAVE_USDT_SUPPLY,
+                    bytes4(0xf3fef3a3),
+                    _conditions_20(),
+                    EXEC_NONE
+                )
             )
         );
     }
@@ -9867,23 +9897,28 @@ contract Proposal_ENS_EP_6_8_Test is ENS_Governance, SafeHelper, ZodiacRolesHelp
         return abi.encodePacked(
             // TX 48: scopeTarget
             _packTx(
-                address(roles),
-                abi.encodeWithSelector(IRolesModifier.scopeTarget.selector, MANAGER_ROLE, SKY_VAULT_1)
+                address(roles), abi.encodeWithSelector(IRolesModifier.scopeTarget.selector, MANAGER_ROLE, SKY_VAULT_1)
             ),
             // TX 49: allowFunction sel=0xb6b55f25
             _packTx(
                 address(roles),
-                abi.encodeWithSelector(IRolesModifier.allowFunction.selector, MANAGER_ROLE, SKY_VAULT_1, bytes4(0xb6b55f25), EXEC_NONE)
+                abi.encodeWithSelector(
+                    IRolesModifier.allowFunction.selector, MANAGER_ROLE, SKY_VAULT_1, bytes4(0xb6b55f25), EXEC_NONE
+                )
             ),
             // TX 50: allowFunction sel=0x2e1a7d4d
             _packTx(
                 address(roles),
-                abi.encodeWithSelector(IRolesModifier.allowFunction.selector, MANAGER_ROLE, SKY_VAULT_1, bytes4(0x2e1a7d4d), EXEC_NONE)
+                abi.encodeWithSelector(
+                    IRolesModifier.allowFunction.selector, MANAGER_ROLE, SKY_VAULT_1, bytes4(0x2e1a7d4d), EXEC_NONE
+                )
             ),
             // TX 51: allowFunction sel=0xe6f1daf2
             _packTx(
                 address(roles),
-                abi.encodeWithSelector(IRolesModifier.allowFunction.selector, MANAGER_ROLE, SKY_VAULT_1, bytes4(0xe6f1daf2), EXEC_NONE)
+                abi.encodeWithSelector(
+                    IRolesModifier.allowFunction.selector, MANAGER_ROLE, SKY_VAULT_1, bytes4(0xe6f1daf2), EXEC_NONE
+                )
             )
         );
     }
@@ -9893,23 +9928,33 @@ contract Proposal_ENS_EP_6_8_Test is ENS_Governance, SafeHelper, ZodiacRolesHelp
         return abi.encodePacked(
             // TX 52: scopeTarget
             _packTx(
-                address(roles),
-                abi.encodeWithSelector(IRolesModifier.scopeTarget.selector, MANAGER_ROLE, SKY_VAULT_2)
+                address(roles), abi.encodeWithSelector(IRolesModifier.scopeTarget.selector, MANAGER_ROLE, SKY_VAULT_2)
             ),
             // TX 53: allowFunction sel=0xb6b55f25
             _packTx(
                 address(roles),
-                abi.encodeWithSelector(IRolesModifier.allowFunction.selector, MANAGER_ROLE, SKY_VAULT_2, bytes4(0xb6b55f25), EXEC_NONE)
+                abi.encodeWithSelector(
+                    IRolesModifier.allowFunction.selector, MANAGER_ROLE, SKY_VAULT_2, bytes4(0xb6b55f25), EXEC_NONE
+                )
             ),
             // TX 54: allowFunction sel=0x2e1a7d4d
             _packTx(
                 address(roles),
-                abi.encodeWithSelector(IRolesModifier.allowFunction.selector, MANAGER_ROLE, SKY_VAULT_2, bytes4(0x2e1a7d4d), EXEC_NONE)
+                abi.encodeWithSelector(
+                    IRolesModifier.allowFunction.selector, MANAGER_ROLE, SKY_VAULT_2, bytes4(0x2e1a7d4d), EXEC_NONE
+                )
             ),
             // TX 55: scopeFunction sel=0x1d2747d4
             _packTx(
                 address(roles),
-                abi.encodeWithSelector(IRolesModifier.scopeFunction.selector, MANAGER_ROLE, SKY_VAULT_2, bytes4(0x1d2747d4), _conditions_21(), EXEC_NONE)
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeFunction.selector,
+                    MANAGER_ROLE,
+                    SKY_VAULT_2,
+                    bytes4(0x1d2747d4),
+                    _conditions_21(),
+                    EXEC_NONE
+                )
             )
         );
     }
@@ -9918,14 +9963,18 @@ contract Proposal_ENS_EP_6_8_Test is ENS_Governance, SafeHelper, ZodiacRolesHelp
     function _pack_SDAI() internal view returns (bytes memory) {
         return abi.encodePacked(
             // TX 56: scopeTarget
-            _packTx(
-                address(roles),
-                abi.encodeWithSelector(IRolesModifier.scopeTarget.selector, MANAGER_ROLE, SDAI)
-            ),
+            _packTx(address(roles), abi.encodeWithSelector(IRolesModifier.scopeTarget.selector, MANAGER_ROLE, SDAI)),
             // TX 57: scopeFunction sel=0x095ea7b3
             _packTx(
                 address(roles),
-                abi.encodeWithSelector(IRolesModifier.scopeFunction.selector, MANAGER_ROLE, SDAI, bytes4(0x095ea7b3), _conditions_22(), EXEC_NONE)
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeFunction.selector,
+                    MANAGER_ROLE,
+                    SDAI,
+                    bytes4(0x095ea7b3),
+                    _conditions_22(),
+                    EXEC_NONE
+                )
             )
         );
     }
@@ -9935,38 +9984,54 @@ contract Proposal_ENS_EP_6_8_Test is ENS_Governance, SafeHelper, ZodiacRolesHelp
         return abi.encodePacked(
             // TX 58: scopeTarget
             _packTx(
-                address(roles),
-                abi.encodeWithSelector(IRolesModifier.scopeTarget.selector, MANAGER_ROLE, CURVE_GAUGE)
+                address(roles), abi.encodeWithSelector(IRolesModifier.scopeTarget.selector, MANAGER_ROLE, CURVE_GAUGE)
             ),
             // TX 59: allowFunction sel=0xb72df5de
             _packTx(
                 address(roles),
-                abi.encodeWithSelector(IRolesModifier.allowFunction.selector, MANAGER_ROLE, CURVE_GAUGE, bytes4(0xb72df5de), EXEC_NONE)
+                abi.encodeWithSelector(
+                    IRolesModifier.allowFunction.selector, MANAGER_ROLE, CURVE_GAUGE, bytes4(0xb72df5de), EXEC_NONE
+                )
             ),
             // TX 60: allowFunction sel=0xd40ddb8c
             _packTx(
                 address(roles),
-                abi.encodeWithSelector(IRolesModifier.allowFunction.selector, MANAGER_ROLE, CURVE_GAUGE, bytes4(0xd40ddb8c), EXEC_NONE)
+                abi.encodeWithSelector(
+                    IRolesModifier.allowFunction.selector, MANAGER_ROLE, CURVE_GAUGE, bytes4(0xd40ddb8c), EXEC_NONE
+                )
             ),
             // TX 61: allowFunction sel=0x7706db75
             _packTx(
                 address(roles),
-                abi.encodeWithSelector(IRolesModifier.allowFunction.selector, MANAGER_ROLE, CURVE_GAUGE, bytes4(0x7706db75), EXEC_NONE)
+                abi.encodeWithSelector(
+                    IRolesModifier.allowFunction.selector, MANAGER_ROLE, CURVE_GAUGE, bytes4(0x7706db75), EXEC_NONE
+                )
             ),
             // TX 62: allowFunction sel=0x1a4d01d2
             _packTx(
                 address(roles),
-                abi.encodeWithSelector(IRolesModifier.allowFunction.selector, MANAGER_ROLE, CURVE_GAUGE, bytes4(0x1a4d01d2), EXEC_NONE)
+                abi.encodeWithSelector(
+                    IRolesModifier.allowFunction.selector, MANAGER_ROLE, CURVE_GAUGE, bytes4(0x1a4d01d2), EXEC_NONE
+                )
             ),
             // TX 63: scopeFunction sel=0x095ea7b3
             _packTx(
                 address(roles),
-                abi.encodeWithSelector(IRolesModifier.scopeFunction.selector, MANAGER_ROLE, CURVE_GAUGE, bytes4(0x095ea7b3), _conditions_23(), EXEC_NONE)
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeFunction.selector,
+                    MANAGER_ROLE,
+                    CURVE_GAUGE,
+                    bytes4(0x095ea7b3),
+                    _conditions_23(),
+                    EXEC_NONE
+                )
             ),
             // TX 64: allowFunction sel=0x3df02124
             _packTx(
                 address(roles),
-                abi.encodeWithSelector(IRolesModifier.allowFunction.selector, MANAGER_ROLE, CURVE_GAUGE, bytes4(0x3df02124), EXEC_NONE)
+                abi.encodeWithSelector(
+                    IRolesModifier.allowFunction.selector, MANAGER_ROLE, CURVE_GAUGE, bytes4(0x3df02124), EXEC_NONE
+                )
             )
         );
     }
@@ -9976,23 +10041,28 @@ contract Proposal_ENS_EP_6_8_Test is ENS_Governance, SafeHelper, ZodiacRolesHelp
         return abi.encodePacked(
             // TX 65: scopeTarget
             _packTx(
-                address(roles),
-                abi.encodeWithSelector(IRolesModifier.scopeTarget.selector, MANAGER_ROLE, SKY_VAULT_3)
+                address(roles), abi.encodeWithSelector(IRolesModifier.scopeTarget.selector, MANAGER_ROLE, SKY_VAULT_3)
             ),
             // TX 66: allowFunction sel=0xb6b55f25
             _packTx(
                 address(roles),
-                abi.encodeWithSelector(IRolesModifier.allowFunction.selector, MANAGER_ROLE, SKY_VAULT_3, bytes4(0xb6b55f25), EXEC_NONE)
+                abi.encodeWithSelector(
+                    IRolesModifier.allowFunction.selector, MANAGER_ROLE, SKY_VAULT_3, bytes4(0xb6b55f25), EXEC_NONE
+                )
             ),
             // TX 67: allowFunction sel=0x2e1a7d4d
             _packTx(
                 address(roles),
-                abi.encodeWithSelector(IRolesModifier.allowFunction.selector, MANAGER_ROLE, SKY_VAULT_3, bytes4(0x2e1a7d4d), EXEC_NONE)
+                abi.encodeWithSelector(
+                    IRolesModifier.allowFunction.selector, MANAGER_ROLE, SKY_VAULT_3, bytes4(0x2e1a7d4d), EXEC_NONE
+                )
             ),
             // TX 68: allowFunction sel=0xe6f1daf2
             _packTx(
                 address(roles),
-                abi.encodeWithSelector(IRolesModifier.allowFunction.selector, MANAGER_ROLE, SKY_VAULT_3, bytes4(0xe6f1daf2), EXEC_NONE)
+                abi.encodeWithSelector(
+                    IRolesModifier.allowFunction.selector, MANAGER_ROLE, SKY_VAULT_3, bytes4(0xe6f1daf2), EXEC_NONE
+                )
             )
         );
     }
@@ -10002,13 +10072,14 @@ contract Proposal_ENS_EP_6_8_Test is ENS_Governance, SafeHelper, ZodiacRolesHelp
         return abi.encodePacked(
             // TX 69: scopeTarget
             _packTx(
-                address(roles),
-                abi.encodeWithSelector(IRolesModifier.scopeTarget.selector, MANAGER_ROLE, WETH_CONTRACT)
+                address(roles), abi.encodeWithSelector(IRolesModifier.scopeTarget.selector, MANAGER_ROLE, WETH_CONTRACT)
             ),
             // TX 70: allowFunction sel=0xd0e30db0
             _packTx(
                 address(roles),
-                abi.encodeWithSelector(IRolesModifier.allowFunction.selector, MANAGER_ROLE, WETH_CONTRACT, bytes4(0xd0e30db0), EXEC_SEND)
+                abi.encodeWithSelector(
+                    IRolesModifier.allowFunction.selector, MANAGER_ROLE, WETH_CONTRACT, bytes4(0xd0e30db0), EXEC_SEND
+                )
             )
         );
     }
@@ -10024,7 +10095,14 @@ contract Proposal_ENS_EP_6_8_Test is ENS_Governance, SafeHelper, ZodiacRolesHelp
             // TX 72: scopeFunction sel=0x6c08c57e
             _packTx(
                 address(roles),
-                abi.encodeWithSelector(IRolesModifier.scopeFunction.selector, MANAGER_ROLE, BALANCER_GAUGE, bytes4(0x6c08c57e), _conditions_24(), EXEC_NONE)
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeFunction.selector,
+                    MANAGER_ROLE,
+                    BALANCER_GAUGE,
+                    bytes4(0x6c08c57e),
+                    _conditions_24(),
+                    EXEC_NONE
+                )
             )
         );
     }
@@ -10040,17 +10118,35 @@ contract Proposal_ENS_EP_6_8_Test is ENS_Governance, SafeHelper, ZodiacRolesHelp
             // TX 74: allowFunction sel=0x9ee679e8
             _packTx(
                 address(roles),
-                abi.encodeWithSelector(IRolesModifier.allowFunction.selector, MANAGER_ROLE, BALANCER_MINTER_V1, bytes4(0x9ee679e8), EXEC_NONE)
+                abi.encodeWithSelector(
+                    IRolesModifier.allowFunction.selector,
+                    MANAGER_ROLE,
+                    BALANCER_MINTER_V1,
+                    bytes4(0x9ee679e8),
+                    EXEC_NONE
+                )
             ),
             // TX 75: allowFunction sel=0xf8444436
             _packTx(
                 address(roles),
-                abi.encodeWithSelector(IRolesModifier.allowFunction.selector, MANAGER_ROLE, BALANCER_MINTER_V1, bytes4(0xf8444436), EXEC_NONE)
+                abi.encodeWithSelector(
+                    IRolesModifier.allowFunction.selector,
+                    MANAGER_ROLE,
+                    BALANCER_MINTER_V1,
+                    bytes4(0xf8444436),
+                    EXEC_NONE
+                )
             ),
             // TX 76: allowFunction sel=0x48e30f54
             _packTx(
                 address(roles),
-                abi.encodeWithSelector(IRolesModifier.allowFunction.selector, MANAGER_ROLE, BALANCER_MINTER_V1, bytes4(0x48e30f54), EXEC_NONE)
+                abi.encodeWithSelector(
+                    IRolesModifier.allowFunction.selector,
+                    MANAGER_ROLE,
+                    BALANCER_MINTER_V1,
+                    bytes4(0x48e30f54),
+                    EXEC_NONE
+                )
             )
         );
     }
@@ -10059,14 +10155,18 @@ contract Proposal_ENS_EP_6_8_Test is ENS_Governance, SafeHelper, ZodiacRolesHelp
     function _pack_DAI() internal view returns (bytes memory) {
         return abi.encodePacked(
             // TX 77: scopeTarget
-            _packTx(
-                address(roles),
-                abi.encodeWithSelector(IRolesModifier.scopeTarget.selector, MANAGER_ROLE, DAI)
-            ),
+            _packTx(address(roles), abi.encodeWithSelector(IRolesModifier.scopeTarget.selector, MANAGER_ROLE, DAI)),
             // TX 78: scopeFunction sel=0x095ea7b3
             _packTx(
                 address(roles),
-                abi.encodeWithSelector(IRolesModifier.scopeFunction.selector, MANAGER_ROLE, DAI, bytes4(0x095ea7b3), _conditions_25(), EXEC_NONE)
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeFunction.selector,
+                    MANAGER_ROLE,
+                    DAI,
+                    bytes4(0x095ea7b3),
+                    _conditions_25(),
+                    EXEC_NONE
+                )
             )
         );
     }
@@ -10082,17 +10182,38 @@ contract Proposal_ENS_EP_6_8_Test is ENS_Governance, SafeHelper, ZodiacRolesHelp
             // TX 80: scopeFunction sel=0x617ba037
             _packTx(
                 address(roles),
-                abi.encodeWithSelector(IRolesModifier.scopeFunction.selector, MANAGER_ROLE, AaveLendingPool, bytes4(0x617ba037), _conditions_26(), EXEC_NONE)
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeFunction.selector,
+                    MANAGER_ROLE,
+                    AaveLendingPool,
+                    bytes4(0x617ba037),
+                    _conditions_26(),
+                    EXEC_NONE
+                )
             ),
             // TX 81: scopeFunction sel=0x69328dec
             _packTx(
                 address(roles),
-                abi.encodeWithSelector(IRolesModifier.scopeFunction.selector, MANAGER_ROLE, AaveLendingPool, bytes4(0x69328dec), _conditions_27(), EXEC_NONE)
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeFunction.selector,
+                    MANAGER_ROLE,
+                    AaveLendingPool,
+                    bytes4(0x69328dec),
+                    _conditions_27(),
+                    EXEC_NONE
+                )
             ),
             // TX 82: scopeFunction sel=0x5a3b74b9
             _packTx(
                 address(roles),
-                abi.encodeWithSelector(IRolesModifier.scopeFunction.selector, MANAGER_ROLE, AaveLendingPool, bytes4(0x5a3b74b9), _conditions_28(), EXEC_NONE)
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeFunction.selector,
+                    MANAGER_ROLE,
+                    AaveLendingPool,
+                    bytes4(0x5a3b74b9),
+                    _conditions_28(),
+                    EXEC_NONE
+                )
             )
         );
     }
@@ -10108,7 +10229,14 @@ contract Proposal_ENS_EP_6_8_Test is ENS_Governance, SafeHelper, ZodiacRolesHelp
             // TX 84: scopeFunction sel=0x095ea7b3
             _packTx(
                 address(roles),
-                abi.encodeWithSelector(IRolesModifier.scopeFunction.selector, MANAGER_ROLE, AAVE_WETH_TOKEN, bytes4(0x095ea7b3), _conditions_29(), EXEC_NONE)
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeFunction.selector,
+                    MANAGER_ROLE,
+                    AAVE_WETH_TOKEN,
+                    bytes4(0x095ea7b3),
+                    _conditions_29(),
+                    EXEC_NONE
+                )
             )
         );
     }
@@ -10117,14 +10245,18 @@ contract Proposal_ENS_EP_6_8_Test is ENS_Governance, SafeHelper, ZodiacRolesHelp
     function _pack_USDC() internal view returns (bytes memory) {
         return abi.encodePacked(
             // TX 85: scopeTarget
-            _packTx(
-                address(roles),
-                abi.encodeWithSelector(IRolesModifier.scopeTarget.selector, MANAGER_ROLE, USDC)
-            ),
+            _packTx(address(roles), abi.encodeWithSelector(IRolesModifier.scopeTarget.selector, MANAGER_ROLE, USDC)),
             // TX 86: scopeFunction sel=0x095ea7b3
             _packTx(
                 address(roles),
-                abi.encodeWithSelector(IRolesModifier.scopeFunction.selector, MANAGER_ROLE, USDC, bytes4(0x095ea7b3), _conditions_30(), EXEC_NONE)
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeFunction.selector,
+                    MANAGER_ROLE,
+                    USDC,
+                    bytes4(0x095ea7b3),
+                    _conditions_30(),
+                    EXEC_NONE
+                )
             )
         );
     }
@@ -10133,14 +10265,18 @@ contract Proposal_ENS_EP_6_8_Test is ENS_Governance, SafeHelper, ZodiacRolesHelp
     function _pack_USDT() internal view returns (bytes memory) {
         return abi.encodePacked(
             // TX 87: scopeTarget
-            _packTx(
-                address(roles),
-                abi.encodeWithSelector(IRolesModifier.scopeTarget.selector, MANAGER_ROLE, USDT)
-            ),
+            _packTx(address(roles), abi.encodeWithSelector(IRolesModifier.scopeTarget.selector, MANAGER_ROLE, USDT)),
             // TX 88: scopeFunction sel=0x095ea7b3
             _packTx(
                 address(roles),
-                abi.encodeWithSelector(IRolesModifier.scopeFunction.selector, MANAGER_ROLE, USDT, bytes4(0x095ea7b3), _conditions_31(), EXEC_NONE)
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeFunction.selector,
+                    MANAGER_ROLE,
+                    USDT,
+                    bytes4(0x095ea7b3),
+                    _conditions_31(),
+                    EXEC_NONE
+                )
             )
         );
     }
@@ -10150,18 +10286,31 @@ contract Proposal_ENS_EP_6_8_Test is ENS_Governance, SafeHelper, ZodiacRolesHelp
         return abi.encodePacked(
             // TX 89: scopeTarget
             _packTx(
-                address(roles),
-                abi.encodeWithSelector(IRolesModifier.scopeTarget.selector, MANAGER_ROLE, BalancerVault)
+                address(roles), abi.encodeWithSelector(IRolesModifier.scopeTarget.selector, MANAGER_ROLE, BalancerVault)
             ),
             // TX 90: scopeFunction sel=0xfa6e671d
             _packTx(
                 address(roles),
-                abi.encodeWithSelector(IRolesModifier.scopeFunction.selector, MANAGER_ROLE, BalancerVault, bytes4(0xfa6e671d), _conditions_32(), EXEC_NONE)
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeFunction.selector,
+                    MANAGER_ROLE,
+                    BalancerVault,
+                    bytes4(0xfa6e671d),
+                    _conditions_32(),
+                    EXEC_NONE
+                )
             ),
             // TX 91: scopeFunction sel=0x52bbbe29
             _packTx(
                 address(roles),
-                abi.encodeWithSelector(IRolesModifier.scopeFunction.selector, MANAGER_ROLE, BalancerVault, bytes4(0x52bbbe29), _conditions_33(), EXEC_NONE)
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeFunction.selector,
+                    MANAGER_ROLE,
+                    BalancerVault,
+                    bytes4(0x52bbbe29),
+                    _conditions_33(),
+                    EXEC_NONE
+                )
             )
         );
     }
@@ -10177,7 +10326,14 @@ contract Proposal_ENS_EP_6_8_Test is ENS_Governance, SafeHelper, ZodiacRolesHelp
             // TX 93: scopeFunction sel=0x0de54ba0
             _packTx(
                 address(roles),
-                abi.encodeWithSelector(IRolesModifier.scopeFunction.selector, MANAGER_ROLE, BALANCER_MINTER_V2, bytes4(0x0de54ba0), _conditions_34(), EXEC_NONE)
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeFunction.selector,
+                    MANAGER_ROLE,
+                    BALANCER_MINTER_V2,
+                    bytes4(0x0de54ba0),
+                    _conditions_34(),
+                    EXEC_NONE
+                )
             )
         );
     }
@@ -10193,17 +10349,38 @@ contract Proposal_ENS_EP_6_8_Test is ENS_Governance, SafeHelper, ZodiacRolesHelp
             // TX 95: scopeFunction sel=0x43a0d066
             _packTx(
                 address(roles),
-                abi.encodeWithSelector(IRolesModifier.scopeFunction.selector, MANAGER_ROLE, CONVEX_BOOSTER, bytes4(0x43a0d066), _conditions_35(), EXEC_NONE)
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeFunction.selector,
+                    MANAGER_ROLE,
+                    CONVEX_BOOSTER,
+                    bytes4(0x43a0d066),
+                    _conditions_35(),
+                    EXEC_NONE
+                )
             ),
             // TX 96: scopeFunction sel=0x60759fce
             _packTx(
                 address(roles),
-                abi.encodeWithSelector(IRolesModifier.scopeFunction.selector, MANAGER_ROLE, CONVEX_BOOSTER, bytes4(0x60759fce), _conditions_36(), EXEC_NONE)
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeFunction.selector,
+                    MANAGER_ROLE,
+                    CONVEX_BOOSTER,
+                    bytes4(0x60759fce),
+                    _conditions_36(),
+                    EXEC_NONE
+                )
             ),
             // TX 97: scopeFunction sel=0x441a3e70
             _packTx(
                 address(roles),
-                abi.encodeWithSelector(IRolesModifier.scopeFunction.selector, MANAGER_ROLE, CONVEX_BOOSTER, bytes4(0x441a3e70), _conditions_37(), EXEC_NONE)
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeFunction.selector,
+                    MANAGER_ROLE,
+                    CONVEX_BOOSTER,
+                    bytes4(0x441a3e70),
+                    _conditions_37(),
+                    EXEC_NONE
+                )
             )
         );
     }
@@ -10219,12 +10396,25 @@ contract Proposal_ENS_EP_6_8_Test is ENS_Governance, SafeHelper, ZodiacRolesHelp
             // TX 99: scopeFunction sel=0x569d3489
             _packTx(
                 address(roles),
-                abi.encodeWithSelector(IRolesModifier.scopeFunction.selector, MANAGER_ROLE, CowOrderSigner, bytes4(0x569d3489), _conditions_38(), EXEC_DELEGATE_CALL)
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeFunction.selector,
+                    MANAGER_ROLE,
+                    CowOrderSigner,
+                    bytes4(0x569d3489),
+                    _conditions_38(),
+                    EXEC_DELEGATE_CALL
+                )
             ),
             // TX 100: allowFunction sel=0x5a66c223
             _packTx(
                 address(roles),
-                abi.encodeWithSelector(IRolesModifier.allowFunction.selector, MANAGER_ROLE, CowOrderSigner, bytes4(0x5a66c223), EXEC_DELEGATE_CALL)
+                abi.encodeWithSelector(
+                    IRolesModifier.allowFunction.selector,
+                    MANAGER_ROLE,
+                    CowOrderSigner,
+                    bytes4(0x5a66c223),
+                    EXEC_DELEGATE_CALL
+                )
             )
         );
     }
@@ -10234,13 +10424,19 @@ contract Proposal_ENS_EP_6_8_Test is ENS_Governance, SafeHelper, ZodiacRolesHelp
         return abi.encodePacked(
             // TX 101: scopeTarget
             _packTx(
-                address(roles),
-                abi.encodeWithSelector(IRolesModifier.scopeTarget.selector, MANAGER_ROLE, ORIGIN_VAULT)
+                address(roles), abi.encodeWithSelector(IRolesModifier.scopeTarget.selector, MANAGER_ROLE, ORIGIN_VAULT)
             ),
             // TX 102: scopeFunction sel=0xbb492bf5
             _packTx(
                 address(roles),
-                abi.encodeWithSelector(IRolesModifier.scopeFunction.selector, MANAGER_ROLE, ORIGIN_VAULT, bytes4(0xbb492bf5), _conditions_39(), EXEC_NONE)
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeFunction.selector,
+                    MANAGER_ROLE,
+                    ORIGIN_VAULT,
+                    bytes4(0xbb492bf5),
+                    _conditions_39(),
+                    EXEC_NONE
+                )
             )
         );
     }
@@ -10250,13 +10446,19 @@ contract Proposal_ENS_EP_6_8_Test is ENS_Governance, SafeHelper, ZodiacRolesHelp
         return abi.encodePacked(
             // TX 103: scopeTarget
             _packTx(
-                address(roles),
-                abi.encodeWithSelector(IRolesModifier.scopeTarget.selector, MANAGER_ROLE, CURVE_MINTER)
+                address(roles), abi.encodeWithSelector(IRolesModifier.scopeTarget.selector, MANAGER_ROLE, CURVE_MINTER)
             ),
             // TX 104: scopeFunction sel=0x6a627842
             _packTx(
                 address(roles),
-                abi.encodeWithSelector(IRolesModifier.scopeFunction.selector, MANAGER_ROLE, CURVE_MINTER, bytes4(0x6a627842), _conditions_40(), EXEC_NONE)
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeFunction.selector,
+                    MANAGER_ROLE,
+                    CURVE_MINTER,
+                    bytes4(0x6a627842),
+                    _conditions_40(),
+                    EXEC_NONE
+                )
             )
         );
     }
@@ -10266,33 +10468,47 @@ contract Proposal_ENS_EP_6_8_Test is ENS_Governance, SafeHelper, ZodiacRolesHelp
         return abi.encodePacked(
             // TX 105: scopeTarget
             _packTx(
-                address(roles),
-                abi.encodeWithSelector(IRolesModifier.scopeTarget.selector, MANAGER_ROLE, CurvePool)
+                address(roles), abi.encodeWithSelector(IRolesModifier.scopeTarget.selector, MANAGER_ROLE, CurvePool)
             ),
             // TX 106: allowFunction sel=0x4515cef3
             _packTx(
                 address(roles),
-                abi.encodeWithSelector(IRolesModifier.allowFunction.selector, MANAGER_ROLE, CurvePool, bytes4(0x4515cef3), EXEC_NONE)
+                abi.encodeWithSelector(
+                    IRolesModifier.allowFunction.selector, MANAGER_ROLE, CurvePool, bytes4(0x4515cef3), EXEC_NONE
+                )
             ),
             // TX 107: allowFunction sel=0xecb586a5
             _packTx(
                 address(roles),
-                abi.encodeWithSelector(IRolesModifier.allowFunction.selector, MANAGER_ROLE, CurvePool, bytes4(0xecb586a5), EXEC_NONE)
+                abi.encodeWithSelector(
+                    IRolesModifier.allowFunction.selector, MANAGER_ROLE, CurvePool, bytes4(0xecb586a5), EXEC_NONE
+                )
             ),
             // TX 108: allowFunction sel=0x9fdaea0c
             _packTx(
                 address(roles),
-                abi.encodeWithSelector(IRolesModifier.allowFunction.selector, MANAGER_ROLE, CurvePool, bytes4(0x9fdaea0c), EXEC_NONE)
+                abi.encodeWithSelector(
+                    IRolesModifier.allowFunction.selector, MANAGER_ROLE, CurvePool, bytes4(0x9fdaea0c), EXEC_NONE
+                )
             ),
             // TX 109: allowFunction sel=0x1a4d01d2
             _packTx(
                 address(roles),
-                abi.encodeWithSelector(IRolesModifier.allowFunction.selector, MANAGER_ROLE, CurvePool, bytes4(0x1a4d01d2), EXEC_NONE)
+                abi.encodeWithSelector(
+                    IRolesModifier.allowFunction.selector, MANAGER_ROLE, CurvePool, bytes4(0x1a4d01d2), EXEC_NONE
+                )
             ),
             // TX 110: scopeFunction sel=0x095ea7b3
             _packTx(
                 address(roles),
-                abi.encodeWithSelector(IRolesModifier.scopeFunction.selector, MANAGER_ROLE, CurvePool, bytes4(0x095ea7b3), _conditions_41(), EXEC_NONE)
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeFunction.selector,
+                    MANAGER_ROLE,
+                    CurvePool,
+                    bytes4(0x095ea7b3),
+                    _conditions_41(),
+                    EXEC_NONE
+                )
             )
         );
     }
@@ -10302,13 +10518,19 @@ contract Proposal_ENS_EP_6_8_Test is ENS_Governance, SafeHelper, ZodiacRolesHelp
         return abi.encodePacked(
             // TX 111: scopeTarget
             _packTx(
-                address(roles),
-                abi.encodeWithSelector(IRolesModifier.scopeTarget.selector, MANAGER_ROLE, ONE_INCH)
+                address(roles), abi.encodeWithSelector(IRolesModifier.scopeTarget.selector, MANAGER_ROLE, ONE_INCH)
             ),
             // TX 112: scopeFunction sel=0x26a38e64
             _packTx(
                 address(roles),
-                abi.encodeWithSelector(IRolesModifier.scopeFunction.selector, MANAGER_ROLE, ONE_INCH, bytes4(0x26a38e64), _conditions_42(), EXEC_SEND)
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeFunction.selector,
+                    MANAGER_ROLE,
+                    ONE_INCH,
+                    bytes4(0x26a38e64),
+                    _conditions_42(),
+                    EXEC_SEND
+                )
             )
         );
     }
@@ -10318,23 +10540,29 @@ contract Proposal_ENS_EP_6_8_Test is ENS_Governance, SafeHelper, ZodiacRolesHelp
         return abi.encodePacked(
             // TX 113: scopeTarget
             _packTx(
-                address(roles),
-                abi.encodeWithSelector(IRolesModifier.scopeTarget.selector, MANAGER_ROLE, UniswapV3)
+                address(roles), abi.encodeWithSelector(IRolesModifier.scopeTarget.selector, MANAGER_ROLE, UniswapV3)
             ),
             // TX 114: scopeFunction sel=0x04e45aaf
             _packTx(
                 address(roles),
-                abi.encodeWithSelector(IRolesModifier.scopeFunction.selector, MANAGER_ROLE, UniswapV3, bytes4(0x04e45aaf), _conditions_43(), EXEC_NONE)
+                abi.encodeWithSelector(
+                    IRolesModifier.scopeFunction.selector,
+                    MANAGER_ROLE,
+                    UniswapV3,
+                    bytes4(0x04e45aaf),
+                    _conditions_43(),
+                    EXEC_NONE
+                )
             )
         );
     }
 
-    // ─── Annotation (TX 115) ────────────────────────────────────────────
+    // ─── Annotation (TX 115)
+    // ────────────────────────────────────────────
 
     function _packAnnotation() internal view returns (bytes memory) {
         // TX 115: post annotation to AnnotationRegistry
-        string memory annotationJson =
-            '{"rolesMod":"0x703806e61847984346d2d7ddd853049627e50a40","roleKey":"'
+        string memory annotationJson = '{"rolesMod":"0x703806e61847984346d2d7ddd853049627e50a40","roleKey":"'
             '0x4d414e4147455200000000000000000000000000000000000000000000000000","removeAnnotations":["'
             'https://kit.karpatkey.com/api/v1/permissions/eth/aave_v3/deposit?targets=DAI","'
             'https://kit.karpatkey.com/api/v1/permissions/eth/aave_v3/deposit?targets=ETH","'
@@ -10352,42 +10580,40 @@ contract Proposal_ENS_EP_6_8_Test is ENS_Governance, SafeHelper, ZodiacRolesHelp
             'https://kit.karpatkey.com/api/v1/permissions/eth/balancer/deposit?targets=osETH%2FwETH-BPT","'
             'https://kit.karpatkey.com/api/v1/permissions/eth/balancer/stake?targets=osETH%2FwETH-BPT","'
             'https://kit.karpatkey.com/api/v1/permissions/eth/convex/deposit?targets=174","'
-            'https://kit.karpatkey.com/api/v1/permissions/eth/cowswap/swap?sell=0xE95A203B1a91a908F9B9CE46459d101078c2c3cb%2C0xC0c293'
-            'ce456fF0ED870ADd98a0828Dd4d2903DBF%2C0xba100000625a3754423978a60c9317c58a424e3D%2C0xc00e94Cb662C3520282E6f5717214004A7f2'
-            '6888%2C0xD533a949740bb3306d119CC777fa900bA034cd52%2C0x4e3FBD56CD56c3e72c1403e103b45Db9da5B9D2B%2C0x6B175474E89094C44Da98'
-            'b954EedeAC495271d0F%2C0xA35b1B31Ce002FBF2058D22F30f95D405200A15b%2C0x5A98FcBEA516Cf06857215779Fd812CA3beF1B32%2C0xf1C9ac'
-            'Dc66974dFB6dEcB12aA385b9cD01190E38%2C0xae78736Cd615f374D3085123A210448E74Fc6393%2C0xD33526068D116cE69F19A9ee46F0bd304F21'
-            'A51f%2C0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84%2C0x48C3399719B582dD63eB5AADf12A40B4C3f52FA2%2C0xA0b86991c6218b36c1d19'
-            'D4a2e9Eb0cE3606eB48%2C0xdAC17F958D2ee523a2206206994597C13D831ec7%2C0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2%2C0x7f39C5'
-            '81F595B53c5cb19bD0b3f8dA6c935E2Ca0&buy=0x6B175474E89094C44Da98b954EedeAC495271d0F%2C0xae78736Cd615f374D3085123A210448E74'
-            'Fc6393%2C0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48%2C0xdAC17F958D2ee523a2206206994597C13D831ec7%2C0xae7ab96520DE3A18E5e'
+            "https://kit.karpatkey.com/api/v1/permissions/eth/cowswap/swap?sell=0xE95A203B1a91a908F9B9CE46459d101078c2c3cb%2C0xC0c293"
+            "ce456fF0ED870ADd98a0828Dd4d2903DBF%2C0xba100000625a3754423978a60c9317c58a424e3D%2C0xc00e94Cb662C3520282E6f5717214004A7f2"
+            "6888%2C0xD533a949740bb3306d119CC777fa900bA034cd52%2C0x4e3FBD56CD56c3e72c1403e103b45Db9da5B9D2B%2C0x6B175474E89094C44Da98"
+            "b954EedeAC495271d0F%2C0xA35b1B31Ce002FBF2058D22F30f95D405200A15b%2C0x5A98FcBEA516Cf06857215779Fd812CA3beF1B32%2C0xf1C9ac"
+            "Dc66974dFB6dEcB12aA385b9cD01190E38%2C0xae78736Cd615f374D3085123A210448E74Fc6393%2C0xD33526068D116cE69F19A9ee46F0bd304F21"
+            "A51f%2C0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84%2C0x48C3399719B582dD63eB5AADf12A40B4C3f52FA2%2C0xA0b86991c6218b36c1d19"
+            "D4a2e9Eb0cE3606eB48%2C0xdAC17F958D2ee523a2206206994597C13D831ec7%2C0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2%2C0x7f39C5"
+            "81F595B53c5cb19bD0b3f8dA6c935E2Ca0&buy=0x6B175474E89094C44Da98b954EedeAC495271d0F%2C0xae78736Cd615f374D3085123A210448E74"
+            "Fc6393%2C0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48%2C0xdAC17F958D2ee523a2206206994597C13D831ec7%2C0xae7ab96520DE3A18E5e"
             '111B5EaAb095312D7fE84%2C0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2%2C0x7f39C581F595B53c5cb19bD0b3f8dA6c935E2Ca0","'
-            'https://kit.karpatkey.com/api/v1/permissions/eth/cowswap/swap?sell=0xE95A203B1a91a908F9B9CE46459d101078c2c3cb%2C0xC0c293'
-            'ce456fF0ED870ADd98a0828Dd4d2903DBF%2C0xba100000625a3754423978a60c9317c58a424e3D%2C0xc00e94Cb662C3520282E6f5717214004A7f2'
-            '6888%2C0xD533a949740bb3306d119CC777fa900bA034cd52%2C0x4e3FBD56CD56c3e72c1403e103b45Db9da5B9D2B%2C0x6B175474E89094C44Da98'
-            'b954EedeAC495271d0F%2C0xA35b1B31Ce002FBF2058D22F30f95D405200A15b%2C0x5A98FcBEA516Cf06857215779Fd812CA3beF1B32%2C0xf1C9ac'
-            'Dc66974dFB6dEcB12aA385b9cD01190E38%2C0xae78736Cd615f374D3085123A210448E74Fc6393%2C0xD33526068D116cE69F19A9ee46F0bd304F21'
-            'A51f%2C0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84%2C0x48C3399719B582dD63eB5AADf12A40B4C3f52FA2%2C0xA0b86991c6218b36c1d19'
-            'D4a2e9Eb0cE3606eB48%2C0xdAC17F958D2ee523a2206206994597C13D831ec7%2C0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2%2C0x7f39C5'
-            '81F595B53c5cb19bD0b3f8dA6c935E2Ca0&buy=0x856c4Efb76C1D1AE02e20CEB03A2A6a08b0b8dC3%2C0xa3931d71877C0E7a3148CB7Eb4463524FE'
-            'c27fbD%2C0x59d9356e565ab3a36dd77763fc0d87feaf85508c%2C0xdC035D45d973E3EC169d2276DDab16f1e407384F%2C0xdAC17F958D2ee523a22'
+            "https://kit.karpatkey.com/api/v1/permissions/eth/cowswap/swap?sell=0xE95A203B1a91a908F9B9CE46459d101078c2c3cb%2C0xC0c293"
+            "ce456fF0ED870ADd98a0828Dd4d2903DBF%2C0xba100000625a3754423978a60c9317c58a424e3D%2C0xc00e94Cb662C3520282E6f5717214004A7f2"
+            "6888%2C0xD533a949740bb3306d119CC777fa900bA034cd52%2C0x4e3FBD56CD56c3e72c1403e103b45Db9da5B9D2B%2C0x6B175474E89094C44Da98"
+            "b954EedeAC495271d0F%2C0xA35b1B31Ce002FBF2058D22F30f95D405200A15b%2C0x5A98FcBEA516Cf06857215779Fd812CA3beF1B32%2C0xf1C9ac"
+            "Dc66974dFB6dEcB12aA385b9cD01190E38%2C0xae78736Cd615f374D3085123A210448E74Fc6393%2C0xD33526068D116cE69F19A9ee46F0bd304F21"
+            "A51f%2C0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84%2C0x48C3399719B582dD63eB5AADf12A40B4C3f52FA2%2C0xA0b86991c6218b36c1d19"
+            "D4a2e9Eb0cE3606eB48%2C0xdAC17F958D2ee523a2206206994597C13D831ec7%2C0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2%2C0x7f39C5"
+            "81F595B53c5cb19bD0b3f8dA6c935E2Ca0&buy=0x856c4Efb76C1D1AE02e20CEB03A2A6a08b0b8dC3%2C0xa3931d71877C0E7a3148CB7Eb4463524FE"
+            "c27fbD%2C0x59d9356e565ab3a36dd77763fc0d87feaf85508c%2C0xdC035D45d973E3EC169d2276DDab16f1e407384F%2C0xdAC17F958D2ee523a22"
             '06206994597C13D831ec7","https://kit.karpatkey.com/api/v1/permissions/eth/cowswap/swap?sell=0x856c4Efb76C1D1AE02e20CEB03A'
-            '2A6a08b0b8dC3%2C0xa3931d71877C0E7a3148CB7Eb4463524FEc27fbD%2C0x59d9356e565ab3a36dd77763fc0d87feaf85508c%2C0xdC035D45d973'
-            'E3EC169d2276DDab16f1e407384F%2C0xdAC17F958D2ee523a2206206994597C13D831ec7&buy=0xE95A203B1a91a908F9B9CE46459d101078c2c3cb'
-            '%2C0xC0c293ce456fF0ED870ADd98a0828Dd4d2903DBF%2C0xba100000625a3754423978a60c9317c58a424e3D%2C0xc00e94Cb662C3520282E6f571'
-            '7214004A7f26888%2C0xD533a949740bb3306d119CC777fa900bA034cd52%2C0x4e3FBD56CD56c3e72c1403e103b45Db9da5B9D2B%2C0x6B175474E8'
-            '9094C44Da98b954EedeAC495271d0F%2C0xA35b1B31Ce002FBF2058D22F30f95D405200A15b%2C0x5A98FcBEA516Cf06857215779Fd812CA3beF1B32'
-            '%2C0xf1C9acDc66974dFB6dEcB12aA385b9cD01190E38%2C0xae78736Cd615f374D3085123A210448E74Fc6393%2C0xD33526068D116cE69F19A9ee4'
-            '6F0bd304F21A51f%2C0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84%2C0x48C3399719B582dD63eB5AADf12A40B4C3f52FA2%2C0xA0b86991c6'
-            '218b36c1d19D4a2e9Eb0cE3606eB48%2C0xdAC17F958D2ee523a2206206994597C13D831ec7%2C0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2'
+            "2A6a08b0b8dC3%2C0xa3931d71877C0E7a3148CB7Eb4463524FEc27fbD%2C0x59d9356e565ab3a36dd77763fc0d87feaf85508c%2C0xdC035D45d973"
+            "E3EC169d2276DDab16f1e407384F%2C0xdAC17F958D2ee523a2206206994597C13D831ec7&buy=0xE95A203B1a91a908F9B9CE46459d101078c2c3cb"
+            "%2C0xC0c293ce456fF0ED870ADd98a0828Dd4d2903DBF%2C0xba100000625a3754423978a60c9317c58a424e3D%2C0xc00e94Cb662C3520282E6f571"
+            "7214004A7f26888%2C0xD533a949740bb3306d119CC777fa900bA034cd52%2C0x4e3FBD56CD56c3e72c1403e103b45Db9da5B9D2B%2C0x6B175474E8"
+            "9094C44Da98b954EedeAC495271d0F%2C0xA35b1B31Ce002FBF2058D22F30f95D405200A15b%2C0x5A98FcBEA516Cf06857215779Fd812CA3beF1B32"
+            "%2C0xf1C9acDc66974dFB6dEcB12aA385b9cD01190E38%2C0xae78736Cd615f374D3085123A210448E74Fc6393%2C0xD33526068D116cE69F19A9ee4"
+            "6F0bd304F21A51f%2C0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84%2C0x48C3399719B582dD63eB5AADf12A40B4C3f52FA2%2C0xA0b86991c6"
+            "218b36c1d19D4a2e9Eb0cE3606eB48%2C0xdAC17F958D2ee523a2206206994597C13D831ec7%2C0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"
             '%2C0x7f39C581F595B53c5cb19bD0b3f8dA6c935E2Ca0","https://kit.karpatkey.com/api/v1/permissions/eth/spark/deposit?targets=S'
             'KY_USDS","https://kit.karpatkey.com/api/v1/permissions/eth/spark/stake?"]}]}';
         string memory tag = "ROLES_PERMISSION_ANNOTATION";
 
-        return _packTx(
-            ANNOTATION_REGISTRY,
-            abi.encodeWithSelector(IAnnotationRegistry.post.selector, annotationJson, tag)
-        );
+        return
+            _packTx(ANNOTATION_REGISTRY, abi.encodeWithSelector(IAnnotationRegistry.post.selector, annotationJson, tag));
     }
 
     // ═══════════════════════════════════════════════════════════════════════
@@ -10400,7 +10626,12 @@ contract Proposal_ENS_EP_6_8_Test is ENS_Governance, SafeHelper, ZodiacRolesHelp
     }
 
     /// @dev Compact condition constructor
-    function _c(uint8 parent, uint8 paramType, uint8 operator, bytes memory compValue)
+    function _c(
+        uint8 parent,
+        uint8 paramType,
+        uint8 operator,
+        bytes memory compValue
+    )
         internal
         pure
         returns (ConditionFlat memory)
@@ -10463,9 +10694,24 @@ contract Proposal_ENS_EP_6_8_Test is ENS_Governance, SafeHelper, ZodiacRolesHelp
         c = new ConditionFlat[](8);
         c[0] = _c(0, PARAM_TYPE_CALLDATA, OP_MATCHES, "");
         c[1] = _c(0, PARAM_TYPE_NONE, OP_OR, "");
-        c[2] = _c(1, 4, OP_EQUAL_TO, hex"000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000010000000000000000000000005c0f23a5c1be65fa710d385814a7fd1bda480b1c");
-        c[3] = _c(1, 4, OP_EQUAL_TO, hex"0000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000100000000000000000000000079ef6103a513951a3b25743db509e267685726b7");
-        c[4] = _c(1, 4, OP_EQUAL_TO, hex"00000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000001000000000000000000000000c592c33e51a764b94db0702d8baf4035ed577aed");
+        c[2] = _c(
+            1,
+            4,
+            OP_EQUAL_TO,
+            hex"000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000010000000000000000000000005c0f23a5c1be65fa710d385814a7fd1bda480b1c"
+        );
+        c[3] = _c(
+            1,
+            4,
+            OP_EQUAL_TO,
+            hex"0000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000100000000000000000000000079ef6103a513951a3b25743db509e267685726b7"
+        );
+        c[4] = _c(
+            1,
+            4,
+            OP_EQUAL_TO,
+            hex"00000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000001000000000000000000000000c592c33e51a764b94db0702d8baf4035ed577aed"
+        );
         c[5] = _c(2, PARAM_TYPE_STATIC, OP_PASS, "");
         c[6] = _c(3, PARAM_TYPE_STATIC, OP_PASS, "");
         c[7] = _c(4, PARAM_TYPE_STATIC, OP_PASS, "");
@@ -10475,9 +10721,24 @@ contract Proposal_ENS_EP_6_8_Test is ENS_Governance, SafeHelper, ZodiacRolesHelp
         c = new ConditionFlat[](8);
         c[0] = _c(0, PARAM_TYPE_CALLDATA, OP_MATCHES, "");
         c[1] = _c(0, PARAM_TYPE_NONE, OP_OR, "");
-        c[2] = _c(1, 4, OP_EQUAL_TO, hex"000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000010000000000000000000000005c0f23a5c1be65fa710d385814a7fd1bda480b1c");
-        c[3] = _c(1, 4, OP_EQUAL_TO, hex"0000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000100000000000000000000000079ef6103a513951a3b25743db509e267685726b7");
-        c[4] = _c(1, 4, OP_EQUAL_TO, hex"00000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000001000000000000000000000000c592c33e51a764b94db0702d8baf4035ed577aed");
+        c[2] = _c(
+            1,
+            4,
+            OP_EQUAL_TO,
+            hex"000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000010000000000000000000000005c0f23a5c1be65fa710d385814a7fd1bda480b1c"
+        );
+        c[3] = _c(
+            1,
+            4,
+            OP_EQUAL_TO,
+            hex"0000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000100000000000000000000000079ef6103a513951a3b25743db509e267685726b7"
+        );
+        c[4] = _c(
+            1,
+            4,
+            OP_EQUAL_TO,
+            hex"00000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000001000000000000000000000000c592c33e51a764b94db0702d8baf4035ed577aed"
+        );
         c[5] = _c(2, PARAM_TYPE_STATIC, OP_PASS, "");
         c[6] = _c(3, PARAM_TYPE_STATIC, OP_PASS, "");
         c[7] = _c(4, PARAM_TYPE_STATIC, OP_PASS, "");
@@ -10734,25 +10995,33 @@ contract Proposal_ENS_EP_6_8_Test is ENS_Governance, SafeHelper, ZodiacRolesHelp
         c[17] = _c(2, PARAM_TYPE_STATIC, OP_PASS, "");
         c[18] = _c(2, PARAM_TYPE_STATIC, OP_EQUAL_TO_AVATAR, "");
         c[19] = _c(2, PARAM_TYPE_STATIC, OP_PASS, "");
-        c[20] = _c(3, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"0b09dea16768f0799065c475be02919503cb2a3500020000000000000000001a");
+        c[20] = _c(
+            3, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"0b09dea16768f0799065c475be02919503cb2a3500020000000000000000001a"
+        );
         c[21] = _c(3, PARAM_TYPE_STATIC, OP_PASS, "");
         c[22] = _eq(3, WETH);
         c[23] = _eq(3, DAI);
         c[24] = _c(3, PARAM_TYPE_STATIC, OP_PASS, "");
         c[25] = _c(3, 2, OP_PASS, "");
-        c[26] = _c(4, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"5c6ee304399dbdb9c8ef030ab642b10820db8f56000200000000000000000014");
+        c[26] = _c(
+            4, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"5c6ee304399dbdb9c8ef030ab642b10820db8f56000200000000000000000014"
+        );
         c[27] = _c(4, PARAM_TYPE_STATIC, OP_PASS, "");
         c[28] = _eq(4, BAL_TOKEN);
         c[29] = _eq(4, WETH);
         c[30] = _c(4, PARAM_TYPE_STATIC, OP_PASS, "");
         c[31] = _c(4, 2, OP_PASS, "");
-        c[32] = _c(5, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"96646936b91d6b9d7d0c47c496afbf3d6ec7b6f8000200000000000000000019");
+        c[32] = _c(
+            5, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"96646936b91d6b9d7d0c47c496afbf3d6ec7b6f8000200000000000000000019"
+        );
         c[33] = _c(5, PARAM_TYPE_STATIC, OP_PASS, "");
         c[34] = _eq(5, WETH);
         c[35] = _eq(5, USDC);
         c[36] = _c(5, PARAM_TYPE_STATIC, OP_PASS, "");
         c[37] = _c(5, 2, OP_PASS, "");
-        c[38] = _c(6, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"cfca23ca9ca720b6e98e3eb9b6aa0ffc4a5c08b9000200000000000000000274");
+        c[38] = _c(
+            6, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"cfca23ca9ca720b6e98e3eb9b6aa0ffc4a5c08b9000200000000000000000274"
+        );
         c[39] = _c(6, PARAM_TYPE_STATIC, OP_PASS, "");
     }
 
@@ -10761,37 +11030,49 @@ contract Proposal_ENS_EP_6_8_Test is ENS_Governance, SafeHelper, ZodiacRolesHelp
         c[41] = _eq(6, WETH);
         c[42] = _c(6, PARAM_TYPE_STATIC, OP_PASS, "");
         c[43] = _c(6, 2, OP_PASS, "");
-        c[44] = _c(7, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"efaa1604e82e1b3af8430b90192c1b9e8197e377000200000000000000000021");
+        c[44] = _c(
+            7, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"efaa1604e82e1b3af8430b90192c1b9e8197e377000200000000000000000021"
+        );
         c[45] = _c(7, PARAM_TYPE_STATIC, OP_PASS, "");
         c[46] = _eq(7, COMP_TOKEN);
         c[47] = _eq(7, WETH);
         c[48] = _c(7, PARAM_TYPE_STATIC, OP_PASS, "");
         c[49] = _c(7, 2, OP_PASS, "");
-        c[50] = _c(8, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"1e19cf2d73a72ef1332c882f20534b6519be0276000200000000000000000112");
+        c[50] = _c(
+            8, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"1e19cf2d73a72ef1332c882f20534b6519be0276000200000000000000000112"
+        );
         c[51] = _c(8, PARAM_TYPE_STATIC, OP_PASS, "");
         c[52] = _c(8, PARAM_TYPE_NONE, OP_OR, "");
         c[53] = _c(8, PARAM_TYPE_NONE, OP_OR, "");
         c[54] = _c(8, PARAM_TYPE_STATIC, OP_PASS, "");
         c[55] = _c(8, 2, OP_PASS, "");
-        c[56] = _c(9, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"37b18b10ce5635a84834b26095a0ae5639dcb7520000000000000000000005cb");
+        c[56] = _c(
+            9, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"37b18b10ce5635a84834b26095a0ae5639dcb7520000000000000000000005cb"
+        );
         c[57] = _c(9, PARAM_TYPE_STATIC, OP_PASS, "");
         c[58] = _c(9, PARAM_TYPE_NONE, OP_OR, "");
         c[59] = _c(9, PARAM_TYPE_NONE, OP_OR, "");
         c[60] = _c(9, PARAM_TYPE_STATIC, OP_PASS, "");
         c[61] = _c(9, 2, OP_PASS, "");
-        c[62] = _c(10, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"7056c8dfa8182859ed0d4fb0ef0886fdf3d2edcf000200000000000000000623");
+        c[62] = _c(
+            10, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"7056c8dfa8182859ed0d4fb0ef0886fdf3d2edcf000200000000000000000623"
+        );
         c[63] = _c(10, PARAM_TYPE_STATIC, OP_PASS, "");
         c[64] = _c(10, PARAM_TYPE_NONE, OP_OR, "");
         c[65] = _c(10, PARAM_TYPE_NONE, OP_OR, "");
         c[66] = _c(10, PARAM_TYPE_STATIC, OP_PASS, "");
         c[67] = _c(10, 2, OP_PASS, "");
-        c[68] = _c(11, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"8353157092ed8be69a9df8f95af097bbf33cb2af0000000000000000000005d9");
+        c[68] = _c(
+            11, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"8353157092ed8be69a9df8f95af097bbf33cb2af0000000000000000000005d9"
+        );
         c[69] = _c(11, PARAM_TYPE_STATIC, OP_PASS, "");
         c[70] = _c(11, PARAM_TYPE_NONE, OP_OR, "");
         c[71] = _c(11, PARAM_TYPE_NONE, OP_OR, "");
         c[72] = _c(11, PARAM_TYPE_STATIC, OP_PASS, "");
         c[73] = _c(11, 2, OP_PASS, "");
-        c[74] = _c(12, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"93d199263632a4ef4bb438f1feb99e57b4b5f0bd0000000000000000000005c2");
+        c[74] = _c(
+            12, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"93d199263632a4ef4bb438f1feb99e57b4b5f0bd0000000000000000000005c2"
+        );
         c[75] = _c(12, PARAM_TYPE_STATIC, OP_PASS, "");
         c[76] = _c(12, PARAM_TYPE_NONE, OP_OR, "");
         c[77] = _c(12, PARAM_TYPE_NONE, OP_OR, "");
@@ -10800,19 +11081,25 @@ contract Proposal_ENS_EP_6_8_Test is ENS_Governance, SafeHelper, ZodiacRolesHelp
     }
 
     function _conditions_33_chunk2(ConditionFlat[] memory c) internal view {
-        c[80] = _c(13, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"dacf5fa19b1f720111609043ac67a9818262850c000000000000000000000635");
+        c[80] = _c(
+            13, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"dacf5fa19b1f720111609043ac67a9818262850c000000000000000000000635"
+        );
         c[81] = _c(13, PARAM_TYPE_STATIC, OP_PASS, "");
         c[82] = _c(13, PARAM_TYPE_NONE, OP_OR, "");
         c[83] = _c(13, PARAM_TYPE_NONE, OP_OR, "");
         c[84] = _c(13, PARAM_TYPE_STATIC, OP_PASS, "");
         c[85] = _c(13, 2, OP_PASS, "");
-        c[86] = _c(14, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"dfe6e7e18f6cc65fa13c8d8966013d4fda74b6ba000000000000000000000558");
+        c[86] = _c(
+            14, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"dfe6e7e18f6cc65fa13c8d8966013d4fda74b6ba000000000000000000000558"
+        );
         c[87] = _c(14, PARAM_TYPE_STATIC, OP_PASS, "");
         c[88] = _c(14, PARAM_TYPE_NONE, OP_OR, "");
         c[89] = _c(14, PARAM_TYPE_NONE, OP_OR, "");
         c[90] = _c(14, PARAM_TYPE_STATIC, OP_PASS, "");
         c[91] = _c(14, 2, OP_PASS, "");
-        c[92] = _c(15, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"f01b0684c98cd7ada480bfdf6e43876422fa1fc10002000000000000000005de");
+        c[92] = _c(
+            15, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"f01b0684c98cd7ada480bfdf6e43876422fa1fc10002000000000000000005de"
+        );
         c[93] = _c(15, PARAM_TYPE_STATIC, OP_PASS, "");
         c[94] = _c(15, PARAM_TYPE_NONE, OP_OR, "");
         c[95] = _c(15, PARAM_TYPE_NONE, OP_OR, "");
@@ -10865,27 +11152,45 @@ contract Proposal_ENS_EP_6_8_Test is ENS_Governance, SafeHelper, ZodiacRolesHelp
         c = new ConditionFlat[](5);
         c[0] = _c(0, PARAM_TYPE_CALLDATA, OP_MATCHES, "");
         c[1] = _c(0, PARAM_TYPE_NONE, OP_OR, "");
-        c[2] = _c(1, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"0000000000000000000000000000000000000000000000000000000000000019");
-        c[3] = _c(1, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"00000000000000000000000000000000000000000000000000000000000000ae");
-        c[4] = _c(1, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"00000000000000000000000000000000000000000000000000000000000000b1");
+        c[2] = _c(
+            1, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"0000000000000000000000000000000000000000000000000000000000000019"
+        );
+        c[3] = _c(
+            1, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"00000000000000000000000000000000000000000000000000000000000000ae"
+        );
+        c[4] = _c(
+            1, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"00000000000000000000000000000000000000000000000000000000000000b1"
+        );
     }
 
     function _conditions_36() internal view returns (ConditionFlat[] memory c) {
         c = new ConditionFlat[](5);
         c[0] = _c(0, PARAM_TYPE_CALLDATA, OP_MATCHES, "");
         c[1] = _c(0, PARAM_TYPE_NONE, OP_OR, "");
-        c[2] = _c(1, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"0000000000000000000000000000000000000000000000000000000000000019");
-        c[3] = _c(1, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"00000000000000000000000000000000000000000000000000000000000000ae");
-        c[4] = _c(1, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"00000000000000000000000000000000000000000000000000000000000000b1");
+        c[2] = _c(
+            1, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"0000000000000000000000000000000000000000000000000000000000000019"
+        );
+        c[3] = _c(
+            1, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"00000000000000000000000000000000000000000000000000000000000000ae"
+        );
+        c[4] = _c(
+            1, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"00000000000000000000000000000000000000000000000000000000000000b1"
+        );
     }
 
     function _conditions_37() internal view returns (ConditionFlat[] memory c) {
         c = new ConditionFlat[](5);
         c[0] = _c(0, PARAM_TYPE_CALLDATA, OP_MATCHES, "");
         c[1] = _c(0, PARAM_TYPE_NONE, OP_OR, "");
-        c[2] = _c(1, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"0000000000000000000000000000000000000000000000000000000000000019");
-        c[3] = _c(1, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"00000000000000000000000000000000000000000000000000000000000000ae");
-        c[4] = _c(1, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"00000000000000000000000000000000000000000000000000000000000000b1");
+        c[2] = _c(
+            1, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"0000000000000000000000000000000000000000000000000000000000000019"
+        );
+        c[3] = _c(
+            1, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"00000000000000000000000000000000000000000000000000000000000000ae"
+        );
+        c[4] = _c(
+            1, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"00000000000000000000000000000000000000000000000000000000000000b1"
+        );
     }
 
     function _conditions_38() internal view returns (ConditionFlat[] memory c) {
@@ -11053,7 +11358,9 @@ contract Proposal_ENS_EP_6_8_Test is ENS_Governance, SafeHelper, ZodiacRolesHelp
         c[7] = _c(0, PARAM_TYPE_STATIC, OP_PASS, "");
         c[8] = _c(0, PARAM_TYPE_STATIC, OP_PASS, "");
         c[9] = _c(0, PARAM_TYPE_STATIC, OP_PASS, "");
-        c[10] = _c(0, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"0000000000000000000000000000000000000000000000000000000000000000");
+        c[10] = _c(
+            0, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"0000000000000000000000000000000000000000000000000000000000000000"
+        );
         c[11] = _eq(1, STETH_ETH_CURVE);
         c[12] = _eq(1, CURVE_GAUGE);
         c[13] = _eq(1, CURVE_3POOL_LP);
@@ -11069,12 +11376,36 @@ contract Proposal_ENS_EP_6_8_Test is ENS_Governance, SafeHelper, ZodiacRolesHelp
         c[23] = _eq(3, SKY_VAULT_2);
         c[24] = _eq(3, SKY_VAULT_3);
         c[25] = _eq(3, SKY_VAULT_1);
-        c[26] = _c(4, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"0000000000000000000000000000000000000000000000000000000000000002");
-        c[27] = _c(4, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"0000000000000000000000000000000000000000000000000000000000000003");
-        c[28] = _c(5, 4, OP_EQUAL_TO, hex"0000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000200000000000000000000000083f20f44975d03b1b09e64809b757c47f942beea00000000000000000000000059d9356e565ab3a36dd77763fc0d87feaf85508c");
-        c[29] = _c(5, 4, OP_EQUAL_TO, hex"00000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000002000000000000000000000000eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee000000000000000000000000856c4efb76c1d1ae02e20ceb03a2a6a08b0b8dc3");
-        c[30] = _c(5, 4, OP_EQUAL_TO, hex"00000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000002000000000000000000000000eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee000000000000000000000000ae7ab96520de3a18e5e111b5eaab095312d7fe84");
-        c[31] = _c(5, 4, OP_EQUAL_TO, hex"000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000030000000000000000000000006b175474e89094c44da98b954eedeac495271d0f000000000000000000000000a0b86991c6218b36c1d19d4a2e9eb0ce3606eb48000000000000000000000000dac17f958d2ee523a2206206994597c13d831ec7");
+        c[26] = _c(
+            4, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"0000000000000000000000000000000000000000000000000000000000000002"
+        );
+        c[27] = _c(
+            4, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"0000000000000000000000000000000000000000000000000000000000000003"
+        );
+        c[28] = _c(
+            5,
+            4,
+            OP_EQUAL_TO,
+            hex"0000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000200000000000000000000000083f20f44975d03b1b09e64809b757c47f942beea00000000000000000000000059d9356e565ab3a36dd77763fc0d87feaf85508c"
+        );
+        c[29] = _c(
+            5,
+            4,
+            OP_EQUAL_TO,
+            hex"00000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000002000000000000000000000000eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee000000000000000000000000856c4efb76c1d1ae02e20ceb03a2a6a08b0b8dc3"
+        );
+        c[30] = _c(
+            5,
+            4,
+            OP_EQUAL_TO,
+            hex"00000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000002000000000000000000000000eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee000000000000000000000000ae7ab96520de3a18e5e111b5eaab095312d7fe84"
+        );
+        c[31] = _c(
+            5,
+            4,
+            OP_EQUAL_TO,
+            hex"000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000030000000000000000000000006b175474e89094c44da98b954eedeac495271d0f000000000000000000000000a0b86991c6218b36c1d19d4a2e9eb0ce3606eb48000000000000000000000000dac17f958d2ee523a2206206994597c13d831ec7"
+        );
         c[32] = _c(6, PARAM_TYPE_STATIC, OP_PASS, "");
         c[33] = _c(28, PARAM_TYPE_STATIC, OP_PASS, "");
         c[34] = _c(29, PARAM_TYPE_STATIC, OP_PASS, "");
@@ -11099,14 +11430,18 @@ contract Proposal_ENS_EP_6_8_Test is ENS_Governance, SafeHelper, ZodiacRolesHelp
         c[6] = _c(1, PARAM_TYPE_TUPLE, OP_MATCHES, "");
         c[7] = _c(2, PARAM_TYPE_NONE, OP_OR, "");
         c[8] = _c(2, PARAM_TYPE_NONE, OP_OR, "");
-        c[9] = _c(2, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"0000000000000000000000000000000000000000000000000000000000000064");
+        c[9] = _c(
+            2, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"0000000000000000000000000000000000000000000000000000000000000064"
+        );
         c[10] = _c(2, PARAM_TYPE_STATIC, OP_EQUAL_TO_AVATAR, "");
         c[11] = _c(2, PARAM_TYPE_STATIC, OP_PASS, "");
         c[12] = _c(2, PARAM_TYPE_STATIC, OP_PASS, "");
         c[13] = _c(2, PARAM_TYPE_STATIC, OP_PASS, "");
         c[14] = _c(3, PARAM_TYPE_NONE, OP_OR, "");
         c[15] = _c(3, PARAM_TYPE_NONE, OP_OR, "");
-        c[16] = _c(3, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"00000000000000000000000000000000000000000000000000000000000001f4");
+        c[16] = _c(
+            3, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"00000000000000000000000000000000000000000000000000000000000001f4"
+        );
         c[17] = _c(3, PARAM_TYPE_STATIC, OP_EQUAL_TO_AVATAR, "");
         c[18] = _c(3, PARAM_TYPE_STATIC, OP_PASS, "");
         c[19] = _c(3, PARAM_TYPE_STATIC, OP_PASS, "");
@@ -11147,15 +11482,25 @@ contract Proposal_ENS_EP_6_8_Test is ENS_Governance, SafeHelper, ZodiacRolesHelp
         c[51] = _eq(21, WETH);
         c[52] = _eq(22, USDC);
         c[53] = _eq(22, WETH);
-        c[54] = _c(23, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"00000000000000000000000000000000000000000000000000000000000001f4");
-        c[55] = _c(23, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"0000000000000000000000000000000000000000000000000000000000000bb8");
+        c[54] = _c(
+            23, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"00000000000000000000000000000000000000000000000000000000000001f4"
+        );
+        c[55] = _c(
+            23, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"0000000000000000000000000000000000000000000000000000000000000bb8"
+        );
         c[56] = _eq(28, WETH);
         c[57] = _eq(28, USDT);
         c[58] = _eq(29, WETH);
         c[59] = _eq(29, USDT);
-        c[60] = _c(30, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"0000000000000000000000000000000000000000000000000000000000000064");
-        c[61] = _c(30, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"00000000000000000000000000000000000000000000000000000000000001f4");
-        c[62] = _c(30, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"0000000000000000000000000000000000000000000000000000000000000bb8");
+        c[60] = _c(
+            30, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"0000000000000000000000000000000000000000000000000000000000000064"
+        );
+        c[61] = _c(
+            30, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"00000000000000000000000000000000000000000000000000000000000001f4"
+        );
+        c[62] = _c(
+            30, PARAM_TYPE_STATIC, OP_EQUAL_TO, hex"0000000000000000000000000000000000000000000000000000000000000bb8"
+        );
         c[63] = _eq(35, CRV3CRYPTO);
         c[64] = _eq(35, CVX_TOKEN);
         c[65] = _eq(35, LDO_TOKEN);

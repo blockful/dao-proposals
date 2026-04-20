@@ -32,7 +32,8 @@ abstract contract Shutter_Governance is Test {
     IAzorius public constant Azorius = IAzorius(0xAA6BfA174d2f803b517026E93DBBEc1eBa26258e);
 
     /// @dev Shutter DAO Voting contract
-    ILinearERC20Voting public constant LinearERC20Voting = ILinearERC20Voting(0x4b29d8B250B8b442ECfCd3a4e3D91933d2db720F);
+    ILinearERC20Voting public constant LinearERC20Voting =
+        ILinearERC20Voting(0x4b29d8B250B8b442ECfCd3a4e3D91933d2db720F);
 
     /// @dev Shutter Gnosis Safe (Treasury)
     address public constant ShutterGnosis = 0x36bD3044ab68f600f6d3e081056F34f2a58432c4;

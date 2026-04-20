@@ -25,7 +25,6 @@ contract Proposal_ENS_EP_5_28_Test is ENS_Governance {
     // State tracking
     uint256 USDCbalanceBefore;
 
-
     function _selectFork() public override {
         vm.createSelectFork({ blockNumber: 21_424_433, urlOrAlias: "mainnet" });
     }

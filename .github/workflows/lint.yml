@@ -1,0 +1,23 @@
+name: Lint
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: foundry-rs/foundry-toolchain@v1
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - run: npm install --no-save prettier
+      - run: forge fmt --check
+      - run: npx prettier --check '**/*.{json,md,yml}' --ignore-path .prettierignore

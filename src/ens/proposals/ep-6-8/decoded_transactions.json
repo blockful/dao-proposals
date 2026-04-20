@@ -1,0 +1,4747 @@
+[
+  {
+    "index": 1,
+    "operation": 0,
+    "to": "0x703806E61847984346d2D7DDd853049627e50A40",
+    "functionName": "revokeFunction",
+    "decoded": {
+      "roleKey": "0x4d414e4147455200000000000000000000000000000000000000000000000000",
+      "targetAddress": "0x893411580e590D62dDBca8a703d61Cc4A8c7b2b9",
+      "selector": "0x474cf53d"
+    }
+  },
+  {
+    "index": 2,
+    "operation": 0,
+    "to": "0x703806E61847984346d2D7DDd853049627e50A40",
+    "functionName": "revokeFunction",
+    "decoded": {
+      "roleKey": "0x4d414e4147455200000000000000000000000000000000000000000000000000",
+      "targetAddress": "0x893411580e590D62dDBca8a703d61Cc4A8c7b2b9",
+      "selector": "0x80500d20"
+    }
+  },
+  {
+    "index": 3,
+    "operation": 0,
+    "to": "0x703806E61847984346d2D7DDd853049627e50A40",
+    "functionName": "scopeTarget",
+    "decoded": {
+      "roleKey": "0x4d414e4147455200000000000000000000000000000000000000000000000000",
+      "targetAddress": "0x8164Cc65827dcFe994AB23944CBC90e0aa80bFcb"
+    }
+  },
+  {
+    "index": 4,
+    "operation": 0,
+    "to": "0x703806E61847984346d2D7DDd853049627e50A40",
+    "functionName": "scopeFunction",
+    "decoded": {
+      "roleKey": "0x4d414e4147455200000000000000000000000000000000000000000000000000",
+      "targetAddress": "0x8164Cc65827dcFe994AB23944CBC90e0aa80bFcb",
+      "selector": "0x236300dc",
+      "conditions": [
+        {
+          "parent": 0,
+          "paramType": 5,
+          "operator": 5,
+          "compValue": ""
+        },
+        {
+          "parent": 0,
+          "paramType": 4,
+          "operator": 0,
+          "compValue": ""
+        },
+        {
+          "parent": 0,
+          "paramType": 1,
+          "operator": 0,
+          "compValue": ""
+        },
+        {
+          "parent": 0,
+          "paramType": 1,
+          "operator": 15,
+          "compValue": ""
+        },
+        {
+          "parent": 1,
+          "paramType": 1,
+          "operator": 0,
+          "compValue": ""
+        }
+      ],
+      "options": 0
+    }
+  },
+  {
+    "index": 5,
+    "operation": 0,
+    "to": "0x703806E61847984346d2D7DDd853049627e50A40",
+    "functionName": "scopeTarget",
+    "decoded": {
+      "roleKey": "0x4d414e4147455200000000000000000000000000000000000000000000000000",
+      "targetAddress": "0xA434D495249abE33E031Fe71a969B81f3c07950D"
+    }
+  },
+  {
+    "index": 6,
+    "operation": 0,
+    "to": "0x703806E61847984346d2D7DDd853049627e50A40",
+    "functionName": "scopeFunction",
+    "decoded": {
+      "roleKey": "0x4d414e4147455200000000000000000000000000000000000000000000000000",
+      "targetAddress": "0xA434D495249abE33E031Fe71a969B81f3c07950D",
+      "selector": "0x474cf53d",
+      "conditions": [
+        {
+          "parent": 0,
+          "paramType": 5,
+          "operator": 5,
+          "compValue": ""
+        },
+        {
+          "parent": 0,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x00000000000000000000000087870bca3f3fd6335c3f4ce8392d69350b4fa4e2"
+        },
+        {
+          "parent": 0,
+          "paramType": 1,
+          "operator": 15,
+          "compValue": ""
+        }
+      ],
+      "options": 1
+    }
+  },
+  {
+    "index": 7,
+    "operation": 0,
+    "to": "0x703806E61847984346d2D7DDd853049627e50A40",
+    "functionName": "scopeFunction",
+    "decoded": {
+      "roleKey": "0x4d414e4147455200000000000000000000000000000000000000000000000000",
+      "targetAddress": "0xA434D495249abE33E031Fe71a969B81f3c07950D",
+      "selector": "0x80500d20",
+      "conditions": [
+        {
+          "parent": 0,
+          "paramType": 5,
+          "operator": 5,
+          "compValue": ""
+        },
+        {
+          "parent": 0,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x00000000000000000000000087870bca3f3fd6335c3f4ce8392d69350b4fa4e2"
+        },
+        {
+          "parent": 0,
+          "paramType": 1,
+          "operator": 0,
+          "compValue": ""
+        },
+        {
+          "parent": 0,
+          "paramType": 1,
+          "operator": 15,
+          "compValue": ""
+        }
+      ],
+      "options": 0
+    }
+  },
+  {
+    "index": 8,
+    "operation": 0,
+    "to": "0x703806E61847984346d2D7DDd853049627e50A40",
+    "functionName": "scopeTarget",
+    "decoded": {
+      "roleKey": "0x4d414e4147455200000000000000000000000000000000000000000000000000",
+      "targetAddress": "0xdC035D45d973E3EC169d2276DDab16f1e407384F"
+    }
+  },
+  {
+    "index": 9,
+    "operation": 0,
+    "to": "0x703806E61847984346d2D7DDd853049627e50A40",
+    "functionName": "scopeFunction",
+    "decoded": {
+      "roleKey": "0x4d414e4147455200000000000000000000000000000000000000000000000000",
+      "targetAddress": "0xdC035D45d973E3EC169d2276DDab16f1e407384F",
+      "selector": "0x095ea7b3",
+      "conditions": [
+        {
+          "parent": 0,
+          "paramType": 5,
+          "operator": 5,
+          "compValue": ""
+        },
+        {
+          "parent": 0,
+          "paramType": 0,
+          "operator": 2,
+          "compValue": ""
+        },
+        {
+          "parent": 1,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x0000000000000000000000000650caf159c5a49f711e8169d4336ecb9b950275"
+        },
+        {
+          "parent": 1,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x00000000000000000000000087870bca3f3fd6335c3f4ce8392d69350b4fa4e2"
+        },
+        {
+          "parent": 1,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000a3931d71877c0e7a3148cb7eb4463524fec27fbd"
+        },
+        {
+          "parent": 1,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000c92e8bdf79f0507f65a392b0ab4667716bfe0110"
+        },
+        {
+          "parent": 1,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000f86141a5657cf52aeb3e30ebcca5ad3a8f714b89"
+        }
+      ],
+      "options": 0
+    }
+  },
+  {
+    "index": 10,
+    "operation": 0,
+    "to": "0x703806E61847984346d2D7DDd853049627e50A40",
+    "functionName": "scopeTarget",
+    "decoded": {
+      "roleKey": "0x4d414e4147455200000000000000000000000000000000000000000000000000",
+      "targetAddress": "0x35Cea9e57A393ac66Aaa7E25C391D52C74B5648f"
+    }
+  },
+  {
+    "index": 11,
+    "operation": 0,
+    "to": "0x703806E61847984346d2D7DDd853049627e50A40",
+    "functionName": "scopeFunction",
+    "decoded": {
+      "roleKey": "0x4d414e4147455200000000000000000000000000000000000000000000000000",
+      "targetAddress": "0x35Cea9e57A393ac66Aaa7E25C391D52C74B5648f",
+      "selector": "0x65ca4804",
+      "conditions": [
+        {
+          "parent": 0,
+          "paramType": 5,
+          "operator": 5,
+          "compValue": ""
+        },
+        {
+          "parent": 0,
+          "paramType": 0,
+          "operator": 2,
+          "compValue": ""
+        },
+        {
+          "parent": 0,
+          "paramType": 1,
+          "operator": 15,
+          "compValue": ""
+        },
+        {
+          "parent": 0,
+          "paramType": 1,
+          "operator": 15,
+          "compValue": ""
+        },
+        {
+          "parent": 1,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x0000000000000000000000005c0f23a5c1be65fa710d385814a7fd1bda480b1c"
+        },
+        {
+          "parent": 1,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x00000000000000000000000079ef6103a513951a3b25743db509e267685726b7"
+        },
+        {
+          "parent": 1,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000c592c33e51a764b94db0702d8baf4035ed577aed"
+        }
+      ],
+      "options": 0
+    }
+  },
+  {
+    "index": 12,
+    "operation": 0,
+    "to": "0x703806E61847984346d2D7DDd853049627e50A40",
+    "functionName": "scopeFunction",
+    "decoded": {
+      "roleKey": "0x4d414e4147455200000000000000000000000000000000000000000000000000",
+      "targetAddress": "0x35Cea9e57A393ac66Aaa7E25C391D52C74B5648f",
+      "selector": "0x0e248fea",
+      "conditions": [
+        {
+          "parent": 0,
+          "paramType": 5,
+          "operator": 5,
+          "compValue": ""
+        },
+        {
+          "parent": 0,
+          "paramType": 0,
+          "operator": 2,
+          "compValue": ""
+        },
+        {
+          "parent": 1,
+          "paramType": 4,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000010000000000000000000000005c0f23a5c1be65fa710d385814a7fd1bda480b1c"
+        },
+        {
+          "parent": 1,
+          "paramType": 4,
+          "operator": 16,
+          "compValue": "0x0000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000100000000000000000000000079ef6103a513951a3b25743db509e267685726b7"
+        },
+        {
+          "parent": 1,
+          "paramType": 4,
+          "operator": 16,
+          "compValue": "0x00000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000001000000000000000000000000c592c33e51a764b94db0702d8baf4035ed577aed"
+        },
+        {
+          "parent": 2,
+          "paramType": 1,
+          "operator": 0,
+          "compValue": ""
+        },
+        {
+          "parent": 3,
+          "paramType": 1,
+          "operator": 0,
+          "compValue": ""
+        },
+        {
+          "parent": 4,
+          "paramType": 1,
+          "operator": 0,
+          "compValue": ""
+        }
+      ],
+      "options": 0
+    }
+  },
+  {
+    "index": 13,
+    "operation": 0,
+    "to": "0x703806E61847984346d2D7DDd853049627e50A40",
+    "functionName": "scopeFunction",
+    "decoded": {
+      "roleKey": "0x4d414e4147455200000000000000000000000000000000000000000000000000",
+      "targetAddress": "0x35Cea9e57A393ac66Aaa7E25C391D52C74B5648f",
+      "selector": "0x3f85d390",
+      "conditions": [
+        {
+          "parent": 0,
+          "paramType": 5,
+          "operator": 5,
+          "compValue": ""
+        },
+        {
+          "parent": 0,
+          "paramType": 0,
+          "operator": 2,
+          "compValue": ""
+        },
+        {
+          "parent": 1,
+          "paramType": 4,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000010000000000000000000000005c0f23a5c1be65fa710d385814a7fd1bda480b1c"
+        },
+        {
+          "parent": 1,
+          "paramType": 4,
+          "operator": 16,
+          "compValue": "0x0000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000100000000000000000000000079ef6103a513951a3b25743db509e267685726b7"
+        },
+        {
+          "parent": 1,
+          "paramType": 4,
+          "operator": 16,
+          "compValue": "0x00000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000001000000000000000000000000c592c33e51a764b94db0702d8baf4035ed577aed"
+        },
+        {
+          "parent": 2,
+          "paramType": 1,
+          "operator": 0,
+          "compValue": ""
+        },
+        {
+          "parent": 3,
+          "paramType": 1,
+          "operator": 0,
+          "compValue": ""
+        },
+        {
+          "parent": 4,
+          "paramType": 1,
+          "operator": 0,
+          "compValue": ""
+        }
+      ],
+      "options": 0
+    }
+  },
+  {
+    "index": 14,
+    "operation": 0,
+    "to": "0x703806E61847984346d2D7DDd853049627e50A40",
+    "functionName": "scopeTarget",
+    "decoded": {
+      "roleKey": "0x4d414e4147455200000000000000000000000000000000000000000000000000",
+      "targetAddress": "0x94B17476A93b3262d87B9a326965D1E91f9c13E7"
+    }
+  },
+  {
+    "index": 15,
+    "operation": 0,
+    "to": "0x703806E61847984346d2D7DDd853049627e50A40",
+    "functionName": "scopeFunction",
+    "decoded": {
+      "roleKey": "0x4d414e4147455200000000000000000000000000000000000000000000000000",
+      "targetAddress": "0x94B17476A93b3262d87B9a326965D1E91f9c13E7",
+      "selector": "0x095ea7b3",
+      "conditions": [
+        {
+          "parent": 0,
+          "paramType": 5,
+          "operator": 5,
+          "compValue": ""
+        },
+        {
+          "parent": 0,
+          "paramType": 0,
+          "operator": 2,
+          "compValue": ""
+        },
+        {
+          "parent": 1,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000d03be91b1932715709e18021734fcb91bb431715"
+        },
+        {
+          "parent": 1,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000f403c135812408bfbe8713b5a23a04b3d48aae31"
+        }
+      ],
+      "options": 0
+    }
+  },
+  {
+    "index": 16,
+    "operation": 0,
+    "to": "0x703806E61847984346d2D7DDd853049627e50A40",
+    "functionName": "allowFunction",
+    "decoded": {
+      "roleKey": "0x4d414e4147455200000000000000000000000000000000000000000000000000",
+      "targetAddress": "0x94B17476A93b3262d87B9a326965D1E91f9c13E7",
+      "selector": "0x0b4c7e4d",
+      "options": 1
+    }
+  },
+  {
+    "index": 17,
+    "operation": 0,
+    "to": "0x703806E61847984346d2D7DDd853049627e50A40",
+    "functionName": "allowFunction",
+    "decoded": {
+      "roleKey": "0x4d414e4147455200000000000000000000000000000000000000000000000000",
+      "targetAddress": "0x94B17476A93b3262d87B9a326965D1E91f9c13E7",
+      "selector": "0x5b36389c",
+      "options": 0
+    }
+  },
+  {
+    "index": 18,
+    "operation": 0,
+    "to": "0x703806E61847984346d2D7DDd853049627e50A40",
+    "functionName": "allowFunction",
+    "decoded": {
+      "roleKey": "0x4d414e4147455200000000000000000000000000000000000000000000000000",
+      "targetAddress": "0x94B17476A93b3262d87B9a326965D1E91f9c13E7",
+      "selector": "0xe3103273",
+      "options": 0
+    }
+  },
+  {
+    "index": 19,
+    "operation": 0,
+    "to": "0x703806E61847984346d2D7DDd853049627e50A40",
+    "functionName": "allowFunction",
+    "decoded": {
+      "roleKey": "0x4d414e4147455200000000000000000000000000000000000000000000000000",
+      "targetAddress": "0x94B17476A93b3262d87B9a326965D1E91f9c13E7",
+      "selector": "0x1a4d01d2",
+      "options": 0
+    }
+  },
+  {
+    "index": 20,
+    "operation": 0,
+    "to": "0x703806E61847984346d2D7DDd853049627e50A40",
+    "functionName": "allowFunction",
+    "decoded": {
+      "roleKey": "0x4d414e4147455200000000000000000000000000000000000000000000000000",
+      "targetAddress": "0x94B17476A93b3262d87B9a326965D1E91f9c13E7",
+      "selector": "0x3df02124",
+      "options": 1
+    }
+  },
+  {
+    "index": 21,
+    "operation": 0,
+    "to": "0x703806E61847984346d2D7DDd853049627e50A40",
+    "functionName": "scopeTarget",
+    "decoded": {
+      "roleKey": "0x4d414e4147455200000000000000000000000000000000000000000000000000",
+      "targetAddress": "0xc2591073629AcD455f2fEc56A398B677F2Ccb80c"
+    }
+  },
+  {
+    "index": 22,
+    "operation": 0,
+    "to": "0x703806E61847984346d2D7DDd853049627e50A40",
+    "functionName": "scopeFunction",
+    "decoded": {
+      "roleKey": "0x4d414e4147455200000000000000000000000000000000000000000000000000",
+      "targetAddress": "0xc2591073629AcD455f2fEc56A398B677F2Ccb80c",
+      "selector": "0x095ea7b3",
+      "conditions": [
+        {
+          "parent": 0,
+          "paramType": 5,
+          "operator": 5,
+          "compValue": ""
+        },
+        {
+          "parent": 0,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x00000000000000000000000024b65dc1cf053a8d96872c323d29e86ec43eb33a"
+        }
+      ],
+      "options": 0
+    }
+  },
+  {
+    "index": 23,
+    "operation": 0,
+    "to": "0x703806E61847984346d2D7DDd853049627e50A40",
+    "functionName": "scopeTarget",
+    "decoded": {
+      "roleKey": "0x4d414e4147455200000000000000000000000000000000000000000000000000",
+      "targetAddress": "0x24b65DC1cf053A8D96872c323d29e86ec43eB33A"
+    }
+  },
+  {
+    "index": 24,
+    "operation": 0,
+    "to": "0x703806E61847984346d2D7DDd853049627e50A40",
+    "functionName": "allowFunction",
+    "decoded": {
+      "roleKey": "0x4d414e4147455200000000000000000000000000000000000000000000000000",
+      "targetAddress": "0x24b65DC1cf053A8D96872c323d29e86ec43eB33A",
+      "selector": "0xa694fc3a",
+      "options": 0
+    }
+  },
+  {
+    "index": 25,
+    "operation": 0,
+    "to": "0x703806E61847984346d2D7DDd853049627e50A40",
+    "functionName": "allowFunction",
+    "decoded": {
+      "roleKey": "0x4d414e4147455200000000000000000000000000000000000000000000000000",
+      "targetAddress": "0x24b65DC1cf053A8D96872c323d29e86ec43eB33A",
+      "selector": "0x38d07436",
+      "options": 0
+    }
+  },
+  {
+    "index": 26,
+    "operation": 0,
+    "to": "0x703806E61847984346d2D7DDd853049627e50A40",
+    "functionName": "allowFunction",
+    "decoded": {
+      "roleKey": "0x4d414e4147455200000000000000000000000000000000000000000000000000",
+      "targetAddress": "0x24b65DC1cf053A8D96872c323d29e86ec43eB33A",
+      "selector": "0xc32e7202",
+      "options": 0
+    }
+  },
+  {
+    "index": 27,
+    "operation": 0,
+    "to": "0x703806E61847984346d2D7DDd853049627e50A40",
+    "functionName": "scopeFunction",
+    "decoded": {
+      "roleKey": "0x4d414e4147455200000000000000000000000000000000000000000000000000",
+      "targetAddress": "0x24b65DC1cf053A8D96872c323d29e86ec43eB33A",
+      "selector": "0x7050ccd9",
+      "conditions": [
+        {
+          "parent": 0,
+          "paramType": 5,
+          "operator": 5,
+          "compValue": ""
+        },
+        {
+          "parent": 0,
+          "paramType": 1,
+          "operator": 15,
+          "compValue": ""
+        }
+      ],
+      "options": 0
+    }
+  },
+  {
+    "index": 28,
+    "operation": 0,
+    "to": "0x703806E61847984346d2D7DDd853049627e50A40",
+    "functionName": "scopeTarget",
+    "decoded": {
+      "roleKey": "0x4d414e4147455200000000000000000000000000000000000000000000000000",
+      "targetAddress": "0x856c4Efb76C1D1AE02e20CEB03A2A6a08b0b8dC3"
+    }
+  },
+  {
+    "index": 29,
+    "operation": 0,
+    "to": "0x703806E61847984346d2D7DDd853049627e50A40",
+    "functionName": "scopeFunction",
+    "decoded": {
+      "roleKey": "0x4d414e4147455200000000000000000000000000000000000000000000000000",
+      "targetAddress": "0x856c4Efb76C1D1AE02e20CEB03A2A6a08b0b8dC3",
+      "selector": "0x095ea7b3",
+      "conditions": [
+        {
+          "parent": 0,
+          "paramType": 5,
+          "operator": 5,
+          "compValue": ""
+        },
+        {
+          "parent": 0,
+          "paramType": 0,
+          "operator": 2,
+          "compValue": ""
+        },
+        {
+          "parent": 1,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x00000000000000000000000056c526b0159a258887e0d79ec3a80dfb940d0cd7"
+        },
+        {
+          "parent": 1,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x0000000000000000000000006bac785889a4127db0e0cefee88e0a9f1aaf3cc7"
+        },
+        {
+          "parent": 1,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x00000000000000000000000094b17476a93b3262d87b9a326965d1e91f9c13e7"
+        },
+        {
+          "parent": 1,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000ba12222222228d8ba445958a75a0704d566bf2c8"
+        },
+        {
+          "parent": 1,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000c92e8bdf79f0507f65a392b0ab4667716bfe0110"
+        }
+      ],
+      "options": 0
+    }
+  },
+  {
+    "index": 30,
+    "operation": 0,
+    "to": "0x703806E61847984346d2D7DDd853049627e50A40",
+    "functionName": "scopeTarget",
+    "decoded": {
+      "roleKey": "0x4d414e4147455200000000000000000000000000000000000000000000000000",
+      "targetAddress": "0xa3931d71877C0E7a3148CB7Eb4463524FEc27fbD"
+    }
+  },
+  {
+    "index": 31,
+    "operation": 0,
+    "to": "0x703806E61847984346d2D7DDd853049627e50A40",
+    "functionName": "scopeFunction",
+    "decoded": {
+      "roleKey": "0x4d414e4147455200000000000000000000000000000000000000000000000000",
+      "targetAddress": "0xa3931d71877C0E7a3148CB7Eb4463524FEc27fbD",
+      "selector": "0x095ea7b3",
+      "conditions": [
+        {
+          "parent": 0,
+          "paramType": 5,
+          "operator": 5,
+          "compValue": ""
+        },
+        {
+          "parent": 0,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000c92e8bdf79f0507f65a392b0ab4667716bfe0110"
+        }
+      ],
+      "options": 0
+    }
+  },
+  {
+    "index": 32,
+    "operation": 0,
+    "to": "0x703806E61847984346d2D7DDd853049627e50A40",
+    "functionName": "scopeFunction",
+    "decoded": {
+      "roleKey": "0x4d414e4147455200000000000000000000000000000000000000000000000000",
+      "targetAddress": "0xa3931d71877C0E7a3148CB7Eb4463524FEc27fbD",
+      "selector": "0x6e553f65",
+      "conditions": [
+        {
+          "parent": 0,
+          "paramType": 5,
+          "operator": 5,
+          "compValue": ""
+        },
+        {
+          "parent": 0,
+          "paramType": 1,
+          "operator": 0,
+          "compValue": ""
+        },
+        {
+          "parent": 0,
+          "paramType": 1,
+          "operator": 15,
+          "compValue": ""
+        }
+      ],
+      "options": 0
+    }
+  },
+  {
+    "index": 33,
+    "operation": 0,
+    "to": "0x703806E61847984346d2D7DDd853049627e50A40",
+    "functionName": "scopeFunction",
+    "decoded": {
+      "roleKey": "0x4d414e4147455200000000000000000000000000000000000000000000000000",
+      "targetAddress": "0xa3931d71877C0E7a3148CB7Eb4463524FEc27fbD",
+      "selector": "0xb460af94",
+      "conditions": [
+        {
+          "parent": 0,
+          "paramType": 5,
+          "operator": 5,
+          "compValue": ""
+        },
+        {
+          "parent": 0,
+          "paramType": 1,
+          "operator": 0,
+          "compValue": ""
+        },
+        {
+          "parent": 0,
+          "paramType": 1,
+          "operator": 15,
+          "compValue": ""
+        },
+        {
+          "parent": 0,
+          "paramType": 1,
+          "operator": 15,
+          "compValue": ""
+        }
+      ],
+      "options": 0
+    }
+  },
+  {
+    "index": 34,
+    "operation": 0,
+    "to": "0x703806E61847984346d2D7DDd853049627e50A40",
+    "functionName": "scopeFunction",
+    "decoded": {
+      "roleKey": "0x4d414e4147455200000000000000000000000000000000000000000000000000",
+      "targetAddress": "0xa3931d71877C0E7a3148CB7Eb4463524FEc27fbD",
+      "selector": "0xba087652",
+      "conditions": [
+        {
+          "parent": 0,
+          "paramType": 5,
+          "operator": 5,
+          "compValue": ""
+        },
+        {
+          "parent": 0,
+          "paramType": 1,
+          "operator": 0,
+          "compValue": ""
+        },
+        {
+          "parent": 0,
+          "paramType": 1,
+          "operator": 15,
+          "compValue": ""
+        },
+        {
+          "parent": 0,
+          "paramType": 1,
+          "operator": 15,
+          "compValue": ""
+        }
+      ],
+      "options": 0
+    }
+  },
+  {
+    "index": 35,
+    "operation": 0,
+    "to": "0x703806E61847984346d2D7DDd853049627e50A40",
+    "functionName": "scopeTarget",
+    "decoded": {
+      "roleKey": "0x4d414e4147455200000000000000000000000000000000000000000000000000",
+      "targetAddress": "0x59D9356E565Ab3A36dD77763Fc0d87fEaf85508C"
+    }
+  },
+  {
+    "index": 36,
+    "operation": 0,
+    "to": "0x703806E61847984346d2D7DDd853049627e50A40",
+    "functionName": "scopeFunction",
+    "decoded": {
+      "roleKey": "0x4d414e4147455200000000000000000000000000000000000000000000000000",
+      "targetAddress": "0x59D9356E565Ab3A36dD77763Fc0d87fEaf85508C",
+      "selector": "0x095ea7b3",
+      "conditions": [
+        {
+          "parent": 0,
+          "paramType": 5,
+          "operator": 5,
+          "compValue": ""
+        },
+        {
+          "parent": 0,
+          "paramType": 0,
+          "operator": 2,
+          "compValue": ""
+        },
+        {
+          "parent": 1,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000425bfb93370f14ff525adb6eaeacfe1f4e3b5802"
+        },
+        {
+          "parent": 1,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x00000000000000000000000056c526b0159a258887e0d79ec3a80dfb940d0cd7"
+        },
+        {
+          "parent": 1,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x00000000000000000000000068b3465833fb72a70ecdf485e0e4c7bd8665fc45"
+        },
+        {
+          "parent": 1,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000c92e8bdf79f0507f65a392b0ab4667716bfe0110"
+        }
+      ],
+      "options": 0
+    }
+  },
+  {
+    "index": 37,
+    "operation": 0,
+    "to": "0x703806E61847984346d2D7DDd853049627e50A40",
+    "functionName": "scopeTarget",
+    "decoded": {
+      "roleKey": "0x4d414e4147455200000000000000000000000000000000000000000000000000",
+      "targetAddress": "0xf86141a5657Cf52AEB3E30eBccA5Ad3a8f714B89"
+    }
+  },
+  {
+    "index": 38,
+    "operation": 0,
+    "to": "0x703806E61847984346d2D7DDd853049627e50A40",
+    "functionName": "scopeFunction",
+    "decoded": {
+      "roleKey": "0x4d414e4147455200000000000000000000000000000000000000000000000000",
+      "targetAddress": "0xf86141a5657Cf52AEB3E30eBccA5Ad3a8f714B89",
+      "selector": "0xb9f8aeb2",
+      "conditions": [
+        {
+          "parent": 0,
+          "paramType": 5,
+          "operator": 5,
+          "compValue": ""
+        },
+        {
+          "parent": 0,
+          "paramType": 1,
+          "operator": 15,
+          "compValue": ""
+        }
+      ],
+      "options": 0
+    }
+  },
+  {
+    "index": 39,
+    "operation": 0,
+    "to": "0x703806E61847984346d2D7DDd853049627e50A40",
+    "functionName": "scopeFunction",
+    "decoded": {
+      "roleKey": "0x4d414e4147455200000000000000000000000000000000000000000000000000",
+      "targetAddress": "0xf86141a5657Cf52AEB3E30eBccA5Ad3a8f714B89",
+      "selector": "0x68dea913",
+      "conditions": [
+        {
+          "parent": 0,
+          "paramType": 5,
+          "operator": 5,
+          "compValue": ""
+        },
+        {
+          "parent": 0,
+          "paramType": 1,
+          "operator": 15,
+          "compValue": ""
+        }
+      ],
+      "options": 0
+    }
+  },
+  {
+    "index": 40,
+    "operation": 0,
+    "to": "0x703806E61847984346d2D7DDd853049627e50A40",
+    "functionName": "scopeFunction",
+    "decoded": {
+      "roleKey": "0x4d414e4147455200000000000000000000000000000000000000000000000000",
+      "targetAddress": "0xf86141a5657Cf52AEB3E30eBccA5Ad3a8f714B89",
+      "selector": "0x9b67f733",
+      "conditions": [
+        {
+          "parent": 0,
+          "paramType": 5,
+          "operator": 5,
+          "compValue": ""
+        },
+        {
+          "parent": 0,
+          "paramType": 1,
+          "operator": 15,
+          "compValue": ""
+        }
+      ],
+      "options": 0
+    }
+  },
+  {
+    "index": 41,
+    "operation": 0,
+    "to": "0x703806E61847984346d2D7DDd853049627e50A40",
+    "functionName": "scopeTarget",
+    "decoded": {
+      "roleKey": "0x4d414e4147455200000000000000000000000000000000000000000000000000",
+      "targetAddress": "0x0650CAF159C5A49f711e8169D4336ECB9b950275"
+    }
+  },
+  {
+    "index": 42,
+    "operation": 0,
+    "to": "0x703806E61847984346d2D7DDd853049627e50A40",
+    "functionName": "allowFunction",
+    "decoded": {
+      "roleKey": "0x4d414e4147455200000000000000000000000000000000000000000000000000",
+      "targetAddress": "0x0650CAF159C5A49f711e8169D4336ECB9b950275",
+      "selector": "0x42ea02c1",
+      "options": 0
+    }
+  },
+  {
+    "index": 43,
+    "operation": 0,
+    "to": "0x703806E61847984346d2D7DDd853049627e50A40",
+    "functionName": "allowFunction",
+    "decoded": {
+      "roleKey": "0x4d414e4147455200000000000000000000000000000000000000000000000000",
+      "targetAddress": "0x0650CAF159C5A49f711e8169D4336ECB9b950275",
+      "selector": "0x2e1a7d4d",
+      "options": 0
+    }
+  },
+  {
+    "index": 44,
+    "operation": 0,
+    "to": "0x703806E61847984346d2D7DDd853049627e50A40",
+    "functionName": "allowFunction",
+    "decoded": {
+      "roleKey": "0x4d414e4147455200000000000000000000000000000000000000000000000000",
+      "targetAddress": "0x0650CAF159C5A49f711e8169D4336ECB9b950275",
+      "selector": "0xe9fad8ee",
+      "options": 0
+    }
+  },
+  {
+    "index": 45,
+    "operation": 0,
+    "to": "0x703806E61847984346d2D7DDd853049627e50A40",
+    "functionName": "allowFunction",
+    "decoded": {
+      "roleKey": "0x4d414e4147455200000000000000000000000000000000000000000000000000",
+      "targetAddress": "0x0650CAF159C5A49f711e8169D4336ECB9b950275",
+      "selector": "0x3d18b912",
+      "options": 0
+    }
+  },
+  {
+    "index": 46,
+    "operation": 0,
+    "to": "0x703806E61847984346d2D7DDd853049627e50A40",
+    "functionName": "scopeTarget",
+    "decoded": {
+      "roleKey": "0x4d414e4147455200000000000000000000000000000000000000000000000000",
+      "targetAddress": "0x3Afdc9BCA9213A35503b077a6072F3D0d5AB0840"
+    }
+  },
+  {
+    "index": 47,
+    "operation": 0,
+    "to": "0x703806E61847984346d2D7DDd853049627e50A40",
+    "functionName": "scopeFunction",
+    "decoded": {
+      "roleKey": "0x4d414e4147455200000000000000000000000000000000000000000000000000",
+      "targetAddress": "0x3Afdc9BCA9213A35503b077a6072F3D0d5AB0840",
+      "selector": "0xf2b9fdb8",
+      "conditions": [
+        {
+          "parent": 0,
+          "paramType": 5,
+          "operator": 5,
+          "compValue": ""
+        },
+        {
+          "parent": 0,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000dac17f958d2ee523a2206206994597c13d831ec7"
+        }
+      ],
+      "options": 0
+    }
+  },
+  {
+    "index": 48,
+    "operation": 0,
+    "to": "0x703806E61847984346d2D7DDd853049627e50A40",
+    "functionName": "scopeFunction",
+    "decoded": {
+      "roleKey": "0x4d414e4147455200000000000000000000000000000000000000000000000000",
+      "targetAddress": "0x3Afdc9BCA9213A35503b077a6072F3D0d5AB0840",
+      "selector": "0xf3fef3a3",
+      "conditions": [
+        {
+          "parent": 0,
+          "paramType": 5,
+          "operator": 5,
+          "compValue": ""
+        },
+        {
+          "parent": 0,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000dac17f958d2ee523a2206206994597c13d831ec7"
+        }
+      ],
+      "options": 0
+    }
+  },
+  {
+    "index": 49,
+    "operation": 0,
+    "to": "0x703806E61847984346d2D7DDd853049627e50A40",
+    "functionName": "scopeTarget",
+    "decoded": {
+      "roleKey": "0x4d414e4147455200000000000000000000000000000000000000000000000000",
+      "targetAddress": "0xd03BE91b1932715709e18021734fcB91BB431715"
+    }
+  },
+  {
+    "index": 50,
+    "operation": 0,
+    "to": "0x703806E61847984346d2D7DDd853049627e50A40",
+    "functionName": "allowFunction",
+    "decoded": {
+      "roleKey": "0x4d414e4147455200000000000000000000000000000000000000000000000000",
+      "targetAddress": "0xd03BE91b1932715709e18021734fcB91BB431715",
+      "selector": "0xb6b55f25",
+      "options": 0
+    }
+  },
+  {
+    "index": 51,
+    "operation": 0,
+    "to": "0x703806E61847984346d2D7DDd853049627e50A40",
+    "functionName": "allowFunction",
+    "decoded": {
+      "roleKey": "0x4d414e4147455200000000000000000000000000000000000000000000000000",
+      "targetAddress": "0xd03BE91b1932715709e18021734fcB91BB431715",
+      "selector": "0x2e1a7d4d",
+      "options": 0
+    }
+  },
+  {
+    "index": 52,
+    "operation": 0,
+    "to": "0x703806E61847984346d2D7DDd853049627e50A40",
+    "functionName": "allowFunction",
+    "decoded": {
+      "roleKey": "0x4d414e4147455200000000000000000000000000000000000000000000000000",
+      "targetAddress": "0xd03BE91b1932715709e18021734fcB91BB431715",
+      "selector": "0xe6f1daf2",
+      "options": 0
+    }
+  },
+  {
+    "index": 53,
+    "operation": 0,
+    "to": "0x703806E61847984346d2D7DDd853049627e50A40",
+    "functionName": "scopeTarget",
+    "decoded": {
+      "roleKey": "0x4d414e4147455200000000000000000000000000000000000000000000000000",
+      "targetAddress": "0xbFcF63294aD7105dEa65aA58F8AE5BE2D9d0952A"
+    }
+  },
+  {
+    "index": 54,
+    "operation": 0,
+    "to": "0x703806E61847984346d2D7DDd853049627e50A40",
+    "functionName": "allowFunction",
+    "decoded": {
+      "roleKey": "0x4d414e4147455200000000000000000000000000000000000000000000000000",
+      "targetAddress": "0xbFcF63294aD7105dEa65aA58F8AE5BE2D9d0952A",
+      "selector": "0xb6b55f25",
+      "options": 0
+    }
+  },
+  {
+    "index": 55,
+    "operation": 0,
+    "to": "0x703806E61847984346d2D7DDd853049627e50A40",
+    "functionName": "allowFunction",
+    "decoded": {
+      "roleKey": "0x4d414e4147455200000000000000000000000000000000000000000000000000",
+      "targetAddress": "0xbFcF63294aD7105dEa65aA58F8AE5BE2D9d0952A",
+      "selector": "0x2e1a7d4d",
+      "options": 0
+    }
+  },
+  {
+    "index": 56,
+    "operation": 0,
+    "to": "0x703806E61847984346d2D7DDd853049627e50A40",
+    "functionName": "scopeFunction",
+    "decoded": {
+      "roleKey": "0x4d414e4147455200000000000000000000000000000000000000000000000000",
+      "targetAddress": "0xbFcF63294aD7105dEa65aA58F8AE5BE2D9d0952A",
+      "selector": "0x1d2747d4",
+      "conditions": [
+        {
+          "parent": 0,
+          "paramType": 5,
+          "operator": 5,
+          "compValue": ""
+        },
+        {
+          "parent": 0,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x00000000000000000000000056c526b0159a258887e0d79ec3a80dfb940d0cd7"
+        }
+      ],
+      "options": 0
+    }
+  },
+  {
+    "index": 57,
+    "operation": 0,
+    "to": "0x703806E61847984346d2D7DDd853049627e50A40",
+    "functionName": "scopeTarget",
+    "decoded": {
+      "roleKey": "0x4d414e4147455200000000000000000000000000000000000000000000000000",
+      "targetAddress": "0x83F20F44975D03b1b09e64809B757c47f942BEeA"
+    }
+  },
+  {
+    "index": 58,
+    "operation": 0,
+    "to": "0x703806E61847984346d2D7DDd853049627e50A40",
+    "functionName": "scopeFunction",
+    "decoded": {
+      "roleKey": "0x4d414e4147455200000000000000000000000000000000000000000000000000",
+      "targetAddress": "0x83F20F44975D03b1b09e64809B757c47f942BEeA",
+      "selector": "0x095ea7b3",
+      "conditions": [
+        {
+          "parent": 0,
+          "paramType": 5,
+          "operator": 5,
+          "compValue": ""
+        },
+        {
+          "parent": 0,
+          "paramType": 0,
+          "operator": 2,
+          "compValue": ""
+        },
+        {
+          "parent": 1,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000425bfb93370f14ff525adb6eaeacfe1f4e3b5802"
+        },
+        {
+          "parent": 1,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x00000000000000000000000056c526b0159a258887e0d79ec3a80dfb940d0cd7"
+        }
+      ],
+      "options": 0
+    }
+  },
+  {
+    "index": 59,
+    "operation": 0,
+    "to": "0x703806E61847984346d2D7DDd853049627e50A40",
+    "functionName": "scopeTarget",
+    "decoded": {
+      "roleKey": "0x4d414e4147455200000000000000000000000000000000000000000000000000",
+      "targetAddress": "0x425BfB93370F14fF525aDb6EaEAcfE1f4e3b5802"
+    }
+  },
+  {
+    "index": 60,
+    "operation": 0,
+    "to": "0x703806E61847984346d2D7DDd853049627e50A40",
+    "functionName": "allowFunction",
+    "decoded": {
+      "roleKey": "0x4d414e4147455200000000000000000000000000000000000000000000000000",
+      "targetAddress": "0x425BfB93370F14fF525aDb6EaEAcfE1f4e3b5802",
+      "selector": "0xb72df5de",
+      "options": 0
+    }
+  },
+  {
+    "index": 61,
+    "operation": 0,
+    "to": "0x703806E61847984346d2D7DDd853049627e50A40",
+    "functionName": "allowFunction",
+    "decoded": {
+      "roleKey": "0x4d414e4147455200000000000000000000000000000000000000000000000000",
+      "targetAddress": "0x425BfB93370F14fF525aDb6EaEAcfE1f4e3b5802",
+      "selector": "0xd40ddb8c",
+      "options": 0
+    }
+  },
+  {
+    "index": 62,
+    "operation": 0,
+    "to": "0x703806E61847984346d2D7DDd853049627e50A40",
+    "functionName": "allowFunction",
+    "decoded": {
+      "roleKey": "0x4d414e4147455200000000000000000000000000000000000000000000000000",
+      "targetAddress": "0x425BfB93370F14fF525aDb6EaEAcfE1f4e3b5802",
+      "selector": "0x7706db75",
+      "options": 0
+    }
+  },
+  {
+    "index": 63,
+    "operation": 0,
+    "to": "0x703806E61847984346d2D7DDd853049627e50A40",
+    "functionName": "allowFunction",
+    "decoded": {
+      "roleKey": "0x4d414e4147455200000000000000000000000000000000000000000000000000",
+      "targetAddress": "0x425BfB93370F14fF525aDb6EaEAcfE1f4e3b5802",
+      "selector": "0x1a4d01d2",
+      "options": 0
+    }
+  },
+  {
+    "index": 64,
+    "operation": 0,
+    "to": "0x703806E61847984346d2D7DDd853049627e50A40",
+    "functionName": "scopeFunction",
+    "decoded": {
+      "roleKey": "0x4d414e4147455200000000000000000000000000000000000000000000000000",
+      "targetAddress": "0x425BfB93370F14fF525aDb6EaEAcfE1f4e3b5802",
+      "selector": "0x095ea7b3",
+      "conditions": [
+        {
+          "parent": 0,
+          "paramType": 5,
+          "operator": 5,
+          "compValue": ""
+        },
+        {
+          "parent": 0,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000cf5136c67fa8a375babbdf13c0307ef994b5681d"
+        }
+      ],
+      "options": 0
+    }
+  },
+  {
+    "index": 65,
+    "operation": 0,
+    "to": "0x703806E61847984346d2D7DDd853049627e50A40",
+    "functionName": "allowFunction",
+    "decoded": {
+      "roleKey": "0x4d414e4147455200000000000000000000000000000000000000000000000000",
+      "targetAddress": "0x425BfB93370F14fF525aDb6EaEAcfE1f4e3b5802",
+      "selector": "0x3df02124",
+      "options": 0
+    }
+  },
+  {
+    "index": 66,
+    "operation": 0,
+    "to": "0x703806E61847984346d2D7DDd853049627e50A40",
+    "functionName": "scopeTarget",
+    "decoded": {
+      "roleKey": "0x4d414e4147455200000000000000000000000000000000000000000000000000",
+      "targetAddress": "0xcF5136C67fA8A375BaBbDf13c0307EF994b5681D"
+    }
+  },
+  {
+    "index": 67,
+    "operation": 0,
+    "to": "0x703806E61847984346d2D7DDd853049627e50A40",
+    "functionName": "allowFunction",
+    "decoded": {
+      "roleKey": "0x4d414e4147455200000000000000000000000000000000000000000000000000",
+      "targetAddress": "0xcF5136C67fA8A375BaBbDf13c0307EF994b5681D",
+      "selector": "0xb6b55f25",
+      "options": 0
+    }
+  },
+  {
+    "index": 68,
+    "operation": 0,
+    "to": "0x703806E61847984346d2D7DDd853049627e50A40",
+    "functionName": "allowFunction",
+    "decoded": {
+      "roleKey": "0x4d414e4147455200000000000000000000000000000000000000000000000000",
+      "targetAddress": "0xcF5136C67fA8A375BaBbDf13c0307EF994b5681D",
+      "selector": "0x2e1a7d4d",
+      "options": 0
+    }
+  },
+  {
+    "index": 69,
+    "operation": 0,
+    "to": "0x703806E61847984346d2D7DDd853049627e50A40",
+    "functionName": "allowFunction",
+    "decoded": {
+      "roleKey": "0x4d414e4147455200000000000000000000000000000000000000000000000000",
+      "targetAddress": "0xcF5136C67fA8A375BaBbDf13c0307EF994b5681D",
+      "selector": "0xe6f1daf2",
+      "options": 0
+    }
+  },
+  {
+    "index": 70,
+    "operation": 0,
+    "to": "0x703806E61847984346d2D7DDd853049627e50A40",
+    "functionName": "scopeTarget",
+    "decoded": {
+      "roleKey": "0x4d414e4147455200000000000000000000000000000000000000000000000000",
+      "targetAddress": "0x9858e47BCbBe6fBAC040519B02d7cd4B2C470C66"
+    }
+  },
+  {
+    "index": 71,
+    "operation": 0,
+    "to": "0x703806E61847984346d2D7DDd853049627e50A40",
+    "functionName": "allowFunction",
+    "decoded": {
+      "roleKey": "0x4d414e4147455200000000000000000000000000000000000000000000000000",
+      "targetAddress": "0x9858e47BCbBe6fBAC040519B02d7cd4B2C470C66",
+      "selector": "0xd0e30db0",
+      "options": 1
+    }
+  },
+  {
+    "index": 72,
+    "operation": 0,
+    "to": "0x703806E61847984346d2D7DDd853049627e50A40",
+    "functionName": "scopeTarget",
+    "decoded": {
+      "roleKey": "0x4d414e4147455200000000000000000000000000000000000000000000000000",
+      "targetAddress": "0x6bac785889A4127dB0e0CeFEE88E0a9F1Aaf3cC7"
+    }
+  },
+  {
+    "index": 73,
+    "operation": 0,
+    "to": "0x703806E61847984346d2D7DDd853049627e50A40",
+    "functionName": "scopeFunction",
+    "decoded": {
+      "roleKey": "0x4d414e4147455200000000000000000000000000000000000000000000000000",
+      "targetAddress": "0x6bac785889A4127dB0e0CeFEE88E0a9F1Aaf3cC7",
+      "selector": "0x6c08c57e",
+      "conditions": [
+        {
+          "parent": 0,
+          "paramType": 5,
+          "operator": 5,
+          "compValue": ""
+        },
+        {
+          "parent": 0,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000856c4efb76c1d1ae02e20ceb03a2a6a08b0b8dc3"
+        },
+        {
+          "parent": 0,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000c02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
+        },
+        {
+          "parent": 0,
+          "paramType": 1,
+          "operator": 0,
+          "compValue": ""
+        },
+        {
+          "parent": 0,
+          "paramType": 1,
+          "operator": 0,
+          "compValue": ""
+        },
+        {
+          "parent": 0,
+          "paramType": 1,
+          "operator": 15,
+          "compValue": ""
+        }
+      ],
+      "options": 0
+    }
+  },
+  {
+    "index": 74,
+    "operation": 0,
+    "to": "0x703806E61847984346d2D7DDd853049627e50A40",
+    "functionName": "scopeTarget",
+    "decoded": {
+      "roleKey": "0x4d414e4147455200000000000000000000000000000000000000000000000000",
+      "targetAddress": "0x39254033945AA2E4809Cc2977E7087BEE48bd7Ab"
+    }
+  },
+  {
+    "index": 75,
+    "operation": 0,
+    "to": "0x703806E61847984346d2D7DDd853049627e50A40",
+    "functionName": "allowFunction",
+    "decoded": {
+      "roleKey": "0x4d414e4147455200000000000000000000000000000000000000000000000000",
+      "targetAddress": "0x39254033945AA2E4809Cc2977E7087BEE48bd7Ab",
+      "selector": "0x9ee679e8",
+      "options": 0
+    }
+  },
+  {
+    "index": 76,
+    "operation": 0,
+    "to": "0x703806E61847984346d2D7DDd853049627e50A40",
+    "functionName": "allowFunction",
+    "decoded": {
+      "roleKey": "0x4d414e4147455200000000000000000000000000000000000000000000000000",
+      "targetAddress": "0x39254033945AA2E4809Cc2977E7087BEE48bd7Ab",
+      "selector": "0xf8444436",
+      "options": 0
+    }
+  },
+  {
+    "index": 77,
+    "operation": 0,
+    "to": "0x703806E61847984346d2D7DDd853049627e50A40",
+    "functionName": "allowFunction",
+    "decoded": {
+      "roleKey": "0x4d414e4147455200000000000000000000000000000000000000000000000000",
+      "targetAddress": "0x39254033945AA2E4809Cc2977E7087BEE48bd7Ab",
+      "selector": "0x48e30f54",
+      "options": 0
+    }
+  },
+  {
+    "index": 78,
+    "operation": 0,
+    "to": "0x703806E61847984346d2D7DDd853049627e50A40",
+    "functionName": "scopeTarget",
+    "decoded": {
+      "roleKey": "0x4d414e4147455200000000000000000000000000000000000000000000000000",
+      "targetAddress": "0x6B175474E89094C44Da98b954EedeAC495271d0F"
+    }
+  },
+  {
+    "index": 79,
+    "operation": 0,
+    "to": "0x703806E61847984346d2D7DDd853049627e50A40",
+    "functionName": "scopeFunction",
+    "decoded": {
+      "roleKey": "0x4d414e4147455200000000000000000000000000000000000000000000000000",
+      "targetAddress": "0x6B175474E89094C44Da98b954EedeAC495271d0F",
+      "selector": "0x095ea7b3",
+      "conditions": [
+        {
+          "parent": 0,
+          "paramType": 5,
+          "operator": 5,
+          "compValue": ""
+        },
+        {
+          "parent": 0,
+          "paramType": 0,
+          "operator": 2,
+          "compValue": ""
+        },
+        {
+          "parent": 1,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000373238337bfe1146fb49989fc222523f83081ddb"
+        },
+        {
+          "parent": 1,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x00000000000000000000000056c526b0159a258887e0d79ec3a80dfb940d0cd7"
+        },
+        {
+          "parent": 1,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x00000000000000000000000068b3465833fb72a70ecdf485e0e4c7bd8665fc45"
+        },
+        {
+          "parent": 1,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x00000000000000000000000087870bca3f3fd6335c3f4ce8392d69350b4fa4e2"
+        },
+        {
+          "parent": 1,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000bebc44782c7db0a1a60cb6fe97d0b483032ff1c7"
+        },
+        {
+          "parent": 1,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000c92e8bdf79f0507f65a392b0ab4667716bfe0110"
+        },
+        {
+          "parent": 1,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000f86141a5657cf52aeb3e30ebcca5ad3a8f714b89"
+        }
+      ],
+      "options": 0
+    }
+  },
+  {
+    "index": 80,
+    "operation": 0,
+    "to": "0x703806E61847984346d2D7DDd853049627e50A40",
+    "functionName": "scopeTarget",
+    "decoded": {
+      "roleKey": "0x4d414e4147455200000000000000000000000000000000000000000000000000",
+      "targetAddress": "0x87870Bca3F3fD6335C3F4ce8392D69350B4fA4E2"
+    }
+  },
+  {
+    "index": 81,
+    "operation": 0,
+    "to": "0x703806E61847984346d2D7DDd853049627e50A40",
+    "functionName": "scopeFunction",
+    "decoded": {
+      "roleKey": "0x4d414e4147455200000000000000000000000000000000000000000000000000",
+      "targetAddress": "0x87870Bca3F3fD6335C3F4ce8392D69350B4fA4E2",
+      "selector": "0x617ba037",
+      "conditions": [
+        {
+          "parent": 0,
+          "paramType": 5,
+          "operator": 5,
+          "compValue": ""
+        },
+        {
+          "parent": 0,
+          "paramType": 0,
+          "operator": 2,
+          "compValue": ""
+        },
+        {
+          "parent": 0,
+          "paramType": 1,
+          "operator": 0,
+          "compValue": ""
+        },
+        {
+          "parent": 0,
+          "paramType": 1,
+          "operator": 15,
+          "compValue": ""
+        },
+        {
+          "parent": 1,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x0000000000000000000000006b175474e89094c44da98b954eedeac495271d0f"
+        },
+        {
+          "parent": 1,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000a0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+        },
+        {
+          "parent": 1,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000c02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
+        },
+        {
+          "parent": 1,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000dac17f958d2ee523a2206206994597c13d831ec7"
+        },
+        {
+          "parent": 1,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000dc035d45d973e3ec169d2276ddab16f1e407384f"
+        },
+        {
+          "parent": 1,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000f1c9acdc66974dfb6decb12aa385b9cd01190e38"
+        }
+      ],
+      "options": 0
+    }
+  },
+  {
+    "index": 82,
+    "operation": 0,
+    "to": "0x703806E61847984346d2D7DDd853049627e50A40",
+    "functionName": "scopeFunction",
+    "decoded": {
+      "roleKey": "0x4d414e4147455200000000000000000000000000000000000000000000000000",
+      "targetAddress": "0x87870Bca3F3fD6335C3F4ce8392D69350B4fA4E2",
+      "selector": "0x69328dec",
+      "conditions": [
+        {
+          "parent": 0,
+          "paramType": 5,
+          "operator": 5,
+          "compValue": ""
+        },
+        {
+          "parent": 0,
+          "paramType": 0,
+          "operator": 2,
+          "compValue": ""
+        },
+        {
+          "parent": 0,
+          "paramType": 1,
+          "operator": 0,
+          "compValue": ""
+        },
+        {
+          "parent": 0,
+          "paramType": 1,
+          "operator": 15,
+          "compValue": ""
+        },
+        {
+          "parent": 1,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x0000000000000000000000006b175474e89094c44da98b954eedeac495271d0f"
+        },
+        {
+          "parent": 1,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000a0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+        },
+        {
+          "parent": 1,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000c02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
+        },
+        {
+          "parent": 1,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000dac17f958d2ee523a2206206994597c13d831ec7"
+        },
+        {
+          "parent": 1,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000dc035d45d973e3ec169d2276ddab16f1e407384f"
+        },
+        {
+          "parent": 1,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000f1c9acdc66974dfb6decb12aa385b9cd01190e38"
+        }
+      ],
+      "options": 0
+    }
+  },
+  {
+    "index": 83,
+    "operation": 0,
+    "to": "0x703806E61847984346d2D7DDd853049627e50A40",
+    "functionName": "scopeFunction",
+    "decoded": {
+      "roleKey": "0x4d414e4147455200000000000000000000000000000000000000000000000000",
+      "targetAddress": "0x87870Bca3F3fD6335C3F4ce8392D69350B4fA4E2",
+      "selector": "0x5a3b74b9",
+      "conditions": [
+        {
+          "parent": 0,
+          "paramType": 5,
+          "operator": 5,
+          "compValue": ""
+        },
+        {
+          "parent": 0,
+          "paramType": 0,
+          "operator": 2,
+          "compValue": ""
+        },
+        {
+          "parent": 1,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x0000000000000000000000006b175474e89094c44da98b954eedeac495271d0f"
+        },
+        {
+          "parent": 1,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000a0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+        },
+        {
+          "parent": 1,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000c02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
+        },
+        {
+          "parent": 1,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000dac17f958d2ee523a2206206994597c13d831ec7"
+        },
+        {
+          "parent": 1,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000dc035d45d973e3ec169d2276ddab16f1e407384f"
+        },
+        {
+          "parent": 1,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000f1c9acdc66974dfb6decb12aa385b9cd01190e38"
+        }
+      ],
+      "options": 0
+    }
+  },
+  {
+    "index": 84,
+    "operation": 0,
+    "to": "0x703806E61847984346d2D7DDd853049627e50A40",
+    "functionName": "scopeTarget",
+    "decoded": {
+      "roleKey": "0x4d414e4147455200000000000000000000000000000000000000000000000000",
+      "targetAddress": "0x4d5F47FA6A74757f35C14fD3a6Ef8E3C9BC514E8"
+    }
+  },
+  {
+    "index": 85,
+    "operation": 0,
+    "to": "0x703806E61847984346d2D7DDd853049627e50A40",
+    "functionName": "scopeFunction",
+    "decoded": {
+      "roleKey": "0x4d414e4147455200000000000000000000000000000000000000000000000000",
+      "targetAddress": "0x4d5F47FA6A74757f35C14fD3a6Ef8E3C9BC514E8",
+      "selector": "0x095ea7b3",
+      "conditions": [
+        {
+          "parent": 0,
+          "paramType": 5,
+          "operator": 5,
+          "compValue": ""
+        },
+        {
+          "parent": 0,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000a434d495249abe33e031fe71a969b81f3c07950d"
+        }
+      ],
+      "options": 0
+    }
+  },
+  {
+    "index": 86,
+    "operation": 0,
+    "to": "0x703806E61847984346d2D7DDd853049627e50A40",
+    "functionName": "scopeTarget",
+    "decoded": {
+      "roleKey": "0x4d414e4147455200000000000000000000000000000000000000000000000000",
+      "targetAddress": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"
+    }
+  },
+  {
+    "index": 87,
+    "operation": 0,
+    "to": "0x703806E61847984346d2D7DDd853049627e50A40",
+    "functionName": "scopeFunction",
+    "decoded": {
+      "roleKey": "0x4d414e4147455200000000000000000000000000000000000000000000000000",
+      "targetAddress": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+      "selector": "0x095ea7b3",
+      "conditions": [
+        {
+          "parent": 0,
+          "paramType": 5,
+          "operator": 5,
+          "compValue": ""
+        },
+        {
+          "parent": 0,
+          "paramType": 0,
+          "operator": 2,
+          "compValue": ""
+        },
+        {
+          "parent": 1,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x00000000000000000000000056c526b0159a258887e0d79ec3a80dfb940d0cd7"
+        },
+        {
+          "parent": 1,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x00000000000000000000000068b3465833fb72a70ecdf485e0e4c7bd8665fc45"
+        },
+        {
+          "parent": 1,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x00000000000000000000000087870bca3f3fd6335c3f4ce8392d69350b4fa4e2"
+        },
+        {
+          "parent": 1,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000ba12222222228d8ba445958a75a0704d566bf2c8"
+        },
+        {
+          "parent": 1,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000bebc44782c7db0a1a60cb6fe97d0b483032ff1c7"
+        },
+        {
+          "parent": 1,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000c3d688b66703497daa19211eedff47f25384cdc3"
+        },
+        {
+          "parent": 1,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000c92e8bdf79f0507f65a392b0ab4667716bfe0110"
+        }
+      ],
+      "options": 0
+    }
+  },
+  {
+    "index": 88,
+    "operation": 0,
+    "to": "0x703806E61847984346d2D7DDd853049627e50A40",
+    "functionName": "scopeTarget",
+    "decoded": {
+      "roleKey": "0x4d414e4147455200000000000000000000000000000000000000000000000000",
+      "targetAddress": "0xdAC17F958D2ee523a2206206994597C13D831ec7"
+    }
+  },
+  {
+    "index": 89,
+    "operation": 0,
+    "to": "0x703806E61847984346d2D7DDd853049627e50A40",
+    "functionName": "scopeFunction",
+    "decoded": {
+      "roleKey": "0x4d414e4147455200000000000000000000000000000000000000000000000000",
+      "targetAddress": "0xdAC17F958D2ee523a2206206994597C13D831ec7",
+      "selector": "0x095ea7b3",
+      "conditions": [
+        {
+          "parent": 0,
+          "paramType": 5,
+          "operator": 5,
+          "compValue": ""
+        },
+        {
+          "parent": 0,
+          "paramType": 0,
+          "operator": 2,
+          "compValue": ""
+        },
+        {
+          "parent": 1,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x0000000000000000000000003afdc9bca9213a35503b077a6072f3d0d5ab0840"
+        },
+        {
+          "parent": 1,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x00000000000000000000000056c526b0159a258887e0d79ec3a80dfb940d0cd7"
+        },
+        {
+          "parent": 1,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x00000000000000000000000068b3465833fb72a70ecdf485e0e4c7bd8665fc45"
+        },
+        {
+          "parent": 1,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x00000000000000000000000087870bca3f3fd6335c3f4ce8392d69350b4fa4e2"
+        },
+        {
+          "parent": 1,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000ba12222222228d8ba445958a75a0704d566bf2c8"
+        },
+        {
+          "parent": 1,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000bebc44782c7db0a1a60cb6fe97d0b483032ff1c7"
+        },
+        {
+          "parent": 1,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000c92e8bdf79f0507f65a392b0ab4667716bfe0110"
+        }
+      ],
+      "options": 0
+    }
+  },
+  {
+    "index": 90,
+    "operation": 0,
+    "to": "0x703806E61847984346d2D7DDd853049627e50A40",
+    "functionName": "scopeTarget",
+    "decoded": {
+      "roleKey": "0x4d414e4147455200000000000000000000000000000000000000000000000000",
+      "targetAddress": "0xBA12222222228d8Ba445958a75a0704d566BF2C8"
+    }
+  },
+  {
+    "index": 91,
+    "operation": 0,
+    "to": "0x703806E61847984346d2D7DDd853049627e50A40",
+    "functionName": "scopeFunction",
+    "decoded": {
+      "roleKey": "0x4d414e4147455200000000000000000000000000000000000000000000000000",
+      "targetAddress": "0xBA12222222228d8Ba445958a75a0704d566BF2C8",
+      "selector": "0xfa6e671d",
+      "conditions": [
+        {
+          "parent": 0,
+          "paramType": 5,
+          "operator": 5,
+          "compValue": ""
+        },
+        {
+          "parent": 0,
+          "paramType": 1,
+          "operator": 15,
+          "compValue": ""
+        },
+        {
+          "parent": 0,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x00000000000000000000000035cea9e57a393ac66aaa7e25c391d52c74b5648f"
+        }
+      ],
+      "options": 0
+    }
+  },
+  {
+    "index": 92,
+    "operation": 0,
+    "to": "0x703806E61847984346d2D7DDd853049627e50A40",
+    "functionName": "scopeFunction",
+    "decoded": {
+      "roleKey": "0x4d414e4147455200000000000000000000000000000000000000000000000000",
+      "targetAddress": "0xBA12222222228d8Ba445958a75a0704d566BF2C8",
+      "selector": "0x52bbbe29",
+      "conditions": [
+        {
+          "parent": 0,
+          "paramType": 5,
+          "operator": 5,
+          "compValue": ""
+        },
+        {
+          "parent": 0,
+          "paramType": 0,
+          "operator": 2,
+          "compValue": ""
+        },
+        {
+          "parent": 0,
+          "paramType": 3,
+          "operator": 5,
+          "compValue": ""
+        },
+        {
+          "parent": 1,
+          "paramType": 3,
+          "operator": 5,
+          "compValue": ""
+        },
+        {
+          "parent": 1,
+          "paramType": 3,
+          "operator": 5,
+          "compValue": ""
+        },
+        {
+          "parent": 1,
+          "paramType": 3,
+          "operator": 5,
+          "compValue": ""
+        },
+        {
+          "parent": 1,
+          "paramType": 3,
+          "operator": 5,
+          "compValue": ""
+        },
+        {
+          "parent": 1,
+          "paramType": 3,
+          "operator": 5,
+          "compValue": ""
+        },
+        {
+          "parent": 1,
+          "paramType": 3,
+          "operator": 5,
+          "compValue": ""
+        },
+        {
+          "parent": 1,
+          "paramType": 3,
+          "operator": 5,
+          "compValue": ""
+        },
+        {
+          "parent": 1,
+          "paramType": 3,
+          "operator": 5,
+          "compValue": ""
+        },
+        {
+          "parent": 1,
+          "paramType": 3,
+          "operator": 5,
+          "compValue": ""
+        },
+        {
+          "parent": 1,
+          "paramType": 3,
+          "operator": 5,
+          "compValue": ""
+        },
+        {
+          "parent": 1,
+          "paramType": 3,
+          "operator": 5,
+          "compValue": ""
+        },
+        {
+          "parent": 1,
+          "paramType": 3,
+          "operator": 5,
+          "compValue": ""
+        },
+        {
+          "parent": 1,
+          "paramType": 3,
+          "operator": 5,
+          "compValue": ""
+        },
+        {
+          "parent": 2,
+          "paramType": 1,
+          "operator": 15,
+          "compValue": ""
+        },
+        {
+          "parent": 2,
+          "paramType": 1,
+          "operator": 0,
+          "compValue": ""
+        },
+        {
+          "parent": 2,
+          "paramType": 1,
+          "operator": 15,
+          "compValue": ""
+        },
+        {
+          "parent": 2,
+          "paramType": 1,
+          "operator": 0,
+          "compValue": ""
+        },
+        {
+          "parent": 3,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x0b09dea16768f0799065c475be02919503cb2a3500020000000000000000001a"
+        },
+        {
+          "parent": 3,
+          "paramType": 1,
+          "operator": 0,
+          "compValue": ""
+        },
+        {
+          "parent": 3,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000c02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
+        },
+        {
+          "parent": 3,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x0000000000000000000000006b175474e89094c44da98b954eedeac495271d0f"
+        },
+        {
+          "parent": 3,
+          "paramType": 1,
+          "operator": 0,
+          "compValue": ""
+        },
+        {
+          "parent": 3,
+          "paramType": 2,
+          "operator": 0,
+          "compValue": ""
+        },
+        {
+          "parent": 4,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x5c6ee304399dbdb9c8ef030ab642b10820db8f56000200000000000000000014"
+        },
+        {
+          "parent": 4,
+          "paramType": 1,
+          "operator": 0,
+          "compValue": ""
+        },
+        {
+          "parent": 4,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000ba100000625a3754423978a60c9317c58a424e3d"
+        },
+        {
+          "parent": 4,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000c02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
+        },
+        {
+          "parent": 4,
+          "paramType": 1,
+          "operator": 0,
+          "compValue": ""
+        },
+        {
+          "parent": 4,
+          "paramType": 2,
+          "operator": 0,
+          "compValue": ""
+        },
+        {
+          "parent": 5,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x96646936b91d6b9d7d0c47c496afbf3d6ec7b6f8000200000000000000000019"
+        },
+        {
+          "parent": 5,
+          "paramType": 1,
+          "operator": 0,
+          "compValue": ""
+        },
+        {
+          "parent": 5,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000c02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
+        },
+        {
+          "parent": 5,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000a0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+        },
+        {
+          "parent": 5,
+          "paramType": 1,
+          "operator": 0,
+          "compValue": ""
+        },
+        {
+          "parent": 5,
+          "paramType": 2,
+          "operator": 0,
+          "compValue": ""
+        },
+        {
+          "parent": 6,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0xcfca23ca9ca720b6e98e3eb9b6aa0ffc4a5c08b9000200000000000000000274"
+        },
+        {
+          "parent": 6,
+          "paramType": 1,
+          "operator": 0,
+          "compValue": ""
+        },
+        {
+          "parent": 6,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000c0c293ce456ff0ed870add98a0828dd4d2903dbf"
+        },
+        {
+          "parent": 6,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000c02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
+        },
+        {
+          "parent": 6,
+          "paramType": 1,
+          "operator": 0,
+          "compValue": ""
+        },
+        {
+          "parent": 6,
+          "paramType": 2,
+          "operator": 0,
+          "compValue": ""
+        },
+        {
+          "parent": 7,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0xefaa1604e82e1b3af8430b90192c1b9e8197e377000200000000000000000021"
+        },
+        {
+          "parent": 7,
+          "paramType": 1,
+          "operator": 0,
+          "compValue": ""
+        },
+        {
+          "parent": 7,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000c00e94cb662c3520282e6f5717214004a7f26888"
+        },
+        {
+          "parent": 7,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000c02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
+        },
+        {
+          "parent": 7,
+          "paramType": 1,
+          "operator": 0,
+          "compValue": ""
+        },
+        {
+          "parent": 7,
+          "paramType": 2,
+          "operator": 0,
+          "compValue": ""
+        },
+        {
+          "parent": 8,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x1e19cf2d73a72ef1332c882f20534b6519be0276000200000000000000000112"
+        },
+        {
+          "parent": 8,
+          "paramType": 1,
+          "operator": 0,
+          "compValue": ""
+        },
+        {
+          "parent": 8,
+          "paramType": 0,
+          "operator": 2,
+          "compValue": ""
+        },
+        {
+          "parent": 8,
+          "paramType": 0,
+          "operator": 2,
+          "compValue": ""
+        },
+        {
+          "parent": 8,
+          "paramType": 1,
+          "operator": 0,
+          "compValue": ""
+        },
+        {
+          "parent": 8,
+          "paramType": 2,
+          "operator": 0,
+          "compValue": ""
+        },
+        {
+          "parent": 9,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x37b18b10ce5635a84834b26095a0ae5639dcb7520000000000000000000005cb"
+        },
+        {
+          "parent": 9,
+          "paramType": 1,
+          "operator": 0,
+          "compValue": ""
+        },
+        {
+          "parent": 9,
+          "paramType": 0,
+          "operator": 2,
+          "compValue": ""
+        },
+        {
+          "parent": 9,
+          "paramType": 0,
+          "operator": 2,
+          "compValue": ""
+        },
+        {
+          "parent": 9,
+          "paramType": 1,
+          "operator": 0,
+          "compValue": ""
+        },
+        {
+          "parent": 9,
+          "paramType": 2,
+          "operator": 0,
+          "compValue": ""
+        },
+        {
+          "parent": 10,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x7056c8dfa8182859ed0d4fb0ef0886fdf3d2edcf000200000000000000000623"
+        },
+        {
+          "parent": 10,
+          "paramType": 1,
+          "operator": 0,
+          "compValue": ""
+        },
+        {
+          "parent": 10,
+          "paramType": 0,
+          "operator": 2,
+          "compValue": ""
+        },
+        {
+          "parent": 10,
+          "paramType": 0,
+          "operator": 2,
+          "compValue": ""
+        },
+        {
+          "parent": 10,
+          "paramType": 1,
+          "operator": 0,
+          "compValue": ""
+        },
+        {
+          "parent": 10,
+          "paramType": 2,
+          "operator": 0,
+          "compValue": ""
+        },
+        {
+          "parent": 11,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x8353157092ed8be69a9df8f95af097bbf33cb2af0000000000000000000005d9"
+        },
+        {
+          "parent": 11,
+          "paramType": 1,
+          "operator": 0,
+          "compValue": ""
+        },
+        {
+          "parent": 11,
+          "paramType": 0,
+          "operator": 2,
+          "compValue": ""
+        },
+        {
+          "parent": 11,
+          "paramType": 0,
+          "operator": 2,
+          "compValue": ""
+        },
+        {
+          "parent": 11,
+          "paramType": 1,
+          "operator": 0,
+          "compValue": ""
+        },
+        {
+          "parent": 11,
+          "paramType": 2,
+          "operator": 0,
+          "compValue": ""
+        },
+        {
+          "parent": 12,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x93d199263632a4ef4bb438f1feb99e57b4b5f0bd0000000000000000000005c2"
+        },
+        {
+          "parent": 12,
+          "paramType": 1,
+          "operator": 0,
+          "compValue": ""
+        },
+        {
+          "parent": 12,
+          "paramType": 0,
+          "operator": 2,
+          "compValue": ""
+        },
+        {
+          "parent": 12,
+          "paramType": 0,
+          "operator": 2,
+          "compValue": ""
+        },
+        {
+          "parent": 12,
+          "paramType": 1,
+          "operator": 0,
+          "compValue": ""
+        },
+        {
+          "parent": 12,
+          "paramType": 2,
+          "operator": 0,
+          "compValue": ""
+        },
+        {
+          "parent": 13,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0xdacf5fa19b1f720111609043ac67a9818262850c000000000000000000000635"
+        },
+        {
+          "parent": 13,
+          "paramType": 1,
+          "operator": 0,
+          "compValue": ""
+        },
+        {
+          "parent": 13,
+          "paramType": 0,
+          "operator": 2,
+          "compValue": ""
+        },
+        {
+          "parent": 13,
+          "paramType": 0,
+          "operator": 2,
+          "compValue": ""
+        },
+        {
+          "parent": 13,
+          "paramType": 1,
+          "operator": 0,
+          "compValue": ""
+        },
+        {
+          "parent": 13,
+          "paramType": 2,
+          "operator": 0,
+          "compValue": ""
+        },
+        {
+          "parent": 14,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0xdfe6e7e18f6cc65fa13c8d8966013d4fda74b6ba000000000000000000000558"
+        },
+        {
+          "parent": 14,
+          "paramType": 1,
+          "operator": 0,
+          "compValue": ""
+        },
+        {
+          "parent": 14,
+          "paramType": 0,
+          "operator": 2,
+          "compValue": ""
+        },
+        {
+          "parent": 14,
+          "paramType": 0,
+          "operator": 2,
+          "compValue": ""
+        },
+        {
+          "parent": 14,
+          "paramType": 1,
+          "operator": 0,
+          "compValue": ""
+        },
+        {
+          "parent": 14,
+          "paramType": 2,
+          "operator": 0,
+          "compValue": ""
+        },
+        {
+          "parent": 15,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0xf01b0684c98cd7ada480bfdf6e43876422fa1fc10002000000000000000005de"
+        },
+        {
+          "parent": 15,
+          "paramType": 1,
+          "operator": 0,
+          "compValue": ""
+        },
+        {
+          "parent": 15,
+          "paramType": 0,
+          "operator": 2,
+          "compValue": ""
+        },
+        {
+          "parent": 15,
+          "paramType": 0,
+          "operator": 2,
+          "compValue": ""
+        },
+        {
+          "parent": 15,
+          "paramType": 1,
+          "operator": 0,
+          "compValue": ""
+        },
+        {
+          "parent": 15,
+          "paramType": 2,
+          "operator": 0,
+          "compValue": ""
+        },
+        {
+          "parent": 52,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000ae78736cd615f374d3085123a210448e74fc6393"
+        },
+        {
+          "parent": 52,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000c02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
+        },
+        {
+          "parent": 53,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000ae78736cd615f374d3085123a210448e74fc6393"
+        },
+        {
+          "parent": 53,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000c02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
+        },
+        {
+          "parent": 58,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000a35b1b31ce002fbf2058d22f30f95d405200a15b"
+        },
+        {
+          "parent": 58,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000c02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
+        },
+        {
+          "parent": 59,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000a35b1b31ce002fbf2058d22f30f95d405200a15b"
+        },
+        {
+          "parent": 59,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000c02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
+        },
+        {
+          "parent": 64,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000856c4efb76c1d1ae02e20ceb03a2a6a08b0b8dc3"
+        },
+        {
+          "parent": 64,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000c02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
+        },
+        {
+          "parent": 65,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000856c4efb76c1d1ae02e20ceb03a2a6a08b0b8dc3"
+        },
+        {
+          "parent": 65,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000c02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
+        },
+        {
+          "parent": 70,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000a0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+        },
+        {
+          "parent": 70,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000dac17f958d2ee523a2206206994597c13d831ec7"
+        },
+        {
+          "parent": 71,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000a0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+        },
+        {
+          "parent": 71,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000dac17f958d2ee523a2206206994597c13d831ec7"
+        },
+        {
+          "parent": 76,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x0000000000000000000000007f39c581f595b53c5cb19bd0b3f8da6c935e2ca0"
+        },
+        {
+          "parent": 76,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000c02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
+        },
+        {
+          "parent": 77,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x0000000000000000000000007f39c581f595b53c5cb19bd0b3f8da6c935e2ca0"
+        },
+        {
+          "parent": 77,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000c02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
+        },
+        {
+          "parent": 82,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000c02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
+        },
+        {
+          "parent": 82,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000f1c9acdc66974dfb6decb12aa385b9cd01190e38"
+        },
+        {
+          "parent": 83,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000c02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
+        },
+        {
+          "parent": 83,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000f1c9acdc66974dfb6decb12aa385b9cd01190e38"
+        },
+        {
+          "parent": 88,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x0000000000000000000000007f39c581f595b53c5cb19bd0b3f8da6c935e2ca0"
+        },
+        {
+          "parent": 88,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000e95a203b1a91a908f9b9ce46459d101078c2c3cb"
+        },
+        {
+          "parent": 89,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x0000000000000000000000007f39c581f595b53c5cb19bd0b3f8da6c935e2ca0"
+        },
+        {
+          "parent": 89,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000e95a203b1a91a908f9b9ce46459d101078c2c3cb"
+        },
+        {
+          "parent": 94,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x0000000000000000000000007f39c581f595b53c5cb19bd0b3f8da6c935e2ca0"
+        },
+        {
+          "parent": 94,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000c02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
+        },
+        {
+          "parent": 95,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x0000000000000000000000007f39c581f595b53c5cb19bd0b3f8da6c935e2ca0"
+        },
+        {
+          "parent": 95,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000c02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
+        }
+      ],
+      "options": 0
+    }
+  },
+  {
+    "index": 93,
+    "operation": 0,
+    "to": "0x703806E61847984346d2D7DDd853049627e50A40",
+    "functionName": "scopeTarget",
+    "decoded": {
+      "roleKey": "0x4d414e4147455200000000000000000000000000000000000000000000000000",
+      "targetAddress": "0x239e55F427D44C3cc793f49bFB507ebe76638a2b"
+    }
+  },
+  {
+    "index": 94,
+    "operation": 0,
+    "to": "0x703806E61847984346d2D7DDd853049627e50A40",
+    "functionName": "scopeFunction",
+    "decoded": {
+      "roleKey": "0x4d414e4147455200000000000000000000000000000000000000000000000000",
+      "targetAddress": "0x239e55F427D44C3cc793f49bFB507ebe76638a2b",
+      "selector": "0x0de54ba0",
+      "conditions": [
+        {
+          "parent": 0,
+          "paramType": 5,
+          "operator": 5,
+          "compValue": ""
+        },
+        {
+          "parent": 0,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x00000000000000000000000035cea9e57a393ac66aaa7e25c391d52c74b5648f"
+        }
+      ],
+      "options": 0
+    }
+  },
+  {
+    "index": 95,
+    "operation": 0,
+    "to": "0x703806E61847984346d2D7DDd853049627e50A40",
+    "functionName": "scopeTarget",
+    "decoded": {
+      "roleKey": "0x4d414e4147455200000000000000000000000000000000000000000000000000",
+      "targetAddress": "0xF403C135812408BFbE8713b5A23a04b3D48AAE31"
+    }
+  },
+  {
+    "index": 96,
+    "operation": 0,
+    "to": "0x703806E61847984346d2D7DDd853049627e50A40",
+    "functionName": "scopeFunction",
+    "decoded": {
+      "roleKey": "0x4d414e4147455200000000000000000000000000000000000000000000000000",
+      "targetAddress": "0xF403C135812408BFbE8713b5A23a04b3D48AAE31",
+      "selector": "0x43a0d066",
+      "conditions": [
+        {
+          "parent": 0,
+          "paramType": 5,
+          "operator": 5,
+          "compValue": ""
+        },
+        {
+          "parent": 0,
+          "paramType": 0,
+          "operator": 2,
+          "compValue": ""
+        },
+        {
+          "parent": 1,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x0000000000000000000000000000000000000000000000000000000000000019"
+        },
+        {
+          "parent": 1,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x00000000000000000000000000000000000000000000000000000000000000ae"
+        },
+        {
+          "parent": 1,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x00000000000000000000000000000000000000000000000000000000000000b1"
+        }
+      ],
+      "options": 0
+    }
+  },
+  {
+    "index": 97,
+    "operation": 0,
+    "to": "0x703806E61847984346d2D7DDd853049627e50A40",
+    "functionName": "scopeFunction",
+    "decoded": {
+      "roleKey": "0x4d414e4147455200000000000000000000000000000000000000000000000000",
+      "targetAddress": "0xF403C135812408BFbE8713b5A23a04b3D48AAE31",
+      "selector": "0x60759fce",
+      "conditions": [
+        {
+          "parent": 0,
+          "paramType": 5,
+          "operator": 5,
+          "compValue": ""
+        },
+        {
+          "parent": 0,
+          "paramType": 0,
+          "operator": 2,
+          "compValue": ""
+        },
+        {
+          "parent": 1,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x0000000000000000000000000000000000000000000000000000000000000019"
+        },
+        {
+          "parent": 1,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x00000000000000000000000000000000000000000000000000000000000000ae"
+        },
+        {
+          "parent": 1,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x00000000000000000000000000000000000000000000000000000000000000b1"
+        }
+      ],
+      "options": 0
+    }
+  },
+  {
+    "index": 98,
+    "operation": 0,
+    "to": "0x703806E61847984346d2D7DDd853049627e50A40",
+    "functionName": "scopeFunction",
+    "decoded": {
+      "roleKey": "0x4d414e4147455200000000000000000000000000000000000000000000000000",
+      "targetAddress": "0xF403C135812408BFbE8713b5A23a04b3D48AAE31",
+      "selector": "0x441a3e70",
+      "conditions": [
+        {
+          "parent": 0,
+          "paramType": 5,
+          "operator": 5,
+          "compValue": ""
+        },
+        {
+          "parent": 0,
+          "paramType": 0,
+          "operator": 2,
+          "compValue": ""
+        },
+        {
+          "parent": 1,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x0000000000000000000000000000000000000000000000000000000000000019"
+        },
+        {
+          "parent": 1,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x00000000000000000000000000000000000000000000000000000000000000ae"
+        },
+        {
+          "parent": 1,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x00000000000000000000000000000000000000000000000000000000000000b1"
+        }
+      ],
+      "options": 0
+    }
+  },
+  {
+    "index": 99,
+    "operation": 0,
+    "to": "0x703806E61847984346d2D7DDd853049627e50A40",
+    "functionName": "scopeTarget",
+    "decoded": {
+      "roleKey": "0x4d414e4147455200000000000000000000000000000000000000000000000000",
+      "targetAddress": "0x23dA9AdE38E4477b23770DeD512fD37b12381FAB"
+    }
+  },
+  {
+    "index": 100,
+    "operation": 0,
+    "to": "0x703806E61847984346d2D7DDd853049627e50A40",
+    "functionName": "scopeFunction",
+    "decoded": {
+      "roleKey": "0x4d414e4147455200000000000000000000000000000000000000000000000000",
+      "targetAddress": "0x23dA9AdE38E4477b23770DeD512fD37b12381FAB",
+      "selector": "0x569d3489",
+      "conditions": [
+        {
+          "parent": 0,
+          "paramType": 5,
+          "operator": 5,
+          "compValue": ""
+        },
+        {
+          "parent": 0,
+          "paramType": 0,
+          "operator": 2,
+          "compValue": ""
+        },
+        {
+          "parent": 1,
+          "paramType": 3,
+          "operator": 5,
+          "compValue": ""
+        },
+        {
+          "parent": 1,
+          "paramType": 3,
+          "operator": 5,
+          "compValue": ""
+        },
+        {
+          "parent": 1,
+          "paramType": 3,
+          "operator": 5,
+          "compValue": ""
+        },
+        {
+          "parent": 2,
+          "paramType": 0,
+          "operator": 2,
+          "compValue": ""
+        },
+        {
+          "parent": 2,
+          "paramType": 0,
+          "operator": 2,
+          "compValue": ""
+        },
+        {
+          "parent": 2,
+          "paramType": 1,
+          "operator": 15,
+          "compValue": ""
+        },
+        {
+          "parent": 2,
+          "paramType": 1,
+          "operator": 0,
+          "compValue": ""
+        },
+        {
+          "parent": 2,
+          "paramType": 1,
+          "operator": 0,
+          "compValue": ""
+        },
+        {
+          "parent": 2,
+          "paramType": 1,
+          "operator": 0,
+          "compValue": ""
+        },
+        {
+          "parent": 2,
+          "paramType": 1,
+          "operator": 0,
+          "compValue": ""
+        },
+        {
+          "parent": 2,
+          "paramType": 1,
+          "operator": 0,
+          "compValue": ""
+        },
+        {
+          "parent": 2,
+          "paramType": 1,
+          "operator": 0,
+          "compValue": ""
+        },
+        {
+          "parent": 2,
+          "paramType": 1,
+          "operator": 0,
+          "compValue": ""
+        },
+        {
+          "parent": 2,
+          "paramType": 1,
+          "operator": 0,
+          "compValue": ""
+        },
+        {
+          "parent": 2,
+          "paramType": 1,
+          "operator": 0,
+          "compValue": ""
+        },
+        {
+          "parent": 3,
+          "paramType": 0,
+          "operator": 2,
+          "compValue": ""
+        },
+        {
+          "parent": 3,
+          "paramType": 0,
+          "operator": 2,
+          "compValue": ""
+        },
+        {
+          "parent": 3,
+          "paramType": 1,
+          "operator": 15,
+          "compValue": ""
+        },
+        {
+          "parent": 3,
+          "paramType": 1,
+          "operator": 0,
+          "compValue": ""
+        },
+        {
+          "parent": 3,
+          "paramType": 1,
+          "operator": 0,
+          "compValue": ""
+        },
+        {
+          "parent": 3,
+          "paramType": 1,
+          "operator": 0,
+          "compValue": ""
+        },
+        {
+          "parent": 3,
+          "paramType": 1,
+          "operator": 0,
+          "compValue": ""
+        },
+        {
+          "parent": 3,
+          "paramType": 1,
+          "operator": 0,
+          "compValue": ""
+        },
+        {
+          "parent": 3,
+          "paramType": 1,
+          "operator": 0,
+          "compValue": ""
+        },
+        {
+          "parent": 3,
+          "paramType": 1,
+          "operator": 0,
+          "compValue": ""
+        },
+        {
+          "parent": 3,
+          "paramType": 1,
+          "operator": 0,
+          "compValue": ""
+        },
+        {
+          "parent": 3,
+          "paramType": 1,
+          "operator": 0,
+          "compValue": ""
+        },
+        {
+          "parent": 4,
+          "paramType": 0,
+          "operator": 2,
+          "compValue": ""
+        },
+        {
+          "parent": 4,
+          "paramType": 0,
+          "operator": 2,
+          "compValue": ""
+        },
+        {
+          "parent": 4,
+          "paramType": 1,
+          "operator": 15,
+          "compValue": ""
+        },
+        {
+          "parent": 4,
+          "paramType": 1,
+          "operator": 0,
+          "compValue": ""
+        },
+        {
+          "parent": 4,
+          "paramType": 1,
+          "operator": 0,
+          "compValue": ""
+        },
+        {
+          "parent": 4,
+          "paramType": 1,
+          "operator": 0,
+          "compValue": ""
+        },
+        {
+          "parent": 4,
+          "paramType": 1,
+          "operator": 0,
+          "compValue": ""
+        },
+        {
+          "parent": 4,
+          "paramType": 1,
+          "operator": 0,
+          "compValue": ""
+        },
+        {
+          "parent": 4,
+          "paramType": 1,
+          "operator": 0,
+          "compValue": ""
+        },
+        {
+          "parent": 4,
+          "paramType": 1,
+          "operator": 0,
+          "compValue": ""
+        },
+        {
+          "parent": 4,
+          "paramType": 1,
+          "operator": 0,
+          "compValue": ""
+        },
+        {
+          "parent": 4,
+          "paramType": 1,
+          "operator": 0,
+          "compValue": ""
+        },
+        {
+          "parent": 5,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x00000000000000000000000048c3399719b582dd63eb5aadf12a40b4c3f52fa2"
+        },
+        {
+          "parent": 5,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x0000000000000000000000004e3fbd56cd56c3e72c1403e103b45db9da5b9d2b"
+        },
+        {
+          "parent": 5,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x0000000000000000000000005a98fcbea516cf06857215779fd812ca3bef1b32"
+        },
+        {
+          "parent": 5,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x0000000000000000000000006b175474e89094c44da98b954eedeac495271d0f"
+        },
+        {
+          "parent": 5,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x0000000000000000000000007f39c581f595b53c5cb19bd0b3f8da6c935e2ca0"
+        },
+        {
+          "parent": 5,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000a0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+        },
+        {
+          "parent": 5,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000a35b1b31ce002fbf2058d22f30f95d405200a15b"
+        },
+        {
+          "parent": 5,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000ae78736cd615f374d3085123a210448e74fc6393"
+        },
+        {
+          "parent": 5,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000ae7ab96520de3a18e5e111b5eaab095312d7fe84"
+        },
+        {
+          "parent": 5,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000ba100000625a3754423978a60c9317c58a424e3d"
+        },
+        {
+          "parent": 5,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000c00e94cb662c3520282e6f5717214004a7f26888"
+        },
+        {
+          "parent": 5,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000c02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
+        },
+        {
+          "parent": 5,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000c0c293ce456ff0ed870add98a0828dd4d2903dbf"
+        },
+        {
+          "parent": 5,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000d33526068d116ce69f19a9ee46f0bd304f21a51f"
+        },
+        {
+          "parent": 5,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000d533a949740bb3306d119cc777fa900ba034cd52"
+        },
+        {
+          "parent": 5,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000dac17f958d2ee523a2206206994597c13d831ec7"
+        },
+        {
+          "parent": 5,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000e95a203b1a91a908f9b9ce46459d101078c2c3cb"
+        },
+        {
+          "parent": 5,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000f1c9acdc66974dfb6decb12aa385b9cd01190e38"
+        },
+        {
+          "parent": 6,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x00000000000000000000000059d9356e565ab3a36dd77763fc0d87feaf85508c"
+        },
+        {
+          "parent": 6,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000856c4efb76c1d1ae02e20ceb03a2a6a08b0b8dc3"
+        },
+        {
+          "parent": 6,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000a3931d71877c0e7a3148cb7eb4463524fec27fbd"
+        },
+        {
+          "parent": 6,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000dac17f958d2ee523a2206206994597c13d831ec7"
+        },
+        {
+          "parent": 6,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000dc035d45d973e3ec169d2276ddab16f1e407384f"
+        },
+        {
+          "parent": 17,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x00000000000000000000000059d9356e565ab3a36dd77763fc0d87feaf85508c"
+        },
+        {
+          "parent": 17,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000856c4efb76c1d1ae02e20ceb03a2a6a08b0b8dc3"
+        },
+        {
+          "parent": 17,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000a3931d71877c0e7a3148cb7eb4463524fec27fbd"
+        },
+        {
+          "parent": 17,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000dac17f958d2ee523a2206206994597c13d831ec7"
+        },
+        {
+          "parent": 17,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000dc035d45d973e3ec169d2276ddab16f1e407384f"
+        },
+        {
+          "parent": 18,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x00000000000000000000000048c3399719b582dd63eb5aadf12a40b4c3f52fa2"
+        },
+        {
+          "parent": 18,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x0000000000000000000000004e3fbd56cd56c3e72c1403e103b45db9da5b9d2b"
+        },
+        {
+          "parent": 18,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x0000000000000000000000005a98fcbea516cf06857215779fd812ca3bef1b32"
+        },
+        {
+          "parent": 18,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x0000000000000000000000006b175474e89094c44da98b954eedeac495271d0f"
+        },
+        {
+          "parent": 18,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x0000000000000000000000007f39c581f595b53c5cb19bd0b3f8da6c935e2ca0"
+        },
+        {
+          "parent": 18,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000a0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+        },
+        {
+          "parent": 18,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000a35b1b31ce002fbf2058d22f30f95d405200a15b"
+        },
+        {
+          "parent": 18,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000ae78736cd615f374d3085123a210448e74fc6393"
+        },
+        {
+          "parent": 18,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000ae7ab96520de3a18e5e111b5eaab095312d7fe84"
+        },
+        {
+          "parent": 18,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000ba100000625a3754423978a60c9317c58a424e3d"
+        },
+        {
+          "parent": 18,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000c00e94cb662c3520282e6f5717214004a7f26888"
+        },
+        {
+          "parent": 18,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000c02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
+        },
+        {
+          "parent": 18,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000c0c293ce456ff0ed870add98a0828dd4d2903dbf"
+        },
+        {
+          "parent": 18,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000d33526068d116ce69f19a9ee46f0bd304f21a51f"
+        },
+        {
+          "parent": 18,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000d533a949740bb3306d119cc777fa900ba034cd52"
+        },
+        {
+          "parent": 18,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000dac17f958d2ee523a2206206994597c13d831ec7"
+        },
+        {
+          "parent": 18,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000e95a203b1a91a908f9b9ce46459d101078c2c3cb"
+        },
+        {
+          "parent": 18,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000f1c9acdc66974dfb6decb12aa385b9cd01190e38"
+        },
+        {
+          "parent": 29,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x00000000000000000000000048c3399719b582dd63eb5aadf12a40b4c3f52fa2"
+        },
+        {
+          "parent": 29,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x0000000000000000000000004e3fbd56cd56c3e72c1403e103b45db9da5b9d2b"
+        },
+        {
+          "parent": 29,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x0000000000000000000000005a98fcbea516cf06857215779fd812ca3bef1b32"
+        },
+        {
+          "parent": 29,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x0000000000000000000000006b175474e89094c44da98b954eedeac495271d0f"
+        },
+        {
+          "parent": 29,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x0000000000000000000000007f39c581f595b53c5cb19bd0b3f8da6c935e2ca0"
+        },
+        {
+          "parent": 29,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000a0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+        },
+        {
+          "parent": 29,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000a35b1b31ce002fbf2058d22f30f95d405200a15b"
+        },
+        {
+          "parent": 29,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000ae78736cd615f374d3085123a210448e74fc6393"
+        },
+        {
+          "parent": 29,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000ae7ab96520de3a18e5e111b5eaab095312d7fe84"
+        },
+        {
+          "parent": 29,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000ba100000625a3754423978a60c9317c58a424e3d"
+        },
+        {
+          "parent": 29,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000c00e94cb662c3520282e6f5717214004a7f26888"
+        },
+        {
+          "parent": 29,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000c02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
+        },
+        {
+          "parent": 29,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000c0c293ce456ff0ed870add98a0828dd4d2903dbf"
+        },
+        {
+          "parent": 29,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000d33526068d116ce69f19a9ee46f0bd304f21a51f"
+        },
+        {
+          "parent": 29,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000d533a949740bb3306d119cc777fa900ba034cd52"
+        },
+        {
+          "parent": 29,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000dac17f958d2ee523a2206206994597c13d831ec7"
+        },
+        {
+          "parent": 29,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000e95a203b1a91a908f9b9ce46459d101078c2c3cb"
+        },
+        {
+          "parent": 29,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000f1c9acdc66974dfb6decb12aa385b9cd01190e38"
+        },
+        {
+          "parent": 30,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x0000000000000000000000006b175474e89094c44da98b954eedeac495271d0f"
+        },
+        {
+          "parent": 30,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x0000000000000000000000007f39c581f595b53c5cb19bd0b3f8da6c935e2ca0"
+        },
+        {
+          "parent": 30,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000a0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+        },
+        {
+          "parent": 30,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000ae78736cd615f374d3085123a210448e74fc6393"
+        },
+        {
+          "parent": 30,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000ae7ab96520de3a18e5e111b5eaab095312d7fe84"
+        },
+        {
+          "parent": 30,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000c02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
+        },
+        {
+          "parent": 30,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000dac17f958d2ee523a2206206994597c13d831ec7"
+        }
+      ],
+      "options": 2
+    }
+  },
+  {
+    "index": 101,
+    "operation": 0,
+    "to": "0x703806E61847984346d2D7DDd853049627e50A40",
+    "functionName": "allowFunction",
+    "decoded": {
+      "roleKey": "0x4d414e4147455200000000000000000000000000000000000000000000000000",
+      "targetAddress": "0x23dA9AdE38E4477b23770DeD512fD37b12381FAB",
+      "selector": "0x5a66c223",
+      "options": 2
+    }
+  },
+  {
+    "index": 102,
+    "operation": 0,
+    "to": "0x703806E61847984346d2D7DDd853049627e50A40",
+    "functionName": "scopeTarget",
+    "decoded": {
+      "roleKey": "0x4d414e4147455200000000000000000000000000000000000000000000000000",
+      "targetAddress": "0x4370D3b6C9588E02ce9D22e684387859c7Ff5b34"
+    }
+  },
+  {
+    "index": 103,
+    "operation": 0,
+    "to": "0x703806E61847984346d2D7DDd853049627e50A40",
+    "functionName": "scopeFunction",
+    "decoded": {
+      "roleKey": "0x4d414e4147455200000000000000000000000000000000000000000000000000",
+      "targetAddress": "0x4370D3b6C9588E02ce9D22e684387859c7Ff5b34",
+      "selector": "0xbb492bf5",
+      "conditions": [
+        {
+          "parent": 0,
+          "paramType": 5,
+          "operator": 5,
+          "compValue": ""
+        },
+        {
+          "parent": 0,
+          "paramType": 4,
+          "operator": 0,
+          "compValue": ""
+        },
+        {
+          "parent": 0,
+          "paramType": 1,
+          "operator": 15,
+          "compValue": ""
+        },
+        {
+          "parent": 1,
+          "paramType": 1,
+          "operator": 0,
+          "compValue": ""
+        }
+      ],
+      "options": 0
+    }
+  },
+  {
+    "index": 104,
+    "operation": 0,
+    "to": "0x703806E61847984346d2D7DDd853049627e50A40",
+    "functionName": "scopeTarget",
+    "decoded": {
+      "roleKey": "0x4d414e4147455200000000000000000000000000000000000000000000000000",
+      "targetAddress": "0xd061D61a4d941c39E5453435B6345Dc261C2fcE0"
+    }
+  },
+  {
+    "index": 105,
+    "operation": 0,
+    "to": "0x703806E61847984346d2D7DDd853049627e50A40",
+    "functionName": "scopeFunction",
+    "decoded": {
+      "roleKey": "0x4d414e4147455200000000000000000000000000000000000000000000000000",
+      "targetAddress": "0xd061D61a4d941c39E5453435B6345Dc261C2fcE0",
+      "selector": "0x6a627842",
+      "conditions": [
+        {
+          "parent": 0,
+          "paramType": 5,
+          "operator": 5,
+          "compValue": ""
+        },
+        {
+          "parent": 0,
+          "paramType": 0,
+          "operator": 2,
+          "compValue": ""
+        },
+        {
+          "parent": 1,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000182b723a58739a9c974cfdb385ceadb237453c28"
+        },
+        {
+          "parent": 1,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x00000000000000000000000079f21bc30632cd40d2af8134b469a0eb4c9574aa"
+        },
+        {
+          "parent": 1,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000bfcf63294ad7105dea65aa58f8ae5be2d9d0952a"
+        },
+        {
+          "parent": 1,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000cf5136c67fa8a375babbdf13c0307ef994b5681d"
+        },
+        {
+          "parent": 1,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000d03be91b1932715709e18021734fcb91bb431715"
+        }
+      ],
+      "options": 0
+    }
+  },
+  {
+    "index": 106,
+    "operation": 0,
+    "to": "0x703806E61847984346d2D7DDd853049627e50A40",
+    "functionName": "scopeTarget",
+    "decoded": {
+      "roleKey": "0x4d414e4147455200000000000000000000000000000000000000000000000000",
+      "targetAddress": "0xbEbc44782C7dB0a1A60Cb6fe97d0b483032FF1C7"
+    }
+  },
+  {
+    "index": 107,
+    "operation": 0,
+    "to": "0x703806E61847984346d2D7DDd853049627e50A40",
+    "functionName": "allowFunction",
+    "decoded": {
+      "roleKey": "0x4d414e4147455200000000000000000000000000000000000000000000000000",
+      "targetAddress": "0xbEbc44782C7dB0a1A60Cb6fe97d0b483032FF1C7",
+      "selector": "0x4515cef3",
+      "options": 0
+    }
+  },
+  {
+    "index": 108,
+    "operation": 0,
+    "to": "0x703806E61847984346d2D7DDd853049627e50A40",
+    "functionName": "allowFunction",
+    "decoded": {
+      "roleKey": "0x4d414e4147455200000000000000000000000000000000000000000000000000",
+      "targetAddress": "0xbEbc44782C7dB0a1A60Cb6fe97d0b483032FF1C7",
+      "selector": "0xecb586a5",
+      "options": 0
+    }
+  },
+  {
+    "index": 109,
+    "operation": 0,
+    "to": "0x703806E61847984346d2D7DDd853049627e50A40",
+    "functionName": "allowFunction",
+    "decoded": {
+      "roleKey": "0x4d414e4147455200000000000000000000000000000000000000000000000000",
+      "targetAddress": "0xbEbc44782C7dB0a1A60Cb6fe97d0b483032FF1C7",
+      "selector": "0x9fdaea0c",
+      "options": 0
+    }
+  },
+  {
+    "index": 110,
+    "operation": 0,
+    "to": "0x703806E61847984346d2D7DDd853049627e50A40",
+    "functionName": "allowFunction",
+    "decoded": {
+      "roleKey": "0x4d414e4147455200000000000000000000000000000000000000000000000000",
+      "targetAddress": "0xbEbc44782C7dB0a1A60Cb6fe97d0b483032FF1C7",
+      "selector": "0x1a4d01d2",
+      "options": 0
+    }
+  },
+  {
+    "index": 111,
+    "operation": 0,
+    "to": "0x703806E61847984346d2D7DDd853049627e50A40",
+    "functionName": "scopeFunction",
+    "decoded": {
+      "roleKey": "0x4d414e4147455200000000000000000000000000000000000000000000000000",
+      "targetAddress": "0xbEbc44782C7dB0a1A60Cb6fe97d0b483032FF1C7",
+      "selector": "0x095ea7b3",
+      "conditions": [
+        {
+          "parent": 0,
+          "paramType": 5,
+          "operator": 5,
+          "compValue": ""
+        },
+        {
+          "parent": 0,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000bfcf63294ad7105dea65aa58f8ae5be2d9d0952a"
+        }
+      ],
+      "options": 0
+    }
+  },
+  {
+    "index": 112,
+    "operation": 0,
+    "to": "0x703806E61847984346d2D7DDd853049627e50A40",
+    "functionName": "scopeTarget",
+    "decoded": {
+      "roleKey": "0x4d414e4147455200000000000000000000000000000000000000000000000000",
+      "targetAddress": "0x56C526b0159a258887e0d79ec3a80dfb940d0cD7"
+    }
+  },
+  {
+    "index": 113,
+    "operation": 0,
+    "to": "0x703806E61847984346d2D7DDd853049627e50A40",
+    "functionName": "scopeFunction",
+    "decoded": {
+      "roleKey": "0x4d414e4147455200000000000000000000000000000000000000000000000000",
+      "targetAddress": "0x56C526b0159a258887e0d79ec3a80dfb940d0cD7",
+      "selector": "0x26a38e64",
+      "conditions": [
+        {
+          "parent": 0,
+          "paramType": 5,
+          "operator": 5,
+          "compValue": ""
+        },
+        {
+          "parent": 0,
+          "paramType": 0,
+          "operator": 2,
+          "compValue": ""
+        },
+        {
+          "parent": 0,
+          "paramType": 0,
+          "operator": 2,
+          "compValue": ""
+        },
+        {
+          "parent": 0,
+          "paramType": 0,
+          "operator": 2,
+          "compValue": ""
+        },
+        {
+          "parent": 0,
+          "paramType": 0,
+          "operator": 2,
+          "compValue": ""
+        },
+        {
+          "parent": 0,
+          "paramType": 0,
+          "operator": 2,
+          "compValue": ""
+        },
+        {
+          "parent": 0,
+          "paramType": 4,
+          "operator": 0,
+          "compValue": ""
+        },
+        {
+          "parent": 0,
+          "paramType": 1,
+          "operator": 0,
+          "compValue": ""
+        },
+        {
+          "parent": 0,
+          "paramType": 1,
+          "operator": 0,
+          "compValue": ""
+        },
+        {
+          "parent": 0,
+          "paramType": 1,
+          "operator": 0,
+          "compValue": ""
+        },
+        {
+          "parent": 0,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x0000000000000000000000000000000000000000000000000000000000000000"
+        },
+        {
+          "parent": 1,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x00000000000000000000000021e27a5e5513d6e65c4f830167390997aa84843a"
+        },
+        {
+          "parent": 1,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000425bfb93370f14ff525adb6eaeacfe1f4e3b5802"
+        },
+        {
+          "parent": 1,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x00000000000000000000000094b17476a93b3262d87b9a326965d1e91f9c13e7"
+        },
+        {
+          "parent": 1,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000bebc44782c7db0a1a60cb6fe97d0b483032ff1c7"
+        },
+        {
+          "parent": 1,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000dc24316b9ae028f1497c275eb9192a3ea0f67022"
+        },
+        {
+          "parent": 2,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x00000000000000000000000006325440d014e39736583c165c2963ba99faf14e"
+        },
+        {
+          "parent": 2,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x00000000000000000000000021e27a5e5513d6e65c4f830167390997aa84843a"
+        },
+        {
+          "parent": 2,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000425bfb93370f14ff525adb6eaeacfe1f4e3b5802"
+        },
+        {
+          "parent": 2,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x0000000000000000000000006c3f90f043a72fa612cbac8115ee7e52bde6e490"
+        },
+        {
+          "parent": 2,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x00000000000000000000000094b17476a93b3262d87b9a326965d1e91f9c13e7"
+        },
+        {
+          "parent": 3,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000182b723a58739a9c974cfdb385ceadb237453c28"
+        },
+        {
+          "parent": 3,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x00000000000000000000000079f21bc30632cd40d2af8134b469a0eb4c9574aa"
+        },
+        {
+          "parent": 3,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000bfcf63294ad7105dea65aa58f8ae5be2d9d0952a"
+        },
+        {
+          "parent": 3,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000cf5136c67fa8a375babbdf13c0307ef994b5681d"
+        },
+        {
+          "parent": 3,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000d03be91b1932715709e18021734fcb91bb431715"
+        },
+        {
+          "parent": 4,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x0000000000000000000000000000000000000000000000000000000000000002"
+        },
+        {
+          "parent": 4,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x0000000000000000000000000000000000000000000000000000000000000003"
+        },
+        {
+          "parent": 5,
+          "paramType": 4,
+          "operator": 16,
+          "compValue": "0x0000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000200000000000000000000000083f20f44975d03b1b09e64809b757c47f942beea00000000000000000000000059d9356e565ab3a36dd77763fc0d87feaf85508c"
+        },
+        {
+          "parent": 5,
+          "paramType": 4,
+          "operator": 16,
+          "compValue": "0x00000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000002000000000000000000000000eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee000000000000000000000000856c4efb76c1d1ae02e20ceb03a2a6a08b0b8dc3"
+        },
+        {
+          "parent": 5,
+          "paramType": 4,
+          "operator": 16,
+          "compValue": "0x00000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000002000000000000000000000000eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee000000000000000000000000ae7ab96520de3a18e5e111b5eaab095312d7fe84"
+        },
+        {
+          "parent": 5,
+          "paramType": 4,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000030000000000000000000000006b175474e89094c44da98b954eedeac495271d0f000000000000000000000000a0b86991c6218b36c1d19d4a2e9eb0ce3606eb48000000000000000000000000dac17f958d2ee523a2206206994597c13d831ec7"
+        },
+        {
+          "parent": 6,
+          "paramType": 1,
+          "operator": 0,
+          "compValue": ""
+        },
+        {
+          "parent": 28,
+          "paramType": 1,
+          "operator": 0,
+          "compValue": ""
+        },
+        {
+          "parent": 29,
+          "paramType": 1,
+          "operator": 0,
+          "compValue": ""
+        },
+        {
+          "parent": 30,
+          "paramType": 1,
+          "operator": 0,
+          "compValue": ""
+        },
+        {
+          "parent": 31,
+          "paramType": 1,
+          "operator": 0,
+          "compValue": ""
+        }
+      ],
+      "options": 1
+    }
+  },
+  {
+    "index": 114,
+    "operation": 0,
+    "to": "0x703806E61847984346d2D7DDd853049627e50A40",
+    "functionName": "scopeTarget",
+    "decoded": {
+      "roleKey": "0x4d414e4147455200000000000000000000000000000000000000000000000000",
+      "targetAddress": "0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45"
+    }
+  },
+  {
+    "index": 115,
+    "operation": 0,
+    "to": "0x703806E61847984346d2D7DDd853049627e50A40",
+    "functionName": "scopeFunction",
+    "decoded": {
+      "roleKey": "0x4d414e4147455200000000000000000000000000000000000000000000000000",
+      "targetAddress": "0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45",
+      "selector": "0x04e45aaf",
+      "conditions": [
+        {
+          "parent": 0,
+          "paramType": 5,
+          "operator": 5,
+          "compValue": ""
+        },
+        {
+          "parent": 0,
+          "paramType": 0,
+          "operator": 2,
+          "compValue": ""
+        },
+        {
+          "parent": 1,
+          "paramType": 3,
+          "operator": 5,
+          "compValue": ""
+        },
+        {
+          "parent": 1,
+          "paramType": 3,
+          "operator": 5,
+          "compValue": ""
+        },
+        {
+          "parent": 1,
+          "paramType": 3,
+          "operator": 5,
+          "compValue": ""
+        },
+        {
+          "parent": 1,
+          "paramType": 3,
+          "operator": 5,
+          "compValue": ""
+        },
+        {
+          "parent": 1,
+          "paramType": 3,
+          "operator": 5,
+          "compValue": ""
+        },
+        {
+          "parent": 2,
+          "paramType": 0,
+          "operator": 2,
+          "compValue": ""
+        },
+        {
+          "parent": 2,
+          "paramType": 0,
+          "operator": 2,
+          "compValue": ""
+        },
+        {
+          "parent": 2,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x0000000000000000000000000000000000000000000000000000000000000064"
+        },
+        {
+          "parent": 2,
+          "paramType": 1,
+          "operator": 15,
+          "compValue": ""
+        },
+        {
+          "parent": 2,
+          "paramType": 1,
+          "operator": 0,
+          "compValue": ""
+        },
+        {
+          "parent": 2,
+          "paramType": 1,
+          "operator": 0,
+          "compValue": ""
+        },
+        {
+          "parent": 2,
+          "paramType": 1,
+          "operator": 0,
+          "compValue": ""
+        },
+        {
+          "parent": 3,
+          "paramType": 0,
+          "operator": 2,
+          "compValue": ""
+        },
+        {
+          "parent": 3,
+          "paramType": 0,
+          "operator": 2,
+          "compValue": ""
+        },
+        {
+          "parent": 3,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x00000000000000000000000000000000000000000000000000000000000001f4"
+        },
+        {
+          "parent": 3,
+          "paramType": 1,
+          "operator": 15,
+          "compValue": ""
+        },
+        {
+          "parent": 3,
+          "paramType": 1,
+          "operator": 0,
+          "compValue": ""
+        },
+        {
+          "parent": 3,
+          "paramType": 1,
+          "operator": 0,
+          "compValue": ""
+        },
+        {
+          "parent": 3,
+          "paramType": 1,
+          "operator": 0,
+          "compValue": ""
+        },
+        {
+          "parent": 4,
+          "paramType": 0,
+          "operator": 2,
+          "compValue": ""
+        },
+        {
+          "parent": 4,
+          "paramType": 0,
+          "operator": 2,
+          "compValue": ""
+        },
+        {
+          "parent": 4,
+          "paramType": 0,
+          "operator": 2,
+          "compValue": ""
+        },
+        {
+          "parent": 4,
+          "paramType": 1,
+          "operator": 15,
+          "compValue": ""
+        },
+        {
+          "parent": 4,
+          "paramType": 1,
+          "operator": 0,
+          "compValue": ""
+        },
+        {
+          "parent": 4,
+          "paramType": 1,
+          "operator": 0,
+          "compValue": ""
+        },
+        {
+          "parent": 4,
+          "paramType": 1,
+          "operator": 0,
+          "compValue": ""
+        },
+        {
+          "parent": 5,
+          "paramType": 0,
+          "operator": 2,
+          "compValue": ""
+        },
+        {
+          "parent": 5,
+          "paramType": 0,
+          "operator": 2,
+          "compValue": ""
+        },
+        {
+          "parent": 5,
+          "paramType": 0,
+          "operator": 2,
+          "compValue": ""
+        },
+        {
+          "parent": 5,
+          "paramType": 1,
+          "operator": 15,
+          "compValue": ""
+        },
+        {
+          "parent": 5,
+          "paramType": 1,
+          "operator": 0,
+          "compValue": ""
+        },
+        {
+          "parent": 5,
+          "paramType": 1,
+          "operator": 0,
+          "compValue": ""
+        },
+        {
+          "parent": 5,
+          "paramType": 1,
+          "operator": 0,
+          "compValue": ""
+        },
+        {
+          "parent": 6,
+          "paramType": 0,
+          "operator": 2,
+          "compValue": ""
+        },
+        {
+          "parent": 6,
+          "paramType": 0,
+          "operator": 2,
+          "compValue": ""
+        },
+        {
+          "parent": 6,
+          "paramType": 1,
+          "operator": 0,
+          "compValue": ""
+        },
+        {
+          "parent": 6,
+          "paramType": 1,
+          "operator": 15,
+          "compValue": ""
+        },
+        {
+          "parent": 6,
+          "paramType": 1,
+          "operator": 0,
+          "compValue": ""
+        },
+        {
+          "parent": 6,
+          "paramType": 1,
+          "operator": 0,
+          "compValue": ""
+        },
+        {
+          "parent": 6,
+          "paramType": 1,
+          "operator": 0,
+          "compValue": ""
+        },
+        {
+          "parent": 7,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000a0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+        },
+        {
+          "parent": 7,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000dac17f958d2ee523a2206206994597c13d831ec7"
+        },
+        {
+          "parent": 8,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000a0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+        },
+        {
+          "parent": 8,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000dac17f958d2ee523a2206206994597c13d831ec7"
+        },
+        {
+          "parent": 14,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x00000000000000000000000059d9356e565ab3a36dd77763fc0d87feaf85508c"
+        },
+        {
+          "parent": 14,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000dac17f958d2ee523a2206206994597c13d831ec7"
+        },
+        {
+          "parent": 15,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x00000000000000000000000059d9356e565ab3a36dd77763fc0d87feaf85508c"
+        },
+        {
+          "parent": 15,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000dac17f958d2ee523a2206206994597c13d831ec7"
+        },
+        {
+          "parent": 21,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000a0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+        },
+        {
+          "parent": 21,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000c02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
+        },
+        {
+          "parent": 22,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000a0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+        },
+        {
+          "parent": 22,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000c02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
+        },
+        {
+          "parent": 23,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x00000000000000000000000000000000000000000000000000000000000001f4"
+        },
+        {
+          "parent": 23,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x0000000000000000000000000000000000000000000000000000000000000bb8"
+        },
+        {
+          "parent": 28,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000c02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
+        },
+        {
+          "parent": 28,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000dac17f958d2ee523a2206206994597c13d831ec7"
+        },
+        {
+          "parent": 29,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000c02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
+        },
+        {
+          "parent": 29,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000dac17f958d2ee523a2206206994597c13d831ec7"
+        },
+        {
+          "parent": 30,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x0000000000000000000000000000000000000000000000000000000000000064"
+        },
+        {
+          "parent": 30,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x00000000000000000000000000000000000000000000000000000000000001f4"
+        },
+        {
+          "parent": 30,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x0000000000000000000000000000000000000000000000000000000000000bb8"
+        },
+        {
+          "parent": 35,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x00000000000000000000000048c3399719b582dd63eb5aadf12a40b4c3f52fa2"
+        },
+        {
+          "parent": 35,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x0000000000000000000000004e3fbd56cd56c3e72c1403e103b45db9da5b9d2b"
+        },
+        {
+          "parent": 35,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x0000000000000000000000005a98fcbea516cf06857215779fd812ca3bef1b32"
+        },
+        {
+          "parent": 35,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x0000000000000000000000006b175474e89094c44da98b954eedeac495271d0f"
+        },
+        {
+          "parent": 35,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x0000000000000000000000007f39c581f595b53c5cb19bd0b3f8da6c935e2ca0"
+        },
+        {
+          "parent": 35,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000a0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+        },
+        {
+          "parent": 35,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000a35b1b31ce002fbf2058d22f30f95d405200a15b"
+        },
+        {
+          "parent": 35,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000ae78736cd615f374d3085123a210448e74fc6393"
+        },
+        {
+          "parent": 35,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000ae7ab96520de3a18e5e111b5eaab095312d7fe84"
+        },
+        {
+          "parent": 35,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000ba100000625a3754423978a60c9317c58a424e3d"
+        },
+        {
+          "parent": 35,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000c00e94cb662c3520282e6f5717214004a7f26888"
+        },
+        {
+          "parent": 35,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000c02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
+        },
+        {
+          "parent": 35,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000c0c293ce456ff0ed870add98a0828dd4d2903dbf"
+        },
+        {
+          "parent": 35,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000d33526068d116ce69f19a9ee46f0bd304f21a51f"
+        },
+        {
+          "parent": 35,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000d533a949740bb3306d119cc777fa900ba034cd52"
+        },
+        {
+          "parent": 35,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000dac17f958d2ee523a2206206994597c13d831ec7"
+        },
+        {
+          "parent": 35,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000e95a203b1a91a908f9b9ce46459d101078c2c3cb"
+        },
+        {
+          "parent": 35,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000f1c9acdc66974dfb6decb12aa385b9cd01190e38"
+        },
+        {
+          "parent": 36,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x0000000000000000000000006b175474e89094c44da98b954eedeac495271d0f"
+        },
+        {
+          "parent": 36,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x0000000000000000000000007f39c581f595b53c5cb19bd0b3f8da6c935e2ca0"
+        },
+        {
+          "parent": 36,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000a0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+        },
+        {
+          "parent": 36,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000ae78736cd615f374d3085123a210448e74fc6393"
+        },
+        {
+          "parent": 36,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000ae7ab96520de3a18e5e111b5eaab095312d7fe84"
+        },
+        {
+          "parent": 36,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000c02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
+        },
+        {
+          "parent": 36,
+          "paramType": 1,
+          "operator": 16,
+          "compValue": "0x000000000000000000000000dac17f958d2ee523a2206206994597c13d831ec7"
+        }
+      ],
+      "options": 0
+    }
+  },
+  {
+    "index": 116,
+    "operation": 0,
+    "to": "0x000000000000cd17345801aa8147b8D3950260FF",
+    "functionName": "post(string,string)",
+    "decoded": null
+  }
+]

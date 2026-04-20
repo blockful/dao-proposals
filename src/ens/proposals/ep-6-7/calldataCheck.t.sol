@@ -12,9 +12,7 @@ contract Proposal_ENS_EP_6_7_Test is ENS_Governance {
     IENSRoot root = IENSRoot(0xaB528d626EC275E3faD363fF1393A41F581c5897);
     IENSRegistryWithFallback ensRegistry = IENSRegistryWithFallback(0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e);
 
-
     address DNSRegistrar = 0xB32cB5677a7C971689228EC835800432B339bA2B;
-
 
     function _selectFork() public override {
         vm.createSelectFork({ blockNumber: 22_332_663, urlOrAlias: "mainnet" });
@@ -54,7 +52,6 @@ contract Proposal_ENS_EP_6_7_Test is ENS_Governance {
         values[1] = 0;
         calldatas[1] = abi.encodeWithSelector(IENSRoot.setSubnodeOwner.selector, labelhash("ceo"), DNSRegistrar);
         signatures[1] = "";
-        
 
         return (targets, values, signatures, calldatas, description);
     }

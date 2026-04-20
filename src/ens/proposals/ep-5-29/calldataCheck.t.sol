@@ -35,7 +35,6 @@ contract Proposal_ENS_EP_5_29_Test is ENS_Governance {
 
     address receiver = 0x64Ca550F78d6Cc711B247319CC71A04A166707Ab;
 
-
     function _selectFork() public override {
         vm.createSelectFork({ blockNumber: 21_424_461, urlOrAlias: "mainnet" });
     }
@@ -81,7 +80,8 @@ contract Proposal_ENS_EP_5_29_Test is ENS_Governance {
 
         // Transaction 3: Set Superfluid flow rate to receiver
         targets[2] = address(superFluid);
-        calldatas[2] = abi.encodeWithSelector(ISuperfluid.setFlowrate.selector, address(USDCx), receiver, USDCAmountPerSecond);
+        calldatas[2] =
+            abi.encodeWithSelector(ISuperfluid.setFlowrate.selector, address(USDCx), receiver, USDCAmountPerSecond);
         values[2] = 0;
         signatures[2] = "";
 

@@ -2,13 +2,17 @@
 
 ## What This Repo Does
 
-This repository independently verifies the calldata of DAO governance proposals. For each proposal, we reconstruct the expected calldata from first principles (interfaces, addresses, parameters) and compare it against the on-chain or draft calldata. If they match, the proposal does what it claims. If not, it's a security finding.
+This repository independently verifies the calldata of DAO governance proposals. For each proposal, we reconstruct the
+expected calldata from first principles (interfaces, addresses, parameters) and compare it against the on-chain or draft
+calldata. If they match, the proposal does what it claims. If not, it's a security finding.
 
-This system tests proposals that control millions/billions of dollars in DAO treasuries. Correctness is paramount. A false positive (approving bad calldata) is the worst possible outcome.
+This system tests proposals that control millions/billions of dollars in DAO treasuries. Correctness is paramount. A
+false positive (approving bad calldata) is the worst possible outcome.
 
 ## Supported DAOs
 
 See `src/dao-registry.json` for the full list. Currently:
+
 - **ENS** — OZ Governor + Timelock (`src/ens/`)
 - **Uniswap** — OZ Governor + Timelock (`src/uniswap/`)
 - **Shutter** — Azorius + LinearERC20Voting (`src/shutter/`)
@@ -47,10 +51,14 @@ When given a Tally URL or asked to review a proposal:
 
 ## Golden Rules
 
-1. **Manual derivation only.** Build `_generateCallData()` from the proposal specification and Solidity interfaces. Never copy from `proposalCalldata.json`.
-2. **No hex blobs.** Every selector must come from `Interface.method.selector`. Every address from a named constant or variable.
-3. **Meaningful assertions.** Both `_beforeProposal()` and `_afterExecution()` must contain substantive state checks. Empty hooks are never acceptable.
-4. **Mismatch = finding.** If manually derived calldata differs from `proposalCalldata.json`, stop. Do not approve. Report the mismatch.
+1. **Manual derivation only.** Build `_generateCallData()` from the proposal specification and Solidity interfaces.
+   Never copy from `proposalCalldata.json`.
+2. **No hex blobs.** Every selector must come from `Interface.method.selector`. Every address from a named constant or
+   variable.
+3. **Meaningful assertions.** Both `_beforeProposal()` and `_afterExecution()` must contain substantive state checks.
+   Empty hooks are never acceptable.
+4. **Mismatch = finding.** If manually derived calldata differs from `proposalCalldata.json`, stop. Do not approve.
+   Report the mismatch.
 5. **One proposal per test.** Each proposal gets its own directory under `src/<dao>/proposals/`.
 
 ## Solidity Conventions
