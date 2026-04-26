@@ -376,35 +376,44 @@ contract Proposal_ENS_EP_KPK_Update_9_Draft_Test is ENS_Governance, SafeHelper, 
     }
 
     function _assertMorphoPermissions() internal {
-        // v1 deposit receiver=Safe OK
-        _assertAllowed(
-            KPK_USDT_PRIME_V1,
-            abi.encodeWithSelector(IMetaMorphoV1.deposit.selector, uint256(1e6), address(endowmentSafe))
-        );
-        // v1 deposit wrong receiver BLOCKED
+        _assertMorphoVaultPermissions(KPK_USDT_PRIME_V1);
+        _assertMorphoVaultPermissions(KPK_USDT_PRIME_V2);
+    }
+
+    function _assertMorphoVaultPermissions(address vault) internal {
+        // Negative tests first — no snapshot overhead
         _assertBlocked(
-            KPK_USDT_PRIME_V1,
+            vault,
             abi.encodeWithSelector(IMetaMorphoV1.deposit.selector, uint256(1e6), address(0xdead)),
             IZodiacRoles.Status.ParameterNotAllowed
         );
-        // v1 withdraw receiver=owner=Safe OK
+        _assertBlocked(
+            vault,
+            abi.encodeWithSelector(
+                IMetaMorphoV1.withdraw.selector, uint256(1), address(0xdead), address(endowmentSafe)
+            ),
+            IZodiacRoles.Status.ParameterNotAllowed
+        );
+        _assertBlocked(
+            vault,
+            abi.encodeWithSelector(IMetaMorphoV1.redeem.selector, uint256(1), address(0xdead), address(endowmentSafe)),
+            IZodiacRoles.Status.ParameterNotAllowed
+        );
+        // Positive tests (use snapshot/revert to avoid side effects)
         _assertAllowed(
-            KPK_USDT_PRIME_V1,
+            vault, abi.encodeWithSelector(IMetaMorphoV1.deposit.selector, uint256(1e6), address(endowmentSafe))
+        );
+        _assertAllowed(
+            vault,
             abi.encodeWithSelector(
                 IMetaMorphoV1.withdraw.selector, uint256(1), address(endowmentSafe), address(endowmentSafe)
             )
         );
-        // v1 redeem receiver=owner=Safe OK
         _assertAllowed(
-            KPK_USDT_PRIME_V1,
+            vault,
             abi.encodeWithSelector(
                 IMetaMorphoV1.redeem.selector, uint256(1), address(endowmentSafe), address(endowmentSafe)
             )
-        );
-        // v2 smoke-check deposit
-        _assertAllowed(
-            KPK_USDT_PRIME_V2,
-            abi.encodeWithSelector(IMetaMorphoV1.deposit.selector, uint256(1e6), address(endowmentSafe))
         );
     }
 
@@ -425,7 +434,10 @@ contract Proposal_ENS_EP_KPK_Update_9_Draft_Test is ENS_Governance, SafeHelper, 
     }
 
     function _assertEtherFiRedemptionPermissions() internal {
-        // redeemEEth receiver=Safe, owner=NATIVE_ETH magic
+        IEtherFiRedemptionManager.PermitInput memory permit =
+            IEtherFiRedemptionManager.PermitInput({ value: 0, deadline: 0, v: 0, r: bytes32(0), s: bytes32(0) });
+
+        // redeemEEth
         _assertAllowed(
             ETHERFI_REDEMPTION_MANAGER,
             abi.encodeWithSelector(
@@ -439,28 +451,125 @@ contract Proposal_ENS_EP_KPK_Update_9_Draft_Test is ENS_Governance, SafeHelper, 
             ),
             IZodiacRoles.Status.ParameterNotAllowed
         );
+
+        // redeemWeEth
         _assertAllowed(
             ETHERFI_REDEMPTION_MANAGER,
             abi.encodeWithSelector(
                 IEtherFiRedemptionManager.redeemWeEth.selector, uint256(1), address(endowmentSafe), NATIVE_ETH
             )
         );
+        _assertBlocked(
+            ETHERFI_REDEMPTION_MANAGER,
+            abi.encodeWithSelector(
+                IEtherFiRedemptionManager.redeemWeEth.selector, uint256(1), address(0xdead), NATIVE_ETH
+            ),
+            IZodiacRoles.Status.ParameterNotAllowed
+        );
+
+        // redeemEEthWithPermit
+        _assertAllowed(
+            ETHERFI_REDEMPTION_MANAGER,
+            abi.encodeWithSelector(
+                IEtherFiRedemptionManager.redeemEEthWithPermit.selector,
+                uint256(1),
+                address(endowmentSafe),
+                permit,
+                NATIVE_ETH
+            )
+        );
+        _assertBlocked(
+            ETHERFI_REDEMPTION_MANAGER,
+            abi.encodeWithSelector(
+                IEtherFiRedemptionManager.redeemEEthWithPermit.selector, uint256(1), address(0xdead), permit, NATIVE_ETH
+            ),
+            IZodiacRoles.Status.ParameterNotAllowed
+        );
+
+        // redeemWeEthWithPermit
+        _assertAllowed(
+            ETHERFI_REDEMPTION_MANAGER,
+            abi.encodeWithSelector(
+                IEtherFiRedemptionManager.redeemWeEthWithPermit.selector,
+                uint256(1),
+                address(endowmentSafe),
+                permit,
+                NATIVE_ETH
+            )
+        );
+        _assertBlocked(
+            ETHERFI_REDEMPTION_MANAGER,
+            abi.encodeWithSelector(
+                IEtherFiRedemptionManager.redeemWeEthWithPermit.selector,
+                uint256(1),
+                address(0xdead),
+                permit,
+                NATIVE_ETH
+            ),
+            IZodiacRoles.Status.ParameterNotAllowed
+        );
     }
 
     function _assertEtherFiDepositAdapterPermissions() internal {
-        // depositETHForWeETH: scoped with EXEC_SEND (options=1). Calling without value would
-        // trigger an underlying revert (safe has no ETH path). We verify permission by calling
-        // with value=0 and catching the internal-only revert — any status other than
-        // SendNotAllowed/TargetAddressNotAllowed means the Roles permission check passed.
-        //
-        // Easier: test a non-whitelisted send target to confirm permission check is active, and
-        // rely on the calldata comparison to verify the scope itself.
+        IEtherFiDepositAdapter.PermitInput memory permit =
+            IEtherFiDepositAdapter.PermitInput({ value: 0, deadline: 0, v: 0, r: bytes32(0), s: bytes32(0) });
+
+        // depositWETHForWeETH
+        _assertAllowed(
+            ETHERFI_DEPOSIT_ADAPTER,
+            abi.encodeWithSelector(
+                IEtherFiDepositAdapter.depositWETHForWeETH.selector, uint256(1), address(endowmentSafe)
+            )
+        );
         _assertBlocked(
             ETHERFI_DEPOSIT_ADAPTER,
             abi.encodeWithSelector(IEtherFiDepositAdapter.depositWETHForWeETH.selector, uint256(1), address(0xdead)),
             IZodiacRoles.Status.ParameterNotAllowed
         );
-        // WeETHWithdrawAdapter.requestWithdraw wrong recipient BLOCKED
+
+        // depositStETHForWeETHWithPermit
+        _assertAllowed(
+            ETHERFI_DEPOSIT_ADAPTER,
+            abi.encodeWithSelector(
+                IEtherFiDepositAdapter.depositStETHForWeETHWithPermit.selector,
+                uint256(1),
+                address(endowmentSafe),
+                permit
+            )
+        );
+        _assertBlocked(
+            ETHERFI_DEPOSIT_ADAPTER,
+            abi.encodeWithSelector(
+                IEtherFiDepositAdapter.depositStETHForWeETHWithPermit.selector, uint256(1), address(0xdead), permit
+            ),
+            IZodiacRoles.Status.ParameterNotAllowed
+        );
+
+        // depositWstETHForWeETHWithPermit
+        _assertAllowed(
+            ETHERFI_DEPOSIT_ADAPTER,
+            abi.encodeWithSelector(
+                IEtherFiDepositAdapter.depositWstETHForWeETHWithPermit.selector,
+                uint256(1),
+                address(endowmentSafe),
+                permit
+            )
+        );
+        _assertBlocked(
+            ETHERFI_DEPOSIT_ADAPTER,
+            abi.encodeWithSelector(
+                IEtherFiDepositAdapter.depositWstETHForWeETHWithPermit.selector, uint256(1), address(0xdead), permit
+            ),
+            IZodiacRoles.Status.ParameterNotAllowed
+        );
+
+        // WeETHWithdrawAdapter.requestWithdraw
+        _assertAllowed(
+            ETHERFI_WEETH_WITHDRAW_ADAPTER,
+            abi.encodeWithSelector(
+                IEtherFiWeEthWithdrawAdapter.requestWithdraw.selector, uint256(1), address(endowmentSafe)
+            )
+        );
         _assertBlocked(
             ETHERFI_WEETH_WITHDRAW_ADAPTER,
             abi.encodeWithSelector(IEtherFiWeEthWithdrawAdapter.requestWithdraw.selector, uint256(1), address(0xdead)),
@@ -485,14 +594,41 @@ contract Proposal_ENS_EP_KPK_Update_9_Draft_Test is ENS_Governance, SafeHelper, 
     }
 
     function _assertCowSwapPermissions() internal {
-        // CowSwap signOrder is scoped as a delegatecall. Simulating the delegatecall in a clean
-        // Safe context is fragile — signOrder mutates arbitrary state. We therefore only verify
-        // the NEGATIVE case: a non-whitelisted sellToken must be blocked by the OR condition
-        // BEFORE the delegatecall is executed. The byte-for-byte calldata comparison already
-        // verifies the full condition tree is identical to the karpatkey payload.
-        ICowSwapOrderSigner.Data memory order = _buildCowSwapOrder(address(0xdead), WETH, address(endowmentSafe));
+        // Positive: valid sellToken + buyToken + receiver=Safe. The roles check passes; the
+        // underlying delegatecall fails (signOrder touches GPv2Settlement state not present in
+        // the test fork), but with shouldRevert=false, that returns false instead of reverting.
+        // No revert = permission check passed.
+        ICowSwapOrderSigner.Data memory goodOrder = _buildCowSwapOrder(WSTETH, WETH, address(endowmentSafe));
         vm.startPrank(karpatkey);
-        _expectConditionViolation(IZodiacRoles.Status.OrViolation);
+        uint256 snapshot = vm.snapshot();
+        roles.execTransactionWithRole(
+            COWSWAP_ORDER_SIGNER,
+            0,
+            abi.encodeWithSelector(ICowSwapOrderSigner.signOrder.selector, goodOrder, uint32(0), uint256(0)),
+            IZodiacRoles.Operation.DelegateCall,
+            MANAGER_ROLE,
+            false
+        );
+        vm.revertTo(snapshot);
+        vm.stopPrank();
+
+        // Negative: non-whitelisted sellToken (OR group → OrViolation)
+        _assertCowSwapBlocked(
+            _buildCowSwapOrder(address(0xdead), WETH, address(endowmentSafe)), IZodiacRoles.Status.OrViolation
+        );
+        // Negative: non-whitelisted buyToken (OR group → OrViolation)
+        _assertCowSwapBlocked(
+            _buildCowSwapOrder(WSTETH, address(0xdead), address(endowmentSafe)), IZodiacRoles.Status.OrViolation
+        );
+        // Negative: wrong receiver (EqualToAvatar → ParameterNotAllowed)
+        _assertCowSwapBlocked(
+            _buildCowSwapOrder(WSTETH, WETH, address(0xdead)), IZodiacRoles.Status.ParameterNotAllowed
+        );
+    }
+
+    function _assertCowSwapBlocked(ICowSwapOrderSigner.Data memory order, IZodiacRoles.Status status) internal {
+        vm.startPrank(karpatkey);
+        _expectConditionViolation(status);
         roles.execTransactionWithRole(
             COWSWAP_ORDER_SIGNER,
             0,
