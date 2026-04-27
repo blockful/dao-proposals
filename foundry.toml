@@ -6,6 +6,7 @@
   bytecode_hash = "none"
   evm_version = "shanghai"
   fuzz = { runs = 1_000 }
+  gas_limit = 9223372036854775807
   gas_reports = ["*"]
   optimizer = false
   out = "out"
