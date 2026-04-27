@@ -219,7 +219,7 @@ contract Proposal_ENS_EP_KPK_Update_9_Draft_Test is ENS_Governance, SafeHelper, 
     address private constant UNISWAP_V3_ROUTER = 0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45;
     address private constant AAVE_POOL = 0x87870Bca3F3fD6335C3F4ce8392D69350B4fA4E2;
     address private constant BALANCER_V2_VAULT = 0xBA12222222228d8Ba445958a75a0704d566BF2C8;
-    address private constant AAVE_V3_POOL_BASE = 0x889edC2eDab5f40e902b864aD4d7AdE8E412F9B1;
+    address private constant LIDO_WITHDRAWAL_QUEUE = 0x889edC2eDab5f40e902b864aD4d7AdE8E412F9B1;
 
     // ─── Fork / Metadata
     // ──────────────────────────────────────
@@ -1287,8 +1287,8 @@ contract Proposal_ENS_EP_KPK_Update_9_Draft_Test is ENS_Governance, SafeHelper, 
         address[] memory s = new address[](8);
         s[0] = PERMIT2;
         s[1] = UNISWAP_V3_ROUTER;
-        s[2] = AAVE_V3_POOL_BASE;
-        s[3] = 0xB188b1CB84Fb0bA13cb9ee1292769F903A9feC59; // Aave wstETHv3 wrapped pool
+        s[2] = LIDO_WITHDRAWAL_QUEUE;
+        s[3] = 0xB188b1CB84Fb0bA13cb9ee1292769F903A9feC59; // Aura RewardPoolDepositWrapper
         s[4] = BALANCER_V2_VAULT;
         s[5] = 0xC13e21B648A5Ee794902342038FF3aDAB66BE987; // Aave V3 pool (L1 bridge)
         s[6] = GPV2_VAULT_RELAYER;
@@ -1303,7 +1303,7 @@ contract Proposal_ENS_EP_KPK_Update_9_Draft_Test is ENS_Governance, SafeHelper, 
         s[1] = 0x56C526b0159a258887e0d79ec3a80dfb940d0cD7;
         s[2] = UNISWAP_V3_ROUTER;
         s[3] = WSTETH;
-        s[4] = AAVE_V3_POOL_BASE;
+        s[4] = LIDO_WITHDRAWAL_QUEUE;
         s[5] = GPV2_VAULT_RELAYER;
         s[6] = ETHERFI_DEPOSIT_ADAPTER;
         s[7] = 0xDC24316b9AE028F1497c275EB9192a3Ea0f67022; // Curve stETH/ETH pool
@@ -1318,7 +1318,7 @@ contract Proposal_ENS_EP_KPK_Update_9_Draft_Test is ENS_Governance, SafeHelper, 
         s[2] = 0x56C526b0159a258887e0d79ec3a80dfb940d0cD7;
         s[3] = UNISWAP_V3_ROUTER;
         s[4] = AAVE_POOL;
-        s[5] = 0xB188b1CB84Fb0bA13cb9ee1292769F903A9feC59;
+        s[5] = 0xB188b1CB84Fb0bA13cb9ee1292769F903A9feC59; // Aura RewardPoolDepositWrapper
         s[6] = BALANCER_V2_VAULT;
         s[7] = 0xBb50A5341368751024ddf33385BA8cf61fE65FF9;
         s[8] = 0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb; // Morpho Blue
