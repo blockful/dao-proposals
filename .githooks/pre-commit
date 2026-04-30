@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+# Auto-format staged .sol files with forge fmt before committing.
+# Re-stages any files that were reformatted.
+
+staged_sol=$(git diff --cached --name-only --diff-filter=ACM -- '*.sol')
+
+if [ -n "$staged_sol" ]; then
+    echo "$staged_sol" | xargs forge fmt
+    echo "$staged_sol" | xargs git add
+fi

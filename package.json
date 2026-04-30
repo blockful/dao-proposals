@@ -39,6 +39,7 @@
     "test:coverage": "forge coverage",
     "test:coverage:report": "forge coverage --report lcov && genhtml lcov.info --branch-coverage --output-dir coverage",
     "fetch-calldata": "node src/utils/fetchTallyDraft.js",
-    "fetch-live-proposal": "node src/utils/fetchLiveProposal.js"
+    "fetch-live-proposal": "node src/utils/fetchLiveProposal.js",
+    "prepare": "git config core.hooksPath .githooks"
   }
 }
