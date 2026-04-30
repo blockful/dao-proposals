@@ -100,8 +100,9 @@ interface IEtherFiLRT2Claim {
 }
 
 /**
- * @title EP X.XX — Endowment permissions to karpatkey — Update #9
- * @notice Draft calldata review for https://www.tally.xyz/gov/ens/draft/2842311967312447107
+ * @title EP 6.41 — Endowment permissions to karpatkey — Update #9
+ * @notice Live calldata review for
+ *     https://www.tally.xyz/gov/ens/proposal/39893466662181856279242827854933926689925858494049650894234231038376231891860
  *
  * Summary of operations (40 transactions packed into a MultiSend delegatecall on
  * the Endowment Safe):
@@ -147,7 +148,7 @@ interface IEtherFiLRT2Claim {
  *   TX 38: scopeFunction LRT2Claim.claim (account=Avatar)
  *   TX 39: annotationRegistry.post        -- add new CowSwap + Morpho annotations
  */
-contract Proposal_ENS_EP_KPK_Update_9_Draft_Test is ENS_Governance, SafeHelper, ZodiacRolesHelper {
+contract Proposal_ENS_EP_KPK_Update_9_Test is ENS_Governance, SafeHelper, ZodiacRolesHelper {
     // ─── Infrastructure
     // ───────────────────────────────────────
 
@@ -192,10 +193,10 @@ contract Proposal_ENS_EP_KPK_Update_9_Draft_Test is ENS_Governance, SafeHelper, 
     address private constant DAI = 0x6B175474E89094C44Da98b954EedeAC495271d0F;
     address private constant FLUID = 0x6f40d4A6237C257fff2dB00FA0510DeEECd303eb;
     address private constant WSTETH = 0x7f39C581F595B53c5cb19bD0b3f8dA6c935E2Ca0;
-    address private constant LUSD = 0x856c4Efb76C1D1AE02e20CEB03A2A6a08b0b8dC3;
+    address private constant OETH = 0x856c4Efb76C1D1AE02e20CEB03A2A6a08b0b8dC3;
     address private constant USDC = 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48;
-    address private constant USR = 0xA35b1B31Ce002FBF2058D22F30f95D405200A15b;
-    address private constant SDAI = 0xa3931d71877C0E7a3148CB7Eb4463524FEc27fbD;
+    address private constant ETHX = 0xA35b1B31Ce002FBF2058D22F30f95D405200A15b;
+    address private constant SUSDS = 0xa3931d71877C0E7a3148CB7Eb4463524FEc27fbD;
     address private constant RETH = 0xae78736Cd615f374D3085123A210448E74Fc6393;
     address private constant STETH = 0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84;
     address private constant BAL = 0xba100000625a3754423978a60c9317c58a424e3D;
@@ -207,8 +208,8 @@ contract Proposal_ENS_EP_KPK_Update_9_Draft_Test is ENS_Governance, SafeHelper, 
     address private constant CRV = 0xD533a949740bb3306d119CC777fa900bA034cd52;
     address private constant USDT = 0xdAC17F958D2ee523a2206206994597C13D831ec7;
     address private constant USDS = 0xdC035D45d973E3EC169d2276DDab16f1e407384F;
-    address private constant SUSDE = 0xE95A203B1a91a908F9B9CE46459d101078c2c3cb;
-    address private constant SFRXETH = 0xf1C9acDc66974dFB6dEcB12aA385b9cD01190E38;
+    address private constant ANKRETH = 0xE95A203B1a91a908F9B9CE46459d101078c2c3cb;
+    address private constant OSETH = 0xf1C9acDc66974dFB6dEcB12aA385b9cD01190E38;
 
     address private constant NATIVE_ETH = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
 
@@ -225,7 +226,7 @@ contract Proposal_ENS_EP_KPK_Update_9_Draft_Test is ENS_Governance, SafeHelper, 
     // ──────────────────────────────────────
 
     function _selectFork() public override {
-        vm.createSelectFork({ blockNumber: 24_900_000, urlOrAlias: "mainnet" });
+        vm.createSelectFork({ blockNumber: 24_988_364, urlOrAlias: "mainnet" });
     }
 
     function _proposer() public pure override returns (address) {
@@ -233,11 +234,11 @@ contract Proposal_ENS_EP_KPK_Update_9_Draft_Test is ENS_Governance, SafeHelper, 
     }
 
     function _isProposalSubmitted() public pure override returns (bool) {
-        return false; // Draft — not yet on-chain
+        return true;
     }
 
     function dirPath() public pure override returns (string memory) {
-        return "src/ens/proposals/kpk-update-9";
+        return "src/ens/proposals/ep-6-41";
     }
 
     // ─── Before: verify new targets are NOT yet permitted ─────
@@ -278,6 +279,12 @@ contract Proposal_ENS_EP_KPK_Update_9_Draft_Test is ENS_Governance, SafeHelper, 
             )
         );
         _assertTargetNotAllowed(
+            ETHERFI_WEETH_WITHDRAW_ADAPTER,
+            abi.encodeWithSelector(
+                IEtherFiWeEthWithdrawAdapter.requestWithdraw.selector, uint256(1), address(endowmentSafe)
+            )
+        );
+        _assertTargetNotAllowed(
             ETHERFI_DEPOSIT_ADAPTER,
             abi.encodeWithSelector(IEtherFiDepositAdapter.depositETHForWeETH.selector, address(endowmentSafe))
         );
@@ -294,6 +301,27 @@ contract Proposal_ENS_EP_KPK_Update_9_Draft_Test is ENS_Governance, SafeHelper, 
             WSTETH, abi.encodeWithSelector(IERC20.approve.selector, GPV2_VAULT_RELAYER, uint256(1e18))
         );
         vm.stopPrank();
+
+        // CowSwap signOrder: old scope exists (WSTETH/WETH works), new tokens not yet allowed
+        ICowSwapOrderSigner.Data memory preOrder = _buildCowSwapOrder(WSTETH, WETH, address(endowmentSafe));
+        vm.startPrank(karpatkey);
+        uint256 snap = vm.snapshot();
+        roles.execTransactionWithRole(
+            COWSWAP_ORDER_SIGNER,
+            0,
+            abi.encodeWithSelector(ICowSwapOrderSigner.signOrder.selector, preOrder, uint32(0), uint256(0)),
+            IZodiacRoles.Operation.DelegateCall,
+            MANAGER_ROLE,
+            false
+        );
+        vm.revertTo(snap);
+        vm.stopPrank();
+        _assertCowSwapBlocked(
+            _buildCowSwapOrder(EETH, WETH, address(endowmentSafe)), IZodiacRoles.Status.OrViolation
+        );
+        _assertCowSwapBlocked(
+            _buildCowSwapOrder(WSTETH, WEETH, address(endowmentSafe)), IZodiacRoles.Status.OrViolation
+        );
     }
 
     function _assertTargetNotAllowed(address target, bytes memory data) internal {
@@ -338,9 +366,11 @@ contract Proposal_ENS_EP_KPK_Update_9_Draft_Test is ENS_Governance, SafeHelper, 
         _assertMorphoPermissions();
         _assertEtherFiLPAndNftPermissions();
         _assertEtherFiRedemptionPermissions();
+        _assertDepositETHForWeETHPermissions();
         _assertEtherFiDepositAdapterPermissions();
         _assertEtherFiLRT2Permissions();
         _assertCowSwapPermissions();
+        _assertTokenApproveRescopes();
     }
 
     function _assertStaderPermissions() internal {
@@ -370,6 +400,14 @@ contract Proposal_ENS_EP_KPK_Update_9_Draft_Test is ENS_Governance, SafeHelper, 
             abi.encodeWithSelector(IERC20.approve.selector, address(0xdead), uint256(1e18)),
             IZodiacRoles.Status.OrViolation
         );
+        // weETH.approve to GPv2VaultRelayer allowed
+        _assertAllowed(WEETH, abi.encodeWithSelector(IERC20.approve.selector, GPV2_VAULT_RELAYER, uint256(1e18)));
+        // weETH.approve to random address BLOCKED
+        _assertBlocked(
+            WEETH,
+            abi.encodeWithSelector(IERC20.approve.selector, address(0xdead), uint256(1e18)),
+            IZodiacRoles.Status.OrViolation
+        );
         // weETH.wrap and unwrap allowed (allowFunction, no arg checks)
         _assertAllowed(WEETH, abi.encodeWithSelector(IWeETH.wrap.selector, uint256(1e18)));
         _assertAllowed(WEETH, abi.encodeWithSelector(IWeETH.unwrap.selector, uint256(1e18)));
@@ -387,6 +425,7 @@ contract Proposal_ENS_EP_KPK_Update_9_Draft_Test is ENS_Governance, SafeHelper, 
             abi.encodeWithSelector(IMetaMorphoV1.deposit.selector, uint256(1e6), address(0xdead)),
             IZodiacRoles.Status.ParameterNotAllowed
         );
+        // withdraw: bad receiver
         _assertBlocked(
             vault,
             abi.encodeWithSelector(
@@ -394,9 +433,24 @@ contract Proposal_ENS_EP_KPK_Update_9_Draft_Test is ENS_Governance, SafeHelper, 
             ),
             IZodiacRoles.Status.ParameterNotAllowed
         );
+        // withdraw: bad owner
+        _assertBlocked(
+            vault,
+            abi.encodeWithSelector(
+                IMetaMorphoV1.withdraw.selector, uint256(1), address(endowmentSafe), address(0xdead)
+            ),
+            IZodiacRoles.Status.ParameterNotAllowed
+        );
+        // redeem: bad receiver
         _assertBlocked(
             vault,
             abi.encodeWithSelector(IMetaMorphoV1.redeem.selector, uint256(1), address(0xdead), address(endowmentSafe)),
+            IZodiacRoles.Status.ParameterNotAllowed
+        );
+        // redeem: bad owner
+        _assertBlocked(
+            vault,
+            abi.encodeWithSelector(IMetaMorphoV1.redeem.selector, uint256(1), address(endowmentSafe), address(0xdead)),
             IZodiacRoles.Status.ParameterNotAllowed
         );
         // Positive tests (use snapshot/revert to avoid side effects)
@@ -451,6 +505,14 @@ contract Proposal_ENS_EP_KPK_Update_9_Draft_Test is ENS_Governance, SafeHelper, 
             ),
             IZodiacRoles.Status.ParameterNotAllowed
         );
+        // redeemEEth: bad owner (outputToken)
+        _assertBlocked(
+            ETHERFI_REDEMPTION_MANAGER,
+            abi.encodeWithSelector(
+                IEtherFiRedemptionManager.redeemEEth.selector, uint256(1), address(endowmentSafe), address(0xdead)
+            ),
+            IZodiacRoles.Status.ParameterNotAllowed
+        );
 
         // redeemWeEth
         _assertAllowed(
@@ -463,6 +525,14 @@ contract Proposal_ENS_EP_KPK_Update_9_Draft_Test is ENS_Governance, SafeHelper, 
             ETHERFI_REDEMPTION_MANAGER,
             abi.encodeWithSelector(
                 IEtherFiRedemptionManager.redeemWeEth.selector, uint256(1), address(0xdead), NATIVE_ETH
+            ),
+            IZodiacRoles.Status.ParameterNotAllowed
+        );
+        // redeemWeEth: bad owner (outputToken)
+        _assertBlocked(
+            ETHERFI_REDEMPTION_MANAGER,
+            abi.encodeWithSelector(
+                IEtherFiRedemptionManager.redeemWeEth.selector, uint256(1), address(endowmentSafe), address(0xdead)
             ),
             IZodiacRoles.Status.ParameterNotAllowed
         );
@@ -482,6 +552,18 @@ contract Proposal_ENS_EP_KPK_Update_9_Draft_Test is ENS_Governance, SafeHelper, 
             ETHERFI_REDEMPTION_MANAGER,
             abi.encodeWithSelector(
                 IEtherFiRedemptionManager.redeemEEthWithPermit.selector, uint256(1), address(0xdead), permit, NATIVE_ETH
+            ),
+            IZodiacRoles.Status.ParameterNotAllowed
+        );
+        // redeemEEthWithPermit: bad owner (outputToken)
+        _assertBlocked(
+            ETHERFI_REDEMPTION_MANAGER,
+            abi.encodeWithSelector(
+                IEtherFiRedemptionManager.redeemEEthWithPermit.selector,
+                uint256(1),
+                address(endowmentSafe),
+                permit,
+                address(0xdead)
             ),
             IZodiacRoles.Status.ParameterNotAllowed
         );
@@ -508,6 +590,33 @@ contract Proposal_ENS_EP_KPK_Update_9_Draft_Test is ENS_Governance, SafeHelper, 
             ),
             IZodiacRoles.Status.ParameterNotAllowed
         );
+        // redeemWeEthWithPermit: bad owner (outputToken)
+        _assertBlocked(
+            ETHERFI_REDEMPTION_MANAGER,
+            abi.encodeWithSelector(
+                IEtherFiRedemptionManager.redeemWeEthWithPermit.selector,
+                uint256(1),
+                address(endowmentSafe),
+                permit,
+                address(0xdead)
+            ),
+            IZodiacRoles.Status.ParameterNotAllowed
+        );
+    }
+
+    function _assertDepositETHForWeETHPermissions() internal {
+        vm.startPrank(karpatkey);
+        uint256 snap = vm.snapshot();
+        roles.execTransactionWithRole(
+            ETHERFI_DEPOSIT_ADAPTER,
+            0,
+            abi.encodeWithSelector(IEtherFiDepositAdapter.depositETHForWeETH.selector, address(endowmentSafe)),
+            IZodiacRoles.Operation.Call,
+            MANAGER_ROLE,
+            false
+        );
+        vm.revertTo(snap);
+        vm.stopPrank();
     }
 
     function _assertEtherFiDepositAdapterPermissions() internal {
@@ -598,7 +707,7 @@ contract Proposal_ENS_EP_KPK_Update_9_Draft_Test is ENS_Governance, SafeHelper, 
         // underlying delegatecall fails (signOrder touches GPv2Settlement state not present in
         // the test fork), but with shouldRevert=false, that returns false instead of reverting.
         // No revert = permission check passed.
-        ICowSwapOrderSigner.Data memory goodOrder = _buildCowSwapOrder(WSTETH, WETH, address(endowmentSafe));
+        ICowSwapOrderSigner.Data memory goodOrder = _buildCowSwapOrder(EETH, WEETH, address(endowmentSafe));
         vm.startPrank(karpatkey);
         uint256 snapshot = vm.snapshot();
         roles.execTransactionWithRole(
@@ -638,6 +747,44 @@ contract Proposal_ENS_EP_KPK_Update_9_Draft_Test is ENS_Governance, SafeHelper, 
             false
         );
         vm.stopPrank();
+    }
+
+    function _assertTokenApproveRescopes() internal {
+        // wstETH.approve: new spender DepositAdapter allowed
+        _assertAllowed(
+            WSTETH, abi.encodeWithSelector(IERC20.approve.selector, ETHERFI_DEPOSIT_ADAPTER, uint256(1e18))
+        );
+        _assertBlocked(
+            WSTETH,
+            abi.encodeWithSelector(IERC20.approve.selector, address(0xdead), uint256(1e18)),
+            IZodiacRoles.Status.OrViolation
+        );
+        // stETH.approve: new spender DepositAdapter allowed
+        _assertAllowed(
+            STETH, abi.encodeWithSelector(IERC20.approve.selector, ETHERFI_DEPOSIT_ADAPTER, uint256(1e18))
+        );
+        _assertBlocked(
+            STETH,
+            abi.encodeWithSelector(IERC20.approve.selector, address(0xdead), uint256(1e18)),
+            IZodiacRoles.Status.OrViolation
+        );
+        // WETH.approve: new spender DepositAdapter allowed
+        _assertAllowed(
+            WETH, abi.encodeWithSelector(IERC20.approve.selector, ETHERFI_DEPOSIT_ADAPTER, uint256(1e18))
+        );
+        _assertBlocked(
+            WETH,
+            abi.encodeWithSelector(IERC20.approve.selector, address(0xdead), uint256(1e18)),
+            IZodiacRoles.Status.OrViolation
+        );
+        // USDT.approve: new spenders Morpho v1 and v2 allowed
+        _assertAllowed(USDT, abi.encodeWithSelector(IERC20.approve.selector, KPK_USDT_PRIME_V1, uint256(1e6)));
+        _assertAllowed(USDT, abi.encodeWithSelector(IERC20.approve.selector, KPK_USDT_PRIME_V2, uint256(1e6)));
+        _assertBlocked(
+            USDT,
+            abi.encodeWithSelector(IERC20.approve.selector, address(0xdead), uint256(1e6)),
+            IZodiacRoles.Status.OrViolation
+        );
     }
 
     function _buildCowSwapOrder(
@@ -719,7 +866,7 @@ contract Proposal_ENS_EP_KPK_Update_9_Draft_Test is ENS_Governance, SafeHelper, 
 
     // TX 0
     function _buildAnnotationRemoval() internal view returns (bytes memory) {
-        string memory payload = vm.readFile("src/ens/proposals/kpk-update-9/annotationRemoval.json");
+        string memory payload = vm.readFile("src/ens/proposals/ep-6-41/annotationRemoval.json");
         return _packTx(
             ANNOTATION_REGISTRY,
             abi.encodeWithSelector(IAnnotationRegistry.post.selector, payload, "ROLES_PERMISSION_ANNOTATION")
@@ -728,7 +875,7 @@ contract Proposal_ENS_EP_KPK_Update_9_Draft_Test is ENS_Governance, SafeHelper, 
 
     // TX 39
     function _buildAnnotationAddition() internal view returns (bytes memory) {
-        string memory payload = vm.readFile("src/ens/proposals/kpk-update-9/annotationAddition.json");
+        string memory payload = vm.readFile("src/ens/proposals/ep-6-41/annotationAddition.json");
         return _packTx(
             ANNOTATION_REGISTRY,
             abi.encodeWithSelector(IAnnotationRegistry.post.selector, payload, "ROLES_PERMISSION_ANNOTATION")
@@ -1238,10 +1385,10 @@ contract Proposal_ENS_EP_KPK_Update_9_Draft_Test is ENS_Governance, SafeHelper, 
         t[6] = DAI; // 0x6B175474...
         t[7] = FLUID; // 0x6f40d4A6...
         t[8] = WSTETH; // 0x7f39C581...
-        t[9] = LUSD; // 0x856c4Efb...
+        t[9] = OETH; // 0x856c4Efb...
         t[10] = USDC; // 0xA0b86991...
-        t[11] = USR; // 0xA35b1B31...
-        t[12] = SDAI; // 0xa3931d71...
+        t[11] = ETHX; // 0xA35b1B31...
+        t[12] = SUSDS; // 0xa3931d71...
         t[13] = RETH; // 0xae78736C...
         t[14] = STETH; // 0xae7ab965...
         t[15] = BAL; // 0xba100000...
@@ -1254,8 +1401,8 @@ contract Proposal_ENS_EP_KPK_Update_9_Draft_Test is ENS_Governance, SafeHelper, 
         t[22] = CRV; // 0xD533a949...
         t[23] = USDT; // 0xdAC17F95...
         t[24] = USDS; // 0xdC035D45...
-        t[25] = SUSDE; // 0xE95A203B...
-        t[26] = SFRXETH; // 0xf1C9acDc...
+        t[25] = ANKRETH; // 0xE95A203B...
+        t[26] = OSETH; // 0xf1C9acDc...
         return t;
     }
 
@@ -1266,19 +1413,19 @@ contract Proposal_ENS_EP_KPK_Update_9_Draft_Test is ENS_Governance, SafeHelper, 
         t[1] = GHO;
         t[2] = DAI;
         t[3] = WSTETH;
-        t[4] = LUSD;
+        t[4] = OETH;
         t[5] = USDC;
-        t[6] = USR;
-        t[7] = SDAI;
+        t[6] = ETHX;
+        t[7] = SUSDS;
         t[8] = RETH;
         t[9] = STETH;
         t[10] = WETH;
         t[11] = WEETH;
         t[12] = USDT;
         t[13] = USDS;
-        t[14] = SUSDE;
+        t[14] = ANKRETH;
         t[15] = NATIVE_ETH;
-        t[16] = SFRXETH;
+        t[16] = OSETH;
         return t;
     }
 
