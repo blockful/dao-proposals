@@ -316,9 +316,7 @@ contract Proposal_ENS_EP_KPK_Update_9_Test is ENS_Governance, SafeHelper, Zodiac
         );
         vm.revertTo(snap);
         vm.stopPrank();
-        _assertCowSwapBlocked(
-            _buildCowSwapOrder(EETH, WETH, address(endowmentSafe)), IZodiacRoles.Status.OrViolation
-        );
+        _assertCowSwapBlocked(_buildCowSwapOrder(EETH, WETH, address(endowmentSafe)), IZodiacRoles.Status.OrViolation);
         _assertCowSwapBlocked(
             _buildCowSwapOrder(WSTETH, WEETH, address(endowmentSafe)), IZodiacRoles.Status.OrViolation
         );
@@ -751,27 +749,21 @@ contract Proposal_ENS_EP_KPK_Update_9_Test is ENS_Governance, SafeHelper, Zodiac
 
     function _assertTokenApproveRescopes() internal {
         // wstETH.approve: new spender DepositAdapter allowed
-        _assertAllowed(
-            WSTETH, abi.encodeWithSelector(IERC20.approve.selector, ETHERFI_DEPOSIT_ADAPTER, uint256(1e18))
-        );
+        _assertAllowed(WSTETH, abi.encodeWithSelector(IERC20.approve.selector, ETHERFI_DEPOSIT_ADAPTER, uint256(1e18)));
         _assertBlocked(
             WSTETH,
             abi.encodeWithSelector(IERC20.approve.selector, address(0xdead), uint256(1e18)),
             IZodiacRoles.Status.OrViolation
         );
         // stETH.approve: new spender DepositAdapter allowed
-        _assertAllowed(
-            STETH, abi.encodeWithSelector(IERC20.approve.selector, ETHERFI_DEPOSIT_ADAPTER, uint256(1e18))
-        );
+        _assertAllowed(STETH, abi.encodeWithSelector(IERC20.approve.selector, ETHERFI_DEPOSIT_ADAPTER, uint256(1e18)));
         _assertBlocked(
             STETH,
             abi.encodeWithSelector(IERC20.approve.selector, address(0xdead), uint256(1e18)),
             IZodiacRoles.Status.OrViolation
         );
         // WETH.approve: new spender DepositAdapter allowed
-        _assertAllowed(
-            WETH, abi.encodeWithSelector(IERC20.approve.selector, ETHERFI_DEPOSIT_ADAPTER, uint256(1e18))
-        );
+        _assertAllowed(WETH, abi.encodeWithSelector(IERC20.approve.selector, ETHERFI_DEPOSIT_ADAPTER, uint256(1e18)));
         _assertBlocked(
             WETH,
             abi.encodeWithSelector(IERC20.approve.selector, address(0xdead), uint256(1e18)),
