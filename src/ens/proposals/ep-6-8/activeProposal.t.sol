@@ -29,8 +29,7 @@ interface AaveV3 {
 
 interface IAsset {
     // solhint-disable-previous-line no-empty-blocks
-
-    }
+}
 
 interface Balancer {
     enum SwapKind {
