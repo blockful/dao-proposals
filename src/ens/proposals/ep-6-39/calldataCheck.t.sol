@@ -137,7 +137,7 @@ contract Proposal_ENS_EP_Registrar_Manager_Endowment_Test is ENS_Governance, Saf
                 _buildSafeExecCalldata(address(endowmentSafe), address(ROLES_MOD), inner, address(timelock));
         }
 
-        description = vm.readFile("src/ens/proposals/ep-6-39/proposalDescription.md");
+        description = vm.readFile(string.concat(dirPath(), "/proposalDescription.md"));
 
         return (targets, values, signatures, calldatas, description);
     }
