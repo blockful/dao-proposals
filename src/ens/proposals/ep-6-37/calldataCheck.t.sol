@@ -105,8 +105,4 @@ contract Proposal_ENS_EP_6_37_Test is ENS_Governance, SafeHelper {
     function _isProposalSubmitted() public pure override returns (bool) {
         return true; // Live proposal
     }
-
-    function dirPath() public pure override returns (string memory) {
-        return "src/ens/proposals/ep-6-37";
-    }
 }

@@ -257,10 +257,6 @@ contract Proposal_ENS_EP_Registrar_Manager_Endowment_Test is ENS_Governance, Saf
         return conditions;
     }
 
-    function dirPath() public pure override returns (string memory) {
-        return "src/ens/proposals/ep-6-39";
-    }
-
     function _isProposalSubmitted() public pure override returns (bool) {
         return true;
     }

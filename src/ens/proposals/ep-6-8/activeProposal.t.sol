@@ -11529,8 +11529,4 @@ contract Proposal_ENS_EP_6_8_Test is ENS_Governance, SafeHelper, ZodiacRolesHelp
         c[86] = _eq(36, WETH);
         c[87] = _eq(36, USDT);
     }
-
-    function dirPath() public pure override returns (string memory) {
-        return "src/ens/proposals/ep-6-8";
-    }
 }

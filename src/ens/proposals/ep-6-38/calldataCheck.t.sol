@@ -138,10 +138,6 @@ contract Proposal_ENS_EP_6_38_Test is ENS_Governance, SafeHelper, ZodiacRolesHel
         return true; // Live proposal
     }
 
-    function dirPath() public pure override returns (string memory) {
-        return "src/ens/proposals/ep-6-38";
-    }
-
     // ─── Before/After Permission Assertions
     // ──────────────────────────────
 

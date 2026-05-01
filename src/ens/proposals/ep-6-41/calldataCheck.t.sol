@@ -237,10 +237,6 @@ contract Proposal_ENS_EP_KPK_Update_9_Test is ENS_Governance, SafeHelper, Zodiac
         return true;
     }
 
-    function dirPath() public pure override returns (string memory) {
-        return "src/ens/proposals/ep-6-41";
-    }
-
     // ─── Before: verify new targets are NOT yet permitted ─────
 
     function _beforeProposal() public override {

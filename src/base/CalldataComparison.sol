@@ -121,7 +121,20 @@ abstract contract CalldataComparison is Test {
         result[0] = abi.decode(ret2, (bytes));
     }
 
-    /// @notice Read proposal description from markdown file
+    function dirPath() public virtual returns (string memory) {
+        string memory filePath = vm.currentFilePath();
+        bytes memory b = bytes(filePath);
+        uint256 lastSlash = 0;
+        for (uint256 i = 0; i < b.length; i++) {
+            if (b[i] == 0x2f) lastSlash = i;
+        }
+        bytes memory dir = new bytes(lastSlash);
+        for (uint256 i = 0; i < lastSlash; i++) {
+            dir[i] = b[i];
+        }
+        return string(dir);
+    }
+
     function _getDescriptionFromMarkdown(string memory _dirPath) internal returns (string memory) {
         return vm.readFile(string.concat(_dirPath, "/proposalDescription.md"));
     }

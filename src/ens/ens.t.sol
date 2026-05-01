@@ -235,10 +235,6 @@ abstract contract ENS_Governance is CalldataComparison, ENSHelper {
 
     function _afterExecution() public virtual;
 
-    function dirPath() public virtual returns (string memory) {
-        return "";
-    }
-
     function getDescriptionFromMarkdown() public returns (string memory) {
         return _getDescriptionFromMarkdown(dirPath());
     }
