@@ -1,11 +1,18 @@
-# [EP 6.41] [Executable] Endowment permissions to KPK - Update #9 
+# [EP 6.41] [Executable] Endowment permissions to KPK - Update #9
+
 ## Abstract
 
-This proposal introduces a routine update to the permissions for the Endowment Manager. This update expands access to liquid staking and restaking protocols on Ethereum, adds exposure to Morpho USDT vaults, and extends CoW Swap routing to include weETH and eETH.
+This proposal introduces a routine update to the permissions for the Endowment Manager. This update expands access to
+liquid staking and restaking protocols on Ethereum, adds exposure to Morpho USDT vaults, and extends CoW Swap routing to
+include weETH and eETH.
 
 ## Motivation
 
-The update opens positions in Stader and Ether.fi, two liquid staking and restaking protocols that allow the endowment to earn yield on ETH while preserving the ability to exit via standard or express unstaking paths. Adding Morpho's KPK USDT Prime vaults (v1 and v2) provides additional yield opportunities on stablecoin holdings consistent with the Investment Policy Statement (IPS). Extending CoW Swap permissions to cover weETH and eETH supports efficient token management across the expanded position set. These changes are additive and consistent with prior endowment strategy.
+The update opens positions in Stader and Ether.fi, two liquid staking and restaking protocols that allow the endowment
+to earn yield on ETH while preserving the ability to exit via standard or express unstaking paths. Adding Morpho's KPK
+USDT Prime vaults (v1 and v2) provides additional yield opportunities on stablecoin holdings consistent with the
+Investment Policy Statement (IPS). Extending CoW Swap permissions to cover weETH and eETH supports efficient token
+management across the expanded position set. These changes are additive and consistent with prior endowment strategy.
 
 ## Specification
 
@@ -39,9 +46,12 @@ This proposal adds the following contracts:
 
 To review, the following resources are below:
 
-* **Payload:** [client-configs/clients/ens-dao/mainnet/payloads/ensPermissionsUpdate9.json](https://github.com/karpatkey/client-configs/blob/main/clients/ens-dao/mainnet/payloads/ensPermissionsUpdate9.json)
-* **Tenderly Simulation:** [https://dashboard.tenderly.co/public/tallyxyz/project/simulator/59b3d7f8-3196-475f-bd87-097e8ef672c6](https://dashboard.tenderly.co/public/tallyxyz/project/simulator/59b3d7f8-3196-475f-bd87-097e8ef672c6)
+- **Payload:**
+  [client-configs/clients/ens-dao/mainnet/payloads/ensPermissionsUpdate9.json](https://github.com/karpatkey/client-configs/blob/main/clients/ens-dao/mainnet/payloads/ensPermissionsUpdate9.json)
+- **Tenderly Simulation:**
+  [https://dashboard.tenderly.co/public/tallyxyz/project/simulator/59b3d7f8-3196-475f-bd87-097e8ef672c6](https://dashboard.tenderly.co/public/tallyxyz/project/simulator/59b3d7f8-3196-475f-bd87-097e8ef672c6)
 
 ## Next Steps
 
-The proposal will be introduced in the next meta-governance call. Pending review from Blockful and no revisions following discussion during the meta-gov call, this proposal will progress to an on-chain executable vote.
+The proposal will be introduced in the next meta-governance call. Pending review from Blockful and no revisions
+following discussion during the meta-gov call, this proposal will progress to an on-chain executable vote.
