@@ -11,6 +11,8 @@
   },
   "devDependencies": {
     "forge-std": "github:foundry-rs/forge-std#v1.8.1",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.4.0",
     "prettier": "^3.0.0",
     "solhint": "^3.6.2"
   },
@@ -39,6 +41,11 @@
     "test:coverage": "forge coverage",
     "test:coverage:report": "forge coverage --report lcov && genhtml lcov.info --branch-coverage --output-dir coverage",
     "fetch-calldata": "node src/utils/fetchTallyDraft.js",
-    "fetch-live-proposal": "node src/utils/fetchLiveProposal.js"
+    "fetch-live-proposal": "node src/utils/fetchLiveProposal.js",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "*.sol": "forge fmt",
+    "*.{json,md,yml}": "prettier --write --ignore-path .prettierignore"
   }
 }
