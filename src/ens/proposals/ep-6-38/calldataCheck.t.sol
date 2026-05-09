@@ -138,10 +138,6 @@ contract Proposal_ENS_EP_6_38_Test is ENS_Governance, SafeHelper, ZodiacRolesHel
         return true; // Live proposal
     }
 
-    function dirPath() public pure override returns (string memory) {
-        return "src/ens/proposals/ep-6-38";
-    }
-
     // ─── Before/After Permission Assertions
     // ──────────────────────────────
 
@@ -396,7 +392,7 @@ contract Proposal_ENS_EP_6_38_Test is ENS_Governance, SafeHelper, ZodiacRolesHel
     // ─── MultiSend Packing
     // ───────────────────────────────────────────────
 
-    function _buildMultiSendTransactions() internal view returns (bytes memory) {
+    function _buildMultiSendTransactions() internal returns (bytes memory) {
         return bytes.concat(
             _buildRevocationTransactions(),
             _buildAnnotationRemoval(),
@@ -459,11 +455,11 @@ contract Proposal_ENS_EP_6_38_Test is ENS_Governance, SafeHelper, ZodiacRolesHel
     // ─── TX 8: Remove old annotations
     // ────────────────────────────────────
 
-    function _buildAnnotationRemoval() internal view returns (bytes memory) {
+    function _buildAnnotationRemoval() internal returns (bytes memory) {
         // See annotationRemoval.json — removes old annotation URIs for:
         //   - spark/deposit?targets=SKY_USDS
         //   - cowswap/swap with old sell/buy token lists (without GHO/FLUID)
-        string memory jsonPayload = vm.readFile("src/ens/proposals/ep-6-38/annotationRemoval.json");
+        string memory jsonPayload = vm.readFile(string.concat(dirPath(), "/annotationRemoval.json"));
 
         return _packTx(
             ANNOTATION_REGISTRY,
@@ -552,11 +548,11 @@ contract Proposal_ENS_EP_6_38_Test is ENS_Governance, SafeHelper, ZodiacRolesHel
     // ─── TX 17: Add new annotations
     // ──────────────────────────────────────
 
-    function _buildAnnotationAddition() internal view returns (bytes memory) {
+    function _buildAnnotationAddition() internal returns (bytes memory) {
         // See annotationAddition.json — adds new annotation URIs for:
         //   - cowswap/swap with updated sell/buy token lists (GHO + FLUID added)
         //   - spark/deposit?targets=SKY_sUSDS
-        string memory jsonPayload = vm.readFile("src/ens/proposals/ep-6-38/annotationAddition.json");
+        string memory jsonPayload = vm.readFile(string.concat(dirPath(), "/annotationAddition.json"));
 
         return _packTx(
             ANNOTATION_REGISTRY,

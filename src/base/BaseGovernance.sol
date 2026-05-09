@@ -48,10 +48,4 @@ abstract contract BaseGovernance is Test {
 
     /// @notice Whether the proposal is already submitted on-chain
     function _isProposalSubmitted() public view virtual returns (bool);
-
-    /// @notice Return the directory path for JSON calldata comparison.
-    ///         Empty string skips comparison.
-    function dirPath() public virtual returns (string memory) {
-        return "";
-    }
 }

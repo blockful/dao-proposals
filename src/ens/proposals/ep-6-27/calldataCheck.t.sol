@@ -1084,8 +1084,4 @@ contract Proposal_ENS_EP_6_27_Test is ENS_Governance, SafeHelper, ZodiacRolesHel
     function _isProposalSubmitted() public view override returns (bool) {
         return true;
     }
-
-    function dirPath() public pure override returns (string memory) {
-        return "src/ens/proposals/ep-6-27";
-    }
 }

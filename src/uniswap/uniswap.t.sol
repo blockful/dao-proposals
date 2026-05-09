@@ -227,10 +227,6 @@ abstract contract UNI_Governance is CalldataComparison, IDAO {
 
     function _isProposalSubmitted() public view virtual returns (bool);
 
-    function dirPath() public virtual returns (string memory) {
-        return "";
-    }
-
     /*//////////////////////////////////////////////////////////////////////////
                     DRAFT CALLDATA COMPARISON (with signatures)
     //////////////////////////////////////////////////////////////////////////*/

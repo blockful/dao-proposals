@@ -5,6 +5,11 @@ coverage
 node_modules
 out
 
+# proposal files are read as raw bytes for calldata encoding and description hashing
+**/annotation*.json
+**/proposalCalldata.json
+**/proposalDescription.md
+
 # files
 *.env
 *.log

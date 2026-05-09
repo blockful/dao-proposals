@@ -137,7 +137,7 @@ contract Proposal_ENS_EP_Registrar_Manager_Endowment_Test is ENS_Governance, Saf
                 _buildSafeExecCalldata(address(endowmentSafe), address(ROLES_MOD), inner, address(timelock));
         }
 
-        description = vm.readFile("src/ens/proposals/ep-6-39/proposalDescription.md");
+        description = vm.readFile(string.concat(dirPath(), "/proposalDescription.md"));
 
         return (targets, values, signatures, calldatas, description);
     }
@@ -255,10 +255,6 @@ contract Proposal_ENS_EP_Registrar_Manager_Endowment_Test is ENS_Governance, Saf
         });
         conditions[2] = ConditionFlat({ parent: 0, paramType: PARAM_TYPE_STATIC, operator: OP_PASS, compValue: "" });
         return conditions;
-    }
-
-    function dirPath() public pure override returns (string memory) {
-        return "src/ens/proposals/ep-6-39";
     }
 
     function _isProposalSubmitted() public pure override returns (bool) {

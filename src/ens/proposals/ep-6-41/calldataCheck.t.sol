@@ -237,10 +237,6 @@ contract Proposal_ENS_EP_KPK_Update_9_Test is ENS_Governance, SafeHelper, Zodiac
         return true;
     }
 
-    function dirPath() public pure override returns (string memory) {
-        return "src/ens/proposals/ep-6-41";
-    }
-
     // ─── Before: verify new targets are NOT yet permitted ─────
 
     function _beforeProposal() public override {
@@ -832,7 +828,7 @@ contract Proposal_ENS_EP_KPK_Update_9_Test is ENS_Governance, SafeHelper, Zodiac
     // ─── MultiSend Bundle Assembly
     // ────────────────────────────
 
-    function _buildMultiSendTransactions() internal view returns (bytes memory) {
+    function _buildMultiSendTransactions() internal returns (bytes memory) {
         bytes memory part1 = bytes.concat(
             _buildAnnotationRemoval(),
             _buildCowSwapSignOrderScope(),
@@ -857,8 +853,8 @@ contract Proposal_ENS_EP_KPK_Update_9_Test is ENS_Governance, SafeHelper, Zodiac
     }
 
     // TX 0
-    function _buildAnnotationRemoval() internal view returns (bytes memory) {
-        string memory payload = vm.readFile("src/ens/proposals/ep-6-41/annotationRemoval.json");
+    function _buildAnnotationRemoval() internal returns (bytes memory) {
+        string memory payload = vm.readFile(string.concat(dirPath(), "/annotationRemoval.json"));
         return _packTx(
             ANNOTATION_REGISTRY,
             abi.encodeWithSelector(IAnnotationRegistry.post.selector, payload, "ROLES_PERMISSION_ANNOTATION")
@@ -866,8 +862,8 @@ contract Proposal_ENS_EP_KPK_Update_9_Test is ENS_Governance, SafeHelper, Zodiac
     }
 
     // TX 39
-    function _buildAnnotationAddition() internal view returns (bytes memory) {
-        string memory payload = vm.readFile("src/ens/proposals/ep-6-41/annotationAddition.json");
+    function _buildAnnotationAddition() internal returns (bytes memory) {
+        string memory payload = vm.readFile(string.concat(dirPath(), "/annotationAddition.json"));
         return _packTx(
             ANNOTATION_REGISTRY,
             abi.encodeWithSelector(IAnnotationRegistry.post.selector, payload, "ROLES_PERMISSION_ANNOTATION")

@@ -356,9 +356,5 @@ contract Proposal_UNI_93_UNIfication_Test is UNI_Governance {
     function _isProposalSubmitted() public pure override returns (bool) {
         return true; // Proposal 93 is already submitted on-chain
     }
-
-    function dirPath() public pure override returns (string memory) {
-        return "src/uniswap/proposals/93 - UNIfication";
-    }
 }
 

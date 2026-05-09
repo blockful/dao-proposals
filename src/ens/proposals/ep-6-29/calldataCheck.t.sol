@@ -131,8 +131,4 @@ contract Proposal_ENS_EP_6_29_Test is ENS_Governance {
         // Proposal is live on-chain
         return true;
     }
-
-    function dirPath() public pure override returns (string memory) {
-        return "src/ens/proposals/ep-6-29";
-    }
 }
