@@ -1,21 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.25 <0.9.0;
 
-import { Test } from "@forge-std/src/Test.sol";
-
-interface IPayload {
-    function governance() external view returns (address);
-    function staking() external view returns (address);
-    function nullifyBalance(address relayer) external;
-}
+import { Tornado_Base } from "@tornado/tornado.t.sol";
+import { IRelayerRegistry } from "@tornado/interfaces/IRelayerRegistry.sol";
 
 interface IVault {
     function withdrawTorn(address account, uint256 amount) external;
-}
-
-interface IERC20 {
-    function balanceOf(address account) external view returns (uint256);
-    function transfer(address to, uint256 amount) external returns (bool);
 }
 
 /// @title Tornado Cash Proposal 67 — malicious-proposal verification
@@ -25,20 +15,18 @@ interface IERC20 {
 ///         verify, on a pinned mainnet fork: (1) the spoofed addresses, (2) the
 ///         attacker's powers, and (3) that the DAO treasury is unreachable.
 /// @dev    REQUIRES a non-censoring MAINNET_RPC_URL — several public RPCs block
-///         Tornado Cash calls (OFAC). publicnode works; llamarpc/cloudflare do not.
-abstract contract Proposal_TORN_67_Base is Test {
-    IPayload internal constant PAYLOAD = IPayload(0x0D0BE561052d4cf419575E35dE4e60163a55185B);
+///         Tornado Cash calls (OFAC). The pinned-block run also needs an archive node.
+abstract contract Proposal_TORN_67_Base is Tornado_Base {
+    IRelayerRegistry internal constant PAYLOAD = IRelayerRegistry(0x0D0BE561052d4cf419575E35dE4e60163a55185B);
     address internal constant ATTACKER_GOV = 0x5EFDa50f22D34F272c7077689d6ABc42F15E285f; // spoofed governance()
     address internal constant ATTACKER_STK = 0x2Fc93484614A34F7dBF98D7f7e997f6424e54a32; // spoofed staking()
-    address internal constant REAL_GOV = 0x5efda50f22d34F262c29268506C5Fa42cB56A1Ce; // DAO governance / treasury
-    // authority
+    address internal constant REAL_GOV = 0x5efda50f22d34F262c29268506C5Fa42cB56A1Ce;
     address internal constant REAL_STK = 0x2FC93484614a34f26F7970CBB94615bA109BB4bf;
-    address internal constant VAULT = 0x2F50508a8a3D323B91336FA3eA6ae50E55f32185; // Governance Vault (treasury custody)
-    IERC20 internal constant TORN = IERC20(0x77777FeDdddFfC19Ff86DB637967013e6C6A116C);
+    address internal constant VAULT = 0x2F50508a8a3D323B91336FA3eA6ae50E55f32185;
     address internal constant RELAYER = address(0xABCD);
     address internal constant SINK = address(0xBEEF);
 
-    function setUp() public virtual {
+    function _selectFork() public override {
         vm.createSelectFork("mainnet", 25_427_000);
     }
 
@@ -73,10 +61,8 @@ contract Proposal_TORN_67_Powers_Test is Proposal_TORN_67_Base {
         vm.prank(ATTACKER_GOV);
         PAYLOAD.nullifyBalance(RELAYER); // authorized -> no revert
 
-        bool realGov = _tryNullify(REAL_GOV);
-        bool random = _tryNullify(address(0xdead));
-        assertFalse(realGov, "real governance must NOT be able to nullify");
-        assertFalse(random, "random must NOT be able to nullify");
+        assertFalse(_tryNullify(REAL_GOV), "real governance must NOT be able to nullify");
+        assertFalse(_tryNullify(address(0xdead)), "random must NOT be able to nullify");
     }
 
     function _tryNullify(address caller) internal returns (bool ok) {
@@ -86,7 +72,7 @@ contract Proposal_TORN_67_Powers_Test is Proposal_TORN_67_Base {
 }
 
 /// @notice TREASURY: the attacker cannot move treasury assets by any path; only the
-///         real governance proxy can (contrast drains the entire 7.32M TORN).
+///         real governance proxy can (the contrast drains the entire ~7.32M TORN).
 contract Proposal_TORN_67_Treasury_Test is Proposal_TORN_67_Base {
     function test_attacker_cannot_withdraw_vault() public {
         vm.prank(ATTACKER_GOV);
