@@ -1,0 +1,14 @@
+{
+  "proposalId": "45402179622316441394139979097514597399865468312011562941203078514615705423505",
+  "blockNumber": 25424113,
+  "votingStart": 25424114,
+  "votingEnd": 25469932,
+  "createdAt": "2026-06-29T15:07:21.716295Z",
+  "executableCalls": [
+    {
+      "target": "0xFe89cc7aBB2C4183683ab71653C4cdc9B02D44b7",
+      "calldata": "0x2f2ff15db09aa5aeb3702cfd50b6b62bc4532604938f21248a27a1d5ca736082b6819cc1000000000000000000000000dededd439ecf711e61f5aecef631579dba2c65db",
+      "value": "0"
+    }
+  ]
+}
