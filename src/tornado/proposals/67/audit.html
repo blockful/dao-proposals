@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Security Analysis — Tornado Cash Proposal 67</title>
+<style>
+  :root{
+    --ink:#1a2230;--mut:#5b6776;--bg:#f6f7f9;--card:#ffffff;--line:#e3e7ec;--accent:#0b7a47;
+    --hi:#0e6b3d;--code:#0f1b2d;--codebg:#f0f2f5;
+    --red:#b3261e;--redbg:#fdeceb;--amber:#9a6b00;--amberbg:#fbf3df;--green:#0b7a47;--greenbg:#e8f5ee;--blue:#0b5cad;--bluebg:#e9f1fb;
+    --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:15.5px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+  .wrap{max-width:880px;margin:0 auto;padding:0 22px 110px}
+  code{font-family:var(--mono);font-size:.85em;background:var(--codebg);border:1px solid var(--line);border-radius:5px;padding:.06em .36em;color:#243; word-break:break-all}
+  a{color:var(--blue);text-decoration:none} a:hover{text-decoration:underline}
+  /* header */
+  header{background:#0f1b2d;color:#eef2f7;margin:0 -22px 26px;padding:34px 22px 26px}
+  header .wrapi{max-width:880px;margin:0 auto}
+  .kicker{color:#5fd39a;font-weight:700;letter-spacing:.18em;text-transform:uppercase;font-size:11.5px}
+  header h1{font-size:27px;margin:.35em 0 .3em;color:#fff}
+  header p{color:#aebccd;margin:0;max-width:64ch}
+  .metabar{display:flex;flex-wrap:wrap;gap:7px;margin-top:16px}
+  .metabar span{background:#1b2a40;border:1px solid #2c3d57;border-radius:6px;padding:4px 11px;font-size:12px;color:#cdd9e7}
+  .metabar b{color:#fff}
+  /* sections */
+  section{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px 22px;margin:16px 0;box-shadow:0 1px 2px rgba(16,30,54,.04)}
+  h2{font-size:19px;margin:0 0 4px;display:flex;align-items:center;gap:9px}
+  h2 .n{background:var(--accent);color:#fff;border-radius:6px;font-size:12px;padding:2px 8px;font-weight:700}
+  h3{font-size:15px;margin:18px 0 6px;color:#243}
+  p{margin:.55em 0}ul{margin:.4em 0;padding-left:20px}li{margin:.28em 0}
+  .lead{color:var(--mut)}
+  /* badges */
+  .badge{display:inline-block;font-size:11px;font-weight:700;padding:2px 9px;border-radius:20px;border:1px solid;vertical-align:middle}
+  .b-high{color:var(--red);background:var(--redbg);border-color:#f3c3bf}
+  .b-info{color:var(--blue);background:var(--bluebg);border-color:#c5dcf5}
+  .b-ok{color:var(--green);background:var(--greenbg);border-color:#bfe3cd}
+  .b-warn{color:var(--amber);background:var(--amberbg);border-color:#ecd9a6}
+  /* plain-terms box */
+  .glossary{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:10px}
+  .term{background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:11px 13px}
+  .term b{color:var(--hi)}
+  .term span{color:var(--mut);font-size:13.5px}
+  /* tables */
+  .tw{overflow:auto;margin:12px 0;border:1px solid var(--line);border-radius:10px}
+  table{border-collapse:collapse;width:100%;font-size:13.3px}
+  th,td{text-align:left;padding:9px 11px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{background:#f0f3f6;color:#2a3span;font-weight:700;color:#243}
+  tr:last-child td{border-bottom:0}
+  td.mono,code.addr{font-family:var(--mono);font-size:12px}
+  .real{color:var(--green);font-weight:700}.fake{color:var(--red);font-weight:700}
+  /* fact card */
+  .fact{border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:9px;padding:13px 15px;margin:12px 0;background:#fff}
+  .fact.kill{border-left-color:var(--red)}
+  .fact .claim{font-weight:600}
+  .fact .row{display:flex;flex-wrap:wrap;gap:6px 18px;margin-top:7px;font-size:13px;color:var(--mut)}
+  .fact .row b{color:#243;font-weight:600}
+  .src{font-size:12.5px;color:var(--mut);margin-top:6px;border-top:1px dashed var(--line);padding-top:6px}
+  .src b{color:var(--hi)}
+  /* callouts */
+  .note{border-radius:9px;padding:13px 15px;margin:13px 0;border:1px solid}
+  .note.good{background:var(--greenbg);border-color:#bfe3cd}
+  .note.bad{background:var(--redbg);border-color:#f3c3bf}
+  .note .l{font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:3px}
+  .mono-pair{font-family:var(--mono);font-size:12.5px;line-height:1.9}
+  .hl{background:#fff3b0;padding:0 2px;border-radius:3px}
+  .hlr{background:#ffd4cf;padding:0 2px;border-radius:3px}
+  .foot{color:var(--mut);font-size:12.5px}
+  .check{color:var(--green);font-weight:700}.cross{color:var(--red);font-weight:700}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrapi">
+    <div class="kicker">Security Analysis · Blockful</div>
+    <h1>Tornado Cash — Governance Proposal 67</h1>
+    <p>A plain-language, source-cited analysis of the malicious proposal: what it does, exactly which contracts and roles it touches, and what it can and cannot reach — every fact verified on a mainnet fork.</p>
+    <div class="metabar">
+      <span><b>Target</b> Proposal #67</span>
+      <span><b>Network</b> Ethereum mainnet</span>
+      <span><b>Method</b> on-chain reads + decompilation + Foundry fork tests</span>
+      <span><b>Status</b> being defeated (0 for / 623,201 against)</span>
+      <span><b>Date</b> 2026-06-29</span>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <!-- VERDICT -->
+  <section>
+    <h2><span class="n">Summary</span> Verdict</h2>
+    <p><span class="badge b-high">HIGH — protocol</span> <span class="badge b-ok">treasury safe</span></p>
+    <p>Proposal 67 is a <b>malicious proposal disguised as a fee/burn change</b>. Its payload is a counterfeit
+      <b>Relayer Registry</b> whose privileged functions answer to <b>attacker-controlled vanity look-alike addresses</b>
+      instead of the DAO. If it passed, the attacker could <b>disable the relayers</b> that make private transactions
+      possible. It <b>cannot touch the treasury</b> — we tried every asset-moving path on a fork and all of them fail.</p>
+    <div class="note good"><span class="l">Bottom line</span>
+      This is an attack on the <b>protocol</b> (a relayer kill-switch), not on the <b>treasury</b>. The ~7.32M TORN held by
+      the DAO answers only to the real governance contract — an authority the spoofed addresses can never impersonate.</div>
+  </section>
+
+  <!-- PLAIN TERMS -->
+  <section>
+    <h2><span class="n">Glossary</span> Plain terms used in this report</h2>
+    <div class="glossary">
+      <div class="term"><b>Governance proxy</b><br/><span>The DAO's "brain" contract. A passed proposal runs <i>as</i> this contract, so it controls the treasury.</span></div>
+      <div class="term"><b>Relayer</b><br/><span>An operator that processes private withdrawals. Must stake TORN to work. If unstaked, it stops.</span></div>
+      <div class="term"><b>Relayer Registry</b><br/><span>The bookkeeping contract that records each relayer's stake and can zero it (<code>nullifyBalance</code>).</span></div>
+      <div class="term"><b>Vault</b><br/><span>The contract that physically holds locked/treasury TORN. Releases funds only to the governance proxy.</span></div>
+      <div class="term"><b>Vanity look-alike</b><br/><span>An address crafted to share the same first characters as a real one, so it looks identical at a glance.</span></div>
+      <div class="term"><b><code>delegatecall</code></b><br/><span>Runs another contract's code <i>inside</i> your own storage/identity — how a proposal acts with the DAO's authority.</span></div>
+      <div class="term"><b>lockedBalance</b><br/><span>Tornado voting power: TORN you locked in governance. Only you can unlock your own.</span></div>
+      <div class="term"><b>Quorum</b><br/><span>Minimum total votes for a result to count — 100,000 TORN here.</span></div>
+    </div>
+  </section>
+
+  <!-- CONTRACT REGISTRY -->
+  <section>
+    <h2><span class="n">Scope</span> Contracts &amp; roles referenced</h2>
+    <p class="lead">Every address used in this report, with its role and how we identified it.</p>
+    <div class="tw"><table>
+      <tr><th>Role</th><th>Address</th><th>What it is / source</th></tr>
+      <tr><td><span class="real">Real governance</span></td><td class="mono">0x5efda50f22d34F262c29268506C5Fa42cB56A1Ce</td><td>The DAO's authority (LoopbackProxy → <code>GovernanceProposalStateUpgrade</code>). Holds 4.73M TORN; the only entity that can release treasury. <i>Source: Etherscan, tornado-governance source.</i></td></tr>
+      <tr><td>TORN token</td><td class="mono">0x77777FeDdddFfC19Ff86DB637967013e6C6A116C</td><td>ERC-20 governance token. <i>Source: Etherscan.</i></td></tr>
+      <tr><td>Treasury Vault</td><td class="mono">0x2F50508a8a3D323B91336FA3eA6ae50E55f32185</td><td>Custodies locked TORN (2.59M). <code>withdrawTorn</code> is <code>onlyGovernance</code>. <i>Source: Etherscan tag "Governance Vault" + on-chain.</i></td></tr>
+      <tr><td>Real staking</td><td class="mono">0x2FC93484614a34f26F7970CBB94615bA109BB4bf</td><td>Relayer-fee rewards (Governance Staking). <i>Source: Etherscan tag.</i></td></tr>
+      <tr><td>Proposal 67 proposer</td><td class="mono">0xD4eCA8c9242b9F9faa3CF19a78defC21dC97A925</td><td>EOA, 14 transactions, funded via Railgun. <i>Source: on-chain nonce/code + HTX/Foresight report.</i></td></tr>
+      <tr><td><span class="fake">Malicious payload</span></td><td class="mono">0x0D0BE561052d4cf419575E35dE4e60163a55185B</td><td>Proposal 67's target — an <b>unverified</b> counterfeit Relayer Registry. <i>Source: on-chain <code>proposals(67).target</code> + Dedaub decompilation.</i></td></tr>
+      <tr><td><span class="fake">Spoofed governance()</span></td><td class="mono">0x5EFDa50f22D34F272c7077689d6ABc42F15E285f</td><td>Attacker-controlled vanity look-alike of the real governance. <i>Source: on-chain <code>target.governance()</code>.</i></td></tr>
+      <tr><td><span class="fake">Spoofed staking()</span></td><td class="mono">0x2Fc93484614A34F7dBF98D7f7e997f6424e54a32</td><td>Attacker-controlled vanity look-alike of the real staking. <i>Source: on-chain <code>target.staking()</code>.</i></td></tr>
+    </table></div>
+  </section>
+
+  <!-- THE SPOOF -->
+  <section>
+    <h2><span class="n">Core trick</span> The look-alike addresses</h2>
+    <p>The payload's privileged accessors return addresses that <b>share the first 15 hex characters</b> with the real
+      contracts, then diverge — designed to pass a quick visual check.</p>
+    <div class="note bad"><span class="l">governance()</span>
+      <div class="mono-pair">
+        real&nbsp;&nbsp;: 0x5efda50f22d34<span class="hl">f2</span>62c29268506C5Fa42cB56A1Ce<br/>
+        spoof : 0x5efda50f22d34<span class="hlr">f27</span>2c7077689d6abc42f15e285f
+      </div>
+    </div>
+    <div class="note bad"><span class="l">staking()</span>
+      <div class="mono-pair">
+        real&nbsp;&nbsp;: 0x2fc93484614a34<span class="hl">f2</span>6f7970cbb94615ba109bb4bf<br/>
+        spoof : 0x2fc93484614a34<span class="hlr">f7</span>dbf98d7f7e997f6424e54a32
+      </div>
+    </div>
+    <p class="foot">Verified on-chain by reading <code>governance()</code> and <code>staking()</code> from the payload, and in the
+      decompiled source (pcaversaccio's Dedaub gist). A fork test asserts both share a 14-nibble prefix yet are not the real addresses.</p>
+  </section>
+
+  <!-- WHAT IT DOES -->
+  <section>
+    <h2><span class="n">Mechanism</span> What the proposal actually does</h2>
+    <ol>
+      <li>The proposal is a <b>contract</b> (Tornado proposals always are). If executed, it swaps the DAO's Relayer Registry for the attacker's counterfeit one (<code>0x0D0BE5…</code>).</li>
+      <li>In the counterfeit registry, the function <code>nullifyBalance(relayer)</code> — which zeroes a relayer's stake — is gated to the <span class="fake">spoofed governance</span>, i.e. <b>the attacker</b>, not the DAO.</li>
+      <li>The attacker can then zero <b>any relayer's</b> staked TORN at will, removing the operators that enable private withdrawals. Reward flows are also redirected to the <span class="fake">spoofed staking</span> address.</li>
+      <li>No function in the payload can move treasury assets (see below).</li>
+    </ol>
+    <p class="foot">Note: the payload as currently deployed has <b>no <code>executeProposal()</code></b> — it relies on a metamorphic
+      redeploy (the May-2023 technique) to gain it before execution. As-is, <code>execute(67)</code> reverts (verified).</p>
+  </section>
+
+  <!-- CAPABILITY MATRIX -->
+  <section>
+    <h2><span class="n">Powers</span> What the attacker role can &amp; cannot do</h2>
+    <p class="lead">Each row verified on a mainnet fork by calling the function from the attacker's spoofed-governance address.</p>
+    <div class="tw"><table>
+      <tr><th>Action</th><th>Contract · role required</th><th>Result for attacker</th><th>Source</th></tr>
+      <tr><td>Zero a relayer's stake — <code>nullifyBalance()</code></td><td class="mono">payload 0x0D0BE5… · spoofed gov</td><td><span class="check">✓ ALLOWED</span></td><td>decompiled gate + fork test</td></tr>
+      <tr><td>Redirect relayer fee rewards — <code>burn()/staking()</code></td><td class="mono">payload 0x0D0BE5… · spoofed staking</td><td><span class="check">✓ ALLOWED</span></td><td>decompiled + on-chain read</td></tr>
+      <tr><td>Withdraw the Vault — <code>withdrawTorn()</code></td><td class="mono">Vault 0x2F50… · real governance</td><td><span class="cross">✗ revert "only gov"</span></td><td>fork test + eth_call</td></tr>
+      <tr><td>Move treasury TORN — <code>transferFrom()</code></td><td class="mono">TORN 0x7777… · holder/allowance</td><td><span class="cross">✗ revert (no allowance)</span></td><td>fork test</td></tr>
+      <tr><td>Drain others' locked TORN — <code>unlock()</code></td><td class="mono">governance · per-caller only</td><td><span class="cross">✗ only own balance</span></td><td>fork test</td></tr>
+      <tr><td>Seize the DAO — <code>upgradeTo()</code></td><td class="mono">proxy · <code>onlySelf</code></td><td><span class="cross">✗ revert</span></td><td>fork test</td></tr>
+      <tr><td>Run the payload — <code>execute(67)</code></td><td class="mono">governance · state machine</td><td><span class="cross">✗ revert (not executable as-is)</span></td><td>fork test</td></tr>
+    </table></div>
+  </section>
+
+  <!-- TREASURY -->
+  <section>
+    <h2><span class="n">Treasury</span> Why the funds are out of reach</h2>
+    <p>The DAO treasury is <b>~7.32M TORN</b>: <b>2.59M</b> in the Vault (<code>0x2F50…</code>) and <b>4.73M</b> held by the
+      governance proxy itself. Both release <b>only</b> to the real governance proxy — an authority that is hardcoded, not
+      based on any value the attacker can spoof.</p>
+    <div class="note good"><span class="l">Exhaustive attack — every vector failed</span>
+      Acting as the attacker on a fork, we attempted: Vault withdrawal, <code>transferFrom</code> on the Vault and the proxy,
+      <code>unlock</code> of others' funds, and a proxy takeover via <code>upgradeTo</code>. <b>All reverted.</b></div>
+    <div class="note bad"><span class="l">Contrast — the real authority can drain everything</span>
+      Acting as the <b>real governance proxy</b>, the same fork test emptied the <b>entire 7.32M TORN</b> treasury (Vault +
+      proxy). So the treasury <i>is</i> reachable — but only by a proposal that runs <i>as the proxy</i> and explicitly calls
+      <code>withdrawTorn</code> + <code>transfer</code>. Proposal 67 contains no such calls.</div>
+    <p class="foot"><b>Why the attacker avoided it:</b> a proposal that obviously moves 7.32M TORN to a wallet is trivially
+      spotted and voted down. The relayer-registry swap via look-alike addresses is the <i>stealthy</i> route — protocol
+      sabotage that can survive a casual review.</p>
+  </section>
+
+  <!-- KEY FACTS w/ sourcing -->
+  <section>
+    <h2><span class="n">Facts</span> Each claim, with role, contract &amp; source</h2>
+
+    <div class="fact">
+      <div class="claim">Proposal 67 was submitted by a fresh, Railgun-funded wallet.</div>
+      <div class="row"><span><b>Role:</b> proposer (EOA)</span><span><b>Contract:</b> <code>0xD4eCA8…A925</code></span></div>
+      <div class="src"><b>Source:</b> on-chain — 14 outbound txs (nonce), no contract code, ~0.067 ETH; funding via Railgun per the HTX/Foresight report.</div>
+    </div>
+
+    <div class="fact kill">
+      <div class="claim">The proposal's target contract is unverified and malicious.</div>
+      <div class="row"><span><b>Role:</b> proposal payload</span><span><b>Contract:</b> <code>0x0D0BE5…185B</code></span></div>
+      <div class="src"><b>Source:</b> on-chain <code>proposals(67).target</code>; Etherscan shows it unverified; Dedaub decompilation published in pcaversaccio's gist.</div>
+    </div>
+
+    <div class="fact kill">
+      <div class="claim"><code>governance()</code> and <code>staking()</code> return attacker vanity look-alikes (share 15 leading hex chars with the real addresses).</div>
+      <div class="row"><span><b>Role:</b> spoofed authorities</span><span><b>Contracts:</b> <code>0x5EFDa50f…285f</code>, <code>0x2Fc93484…4a32</code></span></div>
+      <div class="src"><b>Source:</b> on-chain reads of the payload + Dedaub decompilation + Foundry fork test (<code>Proposal67Content.t.sol</code>).</div>
+    </div>
+
+    <div class="fact kill">
+      <div class="claim">Only the attacker can zero relayer stakes (<code>nullifyBalance</code>); the real DAO governance is locked out.</div>
+      <div class="row"><span><b>Role:</b> registry admin (spoofed gov)</span><span><b>Contract:</b> payload <code>0x0D0BE5…</code></span></div>
+      <div class="src"><b>Source:</b> decompiled <code>require(msg.sender == 0x5EFDa50f…285f)</code> + fork test (<code>Proposal67Powers.t.sol</code>): attacker ✓, real gov ✗, random ✗.</div>
+    </div>
+
+    <div class="fact">
+      <div class="claim">The treasury cannot be moved by the attacker through any contract path.</div>
+      <div class="row"><span><b>Role:</b> treasury authority = real proxy</span><span><b>Contracts:</b> Vault <code>0x2F50…</code>, TORN <code>0x7777…</code></span></div>
+      <div class="src"><b>Source:</b> fork test (<code>Proposal67TreasuryDrain.t.sol</code>) — 5 attacker vectors revert; the real proxy drains all 7.32M in the contrast case.</div>
+    </div>
+
+    <div class="fact">
+      <div class="claim">As of the night of June 29, 2026: 623,201 TORN against, 0 in favor; quorum is 100,000 TORN.</div>
+      <div class="row"><span><b>Role:</b> live vote tally</span><span><b>Contract:</b> governance <code>0x5efda5…A1Ce</code></span></div>
+      <div class="src"><b>Source:</b> on-chain <code>proposals(67)</code> and <code>QUORUM_VOTES()</code>.</div>
+    </div>
+  </section>
+
+  <!-- METHODOLOGY -->
+  <section>
+    <h2><span class="n">Method</span> How this was verified</h2>
+    <ul>
+      <li><b>On-chain reads</b> — view calls against mainnet via a non-censoring RPC (publicnode); some public RPCs block Tornado contracts.</li>
+      <li><b>Decompilation</b> — the unverified payload's bytecode, via <a href="https://library.dedaub.com/">Dedaub</a>, published in <a href="https://gist.github.com/pcaversaccio/958061a12d77dd0f5d03f145349f5f1b">pcaversaccio's gist</a>.</li>
+      <li><b>Foundry fork tests</b> — 16 tests executed against forked mainnet state, simulating the exact transactions an attacker (and the real proxy) would send. All pass:
+        <ul>
+          <li><code>Proposal67Content.t.sol</code> — spoofed look-alike addresses (3)</li>
+          <li><code>Proposal67Powers.t.sol</code> — attacker capability matrix (3)</li>
+          <li><code>Proposal67TreasuryDrain.t.sol</code> — exhaustive treasury attack (6)</li>
+          <li><code>TornWriteActions.t.sol</code> — Anticapture vote/delegate paths (4)</li>
+        </ul>
+      </li>
+    </ul>
+    <p class="foot"><b>Sources:</b> Ethereum mainnet (eth_call) · tornadocash/tornado-governance (contract source) · pcaversaccio Dedaub gist &amp; <a href="https://github.com/pcaversaccio/tornado-cash-exploit">tornado-cash-exploit</a> · L2Beat (S. Shemyakov) &amp; pcaversaccio disclosures · Etherscan name tags.</p>
+  </section>
+
+  <p class="foot">Prepared by Blockful · accompanies the Tornado Cash → Anticapture integration. All figures current as of 2026-06-29 and may change as voting continues.</p>
+</div>
+</body>
+</html>
