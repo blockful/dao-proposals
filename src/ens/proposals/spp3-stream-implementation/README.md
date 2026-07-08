@@ -7,7 +7,8 @@ Calldata for the SPP3 stream transition, built ahead of the on-chain executable 
 Two parts:
 
 - `calldataCheck.t.sol`: the DAO executable. Wraps a month of funding plus a margin, sends the margin to the pod, sets
-  the master stream to \$3.21M/yr, and refreshes the autowrap allowance. This is what the proposer submits.
+  the master stream to \$3.21M/yr, refreshes the autowrap allowance, and pays the committee's 20% lump sum in USDC. This
+  is what the proposer submits.
 - `podStreamSetup.t.sol`: the pod's Safe transaction that switches the provider streams from the SPP2 cohort to SPP3 and
   opens the committee salary streams. Run by the pod signers, not the governor.
 
@@ -24,8 +25,9 @@ SPP3 cohort, \$1.69M/yr:
 | Unruggable | 0x64Ca550F78d6Cc711B247319CC71A04A166707Ab | \$400k (unchanged)          |
 | Fluidkey   | 0xdcC34c0da55cEF7AeD38Bb749AD97DAC12A9936C | \$340k (new)                |
 
-Committee salary streams, \$120k/yr. This is the 80% streamed portion of the \$150k committee comp; the other 20%
-(\$30k) is a separate lump sum paid on recommendation submission and is not part of this executable.
+Committee salary streams, \$120k/yr. This is the 80% streamed portion of the \$150k committee comp. The other 20%
+(\$30k) is the upfront payment, which the executable pays as USDC straight to each member (coltron \$9k, the three
+members \$7k each).
 
 | Member          | Address                                    | Stream (80%)     |
 | --------------- | ------------------------------------------ | ---------------- |
@@ -72,7 +74,9 @@ committee streams open earlier, at ratification.
   award-notice channel or a signed message from Goldsky before any draft goes live.
 - Committee payout addresses are the members' resolved ENS addresses. Confirm these are the intended payout wallets
   (abdullahumar.eth resolves forward but has no reverse record set).
-- The 20% committee lump sum (\$30k) is not in this executable. Confirm it is handled separately.
+- The committee's 20% lump sum is paid as USDC direct from the treasury to each member. The forum frames committee pay
+  as coming from the accountability body's multisig, so confirm the direct route is acceptable rather than routing it
+  through the pod.
 
 ## Run
 

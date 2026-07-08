@@ -8,10 +8,11 @@ import { IERC20 } from "@contracts/utils/interfaces/IERC20.sol";
 import { IUSDCx } from "@ens/interfaces/IUSDCx.sol";
 import { CFAv1Forwarder } from "@ens/interfaces/ISuperfluidCFAv1Forwarder.sol";
 
-// SPP3 stream implementation, DAO side. Same shape as the SPP2 executable (EP 6.13).
-// It wraps a month of funding plus a margin for the pod, sends the margin over, points the
-// master USDCx stream at the Stream Management Pod, and refreshes the autowrap allowance.
-// The pod sets each provider's stream itself; that half lives in podStreamSetup.t.sol.
+// SPP3 stream implementation, DAO side. Same shape as the SPP2 executable (EP 6.13), plus the
+// committee's upfront payment. It wraps a month of funding plus a margin for the pod, sends the margin
+// over, points the master USDCx stream at the Stream Management Pod, refreshes the autowrap allowance,
+// and pays the committee's 20% lump sum in USDC. The pod sets each provider stream and the committee's
+// 80% stream itself; that half lives in podStreamSetup.t.sol.
 contract Proposal_ENS_SPP3_StreamImplementation_Test is ENS_Governance {
     IERC20 public constant USDC = IERC20(0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48);
     IUSDCx public constant USDCx = IUSDCx(0x1BA8603DA702602A8657980e825A6DAa03Dee93a);
@@ -35,9 +36,22 @@ contract Proposal_ENS_SPP3_StreamImplementation_Test is ENS_Governance {
     uint256 public constant POD_MARGIN = 250_000_000_000_000_000_000_000;
     uint256 public constant AUTOWRAP_ALLOWANCE = 4_547_500_000_000; // ~17 months, same ratio SPP2 used
 
+    // Committee upfront payment: the 20% lump sum, paid straight to each member in USDC (the 80% is
+    // streamed by the pod). gregskril.eth is the non-compensated fifth member.
+    address public constant COLTRON = 0x1D5460F896521aD685Ea4c3F2c679Ec0b6806359; // chair
+    address public constant SOVEREIGNSIGNAL = 0x2D7d6Ec6198ADFD5850D00BD601958F6E316b05E;
+    address public constant AUSTINGRIFFITH = 0x34aA3F359A9D614239015126635CE7732c18fDF3;
+    address public constant ABDULLAHUMAR = 0xaA4a9282594a8ec02116fc97B634648CCc9fBe5f;
+    uint256 public constant LUMP_CHAIR = 9_000_000_000; // 20% of $45k
+    uint256 public constant LUMP_MEMBER = 7_000_000_000; // 20% of $35k
+
     int96 flowRateBefore;
     uint256 podBalanceBefore;
     uint256 timelockBalanceBefore;
+    uint256 coltronUsdcBefore;
+    uint256 svUsdcBefore;
+    uint256 agUsdcBefore;
+    uint256 auUsdcBefore;
 
     function _selectFork() public override {
         vm.createSelectFork({ blockNumber: 25_480_000, urlOrAlias: "mainnet" });
@@ -55,6 +69,10 @@ contract Proposal_ENS_SPP3_StreamImplementation_Test is ENS_Governance {
 
         podBalanceBefore = USDCx.balanceOf(STREAM_POD);
         timelockBalanceBefore = USDCx.balanceOf(address(timelock));
+        coltronUsdcBefore = USDC.balanceOf(COLTRON);
+        svUsdcBefore = USDC.balanceOf(SOVEREIGNSIGNAL);
+        agUsdcBefore = USDC.balanceOf(AUSTINGRIFFITH);
+        auUsdcBefore = USDC.balanceOf(ABDULLAHUMAR);
         console2.log("master flow rate before:", uint256(int256(flowRateBefore)));
     }
 
@@ -65,10 +83,10 @@ contract Proposal_ENS_SPP3_StreamImplementation_Test is ENS_Governance {
     {
         description = "SPP3 stream implementation (pre-draft placeholder)";
 
-        address[] memory _targets = new address[](5);
-        uint256[] memory _values = new uint256[](5);
-        bytes[] memory _calldatas = new bytes[](5);
-        string[] memory _signatures = new string[](5);
+        address[] memory _targets = new address[](9);
+        uint256[] memory _values = new uint256[](9);
+        bytes[] memory _calldatas = new bytes[](9);
+        string[] memory _signatures = new string[](9);
 
         // Let USDCx pull the USDC we are about to wrap.
         _targets[0] = address(USDC);
@@ -78,11 +96,11 @@ contract Proposal_ENS_SPP3_StreamImplementation_Test is ENS_Governance {
         _targets[1] = address(USDCx);
         _calldatas[1] = abi.encodeWithSelector(IUSDCx.upgrade.selector, WRAP_USDCX);
 
-        // Send the margin to the pod. It carries the old cohort through the overlap until the August switch.
+        // Send the margin to the pod. It carries the old cohort through the overlap until the switch.
         _targets[2] = address(USDCx);
         _calldatas[2] = abi.encodeWithSelector(IUSDCx.transfer.selector, STREAM_POD, POD_MARGIN);
 
-        // Point the master stream at the pod, $3.09M/yr.
+        // Point the master stream at the pod, $3.21M/yr.
         _targets[3] = address(SUPERFLUID);
         _calldatas[3] =
             abi.encodeWithSelector(CFAv1Forwarder.setFlowrate.selector, address(USDCx), STREAM_POD, MASTER_FLOW_RATE);
@@ -90,6 +108,16 @@ contract Proposal_ENS_SPP3_StreamImplementation_Test is ENS_Governance {
         // Refresh the autowrap allowance.
         _targets[4] = address(USDC);
         _calldatas[4] = abi.encodeWithSelector(IERC20.approve.selector, AUTOWRAPPER, AUTOWRAP_ALLOWANCE);
+
+        // Committee 20% lump sum, USDC straight to each member.
+        _targets[5] = address(USDC);
+        _calldatas[5] = abi.encodeWithSelector(IERC20.transfer.selector, COLTRON, LUMP_CHAIR);
+        _targets[6] = address(USDC);
+        _calldatas[6] = abi.encodeWithSelector(IERC20.transfer.selector, SOVEREIGNSIGNAL, LUMP_MEMBER);
+        _targets[7] = address(USDC);
+        _calldatas[7] = abi.encodeWithSelector(IERC20.transfer.selector, AUSTINGRIFFITH, LUMP_MEMBER);
+        _targets[8] = address(USDC);
+        _calldatas[8] = abi.encodeWithSelector(IERC20.transfer.selector, ABDULLAHUMAR, LUMP_MEMBER);
 
         return (_targets, _values, _signatures, _calldatas, description);
     }
@@ -104,6 +132,12 @@ contract Proposal_ENS_SPP3_StreamImplementation_Test is ENS_Governance {
         assertGt(USDCx.balanceOf(address(timelock)), timelockBalanceBefore);
 
         assertEq(USDC.allowance(address(timelock), AUTOWRAPPER), AUTOWRAP_ALLOWANCE);
+
+        // Each committee member got their 20% lump sum.
+        assertEq(USDC.balanceOf(COLTRON), coltronUsdcBefore + LUMP_CHAIR);
+        assertEq(USDC.balanceOf(SOVEREIGNSIGNAL), svUsdcBefore + LUMP_MEMBER);
+        assertEq(USDC.balanceOf(AUSTINGRIFFITH), agUsdcBefore + LUMP_MEMBER);
+        assertEq(USDC.balanceOf(ABDULLAHUMAR), auUsdcBefore + LUMP_MEMBER);
         console2.log("master flow rate after:", uint256(int256(MASTER_FLOW_RATE)));
     }
 
