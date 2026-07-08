@@ -7,6 +7,7 @@ import { console2 } from "@forge-std/src/console2.sol";
 import { MultiSendHelper } from "@ens/helpers/MultiSendHelper.sol";
 import { CFAv1Forwarder } from "@ens/interfaces/ISuperfluidCFAv1Forwarder.sol";
 import { IUSDCx } from "@ens/interfaces/IUSDCx.sol";
+import { IERC20 } from "@contracts/utils/interfaces/IERC20.sol";
 
 // SPP3 stream implementation, pod side. The Stream Management Pod is a Gnosis Safe that runs the
 // individual provider streams. Moving from the SPP2 cohort to SPP3 means, in one batch: turn off the
@@ -15,6 +16,7 @@ import { IUSDCx } from "@ens/interfaces/IUSDCx.sol";
 //
 // Per-provider rates use budget / 31_536_000 (365 days), which reproduces the pod's live rates exactly.
 contract SPP3_PodStreamSetup_Test is Test, MultiSendHelper {
+    address public constant USDC = 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48;
     address public constant USDCX = 0x1BA8603DA702602A8657980e825A6DAa03Dee93a;
     CFAv1Forwarder public constant SUPERFLUID = CFAv1Forwarder(0xcfA132E353cB4E398080B9700609bb008eceB125);
 
@@ -39,13 +41,15 @@ contract SPP3_PodStreamSetup_Test is Test, MultiSendHelper {
 
     uint256 internal constant SECONDS_PER_YEAR = 31_536_000;
 
-    uint256 internal constant AUG_01 = 1_785_542_400; // 2026-08-01 00:00 UTC, the provider switch
+    // The proposal executes in July; the switch is targeted for Aug 1 but is not bound on-chain. Last
+    // season the pod-side restart slipped to mid-September, so the overlap test uses that as the worst case.
+    uint256 internal constant EXEC_DATE = 1_784_419_200; // ~2026-07-19, proposal execution
+    uint256 internal constant SWITCH_TARGET = 1_785_542_400; // 2026-08-01, intended switch
+    uint256 internal constant SWITCH_WORST = 1_789_171_200; // ~2026-09-12, last season's actual slip
     int96 internal constant MASTER_FLOW_RATE = 97_918_282_661_625_533; // $3.09M/yr, the Layer 1 target
 
-    // Margin the executable sends to the pod. The master moves to $3.09M as soon as the proposal
-    // executes in July, but the pod pays the old $4.5M cohort until the August switch. The margin
-    // covers that shortfall (~$1.41M/yr) over the overlap; 165,000 is about six weeks of it.
-    uint256 internal constant POD_MARGIN = 165_000 ether;
+    // Margin the executable sends to the pod, sized to carry it ~65 days past execution.
+    uint256 internal constant POD_MARGIN = 250_000 ether;
 
     function setUp() public {
         vm.createSelectFork({ blockNumber: 25_480_000, urlOrAlias: "mainnet" });
@@ -65,6 +69,9 @@ contract SPP3_PodStreamSetup_Test is Test, MultiSendHelper {
     function test_podStreamSetup() public {
         // The derived rates match the streams the pod is running today.
         assertEq(_outRate(NAMEHASH), _flowRate(1_100_000));
+        assertEq(_outRate(EFP), _flowRate(500_000));
+        assertEq(_outRate(ZK_EMAIL), _flowRate(400_000));
+        assertEq(_outRate(JUSTANAME), _flowRate(300_000));
         assertEq(_outRate(ETH_LIMO), _flowRate(700_000));
         assertEq(_outRate(BLOCKFUL), _flowRate(700_000));
         assertEq(_outRate(NAMESPACE), _flowRate(400_000));
@@ -96,7 +103,7 @@ contract SPP3_PodStreamSetup_Test is Test, MultiSendHelper {
         assertEq(_outRate(ETH_LIMO), _flowRate(700_000));
         assertEq(_outRate(BLOCKFUL), _flowRate(700_000));
 
-        // Total out now lines up with the $3.09M master in.
+        // Total out now lines up with the $3.09M master in (within the ~$2k/yr rounding, see below).
         int96 expectedOut = _flowRate(700_000) + _flowRate(700_000) + _flowRate(500_000) + _flowRate(400_000)
             + _flowRate(340_000) + _flowRate(450_000);
         int96 masterIn = SUPERFLUID.getFlowrate(USDCX, TIMELOCK, STREAM_POD);
@@ -105,26 +112,32 @@ contract SPP3_PodStreamSetup_Test is Test, MultiSendHelper {
     }
 
     // The proposal executes in July and the master immediately moves to $3.09M, but the SPP2 cohort keeps
-    // its old $4.5M streams until the August switch. Through that overlap the pod runs at about -$1.41M/yr
-    // and the margin the executable sent has to carry it. Modeled from the fork date (standing in for the
-    // July execution) to the Aug 1 switch, so the overlap here is longer than it will be in practice.
+    // its old $4.5M streams until the pod switches. Aug 1 is the target, but last season the pod-side
+    // restart slipped to mid-September, so this models that: master down at execution (Jul 19), pod pays
+    // the old cohort until Sep 12. The margin the executable sent has to carry the shortfall the whole way.
     function test_transitionOverlap_margin() public {
-        uint256 execTime = block.timestamp;
+        // Stand in for the Layer 1 wrap plus autowrap so the timelock's master stream stays funded across
+        // the long window. This test is about the pod, not the timelock.
+        vm.startPrank(TIMELOCK);
+        IERC20(USDC).approve(USDCX, 1_000_000e6);
+        IUSDCx(USDCX).upgrade(1_000_000 ether);
+        vm.stopPrank();
 
-        // Executable sends the margin and drops the master to the new rate. Providers unchanged.
-        vm.prank(TIMELOCK);
+        // Execution: send the margin and drop the master to the new rate. Providers unchanged.
+        vm.warp(EXEC_DATE);
+        vm.startPrank(TIMELOCK);
         IUSDCx(USDCX).transfer(STREAM_POD, POD_MARGIN);
-        vm.prank(TIMELOCK);
         SUPERFLUID.setFlowrate(USDCX, STREAM_POD, MASTER_FLOW_RATE);
+        vm.stopPrank();
 
-        // The margin has to cover the shortfall (old outflow minus new inflow) across the whole overlap.
+        // The margin has to cover the shortfall (old outflow minus new inflow) over the whole overlap.
         int96 oldOutflow = _flowRate(1_100_000) + _flowRate(700_000) + _flowRate(700_000) + _flowRate(500_000)
             + _flowRate(400_000) + _flowRate(400_000) + _flowRate(400_000) + _flowRate(300_000);
-        uint256 shortfall = uint256(int256(oldOutflow - MASTER_FLOW_RATE)) * (AUG_01 - execTime);
-        assertGt(POD_MARGIN, shortfall, "margin must cover the overlap shortfall");
+        uint256 shortfall = uint256(int256(oldOutflow - MASTER_FLOW_RATE)) * (SWITCH_WORST - EXEC_DATE);
+        assertGt(POD_MARGIN, shortfall, "margin must cover the worst-case overlap");
 
-        // Pod pays the old cohort on the reduced inflow the whole time, then switches in August.
-        vm.warp(AUG_01);
+        // Pod pays the old cohort on the reduced inflow the whole time, then switches.
+        vm.warp(SWITCH_WORST);
         uint256 balanceAtSwitch = _podBalance();
         assertGt(balanceAtSwitch, 0);
 
@@ -140,15 +153,16 @@ contract SPP3_PodStreamSetup_Test is Test, MultiSendHelper {
             )
         );
 
-        // Out equals in now, so the pod holds steady.
-        vm.warp(AUG_01 + 30 days);
+        // Out and in match to within ~$2k/yr by design (see the dual-convention note), so from here the
+        // pod is effectively steady.
+        vm.warp(SWITCH_WORST + 3 days);
         assertGt(_podBalance(), 0);
 
         assertEq(_outRate(FLUIDKEY), _flowRate(340_000));
         assertEq(_outRate(GOLDSKY), _flowRate(450_000));
         assertEq(_outRate(NAMESPACE), _flowRate(500_000));
         assertEq(_outRate(NAMEHASH), 0);
-        console2.log("overlap days:", (AUG_01 - execTime) / 1 days);
+        console2.log("overlap days:", (SWITCH_WORST - EXEC_DATE) / 1 days);
         console2.log("pod buffer at switch:", balanceAtSwitch / 1e18);
     }
 

@@ -24,13 +24,14 @@ contract Proposal_ENS_SPP3_StreamImplementation_Test is ENS_Governance {
     // eth.limo and Blockful ($1.4M). Rate is budget / 31,556,926, the convention the SPP2 master used.
     int96 public constant MASTER_FLOW_RATE = 97_918_282_661_625_533;
 
-    // We wrap one month of funding (257,500) plus the pod margin (165,000) and approve/upgrade the sum.
-    uint256 public constant WRAP_USDC = 422_500_000_000; // 6 decimals
-    uint256 public constant WRAP_USDCX = 422_500_000_000_000_000_000_000; // 18 decimals
+    // We wrap one month of funding (257,500) plus the pod margin (250,000) and approve/upgrade the sum.
+    uint256 public constant WRAP_USDC = 507_500_000_000; // 6 decimals
+    uint256 public constant WRAP_USDCX = 507_500_000_000_000_000_000_000; // 18 decimals
     // Margin sent to the pod. The master moves to the new $3.09M rate the moment this executes (July),
-    // but the pod keeps paying the SPP2 cohort the old $4.5M until the August switch. That overlap runs
-    // at about -$1.41M/yr, so 165,000 carries the pod for roughly six weeks.
-    uint256 public constant POD_MARGIN = 165_000_000_000_000_000_000_000;
+    // but the pod keeps paying the SPP2 cohort the old $4.5M until the switch, running at about
+    // -$1.41M/yr ($3,869/day). 250,000 carries the pod ~65 days past execution. The switch date is not
+    // enforced on-chain and last season the pod-side restart slipped to mid-September, so size for a slip.
+    uint256 public constant POD_MARGIN = 250_000_000_000_000_000_000_000;
     uint256 public constant AUTOWRAP_ALLOWANCE = 4_377_500_000_000; // ~17 months, same ratio SPP2 used
 
     int96 flowRateBefore;

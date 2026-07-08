@@ -32,17 +32,27 @@ matches the rates the pod runs today to the wei.
 ## Timing and margin
 
 The proposal executes in July, and from that moment the master stream is on the new $3.09M rate. The provider streams
-don't switch until August, so through that overlap the pod keeps paying the old SPP2 cohort the full $4.5M while only
-taking in $3.09M, about -$1.41M/yr. The executable covers this by sending a $165k margin to the pod up front, roughly
-six weeks of the shortfall. The switch itself is atomic: one pod batch turns the old streams off and the new ones on
-together. `test_transitionOverlap_margin` runs the overlap from July through the Aug 1 switch and the pod stays funded.
+don't switch until the pod runs its batch, so through that overlap the pod keeps paying the old SPP2 cohort the full
+$4.5M while only taking in $3.09M, about -$1.41M/yr ($3,869/day). The executable covers this by sending a $250k margin
+to the pod up front, which carries it about 65 days past execution.
+
+This matters more than it sounds. The switch date is not enforced on-chain, and during SPP2's own transition last year
+the pod streams were liquidated by Superfluid sentinels and the pod-side restart did not happen until mid-September, six
+weeks after the Aug 1 target. If SPP3 slips the same way and the margin runs out first, the pod goes critical and every
+stream it runs gets liquidated, eth.limo and Blockful included. So the margin is sized for a mid-September slip, not the
+Aug 1 target, and `test_transitionOverlap_margin` models exactly that (execution Jul 19, switch Sep 12) with the pod
+staying funded. The stronger move is to pre-sign the pod batch so the switch cannot slip past the margin at all.
+
+The switch itself is atomic: one pod batch turns the old streams off and the new ones on together.
 
 ## Still to confirm
 
 - Master receiver is the existing pod. If SPP3 spins up a new committee multisig, swap `STREAM_POD`.
 - Master rate covers cohort plus the two-year streams ($3.09M). Cohort-only would be $1.69M.
-- Goldsky's address is a plain EOA with no ENS name or label, unlike the other three. Worth confirming.
-- Margin is sized for about six weeks of overlap; adjust it to the real gap between execution and the August switch.
+- Margin covers about 65 days from execution. Confirm the real switch date; if it could slip past late September, raise
+  the margin (about $27k per extra week) or pre-sign the pod batch.
+- Goldsky's address could not be verified on-chain (see above). Treat this as a hard blocker: confirm it through the SPP
+  award-notice channel or a signed message from Goldsky before any draft goes live.
 
 ## Run
 
