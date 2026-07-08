@@ -31,18 +31,18 @@ matches the rates the pod runs today to the wei.
 
 ## Timing and margin
 
-The switch is atomic: everything flips in one pod batch. The thing to watch is the gap between the master change
-(executable) and the pod batch, since they run on different paths. If the master drops to $3.09M before the pod
-switches, the pod keeps paying the old $4.5M on $3.09M of income and its small live buffer runs out within a day. So the
-executable sends a ~$60k margin (about a week of outflow) to the pod up front. `test_atomicSwitch_withMargin` runs the
-worst case (master down Aug 1, pod switch Aug 4) and the pod stays funded the whole way.
+The proposal executes in July, and from that moment the master stream is on the new $3.09M rate. The provider streams
+don't switch until August, so through that overlap the pod keeps paying the old SPP2 cohort the full $4.5M while only
+taking in $3.09M, about -$1.41M/yr. The executable covers this by sending a $165k margin to the pod up front, roughly
+six weeks of the shortfall. The switch itself is atomic: one pod batch turns the old streams off and the new ones on
+together. `test_transitionOverlap_margin` runs the overlap from July through the Aug 1 switch and the pod stays funded.
 
 ## Still to confirm
 
 - Master receiver is the existing pod. If SPP3 spins up a new committee multisig, swap `STREAM_POD`.
 - Master rate covers cohort plus the two-year streams ($3.09M). Cohort-only would be $1.69M.
 - Goldsky's address is a plain EOA with no ENS name or label, unlike the other three. Worth confirming.
-- Margin size and the funding amounts follow SPP2 ratios; the real stream spreadsheet sets the finals.
+- Margin is sized for about six weeks of overlap; adjust it to the real gap between execution and the August switch.
 
 ## Run
 

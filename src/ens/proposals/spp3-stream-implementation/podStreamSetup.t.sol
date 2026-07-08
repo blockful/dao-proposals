@@ -39,13 +39,13 @@ contract SPP3_PodStreamSetup_Test is Test, MultiSendHelper {
 
     uint256 internal constant SECONDS_PER_YEAR = 31_536_000;
 
-    uint256 internal constant AUG_01 = 1_785_542_400; // 2026-08-01 00:00 UTC
-    uint256 internal constant AUG_04 = 1_785_801_600; // 2026-08-04 00:00 UTC
+    uint256 internal constant AUG_01 = 1_785_542_400; // 2026-08-01 00:00 UTC, the provider switch
     int96 internal constant MASTER_FLOW_RATE = 97_918_282_661_625_533; // $3.09M/yr, the Layer 1 target
 
-    // Buffer sent to the pod ahead of the switch so a gap between the master change and the pod batch
-    // cannot strand it. Roughly a week of the $3.09M outflow; tune to taste.
-    uint256 internal constant POD_MARGIN = 60_000 ether;
+    // Margin the executable sends to the pod. The master moves to $3.09M as soon as the proposal
+    // executes in July, but the pod pays the old $4.5M cohort until the August switch. The margin
+    // covers that shortfall (~$1.41M/yr) over the overlap; 165,000 is about six weeks of it.
+    uint256 internal constant POD_MARGIN = 165_000 ether;
 
     function setUp() public {
         vm.createSelectFork({ blockNumber: 25_480_000, urlOrAlias: "mainnet" });
@@ -104,28 +104,30 @@ contract SPP3_PodStreamSetup_Test is Test, MultiSendHelper {
         console2.log("pod SPP3 outflow:", uint256(int256(expectedOut)));
     }
 
-    // The switch is atomic, but the master change (Layer 1) and this batch (Layer 2) run on different
-    // paths, so they will not land in the same block. The margin covers that gap. Worst case here is the
-    // master dropping to $3.09M a few days before the pod switches, while the pod still pays the old $4.5M.
-    function test_atomicSwitch_withMargin() public {
+    // The proposal executes in July and the master immediately moves to $3.09M, but the SPP2 cohort keeps
+    // its old $4.5M streams until the August switch. Through that overlap the pod runs at about -$1.41M/yr
+    // and the margin the executable sent has to carry it. Modeled from the fork date (standing in for the
+    // July execution) to the Aug 1 switch, so the overlap here is longer than it will be in practice.
+    function test_transitionOverlap_margin() public {
+        uint256 execTime = block.timestamp;
+
+        // Executable sends the margin and drops the master to the new rate. Providers unchanged.
         vm.prank(TIMELOCK);
         IUSDCx(USDCX).transfer(STREAM_POD, POD_MARGIN);
-
-        // The margin has to outrun the drain over the gap (paying $4.5M on $3.09M is -$1.41M/yr).
-        uint256 gapDrain = uint256(1_410_000) * 1e18 * 3 / 365; // three days, ~$11.6k
-        assertGt(POD_MARGIN, gapDrain);
-
-        // Aug 1: master drops first.
-        vm.warp(AUG_01);
         vm.prank(TIMELOCK);
         SUPERFLUID.setFlowrate(USDCX, STREAM_POD, MASTER_FLOW_RATE);
 
-        // The pod runs on its margin until it switches.
-        vm.warp(AUG_04);
+        // The margin has to cover the shortfall (old outflow minus new inflow) across the whole overlap.
+        int96 oldOutflow = _flowRate(1_100_000) + _flowRate(700_000) + _flowRate(700_000) + _flowRate(500_000)
+            + _flowRate(400_000) + _flowRate(400_000) + _flowRate(400_000) + _flowRate(300_000);
+        uint256 shortfall = uint256(int256(oldOutflow - MASTER_FLOW_RATE)) * (AUG_01 - execTime);
+        assertGt(POD_MARGIN, shortfall, "margin must cover the overlap shortfall");
+
+        // Pod pays the old cohort on the reduced inflow the whole time, then switches in August.
+        vm.warp(AUG_01);
         uint256 balanceAtSwitch = _podBalance();
         assertGt(balanceAtSwitch, 0);
 
-        // Aug 4: one batch, old off and new on together.
         _podExecute(
             abi.encodePacked(
                 _setFlowratePacked(NAMEHASH, 0),
@@ -139,13 +141,14 @@ contract SPP3_PodStreamSetup_Test is Test, MultiSendHelper {
         );
 
         // Out equals in now, so the pod holds steady.
-        vm.warp(AUG_04 + 30 days);
+        vm.warp(AUG_01 + 30 days);
         assertGt(_podBalance(), 0);
 
         assertEq(_outRate(FLUIDKEY), _flowRate(340_000));
         assertEq(_outRate(GOLDSKY), _flowRate(450_000));
         assertEq(_outRate(NAMESPACE), _flowRate(500_000));
         assertEq(_outRate(NAMEHASH), 0);
+        console2.log("overlap days:", (AUG_01 - execTime) / 1 days);
         console2.log("pod buffer at switch:", balanceAtSwitch / 1e18);
     }
 
