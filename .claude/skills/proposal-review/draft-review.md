@@ -29,6 +29,20 @@ This creates:
 - `proposalCalldata.json` — executable calls from the draft
 - `proposalDescription.md` — proposal description
 
+### Anticapture drafts
+
+A draft may instead live on Anticapture (URL like `app.anticapture.com/<dao>/proposals/new?draftId=<uuid>`). There is no
+fetch script for these; pull the calldata straight from the API (no auth needed):
+
+```bash
+curl -s "https://app.anticapture.com/api/gateful/<dao>/proposal/drafts/<draftId>" \
+  | jq '.actions[] | {contractAddress, calldata}'
+```
+
+Each entry in `.actions[]` is one transaction: `contractAddress` is the target and `calldata` is the encoded call.
+Compare them against your manually derived `targets`/`calldatas` exactly as you would `proposalCalldata.json`, and treat
+any mismatch as a finding. The full response also carries `title` and `body` (the proposal description).
+
 ## 3. Write or Update Test File
 
 Create `calldataCheck.t.sol` (or update the existing one from the pre-draft phase).

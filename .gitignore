@@ -23,3 +23,6 @@ broadcast/*/31337/
 /proposalDescription.md
 /proposalCalldata.json
 /draftCalldata.json
+
+# playwright mcp scratch
+.playwright-mcp/
