@@ -1,8 +1,10 @@
-# SPP3 stream implementation (pre-draft)
+# SPP3 stream implementation (EP 6.49)
 
-Calldata for the SPP3 stream transition, built ahead of the on-chain executable and checked against live mainnet state
-(fork block 25,480,000). Same setup as SPP2 (EP 6.13): the timelock streams USDCx to the Stream Management Pod
-(`0xB162...31D1`, `stream.mg.wg.ens.eth`), and the pod streams to each provider and committee member.
+Calldata review for EP 6.49, the SPP3 stream transition, now live on-chain (proposer coltron.eth, proposal id
+`30153206...348879`). The nine on-chain transactions match this reconstruction byte-for-byte, and `calldataCheck.t.sol`
+runs the full lifecycle against the live proposal (fork block 25,496,915). Same setup as SPP2 (EP 6.13): the timelock
+streams USDCx to the Stream Management Pod (`0xB162...31D1`, `stream.mg.wg.ens.eth`), and the pod streams to each
+provider and committee member.
 
 Two parts:
 

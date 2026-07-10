@@ -13,7 +13,7 @@ import { CFAv1Forwarder } from "@ens/interfaces/ISuperfluidCFAv1Forwarder.sol";
 // over, points the master USDCx stream at the Stream Management Pod, refreshes the autowrap allowance,
 // and pays the committee's 20% lump sum in USDC. The pod sets each provider stream and the committee's
 // 80% stream itself; that half lives in podStreamSetup.t.sol.
-contract Proposal_ENS_SPP3_StreamImplementation_Test is ENS_Governance {
+contract Proposal_ENS_EP_6_49_Test is ENS_Governance {
     IERC20 public constant USDC = IERC20(0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48);
     IUSDCx public constant USDCx = IUSDCx(0x1BA8603DA702602A8657980e825A6DAa03Dee93a);
     CFAv1Forwarder public constant SUPERFLUID = CFAv1Forwarder(0xcfA132E353cB4E398080B9700609bb008eceB125);
@@ -54,12 +54,12 @@ contract Proposal_ENS_SPP3_StreamImplementation_Test is ENS_Governance {
     uint256 auUsdcBefore;
 
     function _selectFork() public override {
-        vm.createSelectFork({ blockNumber: 25_480_000, urlOrAlias: "mainnet" });
+        vm.createSelectFork({ blockNumber: 25_496_915, urlOrAlias: "mainnet" });
     }
 
     function _proposer() public pure override returns (address) {
-        // fireeyesdao.eth. 5pence.eth ran the SPP2 executable but is now under the 100k threshold.
-        return 0x5BFCB4BE4d7B43437d5A0c57E908c048a4418390;
+        // coltron.eth, SPP3 committee chair and the on-chain proposer of EP 6.49.
+        return 0x1D5460F896521aD685Ea4c3F2c679Ec0b6806359;
     }
 
     function _beforeProposal() public override {
@@ -81,7 +81,7 @@ contract Proposal_ENS_SPP3_StreamImplementation_Test is ENS_Governance {
         override
         returns (address[] memory, uint256[] memory, string[] memory, bytes[] memory, string memory)
     {
-        description = "SPP3 stream implementation (pre-draft placeholder)";
+        description = getDescriptionFromMarkdown();
 
         address[] memory _targets = new address[](9);
         uint256[] memory _values = new uint256[](9);
@@ -142,10 +142,10 @@ contract Proposal_ENS_SPP3_StreamImplementation_Test is ENS_Governance {
     }
 
     function _isProposalSubmitted() public pure override returns (bool) {
-        return false;
+        return true;
     }
 
     function dirPath() public pure override returns (string memory) {
-        return "";
+        return "src/ens/proposals/ep-6-49";
     }
 }
