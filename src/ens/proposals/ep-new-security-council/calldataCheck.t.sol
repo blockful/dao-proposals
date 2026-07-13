@@ -5,6 +5,7 @@ import { ENS_Governance } from "@ens/ens.t.sol";
 import { ENSConstants } from "@ens/Constants.sol";
 import { ITimelock } from "@ens/interfaces/ITimelock.sol";
 import { ISecurityCouncil } from "@ens/interfaces/ISecurityCouncil.sol";
+import { ISafe } from "@ens/interfaces/ISafe.sol";
 
 /**
  * @title Proposal_ENS_New_Security_Council_Test
@@ -23,6 +24,13 @@ contract Proposal_ENS_New_Security_Council_Test is ENS_Governance {
     address constant defeatedCouncil = 0xDeDEdD439ecF711E61f5aeceF631579DBA2C65dB;
     // 5-of-8 Safe holding the members elected in EP 6.50
     address constant councilSafe = 0x7101B78638e34444F0a5AdE9e1149fbEeC029931;
+
+    // Canonical Safe 1.4.1 singleton and CompatibilityFallbackHandler
+    address constant SAFE_SINGLETON_141 = 0x41675C099F32341bf84BFc5382aF534df5C7461a;
+    address constant SAFE_FALLBACK_HANDLER_141 = 0xfd0732Dc9E303f09fCEf3a7388Ad10A83459Ec99;
+    // Safe storage slots: singleton is slot 0, guard and fallback handler are at fixed hashed slots
+    bytes32 constant GUARD_SLOT = keccak256("guard_manager.guard.address");
+    bytes32 constant FALLBACK_HANDLER_SLOT = keccak256("fallback_manager.handler.address");
 
     // Deploy timestamp (2026-07-10) plus two years plus one week, 2028-07-16 19:49:11 UTC
     uint256 constant EXPECTED_EXPIRATION = 1_847_389_751;
@@ -47,6 +55,27 @@ contract Proposal_ENS_New_Security_Council_Test is ENS_Governance {
         assertEq(securityCouncil.timelock(), address(timelock), "council points to wrong timelock");
         assertEq(securityCouncil.expiration(), EXPECTED_EXPIRATION, "unexpected expiration");
         assertGt(securityCouncil.expiration(), block.timestamp, "council already expired");
+
+        // The Safe is a vanilla 5-of-8: canonical 1.4.1 singleton and fallback handler, no
+        // modules that could execute past the threshold, no guard, and every owner is an EOA
+        ISafe safe = ISafe(councilSafe);
+        assertEq(safe.getThreshold(), 5, "unexpected threshold");
+        assertEq(safe.getOwners().length, 8, "unexpected owner count");
+        assertEq(safe.VERSION(), "1.4.1", "unexpected Safe version");
+        assertEq(
+            address(uint160(uint256(vm.load(councilSafe, bytes32(0))))), SAFE_SINGLETON_141, "unexpected singleton"
+        );
+        assertEq(vm.load(councilSafe, GUARD_SLOT), bytes32(0), "Safe has a guard");
+        assertEq(
+            address(uint160(uint256(vm.load(councilSafe, FALLBACK_HANDLER_SLOT)))),
+            SAFE_FALLBACK_HANDLER_141,
+            "unexpected fallback handler"
+        );
+        (address[] memory modules,) = safe.getModulesPaginated(address(0x1), 10);
+        assertEq(modules.length, 0, "Safe has modules");
+        for (uint256 i = 0; i < safe.getOwners().length; i++) {
+            assertEq(safe.getOwners()[i].code.length, 0, "Safe owner is a contract");
+        }
 
         // New council has no role yet. Term 1 still holds it, this proposal does not revoke it.
         // The defeated EP 6.48 council never got it.
