@@ -31,7 +31,7 @@ See `src/dao-registry.json` for the full list. Currently:
     troubleshooting.md           # Common issues and fixes
     scripts/                     # Bundled fetch scripts
       fetchLiveProposal.js
-      fetchTallyDraft.js
+      fetchDraft.js
   dao-scaffold/                  # /dao-scaffold <name> — bootstrap a new DAO
 src/
   dao-registry.json              # DAO config manifest
@@ -82,6 +82,6 @@ forge test --match-path "src/ens/**" -vv
 # Fetch live proposal data (script bundled in skill, also at src/utils/)
 node src/utils/fetchLiveProposal.js <TALLY_URL> <OUTPUT_DIR>
 
-# Fetch draft proposal data
-node src/utils/fetchTallyDraft.js <DRAFT_URL> <OUTPUT_DIR>
+# Fetch draft proposal data (Anticapture draft API)
+node src/utils/fetchDraft.js <ANTICAPTURE_DRAFT_URL_OR_UUID> <OUTPUT_DIR>
 ```

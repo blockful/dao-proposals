@@ -1,9 +1,10 @@
 ---
 name: proposal-review
 description:
-  Review a DAO governance proposal. Use when the user shares a Tally URL (live or draft), asks to review a proposal, or
-  wants to verify calldata. Detects the phase automatically from the URL and runs the full review workflow.
-argument-hint: [TALLY_URL]
+  Review a DAO governance proposal. Use when the user shares a Tally or Anticapture URL (live proposal or draft), asks
+  to review a proposal, or wants to verify calldata. Detects the phase automatically from the URL and runs the full
+  review workflow.
+argument-hint: [PROPOSAL_URL]
 ---
 
 # Proposal Review
@@ -27,13 +28,13 @@ calldata) is the **worst possible outcome**.
 
 ## Step 1: Detect Phase
 
-Parse the Tally URL to determine the review phase:
+Parse the URL to determine the review phase:
 
-| URL Pattern           | Phase         | What It Means                                            |
-| --------------------- | ------------- | -------------------------------------------------------- |
-| Contains `/proposal/` | **Live**      | Proposal is on-chain, submitted to the Governor          |
-| Contains `/draft/`    | **Draft**     | Proposal exists as a Tally draft, not yet on-chain       |
-| No URL provided       | **Pre-draft** | Proposal is being discussed/designed, no Tally entry yet |
+| URL Pattern           | Phase         | What It Means                                             |
+| --------------------- | ------------- | --------------------------------------------------------- |
+| Contains `/proposal/` | **Live**      | Proposal is on-chain, submitted to the Governor           |
+| Contains `draftId=`   | **Draft**     | Proposal exists as an Anticapture draft, not yet on-chain |
+| No URL provided       | **Pre-draft** | Proposal is being discussed/designed, no draft entry yet  |
 
 ## Step 2: Follow Phase-Specific Workflow
 
@@ -77,6 +78,6 @@ The skill bundles two fetch scripts:
 # Fetch live proposal data (auto-detects DAO from Tally URL)
 node ${CLAUDE_SKILL_DIR}/scripts/fetchLiveProposal.js <TALLY_URL> <OUTPUT_DIR>
 
-# Fetch draft proposal data
-node ${CLAUDE_SKILL_DIR}/scripts/fetchTallyDraft.js <DRAFT_URL> <OUTPUT_DIR>
+# Fetch draft proposal data (Anticapture draft API)
+node ${CLAUDE_SKILL_DIR}/scripts/fetchDraft.js <ANTICAPTURE_DRAFT_URL_OR_UUID> <OUTPUT_DIR>
 ```

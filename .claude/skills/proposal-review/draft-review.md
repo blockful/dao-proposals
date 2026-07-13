@@ -1,7 +1,7 @@
 # Draft Calldata Review
 
-Use this workflow when a proposal exists as a **Tally draft** (URL contains `/draft/`). This covers fetching the draft
-data, writing or updating the test, and verifying calldata.
+Use this workflow when a proposal exists as an **Anticapture draft** (URL contains `draftId=`). This covers fetching the
+draft data, writing or updating the test, and verifying calldata.
 
 ## 1. Create Branch (if new)
 
@@ -14,34 +14,34 @@ If continuing from a pre-draft, use the existing branch.
 ## 2. Fetch Draft Proposal Data
 
 ```bash
-node ${CLAUDE_SKILL_DIR}/scripts/fetchTallyDraft.js <DRAFT_URL_OR_ID> <OUTPUT_DIR>
+node ${CLAUDE_SKILL_DIR}/scripts/fetchDraft.js <DRAFT_URL_OR_ID> <OUTPUT_DIR>
 ```
 
 Examples:
 
 ```bash
-node ${CLAUDE_SKILL_DIR}/scripts/fetchTallyDraft.js https://www.tally.xyz/gov/ens/draft/2786603872288769996 src/ens/proposals/ep-topic-name
-node ${CLAUDE_SKILL_DIR}/scripts/fetchTallyDraft.js 2786603872288769996 src/ens/proposals/ep-topic-name
+node ${CLAUDE_SKILL_DIR}/scripts/fetchDraft.js "https://app.anticapture.com/ens/proposals/new?draftId=5daf1183-4216-47b0-8599-ccdaecf25538" src/ens/proposals/ep-topic-name
+node ${CLAUDE_SKILL_DIR}/scripts/fetchDraft.js "https://ens.gov.blockful.io/proposals/new?draftId=5daf1183-4216-47b0-8599-ccdaecf25538" src/ens/proposals/ep-topic-name
+node ${CLAUDE_SKILL_DIR}/scripts/fetchDraft.js 5daf1183-4216-47b0-8599-ccdaecf25538 src/ens/proposals/ep-topic-name
 ```
 
-This creates:
+A raw UUID defaults the DAO to `ens`; pass the full URL for other DAOs. This creates:
 
 - `proposalCalldata.json` — executable calls from the draft
-- `proposalDescription.md` — proposal description
+- `proposalDescription.md` — proposal description (`# title` + body)
 
-### Anticapture drafts
+### Raw API (spot checks)
 
-A draft may instead live on Anticapture (URL like `app.anticapture.com/<dao>/proposals/new?draftId=<uuid>`). There is no
-fetch script for these; pull the calldata straight from the API (no auth needed):
+The script reads the Anticapture draft API (no auth needed):
 
 ```bash
-curl -s "https://app.anticapture.com/api/gateful/<dao>/proposal/drafts/<draftId>" \
-  | jq '.actions[] | {contractAddress, calldata}'
+curl -s "https://app.anticapture.com/api/gateful/<dao>/proposal/drafts/<draftId>"
 ```
 
-Each entry in `.actions[]` is one transaction: `contractAddress` is the target and `calldata` is the encoded call.
-Compare them against your manually derived `targets`/`calldatas` exactly as you would `proposalCalldata.json`, and treat
-any mismatch as a finding. The full response also carries `title` and `body` (the proposal description).
+Each entry in `.actions[]` is one transaction: `contractAddress` is the target, and the call comes as `functionName` +
+`args` — not encoded calldata. The fetch script encodes it with `cast calldata`. Compare the result against your
+manually derived `targets`/`calldatas` exactly as you would any `proposalCalldata.json`, and treat any mismatch as a
+finding.
 
 ## 3. Write or Update Test File
 
@@ -78,7 +78,7 @@ contract Proposal_ENS_EP_Topic_Name_Draft_Test is ENS_Governance {
     }
 
     function _proposer() public pure override returns (address) {
-        return PROPOSER_ADDRESS; // From Tally draft
+        return PROPOSER_ADDRESS; // Draft author
     }
 
     function _beforeProposal() public override {
@@ -135,7 +135,7 @@ contract Proposal_ENS_EP_Topic_Name_Draft_Test is ENS_Governance {
 | ------------- | --------------------- | ----------------------------------------------------------------------------------------------- |
 | `description` | Hardcoded placeholder | `getDescriptionFromMarkdown()`                                                                  |
 | `dirPath()`   | `""`                  | `"src/ens/proposals/ep-topic-name"` **(MANDATORY — comparison is silently skipped without it)** |
-| `_proposer()` | Default               | From Tally draft                                                                                |
+| `_proposer()` | Default               | From the draft author                                                                           |
 
 > **WARNING**: If `dirPath()` returns `""` and `proposalCalldata.json` exists, the calldata comparison is silently
 > skipped — the test will pass without verifying calldata. This is a false positive risk. Always set `dirPath()` for
