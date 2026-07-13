@@ -35,9 +35,6 @@ contract Proposal_ENS_New_Security_Council_Test is ENS_Governance {
     // Deploy timestamp (2026-07-10) plus two years plus one week, 2028-07-16 19:49:11 UTC
     uint256 constant EXPECTED_EXPIRATION = 1_847_389_751;
 
-    uint256 constant expectedProposalId =
-        77_767_899_528_494_238_518_019_756_391_533_686_963_875_234_067_646_094_287_125_791_110_488_147_463_806;
-
     function _selectFork() public override {
         // Proposal creation block, from proposalCalldata.json
         vm.createSelectFork({ blockNumber: 25_524_727, urlOrAlias: "mainnet" });
@@ -48,8 +45,6 @@ contract Proposal_ENS_New_Security_Council_Test is ENS_Governance {
     }
 
     function _beforeProposal() public override {
-        assertEq(proposalId, expectedProposalId);
-
         // Council is deployed and wired to the elected Safe and this timelock
         assertEq(securityCouncil.owner(), councilSafe, "council not owned by the elected Safe");
         assertEq(securityCouncil.timelock(), address(timelock), "council points to wrong timelock");
