@@ -1,5 +1,4 @@
 # [Executable] Establishing a new Security Council
-
 ## Abstract
 
 This proposal establishes the new ENS Security Council based on the results of EP 6.50 “Election of the New ENS DAO Security Council”. The term will last two years, until 16 July 2028.

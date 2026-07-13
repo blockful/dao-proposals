@@ -7,15 +7,15 @@ import { ITimelock } from "@ens/interfaces/ITimelock.sol";
 import { ISecurityCouncil } from "@ens/interfaces/ISecurityCouncil.sol";
 
 /**
- * @title Proposal_ENS_New_Security_Council_Draft_Test
- * @notice Draft review — "[Executable] Establishing a new Security Council".
+ * @title Proposal_ENS_New_Security_Council_Test
+ * @notice Live review — "[Executable] Establishing a new Security Council" (proposer nick.eth).
  * @dev Grants PROPOSER_ROLE on the ENS timelock to the SecurityCouncil contract elected in the
  *      EP 6.50 election. In this timelock PROPOSER_ROLE gates cancel(), so the grant hands the
  *      council its veto power for a two-year term (expires 16 July 2028). Single executable call.
  *      Replaces the defeated EP 6.48, whose council was owned by the previous term's Safe; this
  *      deployment is owned by the 5-of-8 Safe of the newly elected members.
  */
-contract Proposal_ENS_New_Security_Council_Draft_Test is ENS_Governance {
+contract Proposal_ENS_New_Security_Council_Test is ENS_Governance {
     // New council — same bytecode as the audited EP 6.48 deployment, owned by the elected Safe
     ISecurityCouncil constant securityCouncil = ISecurityCouncil(0x2acBf518b3759f6e1fA163294eda55bF1d0ae051);
     // Term 1 council — keeps its role until it self-expires on 2026-07-24
@@ -28,8 +28,12 @@ contract Proposal_ENS_New_Security_Council_Draft_Test is ENS_Governance {
     // Deploy timestamp (2026-07-16) + two years + one week
     uint256 constant EXPECTED_EXPIRATION = 1_847_389_751;
 
+    uint256 constant expectedProposalId =
+        77_767_899_528_494_238_518_019_756_391_533_686_963_875_234_067_646_094_287_125_791_110_488_147_463_806;
+
     function _selectFork() public override {
-        vm.createSelectFork({ blockNumber: 25_524_404, urlOrAlias: "mainnet" });
+        // Proposal creation block, from proposalCalldata.json
+        vm.createSelectFork({ blockNumber: 25_524_727, urlOrAlias: "mainnet" });
     }
 
     function _proposer() public pure override returns (address) {
@@ -37,6 +41,8 @@ contract Proposal_ENS_New_Security_Council_Draft_Test is ENS_Governance {
     }
 
     function _beforeProposal() public override {
+        assertEq(proposalId, expectedProposalId);
+
         // Council is deployed and wired to the elected Safe and this timelock
         assertEq(securityCouncil.owner(), councilSafe, "council not owned by the elected Safe");
         assertEq(securityCouncil.timelock(), address(timelock), "council points to wrong timelock");
@@ -114,7 +120,7 @@ contract Proposal_ENS_New_Security_Council_Draft_Test is ENS_Governance {
     }
 
     function _isProposalSubmitted() public pure override returns (bool) {
-        return false; // draft — not yet on-chain
+        return true;
     }
 
     function dirPath() public pure override returns (string memory) {
