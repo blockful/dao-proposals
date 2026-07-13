@@ -4,10 +4,26 @@ const path = require('path');
 const TALLY_API_URL = 'https://api.tally.xyz/query';
 const API_KEY = '365b418f59bd6dc4a0d7f23c2e8c12d982f156e9069695a6f0a2dcc3232448df';
 
+// The registry lives at <repo root>/src/dao-registry.json; walk up from this
+// script (or the cwd as fallback) so the bundled skill copy finds it too.
+function findRegistryPath() {
+    for (const start of [__dirname, process.cwd()]) {
+        let dir = start;
+        while (true) {
+            const candidate = path.join(dir, 'src', 'dao-registry.json');
+            if (fs.existsSync(candidate)) return candidate;
+            const parent = path.dirname(dir);
+            if (parent === dir) break;
+            dir = parent;
+        }
+    }
+    console.error('Error: could not locate src/dao-registry.json from this script or the current directory');
+    process.exit(1);
+}
+
 // Build slug -> governorId lookup from dao-registry.json
 function loadGovernorLookup() {
-    const registryPath = path.resolve(__dirname, '..', 'dao-registry.json');
-    const registry = JSON.parse(fs.readFileSync(registryPath, 'utf-8'));
+    const registry = JSON.parse(fs.readFileSync(findRegistryPath(), 'utf-8'));
     const lookup = {};
     for (const [key, dao] of Object.entries(registry.daos)) {
         if (dao.tallySlug && dao.contracts.governor) {
