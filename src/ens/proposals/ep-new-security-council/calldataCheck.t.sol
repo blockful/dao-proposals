@@ -8,24 +8,23 @@ import { ISecurityCouncil } from "@ens/interfaces/ISecurityCouncil.sol";
 
 /**
  * @title Proposal_ENS_New_Security_Council_Test
- * @notice Live review — "[Executable] Establishing a new Security Council" (proposer nick.eth).
- * @dev Grants PROPOSER_ROLE on the ENS timelock to the SecurityCouncil contract elected in the
- *      EP 6.50 election. In this timelock PROPOSER_ROLE gates cancel(), so the grant hands the
- *      council its veto power for a two-year term (expires 16 July 2028). Single executable call.
- *      Replaces the defeated EP 6.48, whose council was owned by the previous term's Safe; this
- *      deployment is owned by the 5-of-8 Safe of the newly elected members.
+ * @notice Live review of "[Executable] Establishing a new Security Council", proposed by nick.eth.
+ * @dev Single call granting PROPOSER_ROLE on the ENS timelock to the new SecurityCouncil contract.
+ *      In this timelock PROPOSER_ROLE gates cancel(), so the grant is the veto power. The term runs
+ *      until 16 July 2028. Replaces the defeated EP 6.48, whose council was owned by the previous
+ *      term's Safe. This deployment is owned by the 5-of-8 Safe of the members elected in EP 6.50.
  */
 contract Proposal_ENS_New_Security_Council_Test is ENS_Governance {
-    // New council — same bytecode as the audited EP 6.48 deployment, owned by the elected Safe
+    // New council, same bytecode as the audited EP 6.48 deployment, owned by the elected Safe
     ISecurityCouncil constant securityCouncil = ISecurityCouncil(0x2acBf518b3759f6e1fA163294eda55bF1d0ae051);
-    // Term 1 council — keeps its role until it self-expires on 2026-07-24
+    // Term 1 council, keeps its role until it self-expires on 2026-07-24
     address constant oldSecurityCouncil = 0xB8fA0cE3f91F41C5292D07475b445c35ddF63eE0;
-    // EP 6.48's council (defeated) — must never have gotten the role
+    // Council from the defeated EP 6.48, must never get the role
     address constant defeatedCouncil = 0xDeDEdD439ecF711E61f5aeceF631579DBA2C65dB;
     // 5-of-8 Safe holding the members elected in EP 6.50
     address constant councilSafe = 0x7101B78638e34444F0a5AdE9e1149fbEeC029931;
 
-    // Deploy timestamp (2026-07-16) + two years + one week
+    // Deploy timestamp (2026-07-10) plus two years plus one week, 2028-07-16 19:49:11 UTC
     uint256 constant EXPECTED_EXPIRATION = 1_847_389_751;
 
     uint256 constant expectedProposalId =
@@ -37,7 +36,7 @@ contract Proposal_ENS_New_Security_Council_Test is ENS_Governance {
     }
 
     function _proposer() public pure override returns (address) {
-        return 0xb8c2C29ee19D8307cb7255e1Cd9CbDE883A267d5; // nick.eth, the draft author
+        return 0xb8c2C29ee19D8307cb7255e1Cd9CbDE883A267d5; // nick.eth
     }
 
     function _beforeProposal() public override {
@@ -49,8 +48,8 @@ contract Proposal_ENS_New_Security_Council_Test is ENS_Governance {
         assertEq(securityCouncil.expiration(), EXPECTED_EXPIRATION, "unexpected expiration");
         assertGt(securityCouncil.expiration(), block.timestamp, "council already expired");
 
-        // New council has no role yet; term 1 still holds it (this proposal does not revoke it);
-        // the defeated EP 6.48 council never got it
+        // New council has no role yet. Term 1 still holds it, this proposal does not revoke it.
+        // The defeated EP 6.48 council never got it.
         assertFalse(timelock.hasRole(PROPOSER_ROLE, address(securityCouncil)), "new council already has role");
         assertTrue(timelock.hasRole(PROPOSER_ROLE, oldSecurityCouncil), "term 1 council lost its role");
         assertFalse(timelock.hasRole(PROPOSER_ROLE, defeatedCouncil), "defeated EP 6.48 council has role");
@@ -59,7 +58,10 @@ contract Proposal_ENS_New_Security_Council_Test is ENS_Governance {
         bytes32 pendingId = _scheduleDummyOperation("new-security-council-before");
         assertTrue(timelock.isOperationPending(pendingId));
         vm.prank(councilSafe);
-        vm.expectRevert();
+        vm.expectRevert(
+            "AccessControl: account 0x2acbf518b3759f6e1fa163294eda55bf1d0ae051 is missing role "
+            "0xb09aa5aeb3702cfd50b6b62bc4532604938f21248a27a1d5ca736082b6819cc1"
+        );
         securityCouncil.veto(pendingId);
         assertTrue(timelock.isOperationPending(pendingId));
     }
@@ -74,7 +76,7 @@ contract Proposal_ENS_New_Security_Council_Test is ENS_Governance {
         calldatas = new bytes[](1);
         signatures = new string[](1);
 
-        // Grant PROPOSER_ROLE (the timelock's cancel gate) to the new council
+        // Grant PROPOSER_ROLE, the timelock's cancel gate, to the new council
         targets[0] = ENSConstants.TIMELOCK;
         values[0] = 0;
         calldatas[0] = abi.encodeWithSelector(ITimelock.grantRole.selector, PROPOSER_ROLE, address(securityCouncil));
@@ -85,12 +87,12 @@ contract Proposal_ENS_New_Security_Council_Test is ENS_Governance {
     }
 
     function _afterExecution() public override {
-        // New council holds the role; the other councils' state is unchanged
+        // New council holds the role, the other councils are unchanged
         assertTrue(timelock.hasRole(PROPOSER_ROLE, address(securityCouncil)), "new council missing role");
         assertTrue(timelock.hasRole(PROPOSER_ROLE, oldSecurityCouncil), "term 1 council role changed");
         assertFalse(timelock.hasRole(PROPOSER_ROLE, defeatedCouncil), "defeated council gained role");
 
-        // Council can now veto: the Safe cancels a pending timelock op
+        // The Safe can now cancel a pending timelock op through the council
         bytes32 pendingId = _scheduleDummyOperation("new-security-council-after");
         assertTrue(timelock.isOperationPending(pendingId));
         vm.prank(councilSafe);
@@ -99,7 +101,7 @@ contract Proposal_ENS_New_Security_Council_Test is ENS_Governance {
 
         // Only the Safe can veto through the council
         bytes32 otherId = _scheduleDummyOperation("new-security-council-stranger");
-        vm.expectRevert();
+        vm.expectRevert("Ownable: caller is not the owner");
         securityCouncil.veto(otherId);
         assertTrue(timelock.isOperationPending(otherId), "stranger vetoed through the council");
     }
