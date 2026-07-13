@@ -1,0 +1,13 @@
+{
+  "source": "https://ens.gov.blockful.io/proposals/new?draftId=5daf1183-4216-47b0-8599-ccdaecf25538&view=preview",
+  "draftId": "5daf1183-4216-47b0-8599-ccdaecf25538",
+  "author": "0xb8c2c29ee19d8307cb7255e1cd9cbde883a267d5",
+  "fetchedAt": "2026-07-13T14:41:36Z",
+  "executableCalls": [
+    {
+      "target": "0xFe89cc7aBB2C4183683ab71653C4cdc9B02D44b7",
+      "calldata": "0x2f2ff15db09aa5aeb3702cfd50b6b62bc4532604938f21248a27a1d5ca736082b6819cc10000000000000000000000002acbf518b3759f6e1fa163294eda55bf1d0ae051",
+      "value": "0"
+    }
+  ]
+}
