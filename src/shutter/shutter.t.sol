@@ -95,6 +95,15 @@ abstract contract Shutter_Governance is Test {
         bool passed = LinearERC20Voting.isPassed(proposalId);
         assertTrue(passed, "Proposal did not pass");
 
+        // Advance through the Azorius timelock into the execution window.
+        (,, uint32 timelockPeriod,,) = Azorius.getProposal(proposalId);
+        vm.roll(block.number + timelockPeriod);
+        assertEq(
+            uint8(Azorius.proposalState(proposalId)),
+            uint8(IAzorius.ProposalState.EXECUTABLE),
+            "Proposal is not executable after timelock"
+        );
+
         // Execute the proposal
         _executeProposal(proposalId, transactions);
 
