@@ -361,17 +361,34 @@ cast call $USDC "balanceOf(address)(uint256)" <wallet>
 `0x0e87dc8aad3494252e641aad0745c009d08b8cc8`, `0xa7dad944581638ad570ce50e3e66e8cdea4f78ba`,
 `0x4594bab27825d662064d20eb8eb75195c5d98c8b`, `0xcee88909be73d07d557ef2648ab60f7c8c90ac9f`.
 
-**Spender addresses the thread says to check/revoke — ⚠️ verify each against _your own_ approvals in revoke.cash; do not
-trust the list blindly (possible transcription errors; at least one may not be an approvable pool):**
+**Underlying token contracts used by the protocol** (these are the ERC-20s; your approval is granted _to the pools
+below_, not to these):
 
-- USDC (#14): `0xDAA037F99d168b552c0c61B7Fb64cF7819D78310`
-- DAI (#15): `0x372d02e58a8Fcf42114232F614D57f31401d4C7D`, `0xe6c1A8E7a879d7feBB8144276a62f9a6b381bd37`,
-  `0x37923EB0F4a9097B2774eAB9D928AFaD6196cf76`
-- USDC (#15): `0x99230f93135f3650ab5706b7B6D4B30b4EE961C9`, `0xA4f8310CD972b1fc3CA9F130b235A91bc882baDb`
-- USDT (#15): `0xbF5649526aa1DC1dAA82ED29dDc65149278CA5d8`, `0x6ac048eE380cBf0Cb22c30401e710c28d91EB94d`,
-  `0x7B1E1A841afE589F1b5337a2Eec41A18a58475Be`
-- GUSD (#15): `0x5cFcFb6171db72a26b84bc50EdD2d80b0F3fc094`
-- RAI (#15): `0x02Cbe7FeAa8B969aCC43ab368B6ed45Cb63F3354`
+| Token | Contract                                                                                 |
+| ----- | ---------------------------------------------------------------------------------------- |
+| USDC  | [`0xA0b8…eB48`](https://etherscan.io/address/0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48) |
+| DAI   | [`0x6B17…1d0F`](https://etherscan.io/address/0x6B175474E89094C44Da98b954EedeAC495271d0F) |
+| USDT  | [`0xdAC1…1ec7`](https://etherscan.io/address/0xdAC17F958D2ee523a2206206994597C13D831ec7) |
+| GUSD  | [`0x056F…d5Cd`](https://etherscan.io/address/0x056Fd409E1d7A124BD7017459dFEa2F387b6d5Cd) |
+| RAI   | [`0x03ab…4919`](https://etherscan.io/address/0x03ab458634910AaD20eF5f1C8ee96F1D6ac54919) |
+
+**The pool/provider contracts your approvals sit on (the "spenders" to check/revoke).** All 11 are node-verified as real
+provider pools (each returns a valid `uToken()`); each row shows its underlying token and current control state. ⚠️
+Still, trust revoke.cash's view of _your own_ approvals over any list.
+
+| Token | Pool (spender) — Etherscan                                                                | Prop | Control now                        |
+| ----- | ----------------------------------------------------------------------------------------- | ---- | ---------------------------------- |
+| USDC  | [`0xDAA0…78310`](https://etherscan.io/address/0xDAA037F99d168b552c0c61B7Fb64cF7819D78310) | #14  | **attacker-controlled (executed)** |
+| USDC  | [`0x9923…61C9`](https://etherscan.io/address/0x99230f93135f3650ab5706b7B6D4B30b4EE961C9)  | #15  | legit (pending)                    |
+| USDC  | [`0xA4f8…baDb`](https://etherscan.io/address/0xA4f8310CD972b1fc3CA9F130b235A91bc882baDb)  | #15  | legit (pending)                    |
+| DAI   | [`0x372d…d4C7D`](https://etherscan.io/address/0x372d02e58a8Fcf42114232F614D57f31401d4C7D) | #15  | legit (pending)                    |
+| DAI   | [`0xe6c1…1bd37`](https://etherscan.io/address/0xe6c1A8E7a879d7feBB8144276a62f9a6b381bd37) | #15  | legit (pending)                    |
+| DAI   | [`0x3792…6cf76`](https://etherscan.io/address/0x37923EB0F4a9097B2774eAB9D928AFaD6196cf76) | #15  | legit (pending)                    |
+| USDT  | [`0xbF56…CA5d8`](https://etherscan.io/address/0xbF5649526aa1DC1dAA82ED29dDc65149278CA5d8) | #15  | legit (pending)                    |
+| USDT  | [`0x6ac0…B94d`](https://etherscan.io/address/0x6ac048eE380cBf0Cb22c30401e710c28d91EB94d)  | #15  | legit (pending)                    |
+| USDT  | [`0x7B1E…475Be`](https://etherscan.io/address/0x7B1E1A841afE589F1b5337a2Eec41A18a58475Be) | #15  | legit (pending)                    |
+| GUSD  | [`0x5cFc…fc094`](https://etherscan.io/address/0x5cFcFb6171db72a26b84bc50EdD2d80b0F3fc094) | #15  | legit (pending)                    |
+| RAI   | [`0x02Cb…F3354`](https://etherscan.io/address/0x02Cbe7FeAa8B969aCC43ab368B6ed45Cb63F3354) | #15  | legit (pending)                    |
 
 **Sources:** a full Ethereum archive node (**reth v1.9.3**, chain id 1, queried at block ~25,535,332) for live contract
 state, `getActions`, bytecode/proxy-slot checks, and real balances/allowances; BarnBridge Governance & provider
