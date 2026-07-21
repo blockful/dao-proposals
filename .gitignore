@@ -26,3 +26,5 @@ broadcast/*/31337/
 
 # playwright mcp scratch
 .playwright-mcp/
+
+.worktrees/
