@@ -95,8 +95,10 @@ contract Proposal_ENS_EP_Empowering_ENS_Foundation_Draft_Test is ENS_Governance,
         assertTrue(endowmentSafe.isOwner(address(timelock)));
         assertFalse(endowmentSafe.isOwner(ENDOWMENT_TIMELOCK));
 
-        // Snapshot enabled modules — must be exactly the two known ones (karpatkey's
-        // Zodiac Roles modifier + the Safe Allowance Module) and must be untouched.
+        // Snapshot enabled modules — must be exactly the two known ones and untouched:
+        //   1. Zodiac Roles v2 modifier (karpatkey manager pod, DeFi-scoped MANAGER role)
+        //   2. Safe Allowance Module (30 ETH / 25-day ETH spending limit delegated to
+        //      main.mg.wg.ens.eth — bypasses owner signatures and survives the swap)
         // The `next` pointer must be the sentinel, proving the list is complete.
         address next;
         (endowmentModulesBefore, next) = endowmentSafe.getModulesPaginated(SENTINEL_OWNERS, 10);
