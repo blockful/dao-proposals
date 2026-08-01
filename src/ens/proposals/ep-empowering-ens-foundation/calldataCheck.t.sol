@@ -89,6 +89,13 @@ contract Proposal_ENS_EP_Empowering_ENS_Foundation_Draft_Test is ENS_Governance,
         );
         assertFalse(endowmentTimelock.hasRole(TIMELOCK_ADMIN_ROLE, ENS_FOUNDATION_SAFE));
 
+        // Role administration is self-gated: every grant/revoke must be scheduled through
+        // the timelock itself (9-day delay), which the Security Council can veto. This is
+        // what prevents the Foundation from silently stripping the SC's cancel right.
+        assertEq(endowmentTimelock.getRoleAdmin(PROPOSER_ROLE), TIMELOCK_ADMIN_ROLE);
+        assertEq(endowmentTimelock.getRoleAdmin(EXECUTOR_ROLE), TIMELOCK_ADMIN_ROLE);
+        assertEq(endowmentTimelock.getRoleAdmin(TIMELOCK_ADMIN_ROLE), TIMELOCK_ADMIN_ROLE);
+
         // ── Security Council veto wrapper: cancel authority wired to the SC Safe ──
         ISecurityCouncil scVeto = ISecurityCouncil(SC_VETO_CONTRACT);
         assertEq(scVeto.owner(), SECURITY_COUNCIL_SAFE);
@@ -261,6 +268,36 @@ contract Proposal_ENS_EP_Empowering_ENS_Foundation_Draft_Test is ENS_Governance,
         assertTrue(endowmentTimelock.isOperationDone(executedId));
         assertEq(address(endowmentSafe).balance, endowmentEthBefore - 1, "endowment must send 1 wei");
         assertEq(ENS_FOUNDATION_SAFE.balance, foundationEthBefore + 1, "foundation must receive 1 wei");
+
+        // ── Adversarial: the Foundation cannot strip the Security Council's veto
+        //    right directly — revokeRole is gated by TIMELOCK_ADMIN_ROLE, held only
+        //    by the timelock itself, so any role change must be scheduled (9 days)
+        //    and is itself vetoable ──
+        vm.prank(ENS_FOUNDATION_SAFE);
+        vm.expectRevert();
+        endowmentTimelock.revokeRole(PROPOSER_ROLE, SC_VETO_CONTRACT);
+        assertTrue(endowmentTimelock.hasRole(PROPOSER_ROLE, SC_VETO_CONTRACT), "SC veto right must survive");
+
+        // ── Adversarial: nobody can shorten the delay directly either ──
+        vm.prank(ENS_FOUNDATION_SAFE);
+        vm.expectRevert(bytes("TimelockController: caller must be timelock"));
+        endowmentTimelock.updateDelay(0);
+
+        // ── Adversarial: the SC wrapper holds PROPOSER_ROLE but exposes no schedule
+        //    forwarding — the Security Council can cancel, never initiate ──
+        vm.prank(SECURITY_COUNCIL_SAFE);
+        (bool scheduledViaWrapper,) = SC_VETO_CONTRACT.call(
+            abi.encodeWithSelector(
+                ITimelock.schedule.selector,
+                address(endowmentSafe),
+                0,
+                innerExec,
+                bytes32(0),
+                keccak256("sc-cannot-schedule"),
+                ENDOWMENT_TIMELOCK_MIN_DELAY
+            )
+        );
+        assertFalse(scheduledViaWrapper, "SC wrapper must not forward schedule calls");
     }
 
     function _isProposalSubmitted() public pure override returns (bool) {
