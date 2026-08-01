@@ -8,6 +8,7 @@ import { ISafe } from "@ens/interfaces/ISafe.sol";
 import { IENSToken } from "@ens/interfaces/IENSToken.sol";
 import { ITimelock } from "@ens/interfaces/ITimelock.sol";
 import { ISecurityCouncil } from "@ens/interfaces/ISecurityCouncil.sol";
+import { IRolesModifier } from "@ens/interfaces/IRolesModifier.sol";
 
 /// @notice Draft review of "[Executable] Next Era of ENS DAO: Empowering the ENS Foundation"
 ///         (Tally draft 2913928210729141431, proposed by nick.eth).
@@ -364,6 +365,25 @@ contract Proposal_ENS_EP_Empowering_ENS_Foundation_Draft_Test is ENS_Governance,
             )
         );
         assertFalse(scheduledViaWrapper, "SC wrapper must not forward schedule calls");
+
+        // ── Adversarial: neither module path can touch the Safe's owner set.
+        //    This closes the last on-chain recovery/takeover vector outside the
+        //    Foundation timelock path: karpatkey's MANAGER role is DeFi-scoped and
+        //    holds no Safe owner-management permissions (the Allowance Module is
+        //    structurally transfer-only — its entrypoint takes no calldata at all) ──
+        bytes memory evictData =
+            abi.encodeWithSelector(ISafe.swapOwner.selector, SENTINEL_OWNERS, ENDOWMENT_TIMELOCK, address(0xBEEF));
+        vm.prank(ENSConstants.KARPATKEY); // ens-endowment.pod.xyz — sole MANAGER member
+        vm.expectRevert();
+        IRolesModifier(ENDOWMENT_ZODIAC_ROLES)
+            .execTransactionWithRole(address(endowmentSafe), 0, evictData, 0, "MANAGER", true);
+        assertTrue(endowmentSafe.isOwner(ENDOWMENT_TIMELOCK), "owner set must be unchanged");
+        assertFalse(endowmentSafe.isOwner(address(0xBEEF)));
+
+        // A non-module cannot reach execTransactionFromModule at all (Safe GS104)
+        vm.prank(address(0xBEEF));
+        vm.expectRevert(bytes("GS104"));
+        endowmentSafe.execTransactionFromModule(address(endowmentSafe), 0, evictData, 0);
     }
 
     function _isProposalSubmitted() public pure override returns (bool) {
