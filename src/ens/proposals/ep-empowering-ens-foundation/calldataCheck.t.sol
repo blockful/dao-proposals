@@ -43,8 +43,30 @@ contract Proposal_ENS_EP_Empowering_ENS_Foundation_Draft_Test is ENS_Governance,
     /// @dev Safe OwnerManager linked-list sentinel
     address internal constant SENTINEL_OWNERS = address(0x1);
 
+    /// @dev Endowment modules that must survive the owner swap untouched
+    address internal constant ENDOWMENT_ZODIAC_ROLES = 0x703806E61847984346d2D7DDd853049627e50A40;
+    address internal constant ENDOWMENT_ALLOWANCE_MODULE = 0xCFbFaC74C26F8647cBDb8c5caf80BB5b32E43134;
+
+    /// @dev The two Foundation Safe owners without ENS reverse records (presumed
+    ///      Brett Sun / Anthony Leutenegger — flagged for public confirmation)
+    address internal constant FOUNDATION_OWNER_4 = 0x595703734b85452B467E82fFc794C3cb212C204a;
+    address internal constant FOUNDATION_OWNER_5 = 0x81Ba03CaA16D7b29fA9e0b9FCE64cca7CC68CAcc;
+    address internal constant ALEXURBELIS_ETH = 0x481d11fC39324FAA54B736e84bdD45998EEf1ea8;
+    address internal constant KARTIK_ETH = 0x53C61cfb8128ad59244E8c1D26109252ACe23d14;
+
+    /// @dev Runtime codehashes pinned at the reviewed fork block. The wrapper hash
+    ///      was additionally diffed off-chain against the verified
+    ///      blockful/security-council-ens deployment (0x2acBf518…) — identical except
+    ///      the embedded timelock immutable. The timelock hash corresponds to the
+    ///      Sourcify-verified EndowmentTimelock, whose bundled TimelockController is
+    ///      byte-identical to canonical OZ v4.3.2.
+    bytes32 internal constant SC_VETO_CODEHASH = 0xe589f30fb03183570c32359833596e0a555a9db1b34c383beccfd46808cb9ce3;
+    bytes32 internal constant ENDOWMENT_TIMELOCK_CODEHASH =
+        0x8cc4f7b6e858765b5e7a86de0ddd527f92338814901e37c7215e5acc5f48071b;
+
     uint256 internal constant FOUNDATION_ENS_GRANT = 1_000_000e18;
     uint256 internal constant ENDOWMENT_TIMELOCK_MIN_DELAY = 9 days;
+    uint256 internal constant SC_VETO_EXPIRATION = 1_849_227_635; // 2028-08-07 UTC (deploy + 2y + 1wk)
 
     ITimelock internal endowmentTimelock = ITimelock(payable(ENDOWMENT_TIMELOCK));
 
@@ -73,9 +95,15 @@ contract Proposal_ENS_EP_Empowering_ENS_Foundation_Draft_Test is ENS_Governance,
         assertTrue(endowmentSafe.isOwner(address(timelock)));
         assertFalse(endowmentSafe.isOwner(ENDOWMENT_TIMELOCK));
 
-        // Snapshot enabled modules (karpatkey Endowment Manager) — must be untouched.
-        (endowmentModulesBefore,) = endowmentSafe.getModulesPaginated(SENTINEL_OWNERS, 10);
+        // Snapshot enabled modules — must be exactly the two known ones (karpatkey's
+        // Zodiac Roles modifier + the Safe Allowance Module) and must be untouched.
+        // The `next` pointer must be the sentinel, proving the list is complete.
+        address next;
+        (endowmentModulesBefore, next) = endowmentSafe.getModulesPaginated(SENTINEL_OWNERS, 10);
+        assertEq(next, SENTINEL_OWNERS, "endowment: module list must be complete");
         assertEq(endowmentModulesBefore.length, 2, "endowment: expected 2 enabled modules");
+        assertEq(endowmentModulesBefore[0], ENDOWMENT_ZODIAC_ROLES, "endowment: module 0 must be Zodiac Roles");
+        assertEq(endowmentModulesBefore[1], ENDOWMENT_ALLOWANCE_MODULE, "endowment: module 1 must be Allowance Module");
 
         // ── EndowmentTimelock: role configuration matches the proposal's claims ──
         assertEq(endowmentTimelock.getMinDelay(), ENDOWMENT_TIMELOCK_MIN_DELAY);
@@ -89,6 +117,36 @@ contract Proposal_ENS_EP_Empowering_ENS_Foundation_Draft_Test is ENS_Governance,
         );
         assertFalse(endowmentTimelock.hasRole(TIMELOCK_ADMIN_ROLE, ENS_FOUNDATION_SAFE));
 
+        // AccessControl is not enumerable on-chain, so exact membership was proven
+        // off-chain from the complete event history: the timelock emitted exactly 10
+        // events between deployment (block 25_656_954) and the admin renounce
+        // (block 25_657_026) — 3 RoleAdminChanged, 5 RoleGranted (admin: deployer +
+        // self; proposer: Foundation Safe + SC veto wrapper; executor: address(0)),
+        // 1 MinDelayChange, 1 RoleRevoked (deployer's admin) — and nothing since.
+        // The negative checks below pin every other plausible privileged candidate.
+        address[6] memory nonPrivileged = [
+            address(timelock), // DAO timelock holds NO role on the new stack
+            address(governor),
+            SECURITY_COUNCIL_SAFE, // SC acts only through the veto wrapper
+            ENSConstants.KARPATKEY,
+            ENDOWMENT_TIMELOCK_DEPLOYER,
+            SC_VETO_CONTRACT // wrapper is proposer only — never admin
+        ];
+        for (uint256 i = 0; i < nonPrivileged.length; i++) {
+            assertFalse(endowmentTimelock.hasRole(TIMELOCK_ADMIN_ROLE, nonPrivileged[i]), "unexpected admin");
+        }
+        assertFalse(endowmentTimelock.hasRole(PROPOSER_ROLE, address(timelock)));
+        assertFalse(endowmentTimelock.hasRole(PROPOSER_ROLE, address(governor)));
+        assertFalse(endowmentTimelock.hasRole(PROPOSER_ROLE, SECURITY_COUNCIL_SAFE));
+        assertFalse(endowmentTimelock.hasRole(PROPOSER_ROLE, ENSConstants.KARPATKEY));
+        assertFalse(endowmentTimelock.hasRole(PROPOSER_ROLE, ENDOWMENT_TIMELOCK_DEPLOYER));
+
+        // Pin the exact deployed code of both new privileged contracts so the
+        // reviewed semantics (OZ v4.3.2 timelock; cancel-only veto wrapper) are
+        // reproducible from this test alone.
+        assertEq(ENDOWMENT_TIMELOCK.codehash, ENDOWMENT_TIMELOCK_CODEHASH, "timelock code drifted");
+        assertEq(SC_VETO_CONTRACT.codehash, SC_VETO_CODEHASH, "veto wrapper code drifted");
+
         // Role administration is self-gated: every grant/revoke must be scheduled through
         // the timelock itself (9-day delay), which the Security Council can veto. This is
         // what prevents the Foundation from silently stripping the SC's cancel right.
@@ -100,13 +158,19 @@ contract Proposal_ENS_EP_Empowering_ENS_Foundation_Draft_Test is ENS_Governance,
         ISecurityCouncil scVeto = ISecurityCouncil(SC_VETO_CONTRACT);
         assertEq(scVeto.owner(), SECURITY_COUNCIL_SAFE);
         assertEq(scVeto.timelock(), ENDOWMENT_TIMELOCK);
+        assertEq(scVeto.expiration(), SC_VETO_EXPIRATION, "veto expiration must be 2028-08-07");
         assertGt(scVeto.expiration(), block.timestamp, "veto power must not be expired");
 
-        // ── Foundation Safe: 3-of-5 with the draft author as an owner ──
+        // ── Foundation Safe: exactly the five approved board signers, 3-of-5 ──
         ISafe foundationSafe = ISafe(ENS_FOUNDATION_SAFE);
-        assertEq(foundationSafe.getOwners().length, 5);
+        address[] memory foundationOwners = foundationSafe.getOwners();
+        assertEq(foundationOwners.length, 5);
         assertEq(foundationSafe.getThreshold(), 3);
-        assertTrue(foundationSafe.isOwner(_proposer()), "nick.eth must be a Foundation Safe owner");
+        assertEq(foundationOwners[0], _proposer(), "owner 0 must be nick.eth");
+        assertEq(foundationOwners[1], ALEXURBELIS_ETH, "owner 1 must be alexurbelis.eth");
+        assertEq(foundationOwners[2], FOUNDATION_OWNER_4, "owner 2 changed");
+        assertEq(foundationOwners[3], FOUNDATION_OWNER_5, "owner 3 changed");
+        assertEq(foundationOwners[4], KARTIK_ETH, "owner 4 must be kartik.eth");
 
         // ── Balances ──
         timelockEnsBalanceBefore = ensToken.balanceOf(address(timelock));
