@@ -15,4 +15,18 @@ interface ISafe {
         bytes memory
     )
         external;
+
+    function getOwners() external view returns (address[] memory);
+
+    function getThreshold() external view returns (uint256);
+
+    function getModulesPaginated(
+        address start,
+        uint256 pageSize
+    )
+        external
+        view
+        returns (address[] memory array, address next);
+
+    function VERSION() external view returns (string memory);
 }

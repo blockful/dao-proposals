@@ -20,19 +20,6 @@ See `src/dao-registry.json` for the full list. Currently:
 ## Repo Structure
 
 ```
-.claude/skills/
-  proposal-review/               # /proposal-review <URL> — the review skill
-    SKILL.md                     # Entry point: detect phase, route
-    live-review.md               # Live proposal workflow
-    draft-review.md              # Draft proposal workflow
-    pre-draft-review.md          # Pre-draft proposal workflow
-    reference.md                 # Key addresses, helpers, selectors
-    assertion-baseline.md        # Minimum assertion requirements
-    troubleshooting.md           # Common issues and fixes
-    scripts/                     # Bundled fetch scripts
-      fetchLiveProposal.js
-      fetchTallyDraft.js
-  dao-scaffold/                  # /dao-scaffold <name> — bootstrap a new DAO
 src/
   dao-registry.json              # DAO config manifest
   base/                          # Shared governance abstractions
@@ -47,7 +34,7 @@ src/
 When given a Tally URL or asked to review a proposal:
 
 1. Use `/proposal-review <TALLY_URL>` — detects the phase (live/draft/pre-draft) and walks through the full workflow
-2. The skill contains phase-specific guides, assertion baselines, and troubleshooting — all in one place
+2. The skill lives in the private `blockful-skills` repo (`.claude/skills/tech/proposal-review`), not in this repo
 
 ## Golden Rules
 
@@ -79,9 +66,9 @@ forge test --match-path "src/ens/proposals/ep-6-38/*" -vv
 # Run all ENS tests
 forge test --match-path "src/ens/**" -vv
 
-# Fetch live proposal data (script bundled in skill, also at src/utils/)
+# Fetch live proposal data
 node src/utils/fetchLiveProposal.js <TALLY_URL> <OUTPUT_DIR>
 
-# Fetch draft proposal data
-node src/utils/fetchTallyDraft.js <DRAFT_URL> <OUTPUT_DIR>
+# Fetch draft proposal data (Anticapture draft API)
+node src/utils/fetchDraft.js <ANTICAPTURE_DRAFT_URL_OR_UUID> <OUTPUT_DIR>
 ```

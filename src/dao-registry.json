@@ -60,6 +60,27 @@
       "interfacesPath": "src/shutter/interfaces",
       "proposalsPath": "src/shutter/proposals",
       "constantsFile": null
+    },
+    "tornado": {
+      "name": "Tornado Cash",
+      "governanceType": "stake-to-vote",
+      "chain": "mainnet",
+      "basePath": "src/tornado",
+      "baseTestContract": "Tornado_Governance",
+      "baseTestFile": "src/tornado/tornado.t.sol",
+      "contracts": {
+        "governance": "0x5efda50f22d34F262c29268506C5Fa42cB56A1Ce",
+        "token": "0x77777FeDdddFfC19Ff86DB637967013e6C6A116C",
+        "vault": "0x2F50508a8a3D323B91336FA3eA6ae50E55f32185",
+        "staking": "0x2FC93484614a34f26F7970CBB94615bA109BB4bf"
+      },
+      "tallySlug": null,
+      "proposalPrefix": "proposal",
+      "contractNaming": "Proposal_TORN_{number}_Test",
+      "helpers": [],
+      "interfacesPath": "src/tornado/interfaces",
+      "proposalsPath": "src/tornado/proposals",
+      "constantsFile": "src/tornado/Constants.sol"
     }
   }
 }
