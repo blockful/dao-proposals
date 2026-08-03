@@ -1,8 +1,9 @@
 {
-  "source": "https://www.tally.xyz/gov/ens/draft/2913928210729141431",
-  "draftId": "2913928210729141431",
-  "author": "0xb8c2C29ee19D8307cb7255e1Cd9CbDE883A267d5",
-  "fetchedAt": "2026-08-01T00:00:00Z",
+  "proposalId": "80619211450810140112687536515944199882433060764177806587986222097717655810120",
+  "blockNumber": 25667108,
+  "votingStart": 25667109,
+  "votingEnd": 25712927,
+  "createdAt": "2026-08-02T12:07:49.265569Z",
   "executableCalls": [
     {
       "target": "0xC18360217D8F7Ab5e7c516566761Ea12Ce7F9D72",

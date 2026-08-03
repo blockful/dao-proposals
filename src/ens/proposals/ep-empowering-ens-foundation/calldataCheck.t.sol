@@ -10,8 +10,9 @@ import { ITimelock } from "@ens/interfaces/ITimelock.sol";
 import { ISecurityCouncil } from "@ens/interfaces/ISecurityCouncil.sol";
 import { IRolesModifier } from "@ens/interfaces/IRolesModifier.sol";
 
-/// @notice Draft review of "[Executable] Next Era of ENS DAO: Empowering the ENS Foundation"
-///         (Tally draft 2913928210729141431, proposed by nick.eth).
+/// @notice Review of "[Executable] Next Era of ENS DAO: Empowering the ENS Foundation"
+///         (live on-chain, id 80619211450810140112687536515944199882433060764177806587986222097717655810120,
+///         proposed by nick.eth at block 25_667_108; reviewed as Tally draft 2913928210729141431 first).
 ///
 ///         The proposal executes two calls from the DAO timelock (wallet.ensdao.eth):
 ///           1. ENS.transfer(ENS_FOUNDATION_SAFE, 1_000_000e18) — one-time grant restricted
@@ -29,7 +30,7 @@ import { IRolesModifier } from "@ens/interfaces/IRolesModifier.sol";
 ///             deployment except for the embedded timelock immutable).
 ///           - EXECUTOR_ROLE: open (address(0)).
 ///           - TIMELOCK_ADMIN_ROLE: only the timelock itself (deployer renounced).
-contract Proposal_ENS_EP_Empowering_ENS_Foundation_Draft_Test is ENS_Governance, SafeHelper {
+contract Proposal_ENS_EP_Empowering_ENS_Foundation_Test is ENS_Governance, SafeHelper {
     // ─── Proposal actors (verified on-chain, see PR description) ───────────
     /// @dev 3-of-5 Safe (v1.4.1); owners include nick.eth, alexurbelis.eth, kartik.eth
     address internal constant ENS_FOUNDATION_SAFE = 0x9C7dB6B1085ec4D07f75c0BD91AD3FcD368fA19E;
@@ -78,9 +79,10 @@ contract Proposal_ENS_EP_Empowering_ENS_Foundation_Draft_Test is ENS_Governance,
     address[] internal endowmentModulesBefore;
 
     function _selectFork() public override {
-        // After block 25_657_026, where the EndowmentTimelock deployer renounced
+        // Proposal creation block (from proposalCalldata.json). Also after block
+        // 25_657_026, where the EndowmentTimelock deployer renounced
         // TIMELOCK_ADMIN_ROLE — the final role configuration this review depends on.
-        vm.createSelectFork({ blockNumber: 25_659_000, urlOrAlias: "mainnet" });
+        vm.createSelectFork({ blockNumber: 25_667_108, urlOrAlias: "mainnet" });
     }
 
     function _proposer() public pure override returns (address) {
@@ -387,7 +389,7 @@ contract Proposal_ENS_EP_Empowering_ENS_Foundation_Draft_Test is ENS_Governance,
     }
 
     function _isProposalSubmitted() public pure override returns (bool) {
-        return false; // Draft — not yet on-chain
+        return true; // Live on-chain
     }
 
     function dirPath() public pure override returns (string memory) {
