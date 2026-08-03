@@ -38,6 +38,7 @@ interface IRolesAdmin {
     function target() external view returns (address);
     function isModuleEnabled(address module) external view returns (bool);
     function defaultRoles(address module) external view returns (bytes32);
+    function allowTarget(bytes32 roleKey, address targetAddress, uint8 options) external;
 }
 
 /// @notice Aave v3 Horizon Pool
@@ -203,6 +204,11 @@ contract Proposal_ENS_KPK_Update_10_Test is ENS_Governance, SafeHelper, ZodiacRo
     address private constant ROLES_MASTERCOPY = 0xF2964CE6161ce0e75964Fe7927cE114cb0B283D5;
     /// @dev EIP-1167 clone address the payload assumes for the new sub-Roles Modifier
     address private constant SUB_ROLES = 0xa5dd28EC9C69627A96202897b35B88827854bd3b;
+
+    /// @dev Harvest role as defined in karpatkey's configuration repository: role key
+    ///      and the single member listed in roles/HARVEST/members.ts
+    bytes32 private constant HARVEST_ROLE = 0x4841525645535400000000000000000000000000000000000000000000000000;
+    address private constant HARVEST_MEMBER = 0x14C2d2D64C4860ACF7CF39068eb467D7556197de;
     uint256 private constant SUB_ROLES_SALT_NONCE = 1_785_329_888_804;
 
     /// @dev MultiSend handlers registered as transaction unwrappers on the sub-instance
@@ -341,6 +347,7 @@ contract Proposal_ENS_KPK_Update_10_Test is ENS_Governance, SafeHelper, ZodiacRo
         _assertPendle();
         _assertNoSilentRemovals();
         _assertForumItemsNotImplemented();
+        _assertAssumedHarvestArchitecture();
     }
 
     /// @dev TX 0-7: the new sub-Roles Modifier and how it is chained to the existing one.
@@ -633,6 +640,87 @@ contract Proposal_ENS_KPK_Update_10_Test is ENS_Governance, SafeHelper, ZodiacRo
 
         // The Steakhouse address printed in the forum table holds no code.
         assertEq(STEAKHOUSE_ADDRESS_IN_FORUM_POST.code.length, 0, "forum Steakhouse address unexpectedly has code");
+    }
+
+    /// @dev Working assumption for finding 1: the sub-Roles instance will host the
+    ///      Harvest role of item 6, configured by kpk (its owner) after execution and
+    ///      outside the DAO vote. This simulates that configuration and proves the
+    ///      resulting two-layer permission chain:
+    ///
+    ///        HARVEST_MEMBER -> sub-Roles (HARVEST conditions)
+    ///                       -> main Roles (MANAGER conditions, as sub's default role)
+    ///                       -> Endowment Safe
+    ///
+    ///      The sub-role is configured deliberately permissively (whole distributor
+    ///      targets allowed, no argument conditions) to show that even a lax or
+    ///      malicious configuration cannot redirect payouts: the existing MANAGER
+    ///      conditions on the main modifier independently pin the recipient.
+    function _assertAssumedHarvestArchitecture() internal {
+        // kpk, as owner of the sub-instance, configures the Harvest role.
+        bytes32[] memory keys = new bytes32[](1);
+        keys[0] = HARVEST_ROLE;
+        bool[] memory member = new bool[](1);
+        member[0] = true;
+        vm.startPrank(karpatkey);
+        IRolesAdmin(SUB_ROLES).assignRoles(HARVEST_MEMBER, keys, member);
+        IRolesAdmin(SUB_ROLES).allowTarget(HARVEST_ROLE, FLUID_DISTRIBUTOR, EXEC_NONE);
+        IRolesAdmin(SUB_ROLES).allowTarget(HARVEST_ROLE, FLUID_GHO_DISTRIBUTOR, EXEC_NONE);
+        IRolesAdmin(SUB_ROLES).allowTarget(HARVEST_ROLE, MERKL_DISTRIBUTOR, EXEC_NONE);
+        vm.stopPrank();
+
+        vm.startPrank(HARVEST_MEMBER);
+
+        // Claims with the payout directed to the Safe pass both layers.
+        uint256 snap = vm.snapshot();
+        IZodiacRoles(SUB_ROLES)
+            .execTransactionWithRole(
+                FLUID_DISTRIBUTOR,
+                0,
+                _fluidClaimCall(address(endowmentSafe)),
+                IZodiacRoles.Operation.Call,
+                HARVEST_ROLE,
+                false
+            );
+        vm.revertTo(snap);
+        snap = vm.snapshot();
+        IZodiacRoles(SUB_ROLES)
+            .execTransactionWithRole(
+                MERKL_DISTRIBUTOR,
+                0,
+                _merklClaimCall(address(endowmentSafe)),
+                IZodiacRoles.Operation.Call,
+                HARVEST_ROLE,
+                false
+            );
+        vm.revertTo(snap);
+
+        // A redirected payout is rejected by the MAIN layer even though the sub-role
+        // allows the whole target: defense in depth holds.
+        _expectConditionViolation(IZodiacRoles.Status.ParameterNotAllowed);
+        IZodiacRoles(SUB_ROLES)
+            .execTransactionWithRole(
+                FLUID_DISTRIBUTOR, 0, _fluidClaimCall(address(0xdead)), IZodiacRoles.Operation.Call, HARVEST_ROLE, false
+            );
+        _expectConditionViolation(IZodiacRoles.Status.OrViolation);
+        IZodiacRoles(SUB_ROLES)
+            .execTransactionWithRole(
+                MERKL_DISTRIBUTOR, 0, _merklClaimCall(address(0xdead)), IZodiacRoles.Operation.Call, HARVEST_ROLE, false
+            );
+
+        // Anything beyond the distributors is rejected by the SUB layer: the Harvest
+        // member holds no access to the wider Endowment Manager permission set.
+        _expectConditionViolation(IZodiacRoles.Status.TargetAddressNotAllowed);
+        IZodiacRoles(SUB_ROLES)
+            .execTransactionWithRole(
+                KPK_USDC_YIELD, 0, _depositCall(), IZodiacRoles.Operation.Call, HARVEST_ROLE, false
+            );
+        _expectConditionViolation(IZodiacRoles.Status.TargetAddressNotAllowed);
+        IZodiacRoles(SUB_ROLES)
+            .execTransactionWithRole(
+                USDC, 0, _approveCall(GPV2_VAULT_RELAYER), IZodiacRoles.Operation.Call, HARVEST_ROLE, false
+            );
+
+        vm.stopPrank();
     }
 
     // ─── Assertion primitives
