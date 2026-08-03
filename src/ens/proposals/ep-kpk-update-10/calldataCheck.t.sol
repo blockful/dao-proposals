@@ -9,6 +9,7 @@ import { IRolesModifier, ConditionFlat } from "@ens/interfaces/IRolesModifier.so
 import { IMultiSend } from "@ens/interfaces/IMultiSend.sol";
 import { IAnnotationRegistry } from "@ens/interfaces/IAnnotationRegistry.sol";
 import { IMetaMorphoV1 } from "@ens/interfaces/IMetaMorphoV1.sol";
+import { ICowSwapOrderSigner } from "@ens/interfaces/ICowSwapOrderSigner.sol";
 import { IERC20 } from "@forge-std/src/interfaces/IERC20.sol";
 
 // ─── Minimal interfaces for targets touched by this proposal ─────────────
@@ -220,6 +221,10 @@ contract Proposal_ENS_KPK_Update_10_Test is ENS_Governance, SafeHelper, ZodiacRo
     address private constant USDS = 0xdC035D45d973E3EC169d2276DDab16f1e407384F;
     address private constant WETH = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
     address private constant PT_SUSDS_26NOV2026 = 0xdC169AbE56461A2E0c034Da431Ac2a3ebf596094;
+
+    /// @dev CowSwap order signer (delegatecall target for `signOrder`) and a token known
+    ///      to be on the current sell list, used as a control for the item 5 probes
+    address private constant COWSWAP_ORDER_SIGNER = 0x23dA9AdE38E4477b23770DeD512fD37b12381FAB;
 
     /// @dev Named in the forum specification but absent from the published payload
     address private constant SYRUP_USDC = 0x80ac24aA929eaF5013f6436cdA2a7ba190f5Cc0b;
@@ -610,8 +615,19 @@ contract Proposal_ENS_KPK_Update_10_Test is ENS_Governance, SafeHelper, ZodiacRo
         // sub-Roles Modifier and hands it to karpatkey to configure off-chain.
         _assertDistributorClaimsUnchanged();
 
-        // Item 5 — "Swaps (CoW Protocol token lists)": syrupUSDC / syrupUSDT are not
-        // scoped anywhere in the payload, and signOrder was never rescoped.
+        // Item 5 — "Swaps (CoW Protocol token lists)": signOrder was never rescoped, so
+        // orders selling or buying syrupUSDC / syrupUSDT fail the token whitelists. This
+        // is the primary tripwire: it fires on the canonical implementation of item 5
+        // (extending the signOrder token lists), which would not touch the token targets.
+        _assertCowSwapOrderBlocked(SYRUP_USDC, WETH);
+        _assertCowSwapOrderBlocked(SYRUP_USDT, WETH);
+        _assertCowSwapOrderBlocked(USDC, SYRUP_USDC);
+        _assertCowSwapOrderBlocked(USDC, SYRUP_USDT);
+        // Control: an order between two currently whitelisted tokens passes the roles
+        // check (the inner delegatecall may fail, which returns false rather than reverting).
+        _assertCowSwapOrderPermitted(USDC, WETH);
+        // Secondary probe: the syrup token contracts are also not scoped as targets, so
+        // no approval path to the CoW vault relayer exists either.
         _assertTargetNotAllowed(SYRUP_USDC, _approveCall(GPV2_VAULT_RELAYER));
         _assertTargetNotAllowed(SYRUP_USDT, _approveCall(GPV2_VAULT_RELAYER));
 
@@ -621,6 +637,56 @@ contract Proposal_ENS_KPK_Update_10_Test is ENS_Governance, SafeHelper, ZodiacRo
 
     // ─── Assertion primitives
     // ────────────────────────────────────
+
+    function _assertCowSwapOrderBlocked(address sell, address buy) internal {
+        vm.startPrank(karpatkey);
+        _expectConditionViolation(IZodiacRoles.Status.OrViolation);
+        roles.execTransactionWithRole(
+            COWSWAP_ORDER_SIGNER,
+            0,
+            abi.encodeWithSelector(
+                ICowSwapOrderSigner.signOrder.selector, _buildCowSwapOrder(sell, buy), uint32(0), uint256(0)
+            ),
+            IZodiacRoles.Operation.DelegateCall,
+            MANAGER_ROLE,
+            false
+        );
+        vm.stopPrank();
+    }
+
+    function _assertCowSwapOrderPermitted(address sell, address buy) internal {
+        vm.startPrank(karpatkey);
+        uint256 snap = vm.snapshot();
+        roles.execTransactionWithRole(
+            COWSWAP_ORDER_SIGNER,
+            0,
+            abi.encodeWithSelector(
+                ICowSwapOrderSigner.signOrder.selector, _buildCowSwapOrder(sell, buy), uint32(0), uint256(0)
+            ),
+            IZodiacRoles.Operation.DelegateCall,
+            MANAGER_ROLE,
+            false
+        );
+        vm.revertTo(snap);
+        vm.stopPrank();
+    }
+
+    function _buildCowSwapOrder(address sell, address buy) internal view returns (ICowSwapOrderSigner.Data memory) {
+        return ICowSwapOrderSigner.Data({
+            sellToken: IERC20(sell),
+            buyToken: IERC20(buy),
+            receiver: address(endowmentSafe),
+            sellAmount: 0,
+            buyAmount: 0,
+            validTo: 0,
+            appData: bytes32(0),
+            feeAmount: 0,
+            kind: bytes32(0),
+            partiallyFillable: false,
+            sellTokenBalance: bytes32(0),
+            buyTokenBalance: bytes32(0)
+        });
+    }
 
     function _assertTargetNotAllowed(address target, bytes memory data) internal {
         _assertBlocked(target, data, IZodiacRoles.Status.TargetAddressNotAllowed);
