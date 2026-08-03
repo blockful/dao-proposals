@@ -18,7 +18,7 @@ cannot be used to route funds through external contracts. We also confirm, both 
 configuration repository, that no existing permission is removed.
 
 The simulation and tests can be found
-[here](https://github.com/blockful/dao-proposals/blob/f47b3171112ea7d01a53f8bb29b4162b4783f4d4/src/ens/proposals/ep-kpk-update-10/calldataCheck.t.sol).
+[here](https://github.com/blockful/dao-proposals/blob/337e3000c1be578a06c343bb04ab642de8a70f9a/src/ens/proposals/ep-kpk-update-10/calldataCheck.t.sol).
 
 ## Findings and questions for kpk
 
@@ -27,21 +27,27 @@ this proposal proceeds to a vote.
 
 **1. The payload deploys a new permissions module that the proposal text does not mention.** Transactions 0 through 7
 deploy a second Roles instance, connect it to the existing one with the full Endowment Manager permission set as its
-default, and transfer its ownership to kpk. Under this arrangement, kpk may grant third parties access to the Endowment
-Manager permissions without a DAO vote. Any such access remains limited to what the Manager role already allows, but the
-authority to delegate it moves from the DAO to kpk. _Question: please disclose this deployment in the proposal text,
-explain its intended use, and confirm who will hold roles on it._
+default, and transfer its ownership to kpk. Our working understanding, based on the Harvest role definition present in
+the configuration repository, is that this module is intended to host the Harvest role of item 6, configured by kpk
+after execution and outside of the DAO vote, with a single claim operator as its member. We have verified by simulation
+that this arrangement functions as intended and that it cannot redirect payouts: claims executed through the module
+reach only the Endowment Safe, because the existing Endowment Manager permissions independently restrict the recipient,
+and this holds even if the module itself were configured without restrictions. The governance consequence remains: as
+owner of the module, kpk may grant third parties access to the Endowment Manager permission set without a DAO vote.
+_Question: please confirm this understanding in the proposal text, disclose the module and its intended membership, and
+state whether the module will be used for any purpose other than the Harvest role._
 
 **2. Two items of the specification are not present in the payload.** Item 5 (adding syrupUSDC and syrupUSDT to the swap
-token lists) and item 6 (the Harvest role for reward claims) do not appear in any of the 54 transactions. We note that a
-Harvest role definition exists in the configuration repository but is not applied by the payload. _Question: will the
-payload be amended to include these items, or will the Harvest role be configured by kpk on the new module described in
-finding 1, outside of the DAO vote?_
+token lists) does not appear in any of the 54 transactions. Item 6 (the Harvest role) is likewise absent from the
+payload itself; under the understanding stated in finding 1, it will be configured on the new module after execution.
+_Question: will the payload be amended to include item 5, and will the Harvest role applied to the module match the
+definition published in the configuration repository, including its membership?_
 
 **3. The reward claim permissions presented as new already exist.** The three distributors listed under item 6 are
 already callable under the current Endowment Manager permissions, with payouts already restricted to the Endowment Safe.
-We verified this against the current state of mainnet. _Question: please confirm what item 6 is intended to change,
-given that these permissions are already in force._
+We verified this against the current state of mainnet. Under the understanding stated in finding 1, the contribution of
+item 6 is therefore not a new claim permission but a dedicated operator able to claim without holding the wider manager
+permissions. _Question: please confirm that this is the intended effect of item 6, and identify the operator._
 
 **4. The specification lists an address that does not correspond to a deployed contract.** The table entry for
 Steakhouse High Yield USDC gives `0xbeeff7aE5E00Aae3Db302e4B0d8C883810a58100`, which holds no code on mainnet. The
@@ -57,7 +63,7 @@ cover only the six Morpho vaults.
 To verify locally:
 
 1. Clone: `git clone https://github.com/blockful/dao-proposals.git`
-2. Checkout: `git checkout f47b317`
+2. Checkout: `git checkout 337e300`
 3. Run: `forge test --match-path "src/ens/proposals/ep-kpk-update-10/*" -vv`
 
 We will re-run this verification once the payload is finalized and the Tally draft is published.
