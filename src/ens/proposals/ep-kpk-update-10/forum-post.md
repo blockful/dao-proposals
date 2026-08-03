@@ -5,15 +5,20 @@ Blockful has completed an independent review of the executable payload reference
 
 ## Verification result
 
-We reconstructed all 54 transactions of the payload from the specification and from the public contract interfaces, and
-compared our reconstruction against the published payload byte for byte. The two are identical. The permissions granted
-are correctly restricted: deposits, withdrawals, and redemptions can only be directed to the Endowment Safe, token
-approvals are limited to the named protocol contracts, and the swap functions on the Pendle Router cannot be used to
-route funds through external contracts. We also confirm, both by simulation and by inspection of the configuration
-repository, that no existing permission is removed.
+We reconstructed all 54 transactions of the payload and compared our reconstruction against the published payload byte
+for byte. The two are identical. The transactions described in the specification were derived from the specification and
+from the public contract interfaces. The remaining content, namely the module deployment addressed in finding 1, the
+retained entries of the extended token approval lists, and the annotation text, is not described in the specification;
+for those items our reconstruction was transcribed from the published payload and verified against the current on-chain
+configuration. The byte comparison validates the encoding and internal consistency of the payload; it does not by itself
+establish that the undescribed items were authorized by the specification, which is the subject of the findings below.
+The permissions granted are correctly restricted: deposits, withdrawals, and redemptions can only be directed to the
+Endowment Safe, token approvals are limited to the named protocol contracts, and the swap functions on the Pendle Router
+cannot be used to route funds through external contracts. We also confirm, both by simulation and by inspection of the
+configuration repository, that no existing permission is removed.
 
 The simulation and tests can be found
-[here](https://github.com/blockful/dao-proposals/blob/3f9b6edeef8df2ed1edef031508d1e045b5fdb42/src/ens/proposals/ep-kpk-update-10/calldataCheck.t.sol).
+[here](https://github.com/blockful/dao-proposals/blob/f47b3171112ea7d01a53f8bb29b4162b4783f4d4/src/ens/proposals/ep-kpk-update-10/calldataCheck.t.sol).
 
 ## Findings and questions for kpk
 
@@ -52,7 +57,7 @@ cover only the six Morpho vaults.
 To verify locally:
 
 1. Clone: `git clone https://github.com/blockful/dao-proposals.git`
-2. Checkout: `git checkout 3f9b6ed`
+2. Checkout: `git checkout f47b317`
 3. Run: `forge test --match-path "src/ens/proposals/ep-kpk-update-10/*" -vv`
 
 We will re-run this verification once the payload is finalized and the Tally draft is published.
