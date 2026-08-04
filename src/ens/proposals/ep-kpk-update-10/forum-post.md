@@ -18,15 +18,14 @@ The simulation and tests can be found
 
 ## Findings and questions for kpk
 
-**1. The payload deploys a permissions module that the proposal text does not mention.** Transactions 0 through 7 deploy
-a second Roles instance, place the full Endowment Manager permission set behind it, and transfer its ownership to kpk.
-We understand it is intended to host the Harvest role of item 6, configured by kpk after execution. We note that the
-reward claims listed under item 6 are already permitted today, with payouts already restricted to the Endowment Safe, so
-the effect of item 6 is a dedicated claim operator rather than new permissions. Our simulation confirms the design:
-payouts cannot be redirected even if the module is misconfigured, because the existing permissions restrict the
-recipient independently. The governance consequence is that kpk, as owner of the module, may grant third parties access
-to the Endowment Manager permission set without a DAO vote. _Question: please disclose the module in the proposal text,
-confirm that its use is limited to the Harvest role, and identify its intended members._
+**1. Item 6 is implemented through a new module that the proposal text should describe.** Transactions 0 through 7
+deploy a second Roles instance, place the Endowment Manager permission set behind it, and transfer its ownership to kpk;
+we understand it will host the Harvest role, configured by kpk after execution. The claims listed under item 6 are
+already permitted today, with payouts restricted to the Endowment Safe, so the practical effect of item 6 is a dedicated
+claim operator. Our simulation confirms that payouts cannot be redirected even if the module is misconfigured. Ownership
+of the module, however, allows kpk to grant third parties access to the Endowment Manager permission set without a DAO
+vote. _Question: please describe the module in the proposal text, confirm that its use is limited to the Harvest role,
+and identify its intended members._
 
 **2. Item 5 is not implemented.** Adding syrupUSDC and syrupUSDT to the swap token lists does not appear in any of the
 54 transactions. _Question: will the payload be amended to include it?_
