@@ -34,8 +34,14 @@ forge test --match-contract Proposal_ENS_KPK_Update_10_Test -vv
 
 Derived calldata matches the published payload. The payload implements items 1–4 of the forum specification. Items 5
 (syrupUSDC / syrupUSDT on the CoW token lists) and 6 (Harvest role reward claims) are **not** present in it, and the
-payload additionally deploys a sub-Roles Modifier owned by karpatkey, which the forum post does not describe. See the
-review notes for detail.
+payload additionally deploys a sub-Roles Modifier owned by karpatkey, which the forum post does not describe.
+
+Working assumption (pending kpk confirmation): the sub-Roles Modifier exists to host the Harvest role of item 6,
+configured by karpatkey after execution with the definition published in their configuration repository (single operator
+`0x14C2d2D64C4860ACF7CF39068eb467D7556197de`). `_assertAssumedHarvestArchitecture()` simulates that configuration and
+proves the two-layer chain: payouts remain pinned to the Endowment Safe by the existing MANAGER conditions even if the
+sub-role is configured without restrictions, and the operator can reach nothing beyond the three distributors. See
+`forum-post.md` for the findings and the questions put to kpk.
 
 `_assertForumItemsNotImplemented()` encodes the current gap: those assertions are expected to start failing once the
 payload is completed, at which point this test must be updated.
