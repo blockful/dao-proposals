@@ -10,6 +10,9 @@ out
 **/proposalCalldata.json
 **/proposalDescription.md
 
+# forum posts are pasted into Discourse, which renders hard wraps as line breaks
+**/forum-post.md
+
 # files
 *.env
 *.log
