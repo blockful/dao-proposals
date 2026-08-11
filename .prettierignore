@@ -12,6 +12,7 @@ out
 
 # forum posts are pasted into Discourse, which renders hard wraps as line breaks
 **/forum-post.md
+**/forum-reply*.md
 
 # files
 *.env
