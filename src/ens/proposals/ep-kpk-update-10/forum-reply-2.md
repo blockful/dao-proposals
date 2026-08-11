@@ -1,0 +1,38 @@
+Thank you for the detailed responses. We re-verified the regenerated payload and confirm your first and second points.
+
+**Sub-Roles Modifier.** We reach the same conclusion independently. Every call the sub-instance forwards is re-checked
+against the MANAGER policy on the main Roles Modifier, and we could not construct any path that exceeds it: repointing
+the sub-instance at the Endowment Safe fails because it is not an enabled module there, the main Roles Modifier is not
+itself a MANAGER target, and the avatar-pinned conditions live on the main modifier and cannot be moved. One
+clarification worth recording: the ceiling is MANAGER, not the sub-role's own target list. A sub-role granted
+delegatecall on a MultiSend that MANAGER already clears can reach targets it was never scoped to, still bounded by
+MANAGER. We therefore read the narrow Harvest scope as a matter of your configuration policy rather than of the
+architecture, and we would ask you to confirm that no sub-role will be granted delegatecall on MultiSend.
+
+**Swaps.** The regenerated payload adds five transactions. The other fifty-four are byte-identical to the version we
+reviewed, apart from two added annotation entries. We note that the implementation is narrower than the specification
+text describes: syrupUSDC and syrupUSDT were not added to the general sell and buy lists, which are unchanged. They were
+added as two isolated pairs, so syrupUSDC may be traded only against USDC and syrupUSDT only against USDT, with the
+receiver pinned to the Endowment Safe. We consider this the better design and raise it only so that the specification
+table matches what the payload does.
+
+**Execution path.** The proposal "Next Era of ENS DAO: Empowering the ENS Foundation" executed earlier today, at block
+25,729,925. The sole owner of the Endowment Safe is now the EndowmentTimelock at
+`0x0bcC3dA6aD796F59288C0961602675E88A2B406C`, and the DAO Timelock holds no owner, module, or role position on the
+Endowment. We have simulated this update against the resulting state: submitted as an ENS DAO executable proposal, it
+now reverts with GS026, because the pre-approved owner signature it relies on is no longer that of an owner. The payload
+itself is unaffected; it executes normally when scheduled on the EndowmentTimelock by the Foundation Safe, subject to
+the nine-day delay and the Security Council veto window.
+
+This raises a governance question that we do not think this thread can settle. The route now available is a Foundation
+decision, with the DAO's role reduced to whatever it chooses to express beforehand. We do not read the Foundation
+proposal as having stated whether Endowment permission updates were intended to become Foundation decisions, to remain
+subject to a DAO vote in social form, or to follow some other process. Our understanding is therefore incomplete, and we
+would rather ask than assume.
+
+Two questions, which we think are for the Foundation and the DAO rather than for kpk alone. First, is this update
+intended to proceed as a social proposal that the Foundation then executes, or as a Foundation decision with no DAO
+vote? Second, whichever is chosen, will the timelock operation identifier be published when the batch is scheduled, so
+that the Security Council's veto window is usable in practice.
+
+We will re-run our verification against whatever form the update finally takes.
