@@ -227,6 +227,8 @@ contract Proposal_ENS_KPK_Update_10_Test is ENS_Governance, SafeHelper, ZodiacRo
     address private constant USDS = 0xdC035D45d973E3EC169d2276DDab16f1e407384F;
     address private constant WETH = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
     address private constant PT_SUSDS_26NOV2026 = 0xdC169AbE56461A2E0c034Da431Ac2a3ebf596094;
+    address private constant USDT = 0xdAC17F958D2ee523a2206206994597C13D831ec7;
+    address private constant NATIVE_ETH = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
 
     /// @dev CowSwap order signer (delegatecall target for `signOrder`) and a token known
     ///      to be on the current sell list, used as a control for the item 5 probes
@@ -322,6 +324,12 @@ contract Proposal_ENS_KPK_Update_10_Test is ENS_Governance, SafeHelper, ZodiacRo
         // sUSDS is already a scoped target; only the Pendle spender is new.
         _assertBlocked(SUSDS, _approveCall(PENDLE_ROUTER_V4), IZodiacRoles.Status.OrViolation);
 
+        // Item 5 is not yet in force: syrup routing and syrup approvals are unreachable.
+        _assertCowSwapOrderBlocked(SYRUP_USDC, USDC);
+        _assertCowSwapOrderBlocked(SYRUP_USDT, USDT);
+        _assertTargetNotAllowed(SYRUP_USDC, _approveCall(GPV2_VAULT_RELAYER));
+        _assertTargetNotAllowed(SYRUP_USDT, _approveCall(GPV2_VAULT_RELAYER));
+
         // The three "Harvest role" distributors are already reachable today.
         _assertDistributorClaimsUnchanged();
 
@@ -346,7 +354,7 @@ contract Proposal_ENS_KPK_Update_10_Test is ENS_Governance, SafeHelper, ZodiacRo
         _assertAaveHorizon();
         _assertPendle();
         _assertNoSilentRemovals();
-        _assertForumItemsNotImplemented();
+        _assertSyrupRoutingAndDistributors();
         _assertAssumedHarvestArchitecture();
     }
 
@@ -613,33 +621,47 @@ contract Proposal_ENS_KPK_Update_10_Test is ENS_Governance, SafeHelper, ZodiacRo
         _assertAllowed(SUSDS, _approveCall(UNISWAP_V3_ROUTER));
     }
 
-    /// @dev Specification items that the published payload does not implement.
-    ///      These assertions are expected to hold today and to start failing once
-    ///      the payload is completed — at which point this test must be updated.
-    function _assertForumItemsNotImplemented() internal {
-        // Item 6 — "Reward Claims (new Harvest role)": no distributor claim is reachable,
-        // on the MANAGER role or otherwise. The payload only deploys the empty
-        // sub-Roles Modifier and hands it to karpatkey to configure off-chain.
+    /// @dev Item 5 as implemented by the regenerated payload, and item 6 as left unchanged.
+    function _assertSyrupRoutingAndDistributors() internal {
+        // Item 6 — "Reward Claims (new Harvest role)": the payload still adds no distributor
+        // permission. The three claims remain reachable exactly as they were before, with
+        // payouts pinned to the Safe; the sub-Roles Modifier is deployed empty.
         _assertDistributorClaimsUnchanged();
 
-        // Item 5 — "Swaps (CoW Protocol token lists)": signOrder was never rescoped, so
-        // orders selling or buying syrupUSDC / syrupUSDT fail the token whitelists. This
-        // is the primary tripwire: it fires on the canonical implementation of item 5
-        // (extending the signOrder token lists), which would not touch the token targets.
-        _assertCowSwapOrderBlocked(SYRUP_USDC, WETH);
-        _assertCowSwapOrderBlocked(SYRUP_USDT, WETH);
-        _assertCowSwapOrderBlocked(USDC, SYRUP_USDC);
-        _assertCowSwapOrderBlocked(USDC, SYRUP_USDT);
-        // Control: an order between two currently whitelisted tokens passes the roles
-        // check (the inner delegatecall may fail, which returns false rather than reverting).
+        // Item 5 — the syrup tokens are tradable, but only against their own underlying.
+        _assertCowSwapOrderPermitted(SYRUP_USDC, USDC);
+        _assertCowSwapOrderPermitted(USDC, SYRUP_USDC);
+        _assertCowSwapOrderPermitted(SYRUP_USDT, USDT);
+        _assertCowSwapOrderPermitted(USDT, SYRUP_USDT);
+        // The pre-existing general lists still work.
         _assertCowSwapOrderPermitted(USDC, WETH);
-        // Secondary probe: the syrup token contracts are also not scoped as targets, so
-        // no approval path to the CoW vault relayer exists either.
-        _assertTargetNotAllowed(SYRUP_USDC, _approveCall(GPV2_VAULT_RELAYER));
-        _assertTargetNotAllowed(SYRUP_USDT, _approveCall(GPV2_VAULT_RELAYER));
 
-        // The Steakhouse address printed in the forum table holds no code.
-        assertEq(STEAKHOUSE_ADDRESS_IN_FORUM_POST.code.length, 0, "forum Steakhouse address unexpectedly has code");
+        // Cross-pair and unrelated routes are rejected: syrup tokens were NOT merged into
+        // the general sell/buy lists, so no syrup-for-anything-else order can be signed.
+        _assertCowSwapOrderBlocked(SYRUP_USDC, WETH);
+        _assertCowSwapOrderBlocked(SYRUP_USDC, USDT);
+        _assertCowSwapOrderBlocked(SYRUP_USDT, WETH);
+        _assertCowSwapOrderBlocked(SYRUP_USDT, USDC);
+        _assertCowSwapOrderBlocked(SYRUP_USDC, SYRUP_USDT);
+        // Receiver pinning still applies inside the new pair branches.
+        _assertCowSwapOrderBlockedTo(SYRUP_USDC, USDC, address(0xdead));
+
+        // The syrup tokens are scoped targets whose only permitted call is approve() to
+        // the CoW vault relayer.
+        _assertAllowed(SYRUP_USDC, _approveCall(GPV2_VAULT_RELAYER));
+        _assertAllowed(SYRUP_USDT, _approveCall(GPV2_VAULT_RELAYER));
+        _assertBlocked(SYRUP_USDC, _approveCall(address(0xdead)), IZodiacRoles.Status.ParameterNotAllowed);
+        _assertBlocked(SYRUP_USDT, _approveCall(address(0xdead)), IZodiacRoles.Status.ParameterNotAllowed);
+        _assertBlocked(
+            SYRUP_USDC,
+            abi.encodeWithSelector(IERC20.transfer.selector, address(0xdead), uint256(1)),
+            IZodiacRoles.Status.FunctionNotAllowed
+        );
+        _assertBlocked(
+            SYRUP_USDT,
+            abi.encodeWithSelector(IERC20.transfer.selector, address(0xdead), uint256(1)),
+            IZodiacRoles.Status.FunctionNotAllowed
+        );
     }
 
     /// @dev Working assumption for finding 1: the sub-Roles instance will host the
@@ -726,6 +748,22 @@ contract Proposal_ENS_KPK_Update_10_Test is ENS_Governance, SafeHelper, ZodiacRo
     // ─── Assertion primitives
     // ────────────────────────────────────
 
+    function _assertCowSwapOrderBlockedTo(address sell, address buy, address receiver) internal {
+        vm.startPrank(karpatkey);
+        _expectConditionViolation(IZodiacRoles.Status.OrViolation);
+        roles.execTransactionWithRole(
+            COWSWAP_ORDER_SIGNER,
+            0,
+            abi.encodeWithSelector(
+                ICowSwapOrderSigner.signOrder.selector, _buildCowSwapOrderTo(sell, buy, receiver), uint32(0), uint256(0)
+            ),
+            IZodiacRoles.Operation.DelegateCall,
+            MANAGER_ROLE,
+            false
+        );
+        vm.stopPrank();
+    }
+
     function _assertCowSwapOrderBlocked(address sell, address buy) internal {
         vm.startPrank(karpatkey);
         _expectConditionViolation(IZodiacRoles.Status.OrViolation);
@@ -760,10 +798,22 @@ contract Proposal_ENS_KPK_Update_10_Test is ENS_Governance, SafeHelper, ZodiacRo
     }
 
     function _buildCowSwapOrder(address sell, address buy) internal view returns (ICowSwapOrderSigner.Data memory) {
+        return _buildCowSwapOrderTo(sell, buy, address(endowmentSafe));
+    }
+
+    function _buildCowSwapOrderTo(
+        address sell,
+        address buy,
+        address receiver
+    )
+        internal
+        pure
+        returns (ICowSwapOrderSigner.Data memory)
+    {
         return ICowSwapOrderSigner.Data({
             sellToken: IERC20(sell),
             buyToken: IERC20(buy),
-            receiver: address(endowmentSafe),
+            receiver: receiver,
             sellAmount: 0,
             buyAmount: 0,
             validTo: 0,
@@ -972,15 +1022,16 @@ contract Proposal_ENS_KPK_Update_10_Test is ENS_Governance, SafeHelper, ZodiacRo
     function _buildMultiSendTransactions() internal returns (bytes memory) {
         return bytes.concat(
             _buildSubRolesSetup(), // TX  0-7
-            _buildApproveRescopes(), // TX  8-11
-            _buildEthAndUsdcYieldVaults(), // TX 12-19
-            _buildPyusdAndSentora(), // TX 20-25
-            _buildRlusdAndSentora(), // TX 26-31
-            _buildUsdcVaults(), // TX 32-39
-            _buildAaveHorizon(), // TX 40-42
-            _buildEulerRwaVault(), // TX 43-46
-            _buildPendle(), // TX 47-52
-            _buildAnnotationAddition() // TX 53
+            _buildApproveRescopes(), // TX  8-12 (CoW signOrder rescope sits at TX 11)
+            _buildSyrupScopes(), // TX 13-16
+            _buildEthAndUsdcYieldVaults(), // TX 17-24
+            _buildPyusdAndSentora(), // TX 25-30
+            _buildRlusdAndSentora(), // TX 31-36
+            _buildUsdcVaults(), // TX 37-44
+            _buildAaveHorizon(), // TX 45-47
+            _buildEulerRwaVault(), // TX 48-51
+            _buildPendle(), // TX 52-57
+            _buildAnnotationAddition() // TX 58
         );
     }
 
@@ -1035,14 +1086,161 @@ contract Proposal_ENS_KPK_Update_10_Test is ENS_Governance, SafeHelper, ZodiacRo
         );
     }
 
-    /// @dev TX 8-11 — approve() spender lists for WETH, USDS, sUSDS, USDC.
+    /// @dev TX 8-12 — approve() spender lists for WETH, USDS, sUSDS, USDC, with the
+    ///      CoW signOrder rescope interleaved at TX 11.
     function _buildApproveRescopes() internal pure returns (bytes memory) {
         return bytes.concat(
             _scopeApprove(WETH, _wethApproveSpenders()),
             _scopeApprove(USDS, _usdsApproveSpenders()),
             _scopeApprove(SUSDS, _susdsApproveSpenders()),
+            _buildCowSwapSignOrderScope(),
             _scopeApprove(USDC, _usdcApproveSpenders())
         );
+    }
+
+    /// @dev TX 11 — CoW Protocol signOrder, delegatecall-scoped. The syrup tokens are NOT
+    ///      merged into the general sell/buy lists: they are added as two isolated pairs,
+    ///      so syrupUSDC may only be traded against USDC and syrupUSDT only against USDT.
+    function _buildCowSwapSignOrderScope() internal pure returns (bytes memory) {
+        return _packTx(
+            address(roles),
+            abi.encodeWithSelector(
+                IRolesModifier.scopeFunction.selector,
+                MANAGER_ROLE,
+                COWSWAP_ORDER_SIGNER,
+                ICowSwapOrderSigner.signOrder.selector,
+                _buildCowSwapSignOrderConditions(),
+                EXEC_DELEGATE_CALL
+            )
+        );
+    }
+
+    /// @dev TX 13-16 — the syrup tokens become scoped targets whose only permitted call is
+    ///      approve() to the CoW vault relayer.
+    function _buildSyrupScopes() internal pure returns (bytes memory) {
+        address[] memory relayer = new address[](1);
+        relayer[0] = GPV2_VAULT_RELAYER;
+        return bytes.concat(
+            _scopeTarget(SYRUP_USDC),
+            _scopeApprove(SYRUP_USDC, relayer),
+            _scopeTarget(SYRUP_USDT),
+            _scopeApprove(SYRUP_USDT, relayer)
+        );
+    }
+
+    /// @dev signOrder condition tree, 93 nodes. Root MATCHES over a single Data tuple
+    ///      parameter, which is an OR of three alternative shapes:
+    ///        [2] syrupUSDT/USDT pair, receiver = Avatar
+    ///        [3] syrupUSDC/USDC pair, receiver = Avatar
+    ///        [4] the pre-existing general lists (27 sell, 17 buy), receiver = Avatar
+    function _buildCowSwapSignOrderConditions() internal pure returns (ConditionFlat[] memory) {
+        address[] memory sell = _cowSwapSellTokens();
+        address[] memory buy = _cowSwapBuyTokens();
+        ConditionFlat[] memory c = new ConditionFlat[](93);
+        uint256 i = 0;
+
+        c[i++] = ConditionFlat(0, PARAM_TYPE_CALLDATA, OP_MATCHES, "");
+        c[i++] = ConditionFlat(0, PARAM_TYPE_NONE, OP_OR, "");
+        // [2-4] the three alternative Data shapes
+        for (uint8 v = 0; v < 3; v++) {
+            c[i++] = ConditionFlat(1, PARAM_TYPE_TUPLE, OP_MATCHES, "");
+        }
+        // [5-40] each variant: sellToken OR, buyToken OR, receiver = Avatar, 9 x PASS
+        for (uint8 v = 2; v <= 4; v++) {
+            c[i++] = ConditionFlat(v, PARAM_TYPE_NONE, OP_OR, "");
+            c[i++] = ConditionFlat(v, PARAM_TYPE_NONE, OP_OR, "");
+            c[i++] = ConditionFlat(v, PARAM_TYPE_STATIC, OP_EQUAL_TO_AVATAR, "");
+            for (uint256 j = 0; j < 9; j++) {
+                c[i++] = ConditionFlat(v, PARAM_TYPE_STATIC, OP_PASS, "");
+            }
+        }
+        // [41-48] the two isolated pairs, sell then buy for each variant
+        i = _appendPair(c, i, 5, SYRUP_USDT, USDT);
+        i = _appendPair(c, i, 6, SYRUP_USDT, USDT);
+        i = _appendPair(c, i, 17, SYRUP_USDC, USDC);
+        i = _appendPair(c, i, 18, SYRUP_USDC, USDC);
+        // [49-92] the pre-existing general lists
+        for (uint256 j = 0; j < sell.length; j++) {
+            c[i++] = ConditionFlat(29, PARAM_TYPE_STATIC, OP_EQUAL_TO, abi.encode(sell[j]));
+        }
+        for (uint256 j = 0; j < buy.length; j++) {
+            c[i++] = ConditionFlat(30, PARAM_TYPE_STATIC, OP_EQUAL_TO, abi.encode(buy[j]));
+        }
+
+        require(i == 93, "signOrder condition count");
+        return c;
+    }
+
+    function _appendPair(
+        ConditionFlat[] memory c,
+        uint256 i,
+        uint8 parent,
+        address a,
+        address b
+    )
+        internal
+        pure
+        returns (uint256)
+    {
+        c[i++] = ConditionFlat(parent, PARAM_TYPE_STATIC, OP_EQUAL_TO, abi.encode(a));
+        c[i++] = ConditionFlat(parent, PARAM_TYPE_STATIC, OP_EQUAL_TO, abi.encode(b));
+        return i;
+    }
+
+    /// @dev 27 sell tokens, unchanged from Update #9, sorted ascending.
+    function _cowSwapSellTokens() internal pure returns (address[] memory) {
+        address[] memory t = new address[](27);
+        t[0] = 0x35fA164735182de50811E8e2E824cFb9B6118ac2; // eETH
+        t[1] = 0x40D16FC0246aD3160Ccc09B8D0D3A2cD28aE6C2f; // GHO
+        t[2] = 0x48C3399719B582dD63eB5AADf12A40B4C3f52FA2; // SWISE
+        t[3] = 0x4e3FBD56CD56c3e72c1403e103b45Db9da5B9D2B; // CVX
+        t[4] = 0x58D97B57BB95320F9a05dC918Aef65434969c2B2; // MORPHO
+        t[5] = 0x5A98FcBEA516Cf06857215779Fd812CA3beF1B32; // LDO
+        t[6] = 0x6B175474E89094C44Da98b954EedeAC495271d0F; // DAI
+        t[7] = 0x6f40d4A6237C257fff2dB00FA0510DeEECd303eb; // FLUID
+        t[8] = 0x7f39C581F595B53c5cb19bD0b3f8dA6c935E2Ca0; // wstETH
+        t[9] = 0x856c4Efb76C1D1AE02e20CEB03A2A6a08b0b8dC3; // OETH
+        t[10] = USDC;
+        t[11] = 0xA35b1B31Ce002FBF2058D22F30f95D405200A15b; // ETHx
+        t[12] = SUSDS;
+        t[13] = 0xae78736Cd615f374D3085123A210448E74Fc6393; // rETH
+        t[14] = 0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84; // stETH
+        t[15] = 0xba100000625a3754423978a60c9317c58a424e3D; // BAL
+        t[16] = 0xc00e94Cb662C3520282E6f5717214004A7f26888; // COMP
+        t[17] = WETH;
+        t[18] = 0xC0c293ce456fF0ED870ADd98a0828Dd4d2903DBF; // AURA
+        t[19] = 0xc20059e0317DE91738d13af027DfC4a50781b066; // SPK
+        t[20] = 0xCd5fE23C85820F7B72D0926FC9b05b43E359b7ee; // weETH
+        t[21] = 0xD33526068D116cE69F19A9ee46F0bd304F21A51f; // RPL
+        t[22] = 0xD533a949740bb3306d119CC777fa900bA034cd52; // CRV
+        t[23] = USDT;
+        t[24] = USDS;
+        t[25] = 0xE95A203B1a91a908F9B9CE46459d101078c2c3cb; // ankrETH
+        t[26] = 0xf1C9acDc66974dFB6dEcB12aA385b9cD01190E38; // osETH
+        return t;
+    }
+
+    /// @dev 17 buy tokens, unchanged from Update #9, sorted ascending.
+    function _cowSwapBuyTokens() internal pure returns (address[] memory) {
+        address[] memory t = new address[](17);
+        t[0] = 0x35fA164735182de50811E8e2E824cFb9B6118ac2;
+        t[1] = 0x40D16FC0246aD3160Ccc09B8D0D3A2cD28aE6C2f;
+        t[2] = 0x6B175474E89094C44Da98b954EedeAC495271d0F;
+        t[3] = 0x7f39C581F595B53c5cb19bD0b3f8dA6c935E2Ca0;
+        t[4] = 0x856c4Efb76C1D1AE02e20CEB03A2A6a08b0b8dC3;
+        t[5] = USDC;
+        t[6] = 0xA35b1B31Ce002FBF2058D22F30f95D405200A15b;
+        t[7] = SUSDS;
+        t[8] = 0xae78736Cd615f374D3085123A210448E74Fc6393;
+        t[9] = 0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84;
+        t[10] = WETH;
+        t[11] = 0xCd5fE23C85820F7B72D0926FC9b05b43E359b7ee;
+        t[12] = USDT;
+        t[13] = USDS;
+        t[14] = 0xE95A203B1a91a908F9B9CE46459d101078c2c3cb;
+        t[15] = NATIVE_ETH;
+        t[16] = 0xf1C9acDc66974dFB6dEcB12aA385b9cD01190E38;
+        return t;
     }
 
     /// @dev TX 12-19
