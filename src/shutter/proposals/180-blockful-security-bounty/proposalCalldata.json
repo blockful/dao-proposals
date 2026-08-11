@@ -1,0 +1,18 @@
+{
+  "proposalId": "180",
+  "transactionHash": "0xecf719d53eab60830709e190f6a927983b8ac196f1fca18205de672360d3db16",
+  "blockNumber": 25728670,
+  "proposer": "0x1F3D3A7A9c548bE39539b39D7400302753E20591",
+  "executableCalls": [
+    {
+      "target": "0xa3931d71877C0E7a3148CB7Eb4463524FEc27fbD",
+      "calldata": "0xa9059cbb000000000000000000000000bd28c6feeeff61254d00a1e8fb1fb863f9b75b3c000000000000000000000000000000000000000000001cb425beac1e654e5ca7",
+      "value": "0"
+    },
+    {
+      "target": "0xBD28c6FeeeFf61254D00A1E8FB1fB863F9B75b3c",
+      "calldata": "0x",
+      "value": "53370430576814417"
+    }
+  ]
+}
