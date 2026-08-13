@@ -8,29 +8,16 @@ interface IERC20Like {
     function approve(address spender, uint256 amount) external returns (bool);
     function allowance(address owner, address spender) external view returns (uint256);
     function balanceOf(address account) external view returns (uint256);
-    function delegate(address delegatee) external;
 }
 
-interface IGovernorBravo {
-    function propose(
-        address[] memory targets,
-        uint256[] memory values,
-        bytes[] memory calldatas,
-        string memory description
-    )
-        external
-        returns (uint256);
-    function castVote(uint256 proposalId, uint8 support) external;
-    function queue(uint256 proposalId) external;
-    function execute(uint256 proposalId) external payable;
+/// @notice Compound migrated to an OpenZeppelin-style Governor at the Bravo address; actions are read
+///         through proposalDetails, not getActions.
+interface IGovernor {
     function state(uint256 proposalId) external view returns (uint8);
-    function votingDelay() external view returns (uint256);
-    function votingPeriod() external view returns (uint256);
-    function proposalThreshold() external view returns (uint256);
-}
-
-interface ITimelockLike {
-    function delay() external view returns (uint256);
+    function proposalDetails(uint256 proposalId)
+        external
+        view
+        returns (address[] memory targets, uint256[] memory values, bytes[] memory calldatas, bytes32 descriptionHash);
 }
 
 interface ILineaMessageService {
@@ -59,13 +46,13 @@ interface ICCIPRouter {
         bytes extraArgs;
     }
     function ccipSend(uint64 destinationChainSelector, EVM2AnyMessage calldata message) external returns (bytes32);
+    function getFee(uint64 destinationChainSelector, EVM2AnyMessage memory message) external view returns (uint256);
 }
 
 /// @notice Independent reconstruction of COMP proposal 595 from the published specification and typed interfaces.
 contract Proposal_COMP_595_Test is CalldataComparison {
-    IGovernorBravo constant GOVERNOR = IGovernorBravo(0x309a862bbC1A00e45506cB8A802D1ff10004c8C0);
+    IGovernor constant GOVERNOR = IGovernor(0x309a862bbC1A00e45506cB8A802D1ff10004c8C0);
     address constant TIMELOCK = 0x6d903f6003cca6255D85CcA4D3B5E5146dC33925;
-    IERC20Like constant COMP = IERC20Like(0xc00e94Cb662C3520282E6f5717214004A7f26888);
     IERC20Like constant GHO = IERC20Like(0x40D16FC0246aD3160Ccc09B8D0D3A2cD28aE6C2f);
 
     address constant LINEA_MESSAGE_SERVICE = 0xd19d4B5d358258f05D7B411E21A1460D11B0876F;
@@ -99,7 +86,6 @@ contract Proposal_COMP_595_Test is CalldataComparison {
     uint64 constant SUPPLY_KINK = 900_000_000_000_000_000;
     // Twice the CCIP fee quoted when the proposal was constructed; half is consumed by ccipSend.
     uint256 constant RONIN_APPROVAL = 1_008_963_950_898_564_450;
-    uint256 constant CREATION_BLOCK = 25_734_186;
     uint256 constant PROPOSAL_ID = 595;
 
     function setUp() public {
@@ -108,30 +94,90 @@ contract Proposal_COMP_595_Test is CalldataComparison {
         vm.createSelectFork("https://ethereum-rpc.publicnode.com");
     }
 
-    function test_liveProposalExistsOnchain() public view {
-        uint8 proposalState = GOVERNOR.state(PROPOSAL_ID);
-        assertTrue(proposalState <= 7, "proposal 595 must resolve on Governor Bravo");
+    function test_liveProposalIsPending() public view {
+        uint8 s = GOVERNOR.state(PROPOSAL_ID);
+        // Canceled(2), Defeated(3) and Expired(6) would make the calldata unexecutable.
+        assertTrue(s == 0 || s == 1 || s == 4 || s == 5 || s == 7, "proposal 595 is not executable");
     }
 
-    function test_manuallyDerivedCalldataMatchesLiveProposal() public {
-        (address[] memory targets, uint256[] memory values, bytes[] memory calldatas) = _generateCallData();
+    /// @notice The committed fixture must be exactly what the Governor stores, otherwise every other
+    ///         comparison in this file is anchored to author-supplied data.
+    function test_fixtureMatchesOnchainProposal() public {
+        (address[] memory targets, uint256[] memory values, bytes[] memory calldatas,) =
+            GOVERNOR.proposalDetails(PROPOSAL_ID);
         string memory json = vm.readFile(string.concat(dirPath(), "/proposalCalldata.json"));
+        assertEq(vm.parseJsonUint(json, ".proposalId"), PROPOSAL_ID);
         _compareLiveCalldata(json, targets, values, calldatas);
-        _assertInnerPayload(
-            _proposalData(_two(LINEA_USDC, LINEA_WETH), LINEA_CONFIGURATOR, LINEA_ADMIN), _two(LINEA_USDC, LINEA_WETH)
-        );
-        _assertInnerPayload(_proposalData(_one(MANTLE_USDE), MANTLE_CONFIGURATOR, MANTLE_ADMIN), _one(MANTLE_USDE));
-        _assertInnerPayload(
-            _proposalData(_two(RONIN_WETH, RONIN_WRON), RONIN_CONFIGURATOR, RONIN_ADMIN), _two(RONIN_WETH, RONIN_WRON)
-        );
-        _assertInnerPayload(_proposalData(_one(SCROLL_USDC), SCROLL_CONFIGURATOR, SCROLL_ADMIN), _one(SCROLL_USDC));
     }
 
-    function test_l1ExecutionPreconditions() public view {
-        // The live proposal is cross-chain. A mainnet-only fork cannot prove downstream L2 execution,
-        // but these preconditions ensure the fee assets required by the two payable actions exist.
-        assertGe(address(TIMELOCK).balance, 0.2 ether, "timelock must fund the Scroll message");
-        assertGe(GHO.balanceOf(TIMELOCK), RONIN_APPROVAL / 2, "timelock must fund the CCIP fee");
+    function test_manuallyDerivedCalldataMatchesOnchainProposal() public view {
+        (address[] memory onchainTargets, uint256[] memory onchainValues, bytes[] memory onchainCalldatas,) =
+            GOVERNOR.proposalDetails(PROPOSAL_ID);
+        (address[] memory targets, uint256[] memory values, bytes[] memory calldatas) = _generateCallData();
+
+        assertEq(onchainTargets.length, targets.length, "call count mismatch");
+        for (uint256 i; i < targets.length; i++) {
+            assertEq(onchainTargets[i], targets[i], "target mismatch");
+            assertEq(onchainValues[i], values[i], "value mismatch");
+            assertEq(onchainCalldatas[i], calldatas[i], "calldata mismatch");
+        }
+
+        // Decode the inner cross-chain payloads out of the live bytes, not out of our own encoder.
+        (,, bytes memory lineaPayload) = abi.decode(_args(onchainCalldatas[0]), (address, uint256, bytes));
+        _assertInnerPayload(lineaPayload, _two(LINEA_USDC, LINEA_WETH), LINEA_CONFIGURATOR, LINEA_ADMIN);
+        (, bytes memory mantlePayload,) = abi.decode(_args(onchainCalldatas[1]), (address, bytes, uint32));
+        _assertInnerPayload(mantlePayload, _one(MANTLE_USDE), MANTLE_CONFIGURATOR, MANTLE_ADMIN);
+        (, ICCIPRouter.EVM2AnyMessage memory roninMessage) =
+            abi.decode(_args(onchainCalldatas[3]), (uint64, ICCIPRouter.EVM2AnyMessage));
+        _assertInnerPayload(roninMessage.data, _two(RONIN_WETH, RONIN_WRON), RONIN_CONFIGURATOR, RONIN_ADMIN);
+        (,, bytes memory scrollPayload,) = abi.decode(_args(onchainCalldatas[4]), (address, uint256, bytes, uint256));
+        _assertInnerPayload(scrollPayload, _one(SCROLL_USDC), SCROLL_CONFIGURATOR, SCROLL_ADMIN);
+    }
+
+    /// @notice The GHO approval is a magic number in the proposal; check it actually covers the CCIP fee.
+    function test_roninApprovalCoversCcipFee() public view {
+        (,, bytes[] memory calldatas,) = GOVERNOR.proposalDetails(PROPOSAL_ID);
+        (uint64 selector, ICCIPRouter.EVM2AnyMessage memory message) =
+            abi.decode(_args(calldatas[3]), (uint64, ICCIPRouter.EVM2AnyMessage));
+        assertEq(selector, RONIN_SELECTOR, "unexpected destination chain");
+        assertEq(message.feeToken, address(GHO), "unexpected fee token");
+        uint256 fee = ICCIPRouter(CCIP_ROUTER).getFee(selector, message);
+        assertGe(RONIN_APPROVAL, fee, "approval does not cover the CCIP fee");
+        // The proposal approves ~2x the fee; the surplus stays approved to the router after execution.
+        assertLe(RONIN_APPROVAL, fee * 3, "approval is far above the quoted fee");
+    }
+
+    /// @notice Execute the five L1 calls as the Timelock and assert the mainnet-side state they produce.
+    ///         Delivery and final state on Linea, Mantle, Ronin and Scroll are out of reach from a mainnet fork.
+    function test_l1ExecutionEffects() public {
+        (address[] memory targets, uint256[] memory values, bytes[] memory calldatas) = _generateCallData();
+
+        uint256 ghoBefore = GHO.balanceOf(TIMELOCK);
+        assertGt(ghoBefore, 0, "timelock must hold GHO for the CCIP fee");
+        // The Timelock already carries a non-zero router allowance: the surplus of an earlier proposal that
+        // used the same "approve twice the fee" pattern. `approve` overwrites it, so this is not a blocker.
+        uint256 staleAllowance = GHO.allowance(TIMELOCK, CCIP_ROUTER);
+        emit log_named_uint("stale GHO allowance to CCIP router", staleAllowance);
+        vm.deal(TIMELOCK, values[4]);
+
+        for (uint256 i; i < targets.length; i++) {
+            vm.prank(TIMELOCK);
+            (bool ok,) = targets[i].call{ value: values[i] }(calldatas[i]);
+            assertTrue(ok, string.concat("L1 call reverted at index ", vm.toString(i)));
+
+            if (i == 2) assertEq(GHO.allowance(TIMELOCK, CCIP_ROUTER), RONIN_APPROVAL, "approval not set");
+        }
+
+        uint256 feePaid = ghoBefore - GHO.balanceOf(TIMELOCK);
+        assertGt(feePaid, 0, "ccipSend did not charge the GHO fee");
+        assertEq(
+            GHO.allowance(TIMELOCK, CCIP_ROUTER), RONIN_APPROVAL - feePaid, "leftover allowance is not the surplus"
+        );
+        // Scroll charges the actual message fee and refunds the surplus to the sender, so the Timelock keeps
+        // almost all of the 0.2 ETH attached to the fifth action.
+        uint256 scrollFee = values[4] - TIMELOCK.balance;
+        assertGt(scrollFee, 0, "scroll message charged no fee");
+        assertLt(scrollFee, 0.01 ether, "scroll message consumed more ETH than expected");
     }
 
     function _generateCallData()
@@ -214,24 +260,59 @@ contract Proposal_COMP_595_Test is CalldataComparison {
         return abi.encode(targets, values, signatures, args);
     }
 
-    function _assertInnerPayload(bytes memory payload, address[] memory expectedComets) internal pure {
+    function _assertInnerPayload(
+        bytes memory payload,
+        address[] memory expectedComets,
+        address configurator,
+        address admin
+    )
+        internal
+        pure
+    {
         (address[] memory targets, uint256[] memory values, string[] memory signatures, bytes[] memory args) =
             abi.decode(payload, (address[], uint256[], string[], bytes[]));
-        assertEq(targets.length, expectedComets.length * 5);
+        assertEq(targets.length, expectedComets.length * 5, "inner action count");
+        assertEq(values.length, targets.length);
+        assertEq(signatures.length, targets.length);
+        assertEq(args.length, targets.length);
+
+        string[5] memory expectedSignatures = [
+            "setSupplyPerYearInterestRateBase(address,uint64)",
+            "setSupplyPerYearInterestRateSlopeLow(address,uint64)",
+            "setSupplyKink(address,uint64)",
+            "setSupplyPerYearInterestRateSlopeHigh(address,uint64)",
+            "deployAndUpgradeTo(address,address)"
+        ];
+
         for (uint256 c; c < expectedComets.length; c++) {
             uint256 i = c * 5;
-            assertEq(values[i], 0);
-            assertEq(values[i + 4], 0);
-            assertEq(
-                keccak256(bytes(signatures[i])), keccak256(bytes("setSupplyPerYearInterestRateBase(address,uint64)"))
-            );
-            assertEq(keccak256(bytes(signatures[i + 2])), keccak256(bytes("setSupplyKink(address,uint64)")));
-            (address comet, uint64 kink) = abi.decode(args[i + 2], (address, uint64));
-            assertEq(comet, expectedComets[c]);
-            assertEq(kink, SUPPLY_KINK);
-            (address cometBase, uint64 base) = abi.decode(args[i], (address, uint64));
-            assertEq(cometBase, expectedComets[c]);
-            assertEq(base, 0);
+            for (uint256 k; k < 5; k++) {
+                assertEq(values[i + k], 0, "inner action must not send value");
+                assertEq(signatures[i + k], expectedSignatures[k], "inner signature mismatch");
+                assertEq(targets[i + k], k == 4 ? admin : configurator, "inner target mismatch");
+            }
+            // Zero supply rate base, zero low slope, 90% kink, zero high slope.
+            _assertParam(args[i], expectedComets[c], 0);
+            _assertParam(args[i + 1], expectedComets[c], 0);
+            _assertParam(args[i + 2], expectedComets[c], SUPPLY_KINK);
+            _assertParam(args[i + 3], expectedComets[c], 0);
+            (address cfg, address comet) = abi.decode(args[i + 4], (address, address));
+            assertEq(cfg, configurator, "deployAndUpgradeTo configurator mismatch");
+            assertEq(comet, expectedComets[c], "deployAndUpgradeTo comet mismatch");
+        }
+    }
+
+    function _assertParam(bytes memory arg, address expectedComet, uint64 expectedValue) internal pure {
+        (address comet, uint64 value) = abi.decode(arg, (address, uint64));
+        assertEq(comet, expectedComet, "comet mismatch");
+        assertEq(value, expectedValue, "parameter mismatch");
+    }
+
+    /// @notice Strip the 4-byte selector so the remaining ABI-encoded arguments can be decoded.
+    function _args(bytes memory callData) internal pure returns (bytes memory out) {
+        out = new bytes(callData.length - 4);
+        for (uint256 i; i < out.length; i++) {
+            out[i] = callData[i + 4];
         }
     }
 
