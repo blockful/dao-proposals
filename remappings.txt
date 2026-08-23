@@ -6,3 +6,4 @@
 @contracts/=src/
 @tornado/=src/tornado/
 @compound/=src/compound/
+@nouns/=src/nouns/
