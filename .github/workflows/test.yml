@@ -1,0 +1,27 @@
+name: Test
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  forge-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: foundry-rs/foundry-toolchain@v1
+        with:
+          # Same pin as lint.yml — one toolchain version per repo.
+          version: v1.7.0
+
+      # Every proposal test forks mainnet, so the suite cannot run without an
+      # endpoint. The repo secret is the real one; the public fallback keeps the
+      # workflow green on forks and before the secret is set, at the cost of
+      # rate limiting. If runs start flaking, set MAINNET_RPC_URL — do not
+      # loosen the assertions.
+      - run: forge test -vvv
+        env:
+          MAINNET_RPC_URL: ${{ secrets.MAINNET_RPC_URL || 'https://eth.llamarpc.com' }}
