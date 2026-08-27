@@ -3,6 +3,7 @@
 @ens/=src/ens/
 @shutter/=src/shutter/
 @uniswap/=src/uniswap/
+@compound/=src/compound/
 @contracts/=src/
 @tornado/=src/tornado/
 @compound/=src/compound/
