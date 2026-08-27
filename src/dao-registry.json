@@ -121,6 +121,26 @@
       "interfacesPath": "src/nouns/interfaces",
       "proposalsPath": "src/nouns/proposals",
       "constantsFile": "src/nouns/Constants.sol"
+    },
+    "lil-nouns": {
+      "name": "Lil Nouns",
+      "governanceType": "nouns-governor-timelock",
+      "chain": "mainnet",
+      "basePath": "src/lil-nouns",
+      "baseTestContract": "LilNouns_Governance",
+      "baseTestFile": "src/lil-nouns/lilNouns.t.sol",
+      "contracts": {
+        "governor": "0x5D2c31cE16924C2A71D317E5bbfD5Ce387854039",
+        "timelock": "0xD5F279fF9eB21C6d40C8F345A66f2751C4EeA1fB",
+        "token": "0x4b10701Bfd7BFEdc47d50562b76b436fbB5BdB3B"
+      },
+      "tallySlug": null,
+      "proposalPrefix": "proposal",
+      "contractNaming": "Proposal_LIL_NOUNS_{number}_Test",
+      "helpers": [],
+      "interfacesPath": "src/lil-nouns/interfaces",
+      "proposalsPath": "src/lil-nouns/proposals",
+      "constantsFile": "src/lil-nouns/Constants.sol"
     }
   }
 }
