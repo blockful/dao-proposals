@@ -1,0 +1,25 @@
+{
+  "title": "[Executable] SPP3 Marketplace RFP Award: Nomentum Labs (Grails)",
+  "discussionUrl": "https://discuss.ens.domains/t/spp3-marketplace-rfp-recommendation/22371",
+  "body": "## Synopsis\n\nThe SPP3 Marketplace RFP committee recommends Nomentum Labs, operating Grails (grails.app), as the Marketplace RFP awardee. The total award is $500,000 — the maximum authorized under [7.1] [Social] SPP3 Marketplace RFP — consisting of a $400,000 base award and up to $100,000 released on performance-based traction gates.\n\nOn execution, the full award moves to the MetaGov Stream Management Pod (`stream.mg.wg.ens.eth`) and is released to Nomentum Labs under the Award Notice, after KYC. The awardee joins the SPP3 cohort's reporting and oversight structure for a term co-terminating with the cohort in Q3 2027. Unreleased funds return to the treasury at term end.\n\n## Payment structure\n\n1. **$90,000 upfront** — paid on execution to the Stream Management Pod and released to Nomentum Labs in $30,000 monthly installments over the first quarter, subject to KYC and the executed Award Notice.\n2. **$100,000 performance-gated** — held in the pod across four $25,000 gates and released only on verified results (Q1 2027: attributed protocol revenue at or above the at-signing baseline, and at least 150 distinct wallets completing value-transferring actions in the quarter; term end: revenue on pace for $1,000,000 a year, and at least 250 ETH of filtered secondary volume over the prior two quarters).\n3. **$310,000 as a stream** — opened by MetaGov from the pod on committee verification of the ENSv2 readiness milestone (target Q4 2026, or sufficient progress at the committee's judgment), running to term end. The $25,000 wind-down escrow is funded from the award when the stream opens.\n\n## Specification\n\nThree USDC transfers from the DAO treasury (`wallet.ensdao.eth`) to the MetaGov Stream Management Pod (`stream.mg.wg.ens.eth`, `0xB162Bf7A7fD64eF32b787719335d06B2780e31D1`), one per tranche:\n\n| # | Amount | Purpose |\n|---|--------|---------|\n| 1 | 90,000 USDC | Upfront tranche, released as $30k monthly installments |\n| 2 | 100,000 USDC | Performance gates (4 × $25k) |\n| 3 | 310,000 USDC | ENSv2-readiness stream, opened ~Q4 2026 |\n\nRelease mechanics (installments, gates, stream open, wind-down escrow) are executed pod-side by the MetaGov stewards using the existing custody structures.",
+  "actions": [
+    {
+      "type": "erc20-transfer",
+      "tokenAddress": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+      "recipient": "0xB162Bf7A7fD64eF32b787719335d06B2780e31D1",
+      "amount": "90000"
+    },
+    {
+      "type": "erc20-transfer",
+      "tokenAddress": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+      "recipient": "0xB162Bf7A7fD64eF32b787719335d06B2780e31D1",
+      "amount": "100000"
+    },
+    {
+      "type": "erc20-transfer",
+      "tokenAddress": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+      "recipient": "0xB162Bf7A7fD64eF32b787719335d06B2780e31D1",
+      "amount": "310000"
+    }
+  ]
+}

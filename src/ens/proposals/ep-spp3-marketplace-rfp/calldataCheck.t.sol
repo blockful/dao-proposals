@@ -1,0 +1,100 @@
+// SPDX-License-Identifier: MIT
+pragma solidity >=0.8.25 <0.9.0;
+
+import { ENS_Governance } from "@ens/ens.t.sol";
+import { IERC20 } from "@contracts/utils/interfaces/IERC20.sol";
+
+/**
+ * @title Proposal_ENS_EP_SPP3_Marketplace_RFP_Test
+ * @notice Pre-draft calldata for the SPP3 Marketplace RFP award (Nomentum Labs / Grails).
+ * @dev Forum: https://discuss.ens.domains/t/spp3-marketplace-rfp-recommendation/22371
+ *
+ * The DAO-side executable moves the full $500k award to the MetaGov Stream Management Pod
+ * (stream.mg.wg.ens.eth, the same pod that runs the SPP3 cohort streams from EP 6.49) in three
+ * transfers, one per tranche of the payment structure, so each tranche is legible on-chain:
+ *
+ *   1. $90,000  — released by MetaGov to Nomentum Labs as $30k monthly installments over the
+ *                 first quarter, subject to KYC and the executed Award Notice.
+ *   2. $100,000 — held in the pod for the four $25k performance gates, released only on
+ *                 verified results (unreleased funds return to the treasury at term end).
+ *   3. $310,000 — funds the stream MetaGov opens from the pod on committee verification of
+ *                 the ENSv2 readiness milestone (target Q4 2026), running to term end.
+ *
+ * Release mechanics (installments, gates, stream open, wind-down escrow) are pod-side Safe
+ * transactions by the MetaGov stewards, not part of this executable.
+ */
+contract Proposal_ENS_EP_SPP3_Marketplace_RFP_Test is ENS_Governance {
+    IERC20 public constant USDC = IERC20(0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48);
+
+    // MetaGov Stream Management Pod (stream.mg.wg.ens.eth), master stream receiver since EP 6.13/6.49.
+    address public constant STREAM_POD = 0xB162Bf7A7fD64eF32b787719335d06B2780e31D1;
+
+    // USDC has 6 decimals.
+    uint256 public constant UPFRONT_INSTALLMENTS = 90_000 * 10 ** 6;
+    uint256 public constant PERFORMANCE_GATES = 100_000 * 10 ** 6;
+    uint256 public constant STREAM_TRANCHE = 310_000 * 10 ** 6;
+    uint256 public constant TOTAL_AWARD = UPFRONT_INSTALLMENTS + PERFORMANCE_GATES + STREAM_TRANCHE;
+
+    uint256 podBalanceBefore;
+    uint256 timelockBalanceBefore;
+
+    function _selectFork() public override {
+        vm.createSelectFork({ blockNumber: 25_862_600, urlOrAlias: "mainnet" });
+    }
+
+    function _proposer() public pure override returns (address) {
+        return 0x5BFCB4BE4d7B43437d5A0c57E908c048a4418390; // fireeyesdao.eth (pre-draft default)
+    }
+
+    function _beforeProposal() public override {
+        assertEq(TOTAL_AWARD, 500_000 * 10 ** 6, "award must total the $500k RFP maximum");
+
+        podBalanceBefore = USDC.balanceOf(STREAM_POD);
+        timelockBalanceBefore = USDC.balanceOf(address(timelock));
+        assertGe(timelockBalanceBefore, TOTAL_AWARD, "timelock cannot cover the award");
+    }
+
+    function _generateCallData()
+        public
+        override
+        returns (address[] memory, uint256[] memory, string[] memory, bytes[] memory, string memory)
+    {
+        uint256 numTransactions = 3;
+
+        targets = new address[](numTransactions);
+        values = new uint256[](numTransactions);
+        calldatas = new bytes[](numTransactions);
+        signatures = new string[](numTransactions);
+
+        // 1. $90k upfront tranche, paid out by MetaGov in $30k monthly installments.
+        targets[0] = address(USDC);
+        calldatas[0] = abi.encodeWithSelector(USDC.transfer.selector, STREAM_POD, UPFRONT_INSTALLMENTS);
+
+        // 2. $100k held for the four $25k performance gates.
+        targets[1] = address(USDC);
+        calldatas[1] = abi.encodeWithSelector(USDC.transfer.selector, STREAM_POD, PERFORMANCE_GATES);
+
+        // 3. $310k funding the ENSv2-readiness stream (opened by the pod ~December).
+        targets[2] = address(USDC);
+        calldatas[2] = abi.encodeWithSelector(USDC.transfer.selector, STREAM_POD, STREAM_TRANCHE);
+
+        description = "Pre-draft: SPP3 Marketplace RFP award to Nomentum Labs (Grails)";
+
+        return (targets, values, signatures, calldatas, description);
+    }
+
+    function _afterExecution() public override {
+        assertEq(USDC.balanceOf(STREAM_POD), podBalanceBefore + TOTAL_AWARD, "pod did not receive the full award");
+        assertEq(
+            USDC.balanceOf(address(timelock)), timelockBalanceBefore - TOTAL_AWARD, "timelock spent more than the award"
+        );
+    }
+
+    function _isProposalSubmitted() public pure override returns (bool) {
+        return false;
+    }
+
+    function dirPath() public pure override returns (string memory) {
+        return ""; // Pre-draft: no proposalCalldata.json yet.
+    }
+}
