@@ -61,6 +61,26 @@
       "proposalsPath": "src/shutter/proposals",
       "constantsFile": null
     },
+    "compound": {
+      "name": "Compound",
+      "governanceType": "compound-bravo",
+      "chain": "mainnet",
+      "basePath": "src/compound",
+      "baseTestContract": "Compound_Governance",
+      "baseTestFile": "src/compound/compound.t.sol",
+      "contracts": {
+        "governor": "0x309a862bbC1A00e45506cB8A802D1ff10004c8C0",
+        "timelock": "0x6d903f6003cca6255D85CcA4D3B5E5146dC33925",
+        "token": "0xc00e94Cb662C3520282E6f5717214004A7f26888"
+      },
+      "tallySlug": "compound",
+      "proposalPrefix": "proposal",
+      "contractNaming": "Proposal_COMP_{number}_Test",
+      "helpers": [],
+      "interfacesPath": "src/compound/interfaces",
+      "proposalsPath": "src/compound/proposals",
+      "constantsFile": null
+    },
     "tornado": {
       "name": "Tornado Cash",
       "governanceType": "stake-to-vote",
