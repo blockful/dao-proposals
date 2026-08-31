@@ -10,8 +10,12 @@ import { ISafe } from "@ens/interfaces/ISafe.sol";
 
 /**
  * @title Proposal_ENS_EP_SPP3_Marketplace_RFP_Test
- * @notice Pre-draft calldata for the SPP3 Marketplace RFP award (Nomentum Labs / Grails).
+ * @notice Live calldata review for the SPP3 Marketplace RFP award (Nomentum Labs / Grails).
  * @dev Forum: https://discuss.ens.domains/t/spp3-marketplace-rfp-recommendation/22371
+ *      On-chain id 19667497...920394, proposed by coltron.eth at block 25,877,353 (2026-08-31).
+ *      The live payload settled on the lump three-transfer shape (not the master-stream raise the
+ *      forum's Next Steps sketched); the three calls were verified byte-for-byte against the
+ *      ProposalCreated event, and the description file is byte-identical to the event's.
  *
  * The DAO-side executable moves the full $500k award to the MetaGov Stream Management Pod
  * (stream.mg.wg.ens.eth, the same pod that runs the SPP3 cohort streams from EP 6.49) in three
@@ -43,11 +47,12 @@ contract Proposal_ENS_EP_SPP3_Marketplace_RFP_Test is ENS_Governance {
     uint256 timelockBalanceBefore;
 
     function _selectFork() public override {
-        vm.createSelectFork({ blockNumber: 25_862_600, urlOrAlias: "mainnet" });
+        // Block the proposal was created at (voting starts the next block).
+        vm.createSelectFork({ blockNumber: 25_877_353, urlOrAlias: "mainnet" });
     }
 
     function _proposer() public pure override returns (address) {
-        return 0x5BFCB4BE4d7B43437d5A0c57E908c048a4418390; // fireeyesdao.eth (pre-draft default)
+        return 0x1D5460F896521aD685Ea4c3F2c679Ec0b6806359; // coltron.eth, on-chain proposer
     }
 
     function _beforeProposal() public override {
@@ -98,7 +103,7 @@ contract Proposal_ENS_EP_SPP3_Marketplace_RFP_Test is ENS_Governance {
         targets[2] = address(USDC);
         calldatas[2] = abi.encodeWithSelector(USDC.transfer.selector, STREAM_POD, STREAM_TRANCHE);
 
-        description = "Pre-draft: SPP3 Marketplace RFP award to Nomentum Labs (Grails)";
+        description = getDescriptionFromMarkdown();
 
         return (targets, values, signatures, calldatas, description);
     }
@@ -111,10 +116,10 @@ contract Proposal_ENS_EP_SPP3_Marketplace_RFP_Test is ENS_Governance {
     }
 
     function _isProposalSubmitted() public pure override returns (bool) {
-        return false;
+        return true; // Live on-chain.
     }
 
     function dirPath() public pure override returns (string memory) {
-        return ""; // Pre-draft: no proposalCalldata.json yet.
+        return "src/ens/proposals/ep-spp3-marketplace-rfp";
     }
 }
