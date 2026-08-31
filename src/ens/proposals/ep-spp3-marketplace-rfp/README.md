@@ -19,7 +19,10 @@ transactions by the MetaGov stewards; unreleased funds return to the treasury at
 Files:
 
 - `calldataCheck.t.sol` — pre-draft governance test: derives the three transfers, runs the full lifecycle
-  (propose → vote → queue → execute), asserts the pod gains exactly \$500k and the timelock pays exactly \$500k.
+  (propose → vote → queue → execute), asserts the pod gains exactly \$500k and the timelock pays exactly \$500k, and
+  pins the recipient by resolving `stream.mg.wg.ens.eth` on-fork and requiring the timelock to be a pod owner.
+- `masterRaiseVariant.t.sol` — the alternative executable shape from the forum's Next Steps (90k + 100k transfers plus
+  a master-stream raise for the \$310k); see Open items below.
 - `podReleaseFlow.t.sol` — pod-side simulation of how the multisigs execute the releases in production. The pod is a
   1-of-2 Safe owned by the timelock and the MetaGov main Safe (`main.mg.wg.ens.eth`, 2-of-N), so every release is the
   MetaGov Safe calling the pod's `execTransaction` with its own pre-approved signature — the nested-safe path. Two
@@ -32,13 +35,37 @@ Files:
   executable-proposal template headings: Abstract / Specification / Transactions), and the three `erc20-transfer`
   actions.
 
-Open items for the pod-side batches (do not block the DAO executable, which only funds the pod):
+## Open items
 
-- Nomentum Labs's payout address is published only after KYC; the tests use a placeholder EOA.
+**The \$310k tranche's shape is not settled.** The forum's Next Steps says: "On execution, the \$90,000 up-front amount
+and the \$100,000 performance reserve move to the Stream Management Pod, and **the master stream is raised to fund the
+\$310,000 stream**" — and marks the on-chain payload as "pending specification". A master-stream raise is an EP
+6.49-style `setFlowrate` from the timelock and cannot be done pod-side (MetaGov holds no flowOperator permission on the
+timelock's flows), so the two readings produce different DAO executables:
+
+- `calldataCheck.t.sol` — lump reading: three USDC transfers (90k / 100k / 310k) to the pod.
+- `masterRaiseVariant.t.sol` — Next Steps reading: two USDC transfers (90k / 100k) plus a master-stream raise, modeled
+  as spreading \$310k from execution (~Sep 10) to term end (the raise period is itself unspecified). Under this
+  reading the Anticapture JSON's third action becomes a `custom` `setFlowrate` action, `podStreamSetup`'s stream-open
+  batch loses its wrap steps (the pod accrues USDCx continuously instead of holding idle USDC), and the committee's
+  draft may add a wrap + autowrap-allowance refresh like EP 6.49 did (live allowance ~4.55M USDC covers the current
+  rate through term end, but drains ~\$310k faster once raised).
+
+Confirm the shape with the committee/MetaGov before the draft goes live; both variants stay tested until then. When
+the draft lands, verify it against the matching variant — a shape difference (including a single 500k transfer, or a
+different transfer order) is a mismatch to investigate, not to paper over.
+
+Other open items:
+
+- Nomentum Labs's payout address is published only after KYC; the pod-side tests use a placeholder EOA.
 - The \$25k wind-down escrow is "funded from the award when the stream opens" but neither its destination nor which
-  tranche it reduces is specified — confirm with MetaGov before building the stream-open batch.
+  tranche it reduces is specified. The happy-path test bakes in the "no carve-out" answer (Nomentum ends with the full
+  \$500k), which cannot be right if the escrow reduces a tranche — confirm with MetaGov before the stream-open batch.
 - Term end is modeled as 2027-08-01 (co-terminating with the SPP3 cohort's one-year term); the stream rate is
-  `310_000e18 / (termEnd - streamOpen)`, so pin both dates before the batch is signed.
+  `310_000e18 / (termEnd - streamOpen)`, so pin both dates before the batch is signed. The installment anchor is also
+  unconfirmed (modeled Oct/Nov/Dec 1; a September start is plausible with the forum's ~Sep 10 execution).
+- Confirm whether the Anticapture import form replaces or appends actions on re-import, and that the final on-chain
+  title/description exactly match the submitted draft (the proposal id commits to the description hash).
 
 When the draft goes up, transition per `ens-draft-review`: fetch `proposalCalldata.json` / `proposalDescription.md`,
 set `dirPath()`, switch the description to `getDescriptionFromMarkdown()`, and set the real proposer.

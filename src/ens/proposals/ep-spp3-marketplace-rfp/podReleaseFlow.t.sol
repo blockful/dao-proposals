@@ -18,7 +18,7 @@ import { IERC20 } from "@contracts/utils/interfaces/IERC20.sol";
 //
 // Simulated against live mainnet state, where the SPP3 cohort switch has already executed and the pod
 // runs steady at ~$3.21M/yr in/out with a ~209k USDCx buffer:
-//   1. Execution (~Oct 2026):  timelock sends 90k + 100k + 310k USDC to the pod.
+//   1. Execution (~Sep 2026):  timelock sends 90k + 100k + 310k USDC to the pod.
 //   2. Oct/Nov/Dec 2026:       three $30k USDC installments to Nomentum Labs.
 //   3. Dec 2026 (ENSv2 gate):  pod wraps 310k to USDCx and opens the stream, running to term end.
 //   4. Apr 2027 / term end:    2 + 2 performance gates of $25k, or the 100k returns to the treasury.
@@ -49,10 +49,12 @@ contract SPP3_Marketplace_PodReleaseFlow_Test is Test, MultiSendHelper {
     uint256 public constant INSTALLMENT = 30_000e6;
     uint256 public constant GATE = 25_000e6;
 
-    // Timeline. Execution assumed late September (recommendation posted 2026-08-27); installments over
-    // the first quarter; stream open on the ENSv2 readiness target (~December); term co-terminating
-    // with the SPP3 cohort (ratified July 2026, one-year term -> Aug 1 2027).
-    uint256 internal constant EXEC_DATE = 1_790_553_600; // 2026-09-28
+    // Timeline. Execution per the forum's own schedule (posting Mon Aug 31 + 7-day vote + 2-day
+    // timelock -> ~Sep 9-10); installments over the first quarter (anchor unconfirmed: modeled as
+    // first-of-month starting October, but with a Sep 10 execution a September start is plausible);
+    // stream open on the ENSv2 readiness target (~December); term co-terminating with the SPP3
+    // cohort (ratified July 2026, one-year term -> Aug 1 2027).
+    uint256 internal constant EXEC_DATE = 1_788_998_400; // 2026-09-10
     uint256 internal constant INSTALL_1 = 1_790_812_800; // 2026-10-01
     uint256 internal constant INSTALL_2 = 1_793_491_200; // 2026-11-01
     uint256 internal constant INSTALL_3 = 1_796_083_200; // 2026-12-01
@@ -203,8 +205,14 @@ contract SPP3_Marketplace_PodReleaseFlow_Test is Test, MultiSendHelper {
             "stream open"
         );
         assertEq(_outRate(nomentum), STREAM_RATE, "stream rate wrong");
-        // Wrapped amount lands minus the Superfluid buffer deposit the new flow takes.
-        assertApproxEqAbs(IUSDCx(USDCX).balanceOf(STREAM_POD), podUSDCxBefore + STREAM_WAD, 1000e18);
+        // Wrapped amount lands exactly, minus the Superfluid buffer deposit the new flow takes
+        // (returned when the stream closes).
+        uint256 buffer = SUPERFLUID.getBufferAmountByFlowrate(USDCX, STREAM_RATE);
+        assertEq(
+            IUSDCx(USDCX).balanceOf(STREAM_POD),
+            podUSDCxBefore + STREAM_WAD - buffer,
+            "wrap amount or buffer deposit off"
+        );
     }
 
     // A single call executed by the MetaGov Safe as pod owner (threshold 1, pre-approved signature).

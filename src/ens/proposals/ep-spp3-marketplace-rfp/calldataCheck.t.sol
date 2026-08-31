@@ -2,7 +2,11 @@
 pragma solidity >=0.8.25 <0.9.0;
 
 import { ENS_Governance } from "@ens/ens.t.sol";
+import { ENSConstants } from "@ens/Constants.sol";
 import { IERC20 } from "@contracts/utils/interfaces/IERC20.sol";
+import { IENSRegistryWithFallback } from "@ens/interfaces/IENSRegistryWithFallback.sol";
+import { IEthTLDResolver } from "@ens/interfaces/IEthTLDResolver.sol";
+import { ISafe } from "@ens/interfaces/ISafe.sol";
 
 /**
  * @title Proposal_ENS_EP_SPP3_Marketplace_RFP_Test
@@ -48,6 +52,22 @@ contract Proposal_ENS_EP_SPP3_Marketplace_RFP_Test is ENS_Governance {
 
     function _beforeProposal() public override {
         assertEq(TOTAL_AWARD, 500_000 * 10 ** 6, "award must total the $500k RFP maximum");
+
+        // The recipient constant is the single point where a lookalike address could slip through
+        // every balance assertion, so pin it to the name the spec uses: resolve stream.mg.wg.ens.eth
+        // on-fork and require it to be the pod.
+        bytes32 node = namehash(bytes("stream.mg.wg.ens.eth"));
+        address resolver = IENSRegistryWithFallback(ENSConstants.ENS_REGISTRY).resolver(node);
+        assertEq(IEthTLDResolver(resolver).addr(node), STREAM_POD, "stream.mg.wg.ens.eth does not resolve to the pod");
+
+        // The pod must be a Safe the timelock co-owns — the property that keeps unreleased award
+        // funds recoverable by the DAO at term end.
+        address[] memory owners = ISafe(STREAM_POD).getOwners();
+        bool timelockIsOwner;
+        for (uint256 i = 0; i < owners.length; i++) {
+            if (owners[i] == address(timelock)) timelockIsOwner = true;
+        }
+        assertTrue(timelockIsOwner, "timelock is not an owner of the stream pod");
 
         podBalanceBefore = USDC.balanceOf(STREAM_POD);
         timelockBalanceBefore = USDC.balanceOf(address(timelock));
