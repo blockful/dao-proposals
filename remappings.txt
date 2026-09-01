@@ -5,3 +5,4 @@
 @uniswap/=src/uniswap/
 @contracts/=src/
 @tornado/=src/tornado/
+@compound/=src/compound/
