@@ -2,6 +2,8 @@
 
 This proposal is [live](https://app.anticapture.com/ens/governance/proposal/19667497139373951686084433718987773325019389190188449031876262520356769920394).
 
+Blockful supported the committee in building the calldata and the proposal draft.
+
 Calldata executed the expected outcome. The simulation and tests of the **live** proposal can be found [here](https://github.com/blockful/dao-proposals/blob/c9204aefd0d7396b5c9c2df56066401aab34d145/src/ens/proposals/ep-spp3-marketplace-rfp/calldataCheck.t.sol).
 
 To verify locally:
