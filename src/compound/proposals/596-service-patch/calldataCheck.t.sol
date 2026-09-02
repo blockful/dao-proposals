@@ -83,6 +83,9 @@ contract Proposal_COMP_596_Test is CalldataComparison {
     address constant TIMELOCK = 0x6d903f6003cca6255D85CcA4D3B5E5146dC33925;
     IERC20Like constant COMP = IERC20Like(0xc00e94Cb662C3520282E6f5717214004A7f26888);
     uint256 constant PROPOSAL_ID = 596;
+    // Proposal creation block, from proposalCalldata.json. Pinned so the pre-state
+    // this test asserts is the state the proposal was created against.
+    uint256 constant CREATION_BLOCK = 25_747_373;
 
     address constant FACTORY = 0x30beAd17D2641bCc900dc1ABC5d55c88059D176F;
     address constant ARB_INBOX = 0x4Dbd4fc535Ac27206064B68FfCf827b0A60BAB3f;
@@ -117,11 +120,11 @@ contract Proposal_COMP_596_Test is CalldataComparison {
     address constant EXT_WETH = 0xF3BBe5807feA997d540939Cbf138c134b11e3CF1;
 
     function setUp() public {
-        vm.createSelectFork("https://ethereum-rpc.publicnode.com");
+        vm.createSelectFork({ blockNumber: CREATION_BLOCK, urlOrAlias: "mainnet" });
     }
 
     function test_liveProposalExistsOnchain() public {
-        vm.createSelectFork("https://ethereum-rpc.publicnode.com");
+        vm.createSelectFork({ blockNumber: CREATION_BLOCK, urlOrAlias: "mainnet" });
         assertLe(GOVERNOR.state(PROPOSAL_ID), 7, "proposal 596 must resolve on Governor Bravo");
     }
 

@@ -51,7 +51,7 @@ contract Proposal_COMP_602_Test is Compound_Governance {
     }
 
     function setUp() public {
-        vm.createSelectFork("https://eth-mainnet.public.blastapi.io", VOTE_START + 1);
+        vm.createSelectFork({ blockNumber: VOTE_START + 1, urlOrAlias: "mainnet" });
     }
 
     function test_liveProposalExistsOnchain() public view {
