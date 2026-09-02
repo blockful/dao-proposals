@@ -2,7 +2,6 @@ name: Test
 
 on:
   pull_request:
-    branches: [main]
   push:
     branches: [main]
 
@@ -14,14 +13,55 @@ jobs:
 
       - uses: foundry-rs/foundry-toolchain@v1
         with:
-          # Same pin as lint.yml — one toolchain version per repo.
-          version: v1.7.0
+          # Must provide vm.currentFilePath(), which src/base/CalldataComparison.sol
+          # calls to derive dirPath(). Verified on v1.7.1.
+          version: v1.7.1
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      # Solidity deps come from npm (see remappings.txt), not git submodules:
+      # @openzeppelin/contracts and forge-std both resolve under node_modules.
+      # Without this the suite does not compile. package-lock.json is gitignored,
+      # so this resolves forge-std from the package.json tag on every run.
+      - run: npm install
 
       # Every proposal test forks mainnet, so the suite cannot run without an
       # endpoint. The repo secret is the real one; the public fallback keeps the
       # workflow green on forks and before the secret is set, at the cost of
       # rate limiting. If runs start flaking, set MAINNET_RPC_URL — do not
       # loosen the assertions.
-      - run: forge test -vvv
+      #
+      # --json instead of -vvv so the step below can count what actually ran.
+      # `|| true` defers the verdict to that step, which distinguishes "tests
+      # failed" from "no tests ran" — forge exits 0 on both.
+      - name: Run tests
+        run: forge test --json > /tmp/forge.json || true
         env:
           MAINNET_RPC_URL: ${{ secrets.MAINNET_RPC_URL || 'https://eth.llamarpc.com' }}
+
+      # A green check must mean "tests ran and passed", never "forge exited 0".
+      # forge test returns 0 when zero tests match, so a bad --match-path, a
+      # renamed directory, or a deleted test file would otherwise report success
+      # and satisfy the review agent's auto-merge gate having verified nothing.
+      - name: Assert tests ran and passed
+        run: |
+          if [ ! -s /tmp/forge.json ]; then
+            echo "::error::forge produced no output — the suite failed to compile or run"
+            exit 1
+          fi
+          TOTAL=$(jq '[.[].test_results | length] | add // 0' /tmp/forge.json)
+          FAILED=$(jq '[.[].test_results | to_entries[] | select(.value.status != "Success")] | length' /tmp/forge.json)
+          echo "tests run: $TOTAL, failed: $FAILED"
+          if [ "$TOTAL" -eq 0 ]; then
+            echo "::error::Zero tests ran. A green check here would be meaningless."
+            exit 1
+          fi
+          if [ "$FAILED" -ne 0 ]; then
+            echo "::error::$FAILED of $TOTAL tests failed:"
+            jq -r '.[].test_results | to_entries[] | select(.value.status != "Success")
+                   | "  \(.key): \(.value.reason // "no reason given")"' /tmp/forge.json
+            exit 1
+          fi
+          echo "All $TOTAL tests passed."
