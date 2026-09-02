@@ -8,6 +8,17 @@ interface IFluidGovernorBravo {
     function queue(uint256 proposalId) external;
     function execute(uint256 proposalId) external payable;
     function state(uint256 proposalId) external view returns (uint8);
+    /// @notice The chain anchor. Without this the review can only compare the manual derivation
+    ///         against the committed fixture, and the two can be wrong together.
+    function getActions(uint256 proposalId)
+        external
+        view
+        returns (
+            address[] memory targets,
+            uint256[] memory values,
+            string[] memory signatures,
+            bytes[] memory calldatas
+        );
 }
 
 interface IFluidToken {
@@ -68,7 +79,51 @@ contract Proposal_FLUID_139_Test is CalldataComparison {
     uint256 foundationBalanceBefore;
 
     function setUp() public {
-        vm.createSelectFork("mainnet");
+        // Pinned inside the voting window, via the mainnet alias so MAINNET_RPC_URL serves the
+        // historical state. Forking at the tip made every pre-state assertion depend on when the
+        // suite ran: once the grant was paid the reserve no longer held 155 stETH and this test
+        // failed on a proposal whose calldata was never in question.
+        vm.createSelectFork({ blockNumber: START_BLOCK + 1, urlOrAlias: "mainnet" });
+    }
+
+    /// @notice Anchors both the committed fixture and the manual derivation to what the Governor
+    ///         actually stores. Comparing the derivation against the fixture alone proves only
+    ///         that two author-supplied artifacts agree.
+    function test_fixtureAndDerivationMatchOnchainProposal() public view {
+        (
+            address[] memory liveTargets,
+            uint256[] memory liveValues,
+            string[] memory liveSignatures,
+            bytes[] memory liveCalldatas
+        ) = GOVERNOR.getActions(PROPOSAL_ID);
+
+        (address[] memory targets, uint256[] memory values, bytes[] memory calldatas) = _generateCallData();
+
+        assertEq(liveTargets.length, 1, "proposal 139 must hold exactly one action");
+        assertEq(targets.length, liveTargets.length, "derived action count must match chain");
+
+        for (uint256 i; i < liveTargets.length; ++i) {
+            assertEq(targets[i], liveTargets[i], "derived target must match chain");
+            assertEq(values[i], liveValues[i], "derived value must match chain");
+            assertEq(calldatas[i], liveCalldatas[i], "derived calldata must match chain");
+            assertEq(liveSignatures[i], "executePayload(address,string,bytes)", "unexpected onchain signature");
+        }
+
+        string memory json = vm.readFile(string.concat(dirPath(), "/proposalCalldata.json"));
+        assertEq(vm.parseJsonUint(json, ".proposalId"), PROPOSAL_ID, "fixture proposalId must match");
+        assertEq(
+            vm.parseJsonAddress(json, ".executableCalls[0].target"), liveTargets[0], "fixture target must match chain"
+        );
+        assertEq(
+            vm.parseJsonBytes(json, ".executableCalls[0].calldata"),
+            liveCalldatas[0],
+            "fixture calldata must match chain"
+        );
+        assertEq(
+            vm.parseJsonString(json, ".executableCalls[0].signature"),
+            liveSignatures[0],
+            "fixture signature must match chain"
+        );
     }
 
     function test_liveCalldataAndFullLifecycle() public {
