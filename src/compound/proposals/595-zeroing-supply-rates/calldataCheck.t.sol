@@ -87,11 +87,13 @@ contract Proposal_COMP_595_Test is CalldataComparison {
     // Twice the CCIP fee quoted when the proposal was constructed; half is consumed by ccipSend.
     uint256 constant RONIN_APPROVAL = 1_008_963_950_898_564_450;
     uint256 constant PROPOSAL_ID = 595;
+    uint256 constant CREATION_BLOCK = 25_734_186;
 
     function setUp() public {
-        // Free public RPCs prune the proposal-creation state; latest state is sufficient for
-        // deterministic calldata comparison and for an independent lifecycle simulation.
-        vm.createSelectFork("https://ethereum-rpc.publicnode.com");
+        // Pinned to the proposal creation block from proposalCalldata.json, via the mainnet
+        // alias so MAINNET_RPC_URL (an archive endpoint) serves the historical state.
+        // Forking at the tip would make every pre-state assertion depend on when this runs.
+        vm.createSelectFork({ blockNumber: CREATION_BLOCK, urlOrAlias: "mainnet" });
     }
 
     function test_liveProposalIsPending() public view {
