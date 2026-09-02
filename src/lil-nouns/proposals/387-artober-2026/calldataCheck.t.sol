@@ -5,9 +5,28 @@ import { LilNounsConstants } from "@lil-nouns/Constants.sol";
 import { LilNouns_Governance } from "@lil-nouns/lilNouns.t.sol";
 import { IStETH } from "@lil-nouns/interfaces/IStETH.sol";
 
+interface IENSRegistry {
+    function resolver(bytes32 node) external view returns (address);
+}
+
+interface IENSResolver {
+    function name(bytes32 node) external view returns (string memory);
+    function addr(bytes32 node) external view returns (address);
+}
+
 contract Proposal_LIL_NOUNS_387_Test is LilNouns_Governance {
     address internal constant RECIPIENT = 0x72D4e991040e3B65FdDbE5f340f65Cf03C506e6F;
     uint256 internal constant FUNDING = 0.8 ether;
+
+    IENSRegistry internal constant ENS_REGISTRY = IENSRegistry(0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e);
+
+    /// @dev namehash("72d4e991040e3b65fddbe5f340f65cf03c506e6f.addr.reverse")
+    bytes32 internal constant RECIPIENT_REVERSE_NODE =
+        0xfdc4cfdc50a53ad63c6214c2128e4767a216a14148ffa2739cd1735a83b61dd9;
+    /// @dev namehash("kimmydeuk.eth")
+    bytes32 internal constant RECIPIENT_FORWARD_NODE =
+        0x235f44d7e7064e3646264e378bd2569a52e5e6a7d19c1bff3e824d97e180f220;
+    string internal constant RECIPIENT_ENS_NAME = "kimmydeuk.eth";
 
     IStETH internal constant STETH = IStETH(LilNounsConstants.STETH);
 
@@ -53,6 +72,23 @@ contract Proposal_LIL_NOUNS_387_Test is LilNouns_Governance {
         generatedTargets[0] = LilNounsConstants.STETH;
         generatedSignatures[0] = "transfer(address,uint256)";
         generatedCalldatas[0] = abi.encode(RECIPIENT, FUNDING);
+    }
+
+    /// @notice The one thing a byte comparison cannot prove: that this address belongs to the
+    ///         person the proposal names. RECIPIENT is the same 20 bytes that appear in the
+    ///         payload, so asserting it against the payload is transcription, not verification —
+    ///         a proposal paying the wrong party would pass every other check in this file.
+    ///         Bind it to an identity instead, both directions: the reverse record must claim
+    ///         "kimmydeuk.eth", and that name must forward-resolve back to this address. Reverse
+    ///         records are self-set and provable only in combination with the forward lookup.
+    function test_recipientResolvesToTheNamedArtist() public view {
+        IENSResolver reverseResolver = IENSResolver(ENS_REGISTRY.resolver(RECIPIENT_REVERSE_NODE));
+        assertTrue(address(reverseResolver) != address(0), "recipient has no reverse resolver");
+        assertEq(reverseResolver.name(RECIPIENT_REVERSE_NODE), RECIPIENT_ENS_NAME, "unexpected reverse record");
+
+        IENSResolver forwardResolver = IENSResolver(ENS_REGISTRY.resolver(RECIPIENT_FORWARD_NODE));
+        assertTrue(address(forwardResolver) != address(0), "named recipient has no forward resolver");
+        assertEq(forwardResolver.addr(RECIPIENT_FORWARD_NODE), RECIPIENT, "forward record does not match recipient");
     }
 
     function _beforeProposal() internal override {
