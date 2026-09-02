@@ -1,0 +1,17 @@
+{
+  "proposalId": "991",
+  "executableCalls": [
+    {
+      "target": "0xE1653109E79A5014f62287104428e6e2a79125A2",
+      "signature": "cancel()",
+      "calldata": "0x",
+      "value": "0"
+    },
+    {
+      "target": "0xE1653109E79A5014f62287104428e6e2a79125A2",
+      "signature": "recoverTokens(address)",
+      "calldata": "0x000000000000000000000000b1a32fc9f9d8b2cf86c068cae13108809547ef71",
+      "value": "0"
+    }
+  ]
+}
