@@ -101,6 +101,26 @@
       "interfacesPath": "src/tornado/interfaces",
       "proposalsPath": "src/tornado/proposals",
       "constantsFile": "src/tornado/Constants.sol"
+    },
+    "nouns": {
+      "name": "Nouns DAO",
+      "governanceType": "compound-governor",
+      "chain": "mainnet",
+      "basePath": "src/nouns",
+      "baseTestContract": "Nouns_Governance",
+      "baseTestFile": "src/nouns/nouns.t.sol",
+      "contracts": {
+        "governor": "0x6f3E6272A167e8AcCb32072d08E0957F9c79223d",
+        "timelock": "0xb1a32FC9F9D8b2cf86C068Cae13108809547ef71",
+        "token": "0x9C8fF314C9Bc7F6e59A9d9225Fb22946427eDC03"
+      },
+      "tallySlug": null,
+      "proposalPrefix": "proposal",
+      "contractNaming": "Proposal_NOUNS_{number}_Test",
+      "helpers": [],
+      "interfacesPath": "src/nouns/interfaces",
+      "proposalsPath": "src/nouns/proposals",
+      "constantsFile": "src/nouns/Constants.sol"
     }
   }
 }
