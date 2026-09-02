@@ -1,0 +1,75 @@
+name: Test
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  forge-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: foundry-rs/foundry-toolchain@v1
+        with:
+          # Must provide vm.currentFilePath(), which src/base/CalldataComparison.sol
+          # calls to derive dirPath(). Verified on v1.7.1.
+          version: v1.7.1
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      # Solidity deps come from npm (see remappings.txt), not git submodules:
+      # @openzeppelin/contracts and forge-std both resolve under node_modules.
+      # Without this the suite does not compile. package-lock.json is gitignored,
+      # so this resolves forge-std from the package.json tag on every run.
+      - run: npm install
+
+      # Every proposal test forks mainnet at a pinned historical block, so the suite needs an
+      # ARCHIVE endpoint. There is deliberately no public fallback: free endpoints prune the
+      # historical state these tests pin, and they rate-limit or go down under a fork-heavy
+      # suite. A fallback would turn "the secret is missing" into a wall of unrelated red,
+      # which is harder to act on than one clear message.
+      - name: Require an archive RPC
+        run: |
+          if [ -z "${MAINNET_RPC_URL}" ]; then
+            echo "::error::MAINNET_RPC_URL is not set. Add it as a repository secret (Settings → Secrets and variables → Actions). It must be an archive endpoint — these tests fork pinned historical blocks."
+            exit 1
+          fi
+        env:
+          MAINNET_RPC_URL: ${{ secrets.MAINNET_RPC_URL }}
+
+      # --json instead of -vvv so the step below can count what actually ran.
+      # `|| true` defers the verdict to that step, which distinguishes "tests
+      # failed" from "no tests ran" — forge exits 0 on both.
+      - name: Run tests
+        run: forge test --json > /tmp/forge.json || true
+        env:
+          MAINNET_RPC_URL: ${{ secrets.MAINNET_RPC_URL }}
+
+      # A green check must mean "tests ran and passed", never "forge exited 0".
+      # forge test returns 0 when zero tests match, so a bad --match-path, a
+      # renamed directory, or a deleted test file would otherwise report success
+      # and satisfy the review agent's auto-merge gate having verified nothing.
+      - name: Assert tests ran and passed
+        run: |
+          if [ ! -s /tmp/forge.json ]; then
+            echo "::error::forge produced no output — the suite failed to compile or run"
+            exit 1
+          fi
+          TOTAL=$(jq '[.[].test_results | length] | add // 0' /tmp/forge.json)
+          FAILED=$(jq '[.[].test_results | to_entries[] | select(.value.status != "Success")] | length' /tmp/forge.json)
+          echo "tests run: $TOTAL, failed: $FAILED"
+          if [ "$TOTAL" -eq 0 ]; then
+            echo "::error::Zero tests ran. A green check here would be meaningless."
+            exit 1
+          fi
+          if [ "$FAILED" -ne 0 ]; then
+            echo "::error::$FAILED of $TOTAL tests failed:"
+            jq -r '.[].test_results | to_entries[] | select(.value.status != "Success")
+                   | "  \(.key): \(.value.reason // "no reason given")"' /tmp/forge.json
+            exit 1
+          fi
+          echo "All $TOTAL tests passed."
