@@ -63,10 +63,10 @@ contract Proposal_COMP_603_Test is CalldataComparison {
     address internal constant BASE_CWETH = 0x46e6b214b524310239732D51387075E0e70970bf;
 
     uint256 internal constant ARB_VALUE = 3_785_485_000_000_000;
-    uint256 internal constant ARB_MAX_SUBMISSION_COST = 5_293_789_062_500;
+    uint256 internal constant ARB_MAX_SUBMISSION_COST = 1_355_210_000_000_000;
     uint256 internal constant ARB_GAS_LIMIT = 1_075_065;
     uint256 internal constant ARB_MAX_FEE_PER_GAS = 1_000_000_000;
-    uint32 internal constant BASE_GAS_LIMIT = 187_500;
+    uint32 internal constant BASE_GAS_LIMIT = 3_000_000;
 
     function setUp() public {
         vm.createSelectFork({ blockNumber: CREATION_BLOCK, urlOrAlias: "mainnet" });
