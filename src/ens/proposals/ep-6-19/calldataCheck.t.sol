@@ -20,13 +20,12 @@ contract Proposal_ENS_EP_6_19_Test is ENS_Governance {
         return 0x534631Bcf33BDb069fB20A93d2fdb9e4D4dD42CF; // slobo.eth
     }
 
-    function _beforeProposal() public view override {
-        // The timelock should not yet have an agreement registered in the SafeHarbor
-        assertEq(
-            safeHarbor.getAgreement(address(timelock)),
-            address(0),
-            "Timelock should not have a SafeHarbor agreement before proposal"
-        );
+    function _beforeProposal() public override {
+        // The timelock should not yet have an agreement registered in the SafeHarbor.
+        // The registry reverts NoAgreement() for an unknown adopter instead of returning
+        // address(0), so the absence of an agreement is asserted through the revert.
+        vm.expectRevert(ISafeHarbor.NoAgreement.selector);
+        safeHarbor.getAgreement(address(timelock));
 
         // The agreement contract should already be owned by the timelock (precondition)
         assertEq(agreement.owner(), address(timelock), "Agreement owner should be timelock before proposal");
