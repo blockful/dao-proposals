@@ -1,0 +1,47 @@
+old Main events: {'OwnershipTransferred': 2, 'RolesModSetup': 1, 'Initialized': 1, 'SetUnwrapAdapter': 3, 'EnabledModule': 2, 'AssignRoles': 1, 'ScopeTarget': 170, 'ScopeFunction': 259, 'AllowFunction': 137, 'TargetSet': 1, 'AvatarSet': 1, 'DisabledModule': 1, 'RevokeFunction': 28, 'RevokeTarget': 10}
+new Main events: {'OwnershipTransferred': 1, 'RolesModSetup': 1, 'Initialized': 1, 'SetUnwrapAdapter': 2, 'AvatarSet': 1, 'TargetSet': 1, 'EnabledModule': 2, 'AssignRoles': 2, 'SetDefaultRole': 1, 'ScopeTarget': 151, 'ScopeFunction': 204, 'AllowFunction': 128}
+
+Update #10 delta applied to old Main: 53 admin calls ['assignRoles', 'enableModule', 'scopeFunction', 'scopeTarget', 'setDefaultRole']; skipped (not Roles admin on old Main): 6
+
+TARGETS  old+delta 151  new 151
+  only in old+delta: []
+  only in new      : []
+  clearance/options mismatch: []
+
+FUNCTIONS  old+delta 332  new 332
+  only in old+delta: []
+  only in new      : []
+  byte-identical: 316   Or-alternatives reordered only: 15   trailing Pass pruned only: 1   MISMATCH: 0
+    reordered   ('0x1E19CF2D73a72Ef1332C882F20534B6519Be0276', '0x095ea7b3')
+    reordered   ('0x48C3399719B582dD63eB5AADf12A40B4C3f52FA2', '0x095ea7b3')
+    reordered   ('0x4e3FBD56CD56c3e72c1403e103b45Db9da5B9D2B', '0x095ea7b3')
+    reordered   ('0x5A98FcBEA516Cf06857215779Fd812CA3beF1B32', '0x095ea7b3')
+    reordered   ('0xB188b1CB84Fb0bA13cb9ee1292769F903A9feC59', '0x9eba6619')
+    reordered   ('0xBA12222222228d8Ba445958a75a0704d566BF2C8', '0x8bdb3913')
+    reordered   ('0xBA12222222228d8Ba445958a75a0704d566BF2C8', '0xb95cac28')
+    reordered   ('0xC0c293ce456fF0ED870ADd98a0828Dd4d2903DBF', '0x095ea7b3')
+    reordered   ('0xD33526068D116cE69F19A9ee46F0bd304F21A51f', '0x095ea7b3')
+    reordered   ('0xD533a949740bb3306d119CC777fa900bA034cd52', '0x095ea7b3')
+    reordered   ('0xDACf5Fa19b1f720111609043ac67A9818262850c', '0x095ea7b3')
+    reordered   ('0xE95A203B1a91a908F9B9CE46459d101078c2c3cb', '0x095ea7b3')
+    reordered   ('0xa397a8C2086C554B531c02E29f3291c9704B00c7', '0x555029a6')
+    reordered   ('0xba100000625a3754423978a60c9317c58a424e3D', '0x095ea7b3')
+    reordered   ('0xc00e94Cb662C3520282E6f5717214004A7f26888', '0x095ea7b3')
+    trailingPass ('0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', '0xa9059cbb') 
+      old+delta: [(0, 5, 5, '0x'), (0, 1, 16, '0x000000000000000000000000fe89cc7abb2c4183683ab71653c4cdc9b02d44b7'), (0, 1, 0, '0x')] 
+      new      : [(0, 5, 5, '0x'), (0, 1, 16, '0x000000000000000000000000fe89cc7abb2c4183683ab71653c4cdc9b02d44b7')]
+
+MEMBERS    old+delta {'0x4d414e4147455200000000000000000000000000000000000000000000000000': ['0xa5dd28EC9C69627A96202897b35B88827854bd3b', '0xb423e0f6E7430fa29500c5cC9bd83D28c8BD8978']} 
+           new       {'0x4d414e4147455200000000000000000000000000000000000000000000000000': ['0x48dC0d88766a59E119e3f2585BC1dC5436Ee6ce0', '0xb423e0f6E7430fa29500c5cC9bd83D28c8BD8978']}
+MODULES    old+delta ['0xa5dd28EC9C69627A96202897b35B88827854bd3b', '0xb423e0f6E7430fa29500c5cC9bd83D28c8BD8978'] 
+           new       ['0x48dC0d88766a59E119e3f2585BC1dC5436Ee6ce0', '0xb423e0f6E7430fa29500c5cC9bd83D28c8BD8978']
+DEFAULT    old+delta {'0xa5dd28EC9C69627A96202897b35B88827854bd3b': '0x4d414e4147455200000000000000000000000000000000000000000000000000'} 
+           new       {'0x48dC0d88766a59E119e3f2585BC1dC5436Ee6ce0': '0x4d414e4147455200000000000000000000000000000000000000000000000000'}
+UNWRAPPERS old       {('0xA238CBeb142c10Ef7Ad8442C6D1f9E89e07e7761', '0x8d80ff0a'): '0xB4Cd4bb764C089f20DA18700CE8bc5e49F369efD'} 
+           new       {('0x38869bf66a61cF6bDB996A6aE40D5853Fd43B526', '0x8d80ff0a'): '0xB4Cd4bb764C089f20DA18700CE8bc5e49F369efD', ('0x9641d764fc13c8B624c04430C7356C1C7C8102e2', '0x8d80ff0a'): '0xB4Cd4bb764C089f20DA18700CE8bc5e49F369efD'}
+ALLOWANCES old {}  new {}
+OTHER ROLES old []  new []
+OWNER/AVATAR/TARGET old ('0x4F2083f5fBede34C2714aFfb3105539775f7FE64', '0x4F2083f5fBede34C2714aFfb3105539775f7FE64', '0x4F2083f5fBede34C2714aFfb3105539775f7FE64') 
+                    new ('0xC01318baB7ee1f5ba734172bF7718b5DC6Ec90E1', '0x4F2083f5fBede34C2714aFfb3105539775f7FE64', '0x4F2083f5fBede34C2714aFfb3105539775f7FE64')
+
+roleStateKeys.json written: 161 targets, 332 function keys

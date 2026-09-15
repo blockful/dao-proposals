@@ -1,245 +1,152 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.25 <0.9.0;
 
-import { ENS_Governance } from "@ens/ens.t.sol";
-import { SafeHelper } from "@ens/helpers/SafeHelper.sol";
+import { Test } from "@forge-std/src/Test.sol";
+import { console2 } from "@forge-std/src/console2.sol";
+import { IERC20 } from "@forge-std/src/interfaces/IERC20.sol";
+
+import { ENSConstants } from "@ens/Constants.sol";
+import { MultiSendHelper } from "@ens/helpers/MultiSendHelper.sol";
 import { ZodiacRolesHelper } from "@ens/helpers/ZodiacRolesHelper.sol";
+import { ISafe } from "@ens/interfaces/ISafe.sol";
 import { IZodiacRoles } from "@ens/interfaces/IZodiacRoles.sol";
 import { IRolesModifier, ConditionFlat } from "@ens/interfaces/IRolesModifier.sol";
 import { IMultiSend } from "@ens/interfaces/IMultiSend.sol";
-import { IAnnotationRegistry } from "@ens/interfaces/IAnnotationRegistry.sol";
 import { IMetaMorphoV1 } from "@ens/interfaces/IMetaMorphoV1.sol";
 import { ICowSwapOrderSigner } from "@ens/interfaces/ICowSwapOrderSigner.sol";
-import { IERC20 } from "@forge-std/src/interfaces/IERC20.sol";
+import { ISecurityCouncil } from "@ens/interfaces/ISecurityCouncil.sol";
 
-// ─── Minimal interfaces for targets touched by this proposal ─────────────
+// Target interfaces shared with the round-1 derivation of the Update #10 permission set.
+import { IAaveV3Pool, IPendleRouterV4, IMerklDistributor } from "./update10Payload.t.sol";
 
-/// @notice Zodiac ModuleProxyFactory (0x000000000000aDdB49795b0f9bA5BC298cDda236)
-interface IModuleProxyFactory {
-    function deployModule(
-        address masterCopy,
-        bytes memory initializer,
-        uint256 saltNonce
-    )
-        external
-        returns (address proxy);
+// ─── Minimal interfaces
+// ──────────────────────────────────────────────────────
+
+/// @notice Safe v1.3.0 module management (the two calls of the switch batch)
+interface ISafeModules {
+    function disableModule(address prevModule, address module) external;
+    function enableModule(address module) external;
+    function isModuleEnabled(address module) external view returns (bool);
+    function nonce() external view returns (uint256);
 }
 
-/// @notice Admin surface of a Zodiac Roles Modifier (both the existing one and the new sub-instance)
+/// @notice OpenZeppelin TimelockController v4.3.2 (the EndowmentTimelock)
+interface IOZTimelock {
+    function schedule(address t, uint256 v, bytes calldata d, bytes32 p, bytes32 s, uint256 delay) external;
+    function execute(address t, uint256 v, bytes calldata d, bytes32 p, bytes32 s) external payable;
+    function hashOperation(address t, uint256 v, bytes calldata d, bytes32 p, bytes32 s) external pure returns (bytes32);
+    function isOperationPending(bytes32 id) external view returns (bool);
+    function isOperationReady(bytes32 id) external view returns (bool);
+    function isOperationDone(bytes32 id) external view returns (bool);
+    function getMinDelay() external view returns (uint256);
+    function hasRole(bytes32 role, address account) external view returns (bool);
+}
+
+/// @notice Admin and read surface of a Zodiac Roles Modifier v2.1.x
 interface IRolesAdmin {
-    function setUp(bytes memory initParams) external;
-    function enableModule(address module) external;
-    function setDefaultRole(address module, bytes32 roleKey) external;
-    function assignRoles(address module, bytes32[] memory roleKeys, bool[] memory memberOf) external;
-    function setTarget(address _target) external;
-    function transferOwnership(address newOwner) external;
     function owner() external view returns (address);
     function avatar() external view returns (address);
     function target() external view returns (address);
+    function transferOwnership(address newOwner) external;
     function isModuleEnabled(address module) external view returns (bool);
+    function getModulesPaginated(address start, uint256 pageSize) external view returns (address[] memory, address);
     function defaultRoles(address module) external view returns (bytes32);
+    function unwrappers(bytes32 key) external view returns (address);
     function allowTarget(bytes32 roleKey, address targetAddress, uint8 options) external;
-}
-
-/// @notice Aave v3 Horizon Pool
-interface IAaveV3Pool {
-    function supply(address asset, uint256 amount, address onBehalfOf, uint16 referralCode) external;
-    function withdraw(address asset, uint256 amount, address to) external returns (uint256);
-}
-
-/// @notice Pendle Router V4 (ActionMisc / ActionSwapPT / ActionAddRemoveLiq facets)
-interface IPendleRouterV4 {
-    struct SwapData {
-        uint8 swapType;
-        address extRouter;
-        bytes extCalldata;
-        bool needScale;
-    }
-
-    struct TokenInput {
-        address tokenIn;
-        uint256 netTokenIn;
-        address tokenMintSy;
-        address pendleSwap;
-        SwapData swapData;
-    }
-
-    struct TokenOutput {
-        address tokenOut;
-        uint256 minTokenOut;
-        address tokenRedeemSy;
-        address pendleSwap;
-        SwapData swapData;
-    }
-
-    struct ApproxParams {
-        uint256 guessMin;
-        uint256 guessMax;
-        uint256 guessOffchain;
-        uint256 maxIteration;
-        uint256 eps;
-    }
-
-    struct Order {
-        uint256 salt;
-        uint256 expiry;
-        uint256 nonce;
-        uint8 orderType;
-        address token;
-        address YT;
-        address maker;
-        address receiver;
-        uint256 makingAmount;
-        uint256 lnImpliedRate;
-        uint256 failSafeRate;
-        bytes permit;
-    }
-
-    struct FillOrderParams {
-        Order order;
-        bytes signature;
-        uint256 makingAmount;
-    }
-
-    struct LimitOrderData {
-        address limitRouter;
-        uint256 epsSkipMarket;
-        FillOrderParams[] normalFills;
-        FillOrderParams[] flashFills;
-        bytes optData;
-    }
-
-    function swapExactTokenForPt(
-        address receiver,
-        address market,
-        uint256 minPtOut,
-        ApproxParams calldata guessPtOut,
-        TokenInput calldata input,
-        LimitOrderData calldata limit
-    )
-        external
-        payable
-        returns (uint256 netPtOut, uint256 netSyFee, uint256 netSyInterm);
-
-    function swapExactPtForToken(
-        address receiver,
-        address market,
-        uint256 exactPtIn,
-        TokenOutput calldata output,
-        LimitOrderData calldata limit
-    )
-        external
-        returns (uint256 netTokenOut, uint256 netSyFee, uint256 netSyInterm);
-
-    function redeemPyToToken(
-        address receiver,
-        address YT,
-        uint256 netPyIn,
-        TokenOutput calldata output
-    )
-        external
-        returns (uint256 netTokenOut, uint256 netSyInterm);
-}
-
-/// @notice Merkl / Fluid style reward distributors named in the forum specification
-interface IMerklDistributor {
-    function claim(
-        address[] calldata users,
-        address[] calldata tokens,
-        uint256[] calldata amounts,
-        bytes32[][] calldata proofs
-    )
-        external;
+    function allowFunction(bytes32 roleKey, address targetAddress, bytes4 selector, uint8 options) external;
+    function assignRoles(address module, bytes32[] memory roleKeys, bool[] memory memberOf) external;
 }
 
 /**
- * @title Endowment permissions to kpk — Update #10 (pre-draft)
- * @notice Pre-draft calldata review for
- *     https://discuss.ens.domains/t/draft-endowment-permissions-to-kpk-update-10/22323
+ * @title Endowment permissions to kpk — Update #10, revised execution (module swap)
+ * @notice Second-round review of
+ *     https://discuss.ens.domains/t/draft-endowment-permissions-to-kpk-update-10/22323/4
  *
- * The executable payload published with the forum post is
- *     karpatkey/client-configs @ ens-dao-manager-harvest-rwa-yield
- *     clients/ens-dao/mainnet/payloads/ensPermissionsUpdate10.json
- * a 54-transaction Safe Transaction Builder batch, delegatecalled through MultiSend
- * by the Endowment Safe. `expectedMultiSend.txt` is that payload re-encoded byte for
- * byte; `_generateCallData()` below rebuilds it from the published specification and
- * Solidity interfaces, and `_assertDerivedPayloadMatches()` proves the two agree.
+ * kpk's revised execution replaces the Endowment's Zodiac Roles Modifier instead of
+ * editing it. The artefact to execute is `ENS_Switch_ZRM.json` (karpatkey/client-configs,
+ * commit 8f4fb0c34d): a two-transaction batch signed by the Endowment Safe,
  *
- *   TX  0     ModuleProxyFactory.deployModule   -- new "sub-Roles" Modifier instance
- *   TX  1     roles.enableModule(subRoles)
- *   TX  2-3   subRoles.setTransactionUnwrapper  -- MultiSend unwrappers
- *   TX  4     roles.setDefaultRole(subRoles, MANAGER)
- *   TX  5     roles.assignRoles(subRoles, [MANAGER], [true])
- *   TX  6     subRoles.setTarget(roles)
- *   TX  7     subRoles.transferOwnership(karpatkey)
- *   TX  8-11  scopeFunction approve()           -- WETH, USDS, sUSDS, USDC spender lists
- *   TX 12-15  kpk ETH Yield vault               -- scopeTarget + deposit/withdraw/redeem
- *   TX 16-19  kpk USDC Yield vault
- *   TX 20-21  PYUSD                             -- scopeTarget + approve(Sentora PYUSD)
- *   TX 22-25  Sentora PYUSD Main vault
- *   TX 26-27  RLUSD                             -- scopeTarget + approve(Sentora RLUSD, Horizon)
- *   TX 28-31  Sentora RLUSD Main vault
- *   TX 32-35  Smokehouse USDC vault
- *   TX 36-39  Steakhouse High Yield USDC vault
- *   TX 40-42  Aave v3 Horizon Pool              -- supply/withdraw pinned to RLUSD
- *   TX 43-46  kpk USDC Prime RWA (Euler) vault
- *   TX 47-48  PT-sUSDS-26NOV2026                -- scopeTarget + approve(Pendle Router)
- *   TX 49-52  Pendle Router V4                  -- swapExactTokenForPt / swapExactPtForToken /
- *                                                  redeemPyToToken, pinned to the sUSDS market
- *   TX 53     annotationRegistry.post           -- Morpho vault annotations
+ *   TX 0   Safe.disableModule(SENTINEL, oldMain)   oldMain = 0x703806E6…  Roles v2.1.0
+ *   TX 1   Safe.enableModule(newMain)              newMain = 0xa23BEBFD…  Roles v2.1.1
+ *
+ * The new Main was deployed and configured on-chain by kpk (block 25,941,653 and the five
+ * configuration transactions that follow it) before this review. It ships the current
+ * MANAGER policy plus the Update #10 additions, with the redeployed Sub-Roles Modifier
+ * (0x48dC0d88…) enabled as a member. The Endowment Safe's sole owner is the
+ * EndowmentTimelock (since "Empowering the ENS Foundation" executed at block 25,729,925),
+ * so the batch executes when the ENS Foundation Safe schedules it there and the nine-day
+ * delay elapses without a Security Council veto.
+ *
+ * What this file proves:
+ *   - the switch batch, derived from the two Safe calls above, is byte-identical to the
+ *     Transaction Builder batch published by kpk (`expectedSwitchMultiSend.txt`);
+ *   - executed through the Foundation → EndowmentTimelock → Safe path it swaps the
+ *     modules, closes the old Main and leaves the Allowance module untouched;
+ *   - the new Main's MANAGER policy equals the old Main's policy with the verified
+ *     Update #10 payload applied, checked slot by slot on-chain (`test_structuralEquivalence…`)
+ *     and behaviourally for every Update #10 permission (`_afterExecution`);
+ *   - the precondition that is NOT yet met on-chain: the new Main is still owned by kpk's
+ *     test Safe, not by the Endowment Safe (`test_precondition…`, `test_finding…`).
  */
-contract Proposal_ENS_KPK_Update_10_Test is ENS_Governance, SafeHelper, ZodiacRolesHelper {
-    // ─── Infrastructure
-    // ──────────────────────────────────────────
+contract Proposal_ENS_KPK_Update_10_Switch_Test is Test, MultiSendHelper, ZodiacRolesHelper {
+    // ─── Actors and infrastructure
+    // ───────────────────────────────
 
-    // Zodiac condition param types not declared by ZodiacRolesHelper
+    string private constant DIR = "src/ens/proposals/ep-kpk-update-10";
+
+    address private constant OLD_MAIN = 0x703806E61847984346d2D7DDd853049627e50A40; // == roles
+    address private constant NEW_MAIN = 0xa23BEBFD3628D6Dd7B0638c147db11d9B6FaBD59;
+    address private constant SUB_ROLES = 0x48dC0d88766a59E119e3f2585BC1dC5436Ee6ce0;
+    address private constant OLD_SUB_ROLES = 0xa5dd28EC9C69627A96202897b35B88827854bd3b; // superseded, never deployed
+
+    /// @dev Zodiac Roles mastercopies: v2.1.0 (current Main) and v2.1.1 (new Main and Sub)
+    address private constant ROLES_MASTERCOPY_V210 = 0x9646fDAD06d3e24444381f44362a3B0eB343D337;
+    address private constant ROLES_MASTERCOPY_V211 = 0xF2964CE6161ce0e75964Fe7927cE114cb0B283D5;
+
+    /// @dev kpk's "test" instance Safe (1-of-9), deployer and current owner of the new Main
+    address private constant KPK_TEST_SAFE = 0xC01318baB7ee1f5ba734172bF7718b5DC6Ec90E1;
+
+    address private constant DAO_TIMELOCK = ENSConstants.TIMELOCK;
+    address private constant ENDOWMENT_TIMELOCK = 0x0bcC3dA6aD796F59288C0961602675E88A2B406C;
+    address private constant FOUNDATION_SAFE = 0x9C7dB6B1085ec4D07f75c0BD91AD3FcD368fA19E;
+    address private constant SC_VETO = 0x0A9387643ce6291f8C545286675D76bCd0Ba3EdD;
+    address private constant SC_SAFE = 0x7101B78638e34444F0a5AdE9e1149fbEeC029931;
+    address private constant ALLOWANCE_MODULE = 0xCFbFaC74C26F8647cBDb8c5caf80BB5b32E43134;
+    address private constant SENTINEL = address(0x1);
+
+    address private constant MULTISEND_130 = 0xA238CBeb142c10Ef7Ad8442C6D1f9E89e07e7761;
+    address private constant MULTISEND_CALL_ONLY_130 = 0x40A2aCCbd92BCA938b02010E17A5b8929b49130D; // == multiSend
+    address private constant MULTISEND_141 = 0x38869bf66a61cF6bDB996A6aE40D5853Fd43B526;
+    address private constant MULTISEND_CALL_ONLY_141 = 0x9641d764fc13c8B624c04430C7356C1C7C8102e2;
+    address private constant MULTISEND_UNWRAPPER = 0xB4Cd4bb764C089f20DA18700CE8bc5e49F369efD;
+
+    bytes32 private constant SALT = keccak256("ENS_Switch_ZRM");
+
+    // ─── Roles v2.1.x storage layout (identical in v2.1.0 and v2.1.1) ─
+    //   slot 3 modules, slot 4 roles, slot 6 unwrappers, slot 7 defaultRoles
+    //   Role { members (+0), targets (+1), scopeConfig (+2) }
+    //   scopeConfig header: count << 240 | options << 224 | isWildcarded << 216 | pointer
+    uint256 private constant SLOT_ROLES = 4;
+    uint256 private constant SLOT_UNWRAPPERS = 6;
+    uint256 private constant SLOT_DEFAULT_ROLES = 7;
+    uint256 private constant CLEARANCE_FUNCTION = 2;
+
+    // ─── Update #10 venues (see update10Payload.t.sol) ────────────
+
     uint8 private constant PARAM_TYPE_DYNAMIC = 2;
     uint8 private constant PARAM_TYPE_ARRAY = 4;
-
-    address private constant MULTISEND = 0x40A2aCCbd92BCA938b02010E17A5b8929b49130D;
-    address private constant ANNOTATION_REGISTRY = 0x000000000000cd17345801aa8147b8D3950260FF;
-    address private constant MODULE_PROXY_FACTORY = 0x000000000000aDdB49795b0f9bA5BC298cDda236;
-
-    /// @dev Zodiac Roles v2.1.1 mastercopy the new sub-instance is cloned from
-    address private constant ROLES_MASTERCOPY = 0xF2964CE6161ce0e75964Fe7927cE114cb0B283D5;
-    /// @dev EIP-1167 clone address the payload assumes for the new sub-Roles Modifier
-    address private constant SUB_ROLES = 0xa5dd28EC9C69627A96202897b35B88827854bd3b;
-
-    /// @dev Harvest role as defined in karpatkey's configuration repository: role key
-    ///      and the single member listed in roles/HARVEST/members.ts
-    bytes32 private constant HARVEST_ROLE = 0x4841525645535400000000000000000000000000000000000000000000000000;
-    address private constant HARVEST_MEMBER = 0x14C2d2D64C4860ACF7CF39068eb467D7556197de;
-    uint256 private constant SUB_ROLES_SALT_NONCE = 1_785_329_888_804;
-
-    /// @dev MultiSend handlers registered as transaction unwrappers on the sub-instance
-    address private constant MULTISEND_HANDLER_A = 0x38869bf66a61cF6bDB996A6aE40D5853Fd43B526;
-    address private constant MULTISEND_HANDLER_B = 0x9641d764fc13c8B624c04430C7356C1C7C8102e2;
-    address private constant MULTISEND_UNWRAPPER = 0xB4Cd4bb764C089f20DA18700CE8bc5e49F369efD;
-    bytes4 private constant MULTISEND_SELECTOR = IMultiSend.multiSend.selector;
-
-    // ─── Tokens
-    // ──────────────────────────────────────────────────
 
     address private constant PYUSD = 0x6c3ea9036406852006290770BEdFcAbA0e23A0e8;
     address private constant RLUSD = 0x8292Bb45bf1Ee4d140127049757C2E0fF06317eD;
     address private constant SUSDS = 0xa3931d71877C0E7a3148CB7Eb4463524FEc27fbD;
-    address private constant USDC = 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48;
+    address private constant USDC = ENSConstants.USDC;
     address private constant USDS = 0xdC035D45d973E3EC169d2276DDab16f1e407384F;
-    address private constant WETH = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
+    address private constant WETH = ENSConstants.WETH;
+    address private constant USDT = ENSConstants.USDT;
     address private constant PT_SUSDS_26NOV2026 = 0xdC169AbE56461A2E0c034Da431Ac2a3ebf596094;
-    address private constant USDT = 0xdAC17F958D2ee523a2206206994597C13D831ec7;
-    address private constant NATIVE_ETH = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
-
-    /// @dev CowSwap order signer (delegatecall target for `signOrder`) and a token known
-    ///      to be on the current sell list, used as a control for the item 5 probes
-    address private constant COWSWAP_ORDER_SIGNER = 0x23dA9AdE38E4477b23770DeD512fD37b12381FAB;
-
-    /// @dev Named in the forum specification but absent from the published payload
     address private constant SYRUP_USDC = 0x80ac24aA929eaF5013f6436cdA2a7ba190f5Cc0b;
     address private constant SYRUP_USDT = 0x356B8d89c1e1239Cbbb9dE4815c39A1474d5BA7D;
-
-    // ─── Yield / RWA venues
-    // ──────────────────────────────────────
+    address private constant COWSWAP_ORDER_SIGNER = 0x23dA9AdE38E4477b23770DeD512fD37b12381FAB;
 
     address private constant KPK_ETH_YIELD = 0x5dbf760b4fd0cDdDe0366b33aEb338b2A6d77725;
     address private constant KPK_USDC_YIELD = 0xD5cCe260E7a755DDf0Fb9cdF06443d593AaeaA13;
@@ -250,24 +157,13 @@ contract Proposal_ENS_KPK_Update_10_Test is ENS_Governance, SafeHelper, ZodiacRo
     address private constant KPK_USDC_PRIME_RWA = 0x2B47c128b35DDDcB66Ce2FA5B33c95314a7de245;
     address private constant AAVE_V3_HORIZON_POOL = 0xAe05Cd22df81871bc7cC2a04BeCfb516bFe332C8;
 
-    /// @dev Address printed in the forum specification for Steakhouse High Yield USDC.
-    ///      It holds no code on mainnet; the payload uses STEAKHOUSE_HIGH_YIELD_USDC instead.
-    address private constant STEAKHOUSE_ADDRESS_IN_FORUM_POST = 0xbeeff7aE5E00Aae3Db302e4B0d8C883810a58100;
-
-    // ─── Pendle
-    // ──────────────────────────────────────────────────
-
     address private constant PENDLE_ROUTER_V4 = 0x888888888889758F76e7103c6CbF23ABbF58F946;
     address private constant PENDLE_MARKET_SUSDS = 0x9C560eBaF78e596cbcC27411d633a74D628dd7dC;
     address private constant PENDLE_YT_SUSDS = 0xC7B8551C6B286Ce0b44952320e940Bd3Dee58A09;
 
-    // ─── Reward distributors named in the forum specification ────
-
     address private constant FLUID_DISTRIBUTOR = 0x7060FE0Dd3E31be01EFAc6B28C8D38018fD163B0;
     address private constant FLUID_GHO_DISTRIBUTOR = 0xF398E66B1273a34558AeBbEC550DccaF4AcC7714;
     address private constant MERKL_DISTRIBUTOR = 0x3Ef3D8bA38EBe18DB133cEc108f4D14CE00Dd9Ae;
-
-    // ─── Pre-existing spenders retained by the approve() rescopes ─
 
     address private constant PERMIT2 = 0x000000000022D473030F116dDEE9F6B43aC78BA3;
     address private constant UNISWAP_V3_ROUTER = 0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45;
@@ -275,264 +171,665 @@ contract Proposal_ENS_KPK_Update_10_Test is ENS_Governance, SafeHelper, ZodiacRo
     address private constant BALANCER_V2_VAULT = 0xBA12222222228d8Ba445958a75a0704d566BF2C8;
     address private constant GPV2_VAULT_RELAYER = 0xC92E8bdf79f0507f65a392b0ab4667716BFE0110;
     address private constant MORPHO_BLUE = 0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb;
-    address private constant AAVE_V3_POOL_L1_BRIDGE = 0xC13e21B648A5Ee794902342038FF3aDAB66BE987;
     address private constant CURVE_3POOL = 0xbEbc44782C7dB0a1A60Cb6fe97d0b483032FF1C7;
+    address private constant AAVE_V3_POOL_L1_BRIDGE = 0xC13e21B648A5Ee794902342038FF3aDAB66BE987;
     address private constant ETHERFI_DEPOSIT_ADAPTER = 0xcfC6d9Bd7411962Bfe7145451A7EF71A24b6A7A2;
 
-    // ─── Fork / Metadata
-    // ─────────────────────────────────────────
+    /// @dev Harvest role as published in kpk's configuration repository (roles/HARVEST)
+    bytes32 private constant HARVEST_ROLE = 0x4841525645535400000000000000000000000000000000000000000000000000;
+    address private constant HARVEST_MEMBER = 0x14C2d2D64C4860ACF7CF39068eb467D7556197de;
 
-    function _selectFork() public override {
-        vm.createSelectFork({ blockNumber: 25_647_900, urlOrAlias: "mainnet" });
+    IOZTimelock private constant endowmentTimelock = IOZTimelock(ENDOWMENT_TIMELOCK);
+
+    uint256 private safeNonceBefore;
+
+    // ─── Fork
+    // ─────────────────────────────────────────────────────
+
+    function setUp() public {
+        // After the new Main's last configuration transaction (block 25,941,858).
+        vm.createSelectFork({ blockNumber: 25_984_900, urlOrAlias: "mainnet" });
+        vm.label(OLD_MAIN, "oldMain");
+        vm.label(NEW_MAIN, "newMain");
+        vm.label(SUB_ROLES, "subRoles");
+        vm.label(address(endowmentSafe), "endowmentSafe");
+        vm.label(ENDOWMENT_TIMELOCK, "endowmentTimelock");
+        vm.label(FOUNDATION_SAFE, "foundationSafe");
+        vm.label(KPK_TEST_SAFE, "kpkTestSafe");
+        vm.label(karpatkey, "kpkPod");
     }
 
-    function _proposer() public pure override returns (address) {
-        return 0x5BFCB4BE4d7B43437d5A0c57E908c048a4418390; // fireeyesdao.eth (pre-draft placeholder)
+    // ─── The review
+    // ───────────────────────────────────────────────
+
+    function test_switch() public {
+        _beforeExecution();
+        bytes memory execData = _generateCallData();
+        _executeViaEndowmentTimelock(execData);
+        _afterExecution();
     }
 
-    function _isProposalSubmitted() public pure override returns (bool) {
-        return false;
+    /// @dev Tripwire for the open precondition: the new Main must be owned by the Endowment
+    ///      Safe before the switch executes. Today it is owned by kpk's 1-of-9 test Safe.
+    ///      This test is expected to start failing once kpk transfers ownership; update the
+    ///      review then rather than deleting it.
+    function test_precondition_newMainIsStillOwnedByKpkTestSafe() public view {
+        assertEq(IRolesAdmin(NEW_MAIN).owner(), KPK_TEST_SAFE, "new Main owner changed: re-review");
+        assertEq(ISafe(KPK_TEST_SAFE).getThreshold(), 1, "kpk test Safe threshold");
+        assertEq(ISafe(KPK_TEST_SAFE).getOwners().length, 9, "kpk test Safe owner count");
     }
 
-    function dirPath() public pure override returns (string memory) {
-        return "src/ens/proposals/ep-kpk-update-10";
+    /// @dev What the missing ownership transfer means in practice: with the switch executed
+    ///      as published, the owner of the new Main rewrites the Endowment's policy at will,
+    ///      without the Foundation, the timelock, the Security Council or a DAO vote.
+    function test_finding_withoutOwnershipTransferKpkTestSafeRewritesThePolicy() public {
+        _executeViaEndowmentTimelock(_generateCallData());
+        assertEq(IRolesAdmin(NEW_MAIN).owner(), KPK_TEST_SAFE, "precondition not simulated in this test");
+
+        // The Safe's idle sUSDS at the fork block (about 2.94M sUSDS).
+        address sink = address(0xdead);
+        uint256 amount = IERC20(SUSDS).balanceOf(address(endowmentSafe));
+        assertGt(amount, 1_000_000e18, "Endowment sUSDS balance");
+        uint256 sinkBefore = IERC20(SUSDS).balanceOf(sink);
+
+        // Today the pod cannot transfer sUSDS at all (approve only, spender-pinned).
+        _blockedVia(NEW_MAIN, SUSDS, _transferCall(sink, amount), IZodiacRoles.Status.FunctionNotAllowed);
+
+        // The test Safe (any 1 of its 9 signers) opens sUSDS.transfer to any recipient...
+        vm.prank(KPK_TEST_SAFE);
+        IRolesAdmin(NEW_MAIN).allowFunction(MANAGER_ROLE, SUSDS, IERC20.transfer.selector, EXEC_NONE);
+        // ...and the pod moves it in the next block, with no delay and no veto window.
+        vm.prank(karpatkey);
+        IZodiacRoles(NEW_MAIN)
+            .execTransactionWithRole(
+                SUSDS, 0, _transferCall(sink, amount), IZodiacRoles.Operation.Call, MANAGER_ROLE, true
+            );
+        assertEq(IERC20(SUSDS).balanceOf(sink) - sinkBefore, amount, "sUSDS left the Endowment");
+        assertEq(IERC20(SUSDS).balanceOf(address(endowmentSafe)), 0, "Endowment sUSDS drained");
+
+        // With ownership at the Endowment Safe the same edit is impossible outside the
+        // Foundation → EndowmentTimelock path.
+        vm.prank(KPK_TEST_SAFE);
+        IRolesAdmin(NEW_MAIN).transferOwnership(address(endowmentSafe));
+        vm.prank(KPK_TEST_SAFE);
+        vm.expectRevert(abi.encodeWithSignature("OwnableUnauthorizedAccount(address)", KPK_TEST_SAFE));
+        IRolesAdmin(NEW_MAIN).allowFunction(MANAGER_ROLE, WETH, IERC20.transfer.selector, EXEC_NONE);
     }
 
-    // ─── Before: none of the new venues are reachable yet ────────
+    /// @dev The Security Council can cancel the scheduled switch during the nine-day window.
+    function test_securityCouncilCanVetoTheScheduledSwitch() public {
+        bytes memory execData = _generateCallData();
+        bytes32 id = endowmentTimelock.hashOperation(address(endowmentSafe), 0, execData, bytes32(0), SALT);
+        vm.prank(FOUNDATION_SAFE);
+        endowmentTimelock.schedule(address(endowmentSafe), 0, execData, bytes32(0), SALT, 9 days);
+        assertTrue(endowmentTimelock.isOperationPending(id), "not scheduled");
 
-    function _beforeProposal() public override {
-        // The sub-Roles Modifier does not exist yet.
-        assertEq(SUB_ROLES.code.length, 0, "sub-Roles instance already deployed");
+        assertEq(ISecurityCouncil(SC_VETO).owner(), SC_SAFE, "veto wrapper owner");
+        assertGt(ISecurityCouncil(SC_VETO).expiration(), block.timestamp + 9 days, "veto expired");
+        vm.prank(SC_SAFE);
+        ISecurityCouncil(SC_VETO).veto(id);
+        assertFalse(endowmentTimelock.isOperationPending(id), "veto did not cancel");
 
-        // New targets are not scoped for the MANAGER role.
-        _assertTargetNotAllowed(KPK_ETH_YIELD, _depositCall());
-        _assertTargetNotAllowed(KPK_USDC_YIELD, _depositCall());
-        _assertTargetNotAllowed(SENTORA_PYUSD_MAIN, _depositCall());
-        _assertTargetNotAllowed(SENTORA_RLUSD_MAIN, _depositCall());
-        _assertTargetNotAllowed(SMOKEHOUSE_USDC, _depositCall());
-        _assertTargetNotAllowed(STEAKHOUSE_HIGH_YIELD_USDC, _depositCall());
-        _assertTargetNotAllowed(KPK_USDC_PRIME_RWA, _depositCall());
-        _assertTargetNotAllowed(PYUSD, _approveCall(SENTORA_PYUSD_MAIN));
-        _assertTargetNotAllowed(RLUSD, _approveCall(SENTORA_RLUSD_MAIN));
-        _assertTargetNotAllowed(PT_SUSDS_26NOV2026, _approveCall(PENDLE_ROUTER_V4));
-        _assertTargetNotAllowed(
-            AAVE_V3_HORIZON_POOL,
-            abi.encodeWithSelector(IAaveV3Pool.supply.selector, RLUSD, uint256(1), address(endowmentSafe), uint16(0))
+        vm.warp(block.timestamp + 9 days);
+        vm.expectRevert(bytes("TimelockController: operation is not ready"));
+        endowmentTimelock.execute(address(endowmentSafe), 0, execData, bytes32(0), SALT);
+        assertTrue(ISafeModules(address(endowmentSafe)).isModuleEnabled(OLD_MAIN), "old Main still active");
+        assertFalse(ISafeModules(address(endowmentSafe)).isModuleEnabled(NEW_MAIN), "new Main not enabled");
+    }
+
+    /// @dev The batch is not executable as an ENS DAO proposal: the DAO Timelock is no
+    ///      longer an owner of the Endowment Safe, so its pre-approved signature is invalid.
+    function test_switchIsNotExecutableByTheDaoTimelock() public {
+        (, bytes memory execData) = _buildSafeMultiSendCalldata(_switchBatch(), address(endowmentSafe), DAO_TIMELOCK);
+        vm.prank(DAO_TIMELOCK);
+        vm.expectRevert(bytes("GS026"));
+        ISafe(address(endowmentSafe))
+            .execTransaction(
+                multiSendTarget(), 0, "", 1, 0, 0, 0, address(0), address(0), _buildPreApprovedSignature(DAO_TIMELOCK)
+            );
+        vm.prank(DAO_TIMELOCK);
+        (bool ok,) = address(endowmentSafe).call(execData);
+        assertFalse(ok, "DAO Timelock must not be able to execute the switch");
+    }
+
+    /// @dev Operational consequence described in kpk's post: after the switch the pod must
+    ///      batch through MultiSend 1.4.1; the 1.3.0 MultiSend is no longer an unwrapper.
+    function test_multiSendVersionsBeforeAndAfterTheSwitch() public {
+        bytes memory batch = bytes.concat(
+            _packCall(USDC, _approveCall(GPV2_VAULT_RELAYER)), _packCall(WETH, _approveCall(GPV2_VAULT_RELAYER))
         );
-        _assertTargetNotAllowed(PENDLE_ROUTER_V4, _redeemPyToTokenCall(SUSDS));
+        bytes memory ms = abi.encodeWithSelector(IMultiSend.multiSend.selector, batch);
 
-        // sUSDS is already a scoped target; only the Pendle spender is new.
-        _assertBlocked(SUSDS, _approveCall(PENDLE_ROUTER_V4), IZodiacRoles.Status.OrViolation);
+        // Before: 1.3.0 unwrapped on the old Main, 1.4.1 rejected as an unknown target.
+        _allowedViaDelegate(OLD_MAIN, MULTISEND_130, ms);
+        _blockedViaDelegate(OLD_MAIN, MULTISEND_141, ms, IZodiacRoles.Status.TargetAddressNotAllowed);
 
-        // Item 5 is not yet in force: syrup routing and syrup approvals are unreachable.
-        _assertCowSwapOrderBlocked(SYRUP_USDC, USDC);
-        _assertCowSwapOrderBlocked(SYRUP_USDT, USDT);
-        _assertTargetNotAllowed(SYRUP_USDC, _approveCall(GPV2_VAULT_RELAYER));
-        _assertTargetNotAllowed(SYRUP_USDT, _approveCall(GPV2_VAULT_RELAYER));
+        _executeViaEndowmentTimelock(_generateCallData());
 
-        // The three "Harvest role" distributors are already reachable today.
-        _assertDistributorClaimsUnchanged();
-
-        // Existing approvals that the rescopes must preserve.
-        _assertAllowed(WETH, _approveCall(GPV2_VAULT_RELAYER));
-        _assertAllowed(WETH, _approveCall(AAVE_V3_POOL));
-        _assertAllowed(USDC, _approveCall(GPV2_VAULT_RELAYER));
-        _assertAllowed(USDC, _approveCall(AAVE_V3_POOL));
-        _assertAllowed(USDC, _approveCall(MORPHO_BLUE));
-        _assertAllowed(USDC, _approveCall(CURVE_3POOL));
-        _assertAllowed(USDS, _approveCall(GPV2_VAULT_RELAYER));
-        _assertAllowed(USDS, _approveCall(SUSDS));
-        _assertAllowed(SUSDS, _approveCall(GPV2_VAULT_RELAYER));
+        // After: 1.4.1 (both MultiSend and MultiSendCallOnly) unwrapped on the new Main,
+        // 1.3.0 rejected.
+        _allowedViaDelegate(NEW_MAIN, MULTISEND_141, ms);
+        _allowedViaDelegate(NEW_MAIN, MULTISEND_CALL_ONLY_141, ms);
+        _blockedViaDelegate(NEW_MAIN, MULTISEND_130, ms, IZodiacRoles.Status.TargetAddressNotAllowed);
+        _blockedViaDelegate(NEW_MAIN, MULTISEND_CALL_ONLY_130, ms, IZodiacRoles.Status.TargetAddressNotAllowed);
     }
 
-    // ─── After: new permissions are live and correctly pinned ────
+    /// @dev On-chain proof that the new Main's MANAGER policy is the old Main's policy with
+    ///      the verified Update #10 payload applied, and nothing else.
+    ///
+    ///      The Update #10 admin calls (`expectedMultiSend.txt`, byte-identical to the manual
+    ///      derivation in update10Payload.t.sol) are replayed onto the old Main here, and the
+    ///      two modifiers are then compared slot by slot over every target and every
+    ///      (target, selector) pair that either modifier has ever had configured
+    ///      (`roleStateKeys.json`, produced by rolesReplay.py from both event histories):
+    ///
+    ///        targets     raw slot equality (clearance + execution options);
+    ///        functions   canonical condition-tree equality, computed here from the packed
+    ///                    buffers the modifiers actually evaluate. 316 of the 332 headers are
+    ///                    byte-identical; 15 differ only in the order of Or alternatives and
+    ///                    one in a trailing unconstrained parameter, both of which the checker
+    ///                    treats identically (PermissionChecker._or, Decoder.inspect).
+    function test_structuralEquivalence_oldMainPlusUpdate10EqualsNewMain() public {
+        string memory json = vm.readFile(string.concat(DIR, "/roleStateKeys.json"));
+        address[] memory targets = vm.parseJsonAddressArray(json, ".targets");
+        bytes32[] memory functionKeys = vm.parseJsonBytes32Array(json, ".functionKeys");
+        bytes32[] memory identical = vm.parseJsonBytes32Array(json, ".identical");
+        bytes32[] memory orderOnly = vm.parseJsonBytes32Array(json, ".orderOnly");
+        bytes32[] memory trailingPassOnly = vm.parseJsonBytes32Array(json, ".trailingPassOnly");
+        assertEq(identical.length + orderOnly.length + trailingPassOnly.length, functionKeys.length, "key classes");
 
-    function _afterExecution() public override {
-        _assertSubRolesWiring();
-        _assertMorphoStyleVaults();
-        _assertTokenApprovals();
-        _assertAaveHorizon();
-        _assertPendle();
-        _assertNoSilentRemovals();
-        _assertSyrupRoutingAndDistributors();
-        _assertAssumedHarvestArchitecture();
+        // Layout probe: USDC is a scoped target on both modifiers today.
+        assertEq(uint256(vm.load(OLD_MAIN, _targetSlot(USDC))), CLEARANCE_FUNCTION, "layout probe old");
+        assertEq(uint256(vm.load(NEW_MAIN, _targetSlot(USDC))), CLEARANCE_FUNCTION, "layout probe new");
+
+        // Before the delta the two differ (Update #10 targets are unknown to the old Main).
+        assertEq(uint256(vm.load(OLD_MAIN, _targetSlot(KPK_USDC_YIELD))), 0, "old Main already scopes a new vault");
+
+        uint256 applied = _applyUpdate10DeltaToOldMain();
+        assertEq(applied, 50, "Update #10 Roles admin calls on the Main (14 scopeTarget + 36 scopeFunction)");
+
+        // Targets
+        for (uint256 i; i < targets.length; i++) {
+            assertEq(
+                vm.load(OLD_MAIN, _targetSlot(targets[i])),
+                vm.load(NEW_MAIN, _targetSlot(targets[i])),
+                string.concat("target clearance differs: ", vm.toString(targets[i]))
+            );
+        }
+
+        // Functions
+        uint256 rawEqual;
+        uint256 configured;
+        for (uint256 i; i < functionKeys.length; i++) {
+            bytes32 ho = vm.load(OLD_MAIN, _scopeConfigSlot(functionKeys[i]));
+            bytes32 hn = vm.load(NEW_MAIN, _scopeConfigSlot(functionKeys[i]));
+            if (ho == hn) rawEqual++;
+            if (hn != bytes32(0)) configured++;
+            assertEq(
+                _canonicalScopeConfig(OLD_MAIN, functionKeys[i]),
+                _canonicalScopeConfig(NEW_MAIN, functionKeys[i]),
+                string.concat("condition tree differs: ", vm.toString(functionKeys[i]))
+            );
+        }
+        assertEq(configured, functionKeys.length, "every key configured on the new Main");
+        assertEq(rawEqual, identical.length, "byte-identical header count");
+        for (uint256 i; i < identical.length; i++) {
+            assertEq(
+                vm.load(OLD_MAIN, _scopeConfigSlot(identical[i])),
+                vm.load(NEW_MAIN, _scopeConfigSlot(identical[i])),
+                "identical class"
+            );
+        }
+        for (uint256 i; i < orderOnly.length; i++) {
+            assertTrue(
+                vm.load(OLD_MAIN, _scopeConfigSlot(orderOnly[i])) != vm.load(NEW_MAIN, _scopeConfigSlot(orderOnly[i])),
+                "orderOnly class"
+            );
+        }
+        for (uint256 i; i < trailingPassOnly.length; i++) {
+            assertTrue(
+                vm.load(OLD_MAIN, _scopeConfigSlot(trailingPassOnly[i]))
+                    != vm.load(NEW_MAIN, _scopeConfigSlot(trailingPassOnly[i])),
+                "trailingPassOnly class"
+            );
+        }
+
+        // Members, default roles, unwrappers
+        assertEq(uint256(vm.load(OLD_MAIN, _memberSlot(karpatkey))), 1, "pod member old");
+        assertEq(uint256(vm.load(NEW_MAIN, _memberSlot(karpatkey))), 1, "pod member new");
+        assertEq(uint256(vm.load(OLD_MAIN, _memberSlot(SUB_ROLES))), 0, "sub not a member of old");
+        assertEq(uint256(vm.load(NEW_MAIN, _memberSlot(SUB_ROLES))), 1, "sub member of new");
+        assertEq(uint256(vm.load(NEW_MAIN, _memberSlot(OLD_SUB_ROLES))), 0, "superseded sub not a member");
+        assertEq(uint256(vm.load(NEW_MAIN, _memberSlot(KPK_TEST_SAFE))), 0, "kpk test Safe not a member");
+        assertEq(vm.load(NEW_MAIN, _defaultRoleSlot(SUB_ROLES)), MANAGER_ROLE, "sub default role");
+        assertEq(vm.load(NEW_MAIN, _defaultRoleSlot(karpatkey)), bytes32(0), "pod has no default role");
+        assertEq(
+            address(uint160(uint256(vm.load(NEW_MAIN, _unwrapperSlot(MULTISEND_141))))), MULTISEND_UNWRAPPER, "1.4.1"
+        );
+        assertEq(
+            address(uint160(uint256(vm.load(NEW_MAIN, _unwrapperSlot(MULTISEND_CALL_ONLY_141))))),
+            MULTISEND_UNWRAPPER,
+            "1.4.1 call-only"
+        );
+        assertEq(vm.load(NEW_MAIN, _unwrapperSlot(MULTISEND_130)), bytes32(0), "no 1.3.0 unwrapper on new");
+        assertEq(
+            address(uint160(uint256(vm.load(OLD_MAIN, _unwrapperSlot(MULTISEND_130))))),
+            MULTISEND_UNWRAPPER,
+            "1.3.0 old"
+        );
+
+        // The single trailing-Pass difference is exercised behaviourally in test_switch:
+        // USDC.transfer stays pinned to the DAO Timelock on the old Main (_beforeExecution)
+        // and on the new Main (_afterExecution).
+
+        // Negative controls for the comparison itself.
+        bytes32 usdcApprove = _fkey(USDC, IERC20.approve.selector);
+        bytes32 before = _canonicalScopeConfig(OLD_MAIN, usdcApprove);
+        // (a) re-scoping with the same spender list in reverse order changes the packed
+        //     header but not the canonical tree;
+        vm.prank(address(endowmentSafe));
+        IRolesModifier(OLD_MAIN)
+            .scopeFunction(MANAGER_ROLE, USDC, IERC20.approve.selector, _usdcApproveReversed(), EXEC_NONE);
+        assertTrue(
+            vm.load(OLD_MAIN, _scopeConfigSlot(usdcApprove)) != vm.load(NEW_MAIN, _scopeConfigSlot(usdcApprove)),
+            "control (a): header must change"
+        );
+        assertEq(_canonicalScopeConfig(OLD_MAIN, usdcApprove), before, "control (a): canonical tree must not change");
+        // (b) a one-spender change is detected.
+        vm.prank(address(endowmentSafe));
+        IRolesModifier(OLD_MAIN)
+            .scopeFunction(MANAGER_ROLE, USDC, IERC20.approve.selector, _usdcApproveTampered(), EXEC_NONE);
+        assertTrue(_canonicalScopeConfig(OLD_MAIN, usdcApprove) != before, "control (b): tampering must be detected");
+        // (c) wildcarding is detected.
+        vm.prank(address(endowmentSafe));
+        IRolesAdmin(OLD_MAIN).allowFunction(MANAGER_ROLE, USDC, IERC20.approve.selector, EXEC_NONE);
+        assertTrue(_canonicalScopeConfig(OLD_MAIN, usdcApprove) != before, "control (c): wildcard must be detected");
     }
 
-    /// @dev TX 0-7: the new sub-Roles Modifier and how it is chained to the existing one.
-    function _assertSubRolesWiring() internal view {
-        assertGt(SUB_ROLES.code.length, 0, "sub-Roles instance not deployed at the predicted address");
-
-        IRolesAdmin sub = IRolesAdmin(SUB_ROLES);
-        // Conditions on the sub-instance resolve `Avatar` to the Endowment Safe...
-        assertEq(sub.avatar(), address(endowmentSafe), "sub-Roles avatar");
-        // ...but execution is routed through the existing Roles Modifier.
-        assertEq(sub.target(), address(roles), "sub-Roles target");
-        // Ownership — and therefore the power to define roles and members on the
-        // sub-instance — sits with karpatkey, not with the DAO Timelock.
-        assertEq(sub.owner(), karpatkey, "sub-Roles owner");
-
-        IRolesAdmin main = IRolesAdmin(address(roles));
-        assertTrue(main.isModuleEnabled(SUB_ROLES), "sub-Roles not enabled on the main Roles Modifier");
-        assertEq(main.defaultRoles(SUB_ROLES), MANAGER_ROLE, "sub-Roles default role");
+    /// @dev USDC.approve spender list of the new Main (Update #10 state; 14 pre-existing
+    ///      spenders plus the four vaults added by Update #10), as an Or group.
+    function _usdcApproveSpenders() internal pure returns (address[] memory t) {
+        t = new address[](18);
+        t[0] = KPK_USDC_PRIME_RWA;
+        t[1] = 0x4Ef53d2cAa51C447fdFEEedee8F07FD1962C9ee6;
+        t[2] = 0x56C526b0159a258887e0d79ec3a80dfb940d0cD7;
+        t[3] = UNISWAP_V3_ROUTER;
+        t[4] = AAVE_V3_POOL;
+        t[5] = 0x9Fb7b4477576Fe5B32be4C1843aFB1e55F251B33;
+        t[6] = 0xA188EEC8F81263234dA3622A406892F3D630f98c;
+        t[7] = BALANCER_V2_VAULT;
+        t[8] = MORPHO_BLUE;
+        t[9] = CURVE_3POOL;
+        t[10] = STEAKHOUSE_HIGH_YIELD_USDC;
+        t[11] = SMOKEHOUSE_USDC;
+        t[12] = AAVE_V3_POOL_L1_BRIDGE;
+        t[13] = 0xc3d688B66703497DAA19211EEdff47f25384cdc3;
+        t[14] = GPV2_VAULT_RELAYER;
+        t[15] = 0xd0A61F2963622e992e6534bde4D52fd0a89F39E0;
+        t[16] = KPK_USDC_YIELD;
+        t[17] = 0xe108fbc04852B5df72f9E44d7C29F47e7A993aDd;
     }
 
-    /// @dev TX 12-19, 22-25, 28-39, 43-46: ERC-4626 style deposit/withdraw/redeem scopes.
-    function _assertMorphoStyleVaults() internal {
-        _assertVaultScope(KPK_ETH_YIELD);
-        _assertVaultScope(KPK_USDC_YIELD);
-        _assertVaultScope(SENTORA_PYUSD_MAIN);
-        _assertVaultScope(SENTORA_RLUSD_MAIN);
-        _assertVaultScope(SMOKEHOUSE_USDC);
-        _assertVaultScope(STEAKHOUSE_HIGH_YIELD_USDC);
-        _assertVaultScope(KPK_USDC_PRIME_RWA);
+    function _approveConditions(address[] memory spenders) internal pure returns (ConditionFlat[] memory c) {
+        c = new ConditionFlat[](2 + spenders.length);
+        c[0] = ConditionFlat(0, PARAM_TYPE_CALLDATA, OP_MATCHES, "");
+        c[1] = ConditionFlat(0, PARAM_TYPE_NONE, OP_OR, "");
+        for (uint256 i; i < spenders.length; i++) {
+            c[2 + i] = ConditionFlat(1, PARAM_TYPE_STATIC, OP_EQUAL_TO, abi.encode(spenders[i]));
+        }
     }
 
-    function _assertVaultScope(address vault) internal {
-        // deposit(assets, receiver) — receiver must be the Safe
-        _assertAllowed(vault, _depositCall());
-        _assertBlocked(
+    function _usdcApproveReversed() internal pure returns (ConditionFlat[] memory) {
+        address[] memory s = _usdcApproveSpenders();
+        address[] memory r = new address[](s.length);
+        for (uint256 i; i < s.length; i++) {
+            r[i] = s[s.length - 1 - i];
+        }
+        return _approveConditions(r);
+    }
+
+    function _usdcApproveTampered() internal pure returns (ConditionFlat[] memory) {
+        address[] memory s = _usdcApproveSpenders();
+        s[0] = address(0xdead);
+        return _approveConditions(s);
+    }
+
+    // ─── Before
+    // ───────────────────────────────────────────────────
+
+    function _beforeExecution() internal {
+        ISafe safe = ISafe(address(endowmentSafe));
+        assertEq(safe.VERSION(), "1.3.0", "Safe version");
+        address[] memory owners = safe.getOwners();
+        assertEq(owners.length, 1, "Safe owner count");
+        assertEq(owners[0], ENDOWMENT_TIMELOCK, "Safe owner");
+        assertEq(safe.getThreshold(), 1, "Safe threshold");
+        (address[] memory mods,) = safe.getModulesPaginated(SENTINEL, 10);
+        assertEq(mods.length, 2, "Safe module count");
+        assertEq(mods[0], OLD_MAIN, "old Main is the list head (prevModule = SENTINEL)");
+        assertEq(mods[1], ALLOWANCE_MODULE, "Allowance module");
+        safeNonceBefore = ISafeModules(address(endowmentSafe)).nonce();
+
+        // EndowmentTimelock: Foundation proposes, Security Council vetoes, anyone executes.
+        assertEq(endowmentTimelock.getMinDelay(), 9 days, "min delay");
+        assertTrue(endowmentTimelock.hasRole(keccak256("PROPOSER_ROLE"), FOUNDATION_SAFE), "Foundation proposer");
+        assertTrue(endowmentTimelock.hasRole(keccak256("PROPOSER_ROLE"), SC_VETO), "SC wrapper proposer");
+        assertTrue(endowmentTimelock.hasRole(keccak256("EXECUTOR_ROLE"), address(0)), "open executor");
+        assertFalse(endowmentTimelock.hasRole(keccak256("PROPOSER_ROLE"), DAO_TIMELOCK), "DAO Timelock not proposer");
+
+        // Old Main: Roles v2.1.0, owned by the Safe, one member (the pod), MultiSend 1.3.0.
+        _assertMinimalProxyOf(OLD_MAIN, ROLES_MASTERCOPY_V210);
+        assertEq(IRolesAdmin(OLD_MAIN).owner(), address(endowmentSafe), "old Main owner");
+        assertEq(IRolesAdmin(OLD_MAIN).avatar(), address(endowmentSafe), "old Main avatar");
+        assertEq(IRolesAdmin(OLD_MAIN).target(), address(endowmentSafe), "old Main target");
+        (address[] memory oldMods,) = IRolesAdmin(OLD_MAIN).getModulesPaginated(SENTINEL, 10);
+        assertEq(oldMods.length, 1, "old Main callers");
+        assertEq(oldMods[0], karpatkey, "old Main caller = pod");
+        assertEq(
+            IRolesAdmin(OLD_MAIN).unwrappers(_fkey(MULTISEND_130, IMultiSend.multiSend.selector)), MULTISEND_UNWRAPPER
+        );
+        assertEq(IRolesAdmin(OLD_MAIN).unwrappers(_fkey(MULTISEND_141, IMultiSend.multiSend.selector)), address(0));
+
+        // New Main: Roles v2.1.1, avatar/target = Safe, members = {Sub, pod}, MultiSend 1.4.1.
+        _assertMinimalProxyOf(NEW_MAIN, ROLES_MASTERCOPY_V211);
+        assertEq(IRolesAdmin(NEW_MAIN).avatar(), address(endowmentSafe), "new Main avatar");
+        assertEq(IRolesAdmin(NEW_MAIN).target(), address(endowmentSafe), "new Main target");
+        (address[] memory newMods,) = IRolesAdmin(NEW_MAIN).getModulesPaginated(SENTINEL, 10);
+        assertEq(newMods.length, 2, "new Main callers");
+        assertEq(newMods[0], SUB_ROLES, "new Main caller 0 = Sub");
+        assertEq(newMods[1], karpatkey, "new Main caller 1 = pod");
+        assertEq(IRolesAdmin(NEW_MAIN).defaultRoles(SUB_ROLES), MANAGER_ROLE, "Sub default role on new Main");
+        assertEq(IRolesAdmin(NEW_MAIN).defaultRoles(karpatkey), bytes32(0), "pod default role");
+        assertEq(
+            IRolesAdmin(NEW_MAIN).unwrappers(_fkey(MULTISEND_141, IMultiSend.multiSend.selector)), MULTISEND_UNWRAPPER
+        );
+        assertEq(
+            IRolesAdmin(NEW_MAIN).unwrappers(_fkey(MULTISEND_CALL_ONLY_141, IMultiSend.multiSend.selector)),
+            MULTISEND_UNWRAPPER
+        );
+        assertEq(IRolesAdmin(NEW_MAIN).unwrappers(_fkey(MULTISEND_130, IMultiSend.multiSend.selector)), address(0));
+        assertEq(
+            IRolesAdmin(NEW_MAIN).unwrappers(_fkey(MULTISEND_CALL_ONLY_130, IMultiSend.multiSend.selector)), address(0)
+        );
+
+        // Sub: Roles v2.1.1 owned by the pod, executing through the new Main, no role yet.
+        _assertMinimalProxyOf(SUB_ROLES, ROLES_MASTERCOPY_V211);
+        assertEq(IRolesAdmin(SUB_ROLES).owner(), karpatkey, "Sub owner");
+        assertEq(IRolesAdmin(SUB_ROLES).avatar(), address(endowmentSafe), "Sub avatar");
+        assertEq(IRolesAdmin(SUB_ROLES).target(), NEW_MAIN, "Sub target");
+        (address[] memory subMods,) = IRolesAdmin(SUB_ROLES).getModulesPaginated(SENTINEL, 10);
+        assertEq(subMods.length, 0, "Sub has no callers yet");
+        assertEq(OLD_SUB_ROLES.code.length, 0, "superseded Sub address was never deployed");
+        vm.prank(HARVEST_MEMBER);
+        vm.expectRevert(abi.encodeWithSignature("NotAuthorized(address)", HARVEST_MEMBER));
+        IZodiacRoles(SUB_ROLES)
+            .execTransactionWithRole(
+                FLUID_DISTRIBUTOR,
+                0,
+                _fluidClaimCall(address(endowmentSafe)),
+                IZodiacRoles.Operation.Call,
+                HARVEST_ROLE,
+                false
+            );
+
+        // The new Main cannot act on the Safe before the switch.
+        assertFalse(ISafeModules(address(endowmentSafe)).isModuleEnabled(NEW_MAIN), "new Main already enabled");
+        vm.prank(karpatkey);
+        vm.expectRevert(bytes("GS104"));
+        IZodiacRoles(NEW_MAIN)
+            .execTransactionWithRole(
+                USDC, 0, _approveCall(GPV2_VAULT_RELAYER), IZodiacRoles.Operation.Call, MANAGER_ROLE, false
+            );
+
+        // Today's policy on the old Main: Update #10 venues unreachable, existing calls intact.
+        _blockedVia(OLD_MAIN, KPK_USDC_YIELD, _depositCall(), IZodiacRoles.Status.TargetAddressNotAllowed);
+        _blockedVia(
+            OLD_MAIN, PENDLE_ROUTER_V4, _redeemPyToTokenCall(SUSDS), IZodiacRoles.Status.TargetAddressNotAllowed
+        );
+        _blockedVia(OLD_MAIN, SUSDS, _approveCall(PENDLE_ROUTER_V4), IZodiacRoles.Status.OrViolation);
+        _assertCowSwapOrderBlocked(OLD_MAIN, SYRUP_USDC, USDC);
+        _allowedVia(OLD_MAIN, USDC, _approveCall(GPV2_VAULT_RELAYER));
+        _allowedVia(OLD_MAIN, USDC, _transferCall(DAO_TIMELOCK, 1));
+        _blockedVia(OLD_MAIN, USDC, _transferCall(address(0xdead), 1), IZodiacRoles.Status.ParameterNotAllowed);
+        _assertDistributorClaimsPinned(OLD_MAIN);
+
+        // ── Precondition (NOT met on-chain at the fork block) ──
+        // The new Main is owned by kpk's test Safe. Ownership must sit with the Endowment
+        // Safe before the switch, otherwise the policy is editable outside the
+        // Foundation → EndowmentTimelock path (see test_finding_…). Simulated here so the
+        // rest of the verification describes the intended end state.
+        address ownerAtFork = IRolesAdmin(NEW_MAIN).owner();
+        if (ownerAtFork != address(endowmentSafe)) {
+            console2.log("PRECONDITION NOT MET: new Main owner is", ownerAtFork);
+            console2.log("  simulating transferOwnership(endowmentSafe) before the switch");
+            vm.prank(ownerAtFork);
+            IRolesAdmin(NEW_MAIN).transferOwnership(address(endowmentSafe));
+        }
+        assertEq(IRolesAdmin(NEW_MAIN).owner(), address(endowmentSafe), "new Main owner");
+    }
+
+    // ─── Calldata
+    // ─────────────────────────────────────────────────
+
+    /// @dev The two Safe calls of ENS_Switch_ZRM.json, packed for MultiSend.
+    function _switchBatch() internal view returns (bytes memory) {
+        return bytes.concat(
+            _packCall(
+                address(endowmentSafe), abi.encodeWithSelector(ISafeModules.disableModule.selector, SENTINEL, OLD_MAIN)
+            ),
+            _packCall(address(endowmentSafe), abi.encodeWithSelector(ISafeModules.enableModule.selector, NEW_MAIN))
+        );
+    }
+
+    /// @notice Derive the Safe transaction and prove it equals the published batch.
+    function _generateCallData() internal view returns (bytes memory execData) {
+        bytes memory batch = _switchBatch();
+        bytes memory expected = vm.parseBytes(vm.readFile(string.concat(DIR, "/expectedSwitchMultiSend.txt")));
+        assertEq(batch.length, expected.length, "switch batch length differs from ENS_Switch_ZRM.json");
+        assertEq(keccak256(batch), keccak256(expected), "switch batch differs from ENS_Switch_ZRM.json");
+
+        // Safe.execTransaction(MultiSendCallOnly 1.3.0, delegatecall, pre-approved by the
+        // EndowmentTimelock, the Safe's sole owner)
+        (, execData) = _buildSafeMultiSendCalldata(batch, address(endowmentSafe), ENDOWMENT_TIMELOCK);
+    }
+
+    function multiSendTarget() internal pure returns (address) {
+        return address(multiSend);
+    }
+
+    // ─── Execution: Foundation → EndowmentTimelock → Safe ─────────
+
+    function _executeViaEndowmentTimelock(bytes memory execData) internal {
+        uint256 delay = endowmentTimelock.getMinDelay();
+        bytes32 id = endowmentTimelock.hashOperation(address(endowmentSafe), 0, execData, bytes32(0), SALT);
+
+        vm.prank(FOUNDATION_SAFE);
+        endowmentTimelock.schedule(address(endowmentSafe), 0, execData, bytes32(0), SALT, delay);
+        assertTrue(endowmentTimelock.isOperationPending(id), "not pending");
+
+        // The delay is enforced.
+        vm.expectRevert(bytes("TimelockController: operation is not ready"));
+        endowmentTimelock.execute(address(endowmentSafe), 0, execData, bytes32(0), SALT);
+
+        vm.warp(block.timestamp + delay);
+        vm.roll(block.number + delay / 12);
+        assertTrue(endowmentTimelock.isOperationReady(id), "not ready");
+
+        // Executor role is open: any address can execute once ready.
+        vm.prank(address(0xA11CE));
+        endowmentTimelock.execute(address(endowmentSafe), 0, execData, bytes32(0), SALT);
+        assertTrue(endowmentTimelock.isOperationDone(id), "not done");
+    }
+
+    // ─── After
+    // ────────────────────────────────────────────────────
+
+    function _afterExecution() internal {
+        // The Safe now has the new Main and the untouched Allowance module.
+        (address[] memory mods,) = ISafe(address(endowmentSafe)).getModulesPaginated(SENTINEL, 10);
+        assertEq(mods.length, 2, "Safe module count after switch");
+        assertEq(mods[0], NEW_MAIN, "new Main enabled");
+        assertEq(mods[1], ALLOWANCE_MODULE, "Allowance module untouched");
+        assertFalse(ISafeModules(address(endowmentSafe)).isModuleEnabled(OLD_MAIN), "old Main still enabled");
+        assertEq(ISafeModules(address(endowmentSafe)).nonce(), safeNonceBefore + 1, "one Safe transaction");
+        assertEq(ISafe(address(endowmentSafe)).getOwners()[0], ENDOWMENT_TIMELOCK, "owner unchanged");
+
+        // The old Main is dormant: still owned by the Safe, but it can no longer execute.
+        assertEq(IRolesAdmin(OLD_MAIN).owner(), address(endowmentSafe), "old Main owner");
+        vm.prank(karpatkey);
+        vm.expectRevert(bytes("GS104"));
+        IZodiacRoles(OLD_MAIN)
+            .execTransactionWithRole(
+                USDC, 0, _approveCall(GPV2_VAULT_RELAYER), IZodiacRoles.Operation.Call, MANAGER_ROLE, false
+            );
+
+        // The new Main is governed by the Safe and wired as before.
+        assertEq(IRolesAdmin(NEW_MAIN).owner(), address(endowmentSafe), "new Main owner");
+        assertEq(IRolesAdmin(SUB_ROLES).target(), NEW_MAIN, "Sub target");
+        assertEq(IRolesAdmin(SUB_ROLES).owner(), karpatkey, "Sub owner");
+
+        // Existing permissions carried over.
+        _allowedVia(NEW_MAIN, USDC, _approveCall(GPV2_VAULT_RELAYER));
+        _allowedVia(NEW_MAIN, USDC, _transferCall(DAO_TIMELOCK, 1));
+        _blockedVia(NEW_MAIN, USDC, _transferCall(address(0xdead), 1), IZodiacRoles.Status.ParameterNotAllowed);
+        _blockedVia(NEW_MAIN, address(0xdead), "", IZodiacRoles.Status.TargetAddressNotAllowed);
+        _blockedVia(NEW_MAIN, NEW_MAIN, "", IZodiacRoles.Status.TargetAddressNotAllowed);
+        _blockedVia(NEW_MAIN, OLD_MAIN, "", IZodiacRoles.Status.TargetAddressNotAllowed);
+        _blockedVia(NEW_MAIN, SUB_ROLES, "", IZodiacRoles.Status.TargetAddressNotAllowed);
+        // The Safe itself is a scoped target on both Mains (pre-existing, carried over:
+        // setFallbackHandler and the CoW ExtensibleFallbackHandler's setDomainVerifier), so
+        // anything else on it is rejected at the function level.
+        _blockedVia(NEW_MAIN, address(endowmentSafe), "", IZodiacRoles.Status.FunctionNotAllowed);
+        _blockedVia(
+            NEW_MAIN,
+            address(endowmentSafe),
+            abi.encodeWithSelector(ISafeModules.enableModule.selector, address(0xdead)),
+            IZodiacRoles.Status.FunctionNotAllowed
+        );
+        _blockedVia(
+            NEW_MAIN,
+            address(endowmentSafe),
+            abi.encodeWithSelector(ISafeModules.disableModule.selector, SENTINEL, NEW_MAIN),
+            IZodiacRoles.Status.FunctionNotAllowed
+        );
+        _assertNoSilentRemovals(NEW_MAIN);
+        _assertDistributorClaimsPinned(NEW_MAIN);
+
+        // Update #10 permissions, as verified in round 1, now live on the new Main.
+        _assertMorphoStyleVaults(NEW_MAIN);
+        _assertTokenApprovals(NEW_MAIN);
+        _assertAaveHorizon(NEW_MAIN);
+        _assertPendle(NEW_MAIN);
+        _assertSyrupRouting(NEW_MAIN);
+        _assertHarvestArchitecture();
+    }
+
+    // ─── Update #10 permission assertions (module-parameterised) ──
+
+    function _assertMorphoStyleVaults(address m) internal {
+        _assertVaultScope(m, KPK_ETH_YIELD);
+        _assertVaultScope(m, KPK_USDC_YIELD);
+        _assertVaultScope(m, SENTORA_PYUSD_MAIN);
+        _assertVaultScope(m, SENTORA_RLUSD_MAIN);
+        _assertVaultScope(m, SMOKEHOUSE_USDC);
+        _assertVaultScope(m, STEAKHOUSE_HIGH_YIELD_USDC);
+        _assertVaultScope(m, KPK_USDC_PRIME_RWA);
+    }
+
+    function _assertVaultScope(address m, address vault) internal {
+        address safe = address(endowmentSafe);
+        _allowedVia(m, vault, _depositCall());
+        _blockedVia(
+            m,
             vault,
             abi.encodeWithSelector(IMetaMorphoV1.deposit.selector, uint256(1), address(0xdead)),
             IZodiacRoles.Status.ParameterNotAllowed
         );
-        // withdraw(assets, receiver, owner) — both must be the Safe
-        _assertAllowed(
+        _allowedVia(m, vault, abi.encodeWithSelector(IMetaMorphoV1.withdraw.selector, uint256(1), safe, safe));
+        _blockedVia(
+            m,
             vault,
-            abi.encodeWithSelector(
-                IMetaMorphoV1.withdraw.selector, uint256(1), address(endowmentSafe), address(endowmentSafe)
-            )
-        );
-        _assertBlocked(
-            vault,
-            abi.encodeWithSelector(
-                IMetaMorphoV1.withdraw.selector, uint256(1), address(0xdead), address(endowmentSafe)
-            ),
+            abi.encodeWithSelector(IMetaMorphoV1.withdraw.selector, uint256(1), address(0xdead), safe),
             IZodiacRoles.Status.ParameterNotAllowed
         );
-        _assertBlocked(
+        _blockedVia(
+            m,
             vault,
-            abi.encodeWithSelector(
-                IMetaMorphoV1.withdraw.selector, uint256(1), address(endowmentSafe), address(0xdead)
-            ),
+            abi.encodeWithSelector(IMetaMorphoV1.withdraw.selector, uint256(1), safe, address(0xdead)),
             IZodiacRoles.Status.ParameterNotAllowed
         );
-        // redeem(shares, receiver, owner) — both must be the Safe
-        _assertAllowed(
+        _allowedVia(m, vault, abi.encodeWithSelector(IMetaMorphoV1.redeem.selector, uint256(1), safe, safe));
+        _blockedVia(
+            m,
             vault,
-            abi.encodeWithSelector(
-                IMetaMorphoV1.redeem.selector, uint256(1), address(endowmentSafe), address(endowmentSafe)
-            )
-        );
-        _assertBlocked(
-            vault,
-            abi.encodeWithSelector(IMetaMorphoV1.redeem.selector, uint256(1), address(0xdead), address(endowmentSafe)),
+            abi.encodeWithSelector(IMetaMorphoV1.redeem.selector, uint256(1), address(0xdead), safe),
             IZodiacRoles.Status.ParameterNotAllowed
         );
-        _assertBlocked(
-            vault,
-            abi.encodeWithSelector(IMetaMorphoV1.redeem.selector, uint256(1), address(endowmentSafe), address(0xdead)),
+        _blockedVia(m, vault, _transferCall(address(0xdead), 1), IZodiacRoles.Status.FunctionNotAllowed);
+    }
+
+    function _assertTokenApprovals(address m) internal {
+        _allowedVia(m, WETH, _approveCall(KPK_ETH_YIELD));
+        _allowedVia(m, USDC, _approveCall(KPK_USDC_YIELD));
+        _allowedVia(m, USDC, _approveCall(SMOKEHOUSE_USDC));
+        _allowedVia(m, USDC, _approveCall(STEAKHOUSE_HIGH_YIELD_USDC));
+        _allowedVia(m, USDC, _approveCall(KPK_USDC_PRIME_RWA));
+        _allowedVia(m, USDS, _approveCall(PENDLE_ROUTER_V4));
+        _allowedVia(m, SUSDS, _approveCall(PENDLE_ROUTER_V4));
+        _allowedVia(m, PYUSD, _approveCall(SENTORA_PYUSD_MAIN));
+        _allowedVia(m, RLUSD, _approveCall(SENTORA_RLUSD_MAIN));
+        _allowedVia(m, RLUSD, _approveCall(AAVE_V3_HORIZON_POOL));
+        _allowedVia(m, PT_SUSDS_26NOV2026, _approveCall(PENDLE_ROUTER_V4));
+
+        _blockedVia(m, WETH, _approveCall(address(0xdead)), IZodiacRoles.Status.OrViolation);
+        _blockedVia(m, USDC, _approveCall(address(0xdead)), IZodiacRoles.Status.OrViolation);
+        _blockedVia(m, USDS, _approveCall(address(0xdead)), IZodiacRoles.Status.OrViolation);
+        _blockedVia(m, SUSDS, _approveCall(address(0xdead)), IZodiacRoles.Status.OrViolation);
+        _blockedVia(m, RLUSD, _approveCall(address(0xdead)), IZodiacRoles.Status.OrViolation);
+        _blockedVia(m, PYUSD, _approveCall(address(0xdead)), IZodiacRoles.Status.ParameterNotAllowed);
+        _blockedVia(m, PT_SUSDS_26NOV2026, _approveCall(address(0xdead)), IZodiacRoles.Status.ParameterNotAllowed);
+
+        _blockedVia(m, PYUSD, _transferCall(address(0xdead), 1), IZodiacRoles.Status.FunctionNotAllowed);
+        _blockedVia(m, RLUSD, _transferCall(address(0xdead), 1), IZodiacRoles.Status.FunctionNotAllowed);
+        _blockedVia(m, PT_SUSDS_26NOV2026, _transferCall(address(0xdead), 1), IZodiacRoles.Status.FunctionNotAllowed);
+    }
+
+    function _assertAaveHorizon(address m) internal {
+        address safe = address(endowmentSafe);
+        _allowedVia(m, AAVE_V3_HORIZON_POOL, abi.encodeWithSelector(IAaveV3Pool.supply.selector, RLUSD, 1, safe, 0));
+        _allowedVia(m, AAVE_V3_HORIZON_POOL, abi.encodeWithSelector(IAaveV3Pool.withdraw.selector, RLUSD, 1, safe));
+        _blockedVia(
+            m,
+            AAVE_V3_HORIZON_POOL,
+            abi.encodeWithSelector(IAaveV3Pool.supply.selector, USDC, 1, safe, 0),
             IZodiacRoles.Status.ParameterNotAllowed
         );
-        // The vaults are scoped, not allowed wholesale: transfer() stays blocked.
-        _assertBlocked(
-            vault,
-            abi.encodeWithSelector(IERC20.transfer.selector, address(0xdead), uint256(1)),
+        _blockedVia(
+            m,
+            AAVE_V3_HORIZON_POOL,
+            abi.encodeWithSelector(IAaveV3Pool.supply.selector, RLUSD, 1, address(0xdead), 0),
+            IZodiacRoles.Status.ParameterNotAllowed
+        );
+        _blockedVia(
+            m,
+            AAVE_V3_HORIZON_POOL,
+            abi.encodeWithSelector(IAaveV3Pool.withdraw.selector, RLUSD, 1, address(0xdead)),
+            IZodiacRoles.Status.ParameterNotAllowed
+        );
+        _blockedVia(
+            m,
+            AAVE_V3_HORIZON_POOL,
+            abi.encodeWithSignature("borrow(address,uint256,uint256,uint16,address)", RLUSD, 1, 2, 0, safe),
             IZodiacRoles.Status.FunctionNotAllowed
         );
     }
 
-    /// @dev TX 8-11, 20-21, 26-27, 47-48: approve() spender pinning.
-    function _assertTokenApprovals() internal {
-        // New spenders reachable
-        _assertAllowed(WETH, _approveCall(KPK_ETH_YIELD));
-        _assertAllowed(USDC, _approveCall(KPK_USDC_YIELD));
-        _assertAllowed(USDC, _approveCall(SMOKEHOUSE_USDC));
-        _assertAllowed(USDC, _approveCall(STEAKHOUSE_HIGH_YIELD_USDC));
-        _assertAllowed(USDC, _approveCall(KPK_USDC_PRIME_RWA));
-        _assertAllowed(USDS, _approveCall(PENDLE_ROUTER_V4));
-        _assertAllowed(SUSDS, _approveCall(PENDLE_ROUTER_V4));
-        _assertAllowed(PYUSD, _approveCall(SENTORA_PYUSD_MAIN));
-        _assertAllowed(RLUSD, _approveCall(SENTORA_RLUSD_MAIN));
-        _assertAllowed(RLUSD, _approveCall(AAVE_V3_HORIZON_POOL));
-        _assertAllowed(PT_SUSDS_26NOV2026, _approveCall(PENDLE_ROUTER_V4));
-
-        // Arbitrary spenders remain blocked on every rescoped token
-        _assertBlocked(WETH, _approveCall(address(0xdead)), IZodiacRoles.Status.OrViolation);
-        _assertBlocked(USDC, _approveCall(address(0xdead)), IZodiacRoles.Status.OrViolation);
-        _assertBlocked(USDS, _approveCall(address(0xdead)), IZodiacRoles.Status.OrViolation);
-        _assertBlocked(SUSDS, _approveCall(address(0xdead)), IZodiacRoles.Status.OrViolation);
-        _assertBlocked(RLUSD, _approveCall(address(0xdead)), IZodiacRoles.Status.OrViolation);
-        // Single-spender scopes use a bare EqualTo instead of an Or group
-        _assertBlocked(PYUSD, _approveCall(address(0xdead)), IZodiacRoles.Status.ParameterNotAllowed);
-        _assertBlocked(PT_SUSDS_26NOV2026, _approveCall(address(0xdead)), IZodiacRoles.Status.ParameterNotAllowed);
-
-        // The newly scoped tokens expose approve() only — no transfers out of the Safe
-        _assertBlocked(
-            PYUSD,
-            abi.encodeWithSelector(IERC20.transfer.selector, address(0xdead), uint256(1)),
-            IZodiacRoles.Status.FunctionNotAllowed
-        );
-        _assertBlocked(
-            RLUSD,
-            abi.encodeWithSelector(IERC20.transfer.selector, address(0xdead), uint256(1)),
-            IZodiacRoles.Status.FunctionNotAllowed
-        );
-        _assertBlocked(
-            PT_SUSDS_26NOV2026,
-            abi.encodeWithSelector(IERC20.transfer.selector, address(0xdead), uint256(1)),
-            IZodiacRoles.Status.FunctionNotAllowed
-        );
-    }
-
-    /// @dev TX 40-42: Aave v3 Horizon, restricted to the RLUSD reserve.
-    function _assertAaveHorizon() internal {
-        _assertAllowed(
-            AAVE_V3_HORIZON_POOL,
-            abi.encodeWithSelector(IAaveV3Pool.supply.selector, RLUSD, uint256(1), address(endowmentSafe), uint16(0))
-        );
-        _assertAllowed(
-            AAVE_V3_HORIZON_POOL,
-            abi.encodeWithSelector(IAaveV3Pool.withdraw.selector, RLUSD, uint256(1), address(endowmentSafe))
-        );
-        // Any other reserve is blocked — this is the stablecoin supply side only.
-        _assertBlocked(
-            AAVE_V3_HORIZON_POOL,
-            abi.encodeWithSelector(IAaveV3Pool.supply.selector, USDC, uint256(1), address(endowmentSafe), uint16(0)),
-            IZodiacRoles.Status.ParameterNotAllowed
-        );
-        // Supplying or withdrawing on behalf of / to a third party is blocked.
-        _assertBlocked(
-            AAVE_V3_HORIZON_POOL,
-            abi.encodeWithSelector(IAaveV3Pool.supply.selector, RLUSD, uint256(1), address(0xdead), uint16(0)),
-            IZodiacRoles.Status.ParameterNotAllowed
-        );
-        _assertBlocked(
-            AAVE_V3_HORIZON_POOL,
-            abi.encodeWithSelector(IAaveV3Pool.withdraw.selector, RLUSD, uint256(1), address(0xdead)),
-            IZodiacRoles.Status.ParameterNotAllowed
-        );
-        // Borrowing was not granted.
-        _assertBlocked(
-            AAVE_V3_HORIZON_POOL,
-            abi.encodeWithSignature(
-                "borrow(address,uint256,uint256,uint16,address)",
-                RLUSD,
-                uint256(1),
-                uint256(2),
-                uint16(0),
-                address(endowmentSafe)
-            ),
-            IZodiacRoles.Status.FunctionNotAllowed
-        );
-    }
-
-    /// @dev TX 49-52: Pendle Router, pinned to the PT-sUSDS-26NOV2026 market.
-    function _assertPendle() internal {
-        // redeemPyToToken — receiver = Safe, YT pinned, tokenOut in {sUSDS, USDS}
-        _assertAllowed(PENDLE_ROUTER_V4, _redeemPyToTokenCall(SUSDS));
-        _assertAllowed(PENDLE_ROUTER_V4, _redeemPyToTokenCall(USDS));
-        _assertBlocked(PENDLE_ROUTER_V4, _redeemPyToTokenCall(USDC), IZodiacRoles.Status.OrViolation);
-        _assertBlocked(
+    function _assertPendle(address m) internal {
+        _allowedVia(m, PENDLE_ROUTER_V4, _redeemPyToTokenCall(SUSDS));
+        _allowedVia(m, PENDLE_ROUTER_V4, _redeemPyToTokenCall(USDS));
+        _blockedVia(m, PENDLE_ROUTER_V4, _redeemPyToTokenCall(USDC), IZodiacRoles.Status.OrViolation);
+        _blockedVia(
+            m,
             PENDLE_ROUTER_V4,
             abi.encodeWithSelector(
                 IPendleRouterV4.redeemPyToToken.selector,
@@ -543,40 +840,30 @@ contract Proposal_ENS_KPK_Update_10_Test is ENS_Governance, SafeHelper, ZodiacRo
             ),
             IZodiacRoles.Status.ParameterNotAllowed
         );
-        // A different YT (i.e. a different maturity/asset) is blocked.
-        _assertBlocked(
+        _allowedVia(m, PENDLE_ROUTER_V4, _swapExactPtForTokenCall(PENDLE_MARKET_SUSDS, SUSDS));
+        _blockedVia(
+            m,
             PENDLE_ROUTER_V4,
-            abi.encodeWithSelector(
-                IPendleRouterV4.redeemPyToToken.selector,
-                address(endowmentSafe),
-                address(0xdead),
-                uint256(1),
-                _tokenOutput(SUSDS)
-            ),
+            _swapExactPtForTokenCall(address(0xdead), SUSDS),
+            IZodiacRoles.Status.ParameterNotAllowed
+        );
+        _allowedVia(m, PENDLE_ROUTER_V4, _swapExactTokenForPtCall(PENDLE_MARKET_SUSDS, SUSDS));
+        _allowedVia(m, PENDLE_ROUTER_V4, _swapExactTokenForPtCall(PENDLE_MARKET_SUSDS, USDS));
+        _blockedVia(
+            m, PENDLE_ROUTER_V4, _swapExactTokenForPtCall(PENDLE_MARKET_SUSDS, USDC), IZodiacRoles.Status.OrViolation
+        );
+        _blockedVia(
+            m,
+            PENDLE_ROUTER_V4,
+            _swapExactTokenForPtCall(address(0xdead), SUSDS),
             IZodiacRoles.Status.ParameterNotAllowed
         );
 
-        // swapExactPtForToken — market pinned
-        _assertAllowed(PENDLE_ROUTER_V4, _swapExactPtForTokenCall(PENDLE_MARKET_SUSDS, SUSDS));
-        _assertBlocked(
-            PENDLE_ROUTER_V4, _swapExactPtForTokenCall(address(0xdead), SUSDS), IZodiacRoles.Status.ParameterNotAllowed
-        );
-
-        // swapExactTokenForPt — market pinned, tokenIn restricted
-        _assertAllowed(PENDLE_ROUTER_V4, _swapExactTokenForPtCall(PENDLE_MARKET_SUSDS, SUSDS));
-        _assertAllowed(PENDLE_ROUTER_V4, _swapExactTokenForPtCall(PENDLE_MARKET_SUSDS, USDS));
-        _assertBlocked(
-            PENDLE_ROUTER_V4, _swapExactTokenForPtCall(PENDLE_MARKET_SUSDS, USDC), IZodiacRoles.Status.OrViolation
-        );
-        _assertBlocked(
-            PENDLE_ROUTER_V4, _swapExactTokenForPtCall(address(0xdead), SUSDS), IZodiacRoles.Status.ParameterNotAllowed
-        );
-
-        // The external-aggregator escape hatch inside TokenInput is pinned shut:
-        // a non-zero pendleSwap would let the router call arbitrary calldata.
+        // External-aggregator escape hatch pinned shut.
         IPendleRouterV4.TokenInput memory input = _tokenInput(SUSDS);
         input.pendleSwap = address(0xdead);
-        _assertBlocked(
+        _blockedVia(
+            m,
             PENDLE_ROUTER_V4,
             abi.encodeWithSelector(
                 IPendleRouterV4.swapExactTokenForPt.selector,
@@ -589,96 +876,67 @@ contract Proposal_ENS_KPK_Update_10_Test is ENS_Governance, SafeHelper, ZodiacRo
             ),
             IZodiacRoles.Status.ParameterNotAllowed
         );
-
-        // Liquidity provision on the Pendle market was not granted.
-        _assertBlocked(
+        _blockedVia(
+            m,
             PENDLE_ROUTER_V4,
             abi.encodeWithSignature("redeemDueInterestAndRewards(address,address[],address[],address[])"),
             IZodiacRoles.Status.FunctionNotAllowed
         );
     }
 
-    /// @dev Spot-check that the four approve() rescopes did not drop existing spenders.
-    function _assertNoSilentRemovals() internal {
-        _assertAllowed(WETH, _approveCall(GPV2_VAULT_RELAYER));
-        _assertAllowed(WETH, _approveCall(AAVE_V3_POOL));
-        _assertAllowed(WETH, _approveCall(PERMIT2));
-        _assertAllowed(WETH, _approveCall(BALANCER_V2_VAULT));
-        _assertAllowed(WETH, _approveCall(UNISWAP_V3_ROUTER));
-        _assertAllowed(WETH, _approveCall(MORPHO_BLUE));
-        _assertAllowed(WETH, _approveCall(ETHERFI_DEPOSIT_ADAPTER));
-        _assertAllowed(USDC, _approveCall(GPV2_VAULT_RELAYER));
-        _assertAllowed(USDC, _approveCall(AAVE_V3_POOL));
-        _assertAllowed(USDC, _approveCall(MORPHO_BLUE));
-        _assertAllowed(USDC, _approveCall(CURVE_3POOL));
-        _assertAllowed(USDC, _approveCall(BALANCER_V2_VAULT));
-        _assertAllowed(USDC, _approveCall(UNISWAP_V3_ROUTER));
-        _assertAllowed(USDS, _approveCall(GPV2_VAULT_RELAYER));
-        _assertAllowed(USDS, _approveCall(SUSDS));
-        _assertAllowed(USDS, _approveCall(AAVE_V3_POOL));
-        _assertAllowed(USDS, _approveCall(UNISWAP_V3_ROUTER));
-        _assertAllowed(SUSDS, _approveCall(GPV2_VAULT_RELAYER));
-        _assertAllowed(SUSDS, _approveCall(UNISWAP_V3_ROUTER));
+    function _assertSyrupRouting(address m) internal {
+        _assertCowSwapOrderPermitted(m, SYRUP_USDC, USDC);
+        _assertCowSwapOrderPermitted(m, USDC, SYRUP_USDC);
+        _assertCowSwapOrderPermitted(m, SYRUP_USDT, USDT);
+        _assertCowSwapOrderPermitted(m, USDT, SYRUP_USDT);
+        _assertCowSwapOrderPermitted(m, USDC, WETH);
+        _assertCowSwapOrderBlocked(m, SYRUP_USDC, WETH);
+        _assertCowSwapOrderBlocked(m, SYRUP_USDC, USDT);
+        _assertCowSwapOrderBlocked(m, SYRUP_USDT, WETH);
+        _assertCowSwapOrderBlocked(m, SYRUP_USDT, USDC);
+        _assertCowSwapOrderBlocked(m, SYRUP_USDC, SYRUP_USDT);
+        _assertCowSwapOrderBlockedTo(m, SYRUP_USDC, USDC, address(0xdead));
+        _allowedVia(m, SYRUP_USDC, _approveCall(GPV2_VAULT_RELAYER));
+        _allowedVia(m, SYRUP_USDT, _approveCall(GPV2_VAULT_RELAYER));
+        _blockedVia(m, SYRUP_USDC, _approveCall(address(0xdead)), IZodiacRoles.Status.ParameterNotAllowed);
+        _blockedVia(m, SYRUP_USDT, _transferCall(address(0xdead), 1), IZodiacRoles.Status.FunctionNotAllowed);
     }
 
-    /// @dev Item 5 as implemented by the regenerated payload, and item 6 as left unchanged.
-    function _assertSyrupRoutingAndDistributors() internal {
-        // Item 6 — "Reward Claims (new Harvest role)": the payload still adds no distributor
-        // permission. The three claims remain reachable exactly as they were before, with
-        // payouts pinned to the Safe; the sub-Roles Modifier is deployed empty.
-        _assertDistributorClaimsUnchanged();
-
-        // Item 5 — the syrup tokens are tradable, but only against their own underlying.
-        _assertCowSwapOrderPermitted(SYRUP_USDC, USDC);
-        _assertCowSwapOrderPermitted(USDC, SYRUP_USDC);
-        _assertCowSwapOrderPermitted(SYRUP_USDT, USDT);
-        _assertCowSwapOrderPermitted(USDT, SYRUP_USDT);
-        // The pre-existing general lists still work.
-        _assertCowSwapOrderPermitted(USDC, WETH);
-
-        // Cross-pair and unrelated routes are rejected: syrup tokens were NOT merged into
-        // the general sell/buy lists, so no syrup-for-anything-else order can be signed.
-        _assertCowSwapOrderBlocked(SYRUP_USDC, WETH);
-        _assertCowSwapOrderBlocked(SYRUP_USDC, USDT);
-        _assertCowSwapOrderBlocked(SYRUP_USDT, WETH);
-        _assertCowSwapOrderBlocked(SYRUP_USDT, USDC);
-        _assertCowSwapOrderBlocked(SYRUP_USDC, SYRUP_USDT);
-        // Receiver pinning still applies inside the new pair branches.
-        _assertCowSwapOrderBlockedTo(SYRUP_USDC, USDC, address(0xdead));
-
-        // The syrup tokens are scoped targets whose only permitted call is approve() to
-        // the CoW vault relayer.
-        _assertAllowed(SYRUP_USDC, _approveCall(GPV2_VAULT_RELAYER));
-        _assertAllowed(SYRUP_USDT, _approveCall(GPV2_VAULT_RELAYER));
-        _assertBlocked(SYRUP_USDC, _approveCall(address(0xdead)), IZodiacRoles.Status.ParameterNotAllowed);
-        _assertBlocked(SYRUP_USDT, _approveCall(address(0xdead)), IZodiacRoles.Status.ParameterNotAllowed);
-        _assertBlocked(
-            SYRUP_USDC,
-            abi.encodeWithSelector(IERC20.transfer.selector, address(0xdead), uint256(1)),
-            IZodiacRoles.Status.FunctionNotAllowed
-        );
-        _assertBlocked(
-            SYRUP_USDT,
-            abi.encodeWithSelector(IERC20.transfer.selector, address(0xdead), uint256(1)),
-            IZodiacRoles.Status.FunctionNotAllowed
-        );
+    function _assertNoSilentRemovals(address m) internal {
+        _allowedVia(m, WETH, _approveCall(GPV2_VAULT_RELAYER));
+        _allowedVia(m, WETH, _approveCall(AAVE_V3_POOL));
+        _allowedVia(m, WETH, _approveCall(PERMIT2));
+        _allowedVia(m, WETH, _approveCall(BALANCER_V2_VAULT));
+        _allowedVia(m, WETH, _approveCall(UNISWAP_V3_ROUTER));
+        _allowedVia(m, WETH, _approveCall(MORPHO_BLUE));
+        _allowedVia(m, WETH, _approveCall(ETHERFI_DEPOSIT_ADAPTER));
+        _allowedVia(m, USDC, _approveCall(GPV2_VAULT_RELAYER));
+        _allowedVia(m, USDC, _approveCall(AAVE_V3_POOL));
+        _allowedVia(m, USDC, _approveCall(MORPHO_BLUE));
+        _allowedVia(m, USDC, _approveCall(CURVE_3POOL));
+        _allowedVia(m, USDC, _approveCall(BALANCER_V2_VAULT));
+        _allowedVia(m, USDC, _approveCall(UNISWAP_V3_ROUTER));
+        _allowedVia(m, USDS, _approveCall(GPV2_VAULT_RELAYER));
+        _allowedVia(m, USDS, _approveCall(SUSDS));
+        _allowedVia(m, USDS, _approveCall(AAVE_V3_POOL));
+        _allowedVia(m, USDS, _approveCall(UNISWAP_V3_ROUTER));
+        _allowedVia(m, SUSDS, _approveCall(GPV2_VAULT_RELAYER));
+        _allowedVia(m, SUSDS, _approveCall(UNISWAP_V3_ROUTER));
     }
 
-    /// @dev Working assumption for finding 1: the sub-Roles instance will host the
-    ///      Harvest role of item 6, configured by kpk (its owner) after execution and
-    ///      outside the DAO vote. This simulates that configuration and proves the
-    ///      resulting two-layer permission chain:
-    ///
-    ///        HARVEST_MEMBER -> sub-Roles (HARVEST conditions)
-    ///                       -> main Roles (MANAGER conditions, as sub's default role)
-    ///                       -> Endowment Safe
-    ///
-    ///      The sub-role is configured deliberately permissively (whole distributor
-    ///      targets allowed, no argument conditions) to show that even a lax or
-    ///      malicious configuration cannot redirect payouts: the existing MANAGER
-    ///      conditions on the main modifier independently pin the recipient.
-    function _assertAssumedHarvestArchitecture() internal {
-        // kpk, as owner of the sub-instance, configures the Harvest role.
+    function _assertDistributorClaimsPinned(address m) internal {
+        _allowedVia(m, FLUID_DISTRIBUTOR, _fluidClaimCall(address(endowmentSafe)));
+        _allowedVia(m, FLUID_GHO_DISTRIBUTOR, _fluidClaimCall(address(endowmentSafe)));
+        _allowedVia(m, MERKL_DISTRIBUTOR, _merklClaimCall(address(endowmentSafe)));
+        _blockedVia(m, FLUID_DISTRIBUTOR, _fluidClaimCall(address(0xdead)), IZodiacRoles.Status.ParameterNotAllowed);
+        _blockedVia(m, FLUID_GHO_DISTRIBUTOR, _fluidClaimCall(address(0xdead)), IZodiacRoles.Status.ParameterNotAllowed);
+        _blockedVia(m, MERKL_DISTRIBUTOR, _merklClaimCall(address(0xdead)), IZodiacRoles.Status.OrViolation);
+    }
+
+    /// @dev kpk (owner of the Sub) configures the Harvest role after the switch, per its
+    ///      configuration repository. The Sub is deliberately configured permissively to
+    ///      show that the new Main's MANAGER conditions still pin every payout to the Safe.
+    function _assertHarvestArchitecture() internal {
         bytes32[] memory keys = new bytes32[](1);
         keys[0] = HARVEST_ROLE;
         bool[] memory member = new bool[](1);
@@ -691,9 +949,7 @@ contract Proposal_ENS_KPK_Update_10_Test is ENS_Governance, SafeHelper, ZodiacRo
         vm.stopPrank();
 
         vm.startPrank(HARVEST_MEMBER);
-
-        // Claims with the payout directed to the Safe pass both layers.
-        uint256 snap = vm.snapshot();
+        uint256 snap = vm.snapshotState();
         IZodiacRoles(SUB_ROLES)
             .execTransactionWithRole(
                 FLUID_DISTRIBUTOR,
@@ -703,8 +959,6 @@ contract Proposal_ENS_KPK_Update_10_Test is ENS_Governance, SafeHelper, ZodiacRo
                 HARVEST_ROLE,
                 false
             );
-        vm.revertTo(snap);
-        snap = vm.snapshot();
         IZodiacRoles(SUB_ROLES)
             .execTransactionWithRole(
                 MERKL_DISTRIBUTOR,
@@ -714,10 +968,8 @@ contract Proposal_ENS_KPK_Update_10_Test is ENS_Governance, SafeHelper, ZodiacRo
                 HARVEST_ROLE,
                 false
             );
-        vm.revertTo(snap);
+        vm.revertToState(snap);
 
-        // A redirected payout is rejected by the MAIN layer even though the sub-role
-        // allows the whole target: defense in depth holds.
         _expectConditionViolation(IZodiacRoles.Status.ParameterNotAllowed);
         IZodiacRoles(SUB_ROLES)
             .execTransactionWithRole(
@@ -728,9 +980,6 @@ contract Proposal_ENS_KPK_Update_10_Test is ENS_Governance, SafeHelper, ZodiacRo
             .execTransactionWithRole(
                 MERKL_DISTRIBUTOR, 0, _merklClaimCall(address(0xdead)), IZodiacRoles.Operation.Call, HARVEST_ROLE, false
             );
-
-        // Anything beyond the distributors is rejected by the SUB layer: the Harvest
-        // member holds no access to the wider Endowment Manager permission set.
         _expectConditionViolation(IZodiacRoles.Status.TargetAddressNotAllowed);
         IZodiacRoles(SUB_ROLES)
             .execTransactionWithRole(
@@ -741,162 +990,253 @@ contract Proposal_ENS_KPK_Update_10_Test is ENS_Governance, SafeHelper, ZodiacRo
             .execTransactionWithRole(
                 USDC, 0, _approveCall(GPV2_VAULT_RELAYER), IZodiacRoles.Operation.Call, HARVEST_ROLE, false
             );
-
         vm.stopPrank();
     }
 
-    // ─── Assertion primitives
-    // ────────────────────────────────────
+    // ─── Update #10 delta replay (structural test) ────────────────
 
-    function _assertCowSwapOrderBlockedTo(address sell, address buy, address receiver) internal {
-        vm.startPrank(karpatkey);
-        _expectConditionViolation(IZodiacRoles.Status.OrViolation);
-        roles.execTransactionWithRole(
-            COWSWAP_ORDER_SIGNER,
-            0,
-            abi.encodeWithSelector(
-                ICowSwapOrderSigner.signOrder.selector, _buildCowSwapOrderTo(sell, buy, receiver), uint32(0), uint256(0)
-            ),
-            IZodiacRoles.Operation.DelegateCall,
-            MANAGER_ROLE,
-            false
-        );
-        vm.stopPrank();
-    }
-
-    function _assertCowSwapOrderBlocked(address sell, address buy) internal {
-        vm.startPrank(karpatkey);
-        _expectConditionViolation(IZodiacRoles.Status.OrViolation);
-        roles.execTransactionWithRole(
-            COWSWAP_ORDER_SIGNER,
-            0,
-            abi.encodeWithSelector(
-                ICowSwapOrderSigner.signOrder.selector, _buildCowSwapOrder(sell, buy), uint32(0), uint256(0)
-            ),
-            IZodiacRoles.Operation.DelegateCall,
-            MANAGER_ROLE,
-            false
-        );
-        vm.stopPrank();
-    }
-
-    function _assertCowSwapOrderPermitted(address sell, address buy) internal {
-        vm.startPrank(karpatkey);
-        uint256 snap = vm.snapshot();
-        roles.execTransactionWithRole(
-            COWSWAP_ORDER_SIGNER,
-            0,
-            abi.encodeWithSelector(
-                ICowSwapOrderSigner.signOrder.selector, _buildCowSwapOrder(sell, buy), uint32(0), uint256(0)
-            ),
-            IZodiacRoles.Operation.DelegateCall,
-            MANAGER_ROLE,
-            false
-        );
-        vm.revertTo(snap);
-        vm.stopPrank();
-    }
-
-    function _buildCowSwapOrder(address sell, address buy) internal view returns (ICowSwapOrderSigner.Data memory) {
-        return _buildCowSwapOrderTo(sell, buy, address(endowmentSafe));
-    }
-
-    function _buildCowSwapOrderTo(
-        address sell,
-        address buy,
-        address receiver
-    )
-        internal
-        pure
-        returns (ICowSwapOrderSigner.Data memory)
-    {
-        return ICowSwapOrderSigner.Data({
-            sellToken: IERC20(sell),
-            buyToken: IERC20(buy),
-            receiver: receiver,
-            sellAmount: 0,
-            buyAmount: 0,
-            validTo: 0,
-            appData: bytes32(0),
-            feeAmount: 0,
-            kind: bytes32(0),
-            partiallyFillable: false,
-            sellTokenBalance: bytes32(0),
-            buyTokenBalance: bytes32(0)
-        });
-    }
-
-    function _assertTargetNotAllowed(address target, bytes memory data) internal {
-        _assertBlocked(target, data, IZodiacRoles.Status.TargetAddressNotAllowed);
-    }
-
-    /// @dev A distributor is unreachable either because the target is unscoped or because
-    ///      `claim` was never permissioned on it. Both outcomes mean the forum's Harvest
-    ///      role is not in force; the distinction is recorded for the report.
-    /// @dev The three distributors named under the forum's "new Harvest role" are already
-    ///      reachable on the MANAGER role, with the payout recipient pinned to the Safe.
-    ///      This proposal changes none of that.
-    function _assertDistributorClaimsUnchanged() internal {
-        _assertAllowed(FLUID_DISTRIBUTOR, _fluidClaimCall(address(endowmentSafe)));
-        _assertAllowed(FLUID_GHO_DISTRIBUTOR, _fluidClaimCall(address(endowmentSafe)));
-        _assertAllowed(MERKL_DISTRIBUTOR, _merklClaimCall(address(endowmentSafe)));
-
-        // A foreign payout recipient is rejected on all three, either by a bare
-        // EqualTo on the recipient or by an Or group of permitted recipients.
-        _assertRecipientRejected(FLUID_DISTRIBUTOR, _fluidClaimCall(address(0xdead)));
-        _assertRecipientRejected(FLUID_GHO_DISTRIBUTOR, _fluidClaimCall(address(0xdead)));
-        _assertRecipientRejected(MERKL_DISTRIBUTOR, _merklClaimCall(address(0xdead)));
-    }
-
-    function _assertRecipientRejected(address distributor, bytes memory data) internal {
-        vm.prank(karpatkey);
-        try roles.execTransactionWithRole(distributor, 0, data, IZodiacRoles.Operation.Call, MANAGER_ROLE, false) {
-            revert("foreign payout recipient unexpectedly permitted");
-        } catch (bytes memory err) {
-            bytes memory args = new bytes(err.length - 4);
-            for (uint256 i = 4; i < err.length; i++) {
-                args[i - 4] = err[i];
-            }
-            (IZodiacRoles.Status status,) = abi.decode(args, (IZodiacRoles.Status, bytes32));
-            assertTrue(
-                status == IZodiacRoles.Status.ParameterNotAllowed || status == IZodiacRoles.Status.OrViolation,
-                "foreign recipient blocked for an unexpected reason"
-            );
+    /// @dev Replays the Roles admin calls of the verified Update #10 payload onto the old
+    ///      Main, pranked as its owner (the Safe). Calls that concern the superseded Sub
+    ///      (deployModule, enableModule, setDefaultRole, assignRoles, setTransactionUnwrapper,
+    ///      setTarget, transferOwnership) and the annotation post are skipped.
+    function _applyUpdate10DeltaToOldMain() internal returns (uint256 applied) {
+        bytes memory txs = vm.parseBytes(vm.readFile(string.concat(DIR, "/expectedMultiSend.txt")));
+        uint256 i;
+        while (i < txs.length) {
+            address to = address(uint160(uint256(_word(txs, i + 1) >> 96)));
+            uint256 len = uint256(_word(txs, i + 53));
+            bytes memory data = _slice(txs, i + 85, len);
+            i += 85 + len;
+            bytes4 sel = bytes4(data);
+            bool isPolicyCall = sel == IRolesModifier.scopeTarget.selector
+                || sel == IRolesModifier.scopeFunction.selector || sel == IRolesModifier.allowFunction.selector
+                || sel == IRolesModifier.revokeFunction.selector || sel == IRolesModifier.revokeTarget.selector
+                || sel == IRolesAdmin.allowTarget.selector;
+            if (to != OLD_MAIN || !isPolicyCall) continue;
+            vm.prank(address(endowmentSafe));
+            (bool ok,) = OLD_MAIN.call(data);
+            require(ok, "delta call failed on old Main");
+            applied++;
         }
     }
 
-    function _assertBlocked(address target, bytes memory data, IZodiacRoles.Status status) internal {
-        vm.startPrank(karpatkey);
+    // ─── Canonical condition trees from packed storage ────────────
+
+    /// @dev Canonical hash of a scopeConfig entry, computed from the packed buffer the
+    ///      modifier evaluates (BufferPacker layout): wildcard entries hash their execution
+    ///      options; scoped entries hash the condition tree with And/Or/Nor children sorted
+    ///      and trailing Pass leaves of Matches nodes pruned.
+    function _canonicalScopeConfig(address module, bytes32 key) internal view returns (bytes32) {
+        uint256 header = uint256(vm.load(module, _scopeConfigSlot(key)));
+        if (header == 0) return bytes32(0);
+        uint8 options = uint8(header >> 224);
+        if ((header >> 216) & 1 == 1) return keccak256(abi.encode("wildcard", options));
+
+        uint256 count = header >> 240;
+        bytes memory buffer = address(uint160(header)).code; // 0x00 || packed conditions
+        uint8[] memory parent = new uint8[](count);
+        uint8[] memory paramType = new uint8[](count);
+        uint8[] memory operator = new uint8[](count);
+        bytes32[] memory compValue = new bytes32[](count);
+        uint256 compOffset = 1 + count * 2;
+        for (uint256 i; i < count; i++) {
+            uint16 bits = uint16(bytes2(_word(buffer, 1 + i * 2)));
+            parent[i] = uint8(bits >> 8);
+            paramType[i] = uint8((bits >> 5) & 0x07);
+            operator[i] = uint8(bits & 0x1f);
+            if (operator[i] >= OP_EQUAL_TO) {
+                compValue[i] = _word(buffer, compOffset);
+                compOffset += 32;
+            }
+        }
+        return keccak256(abi.encode(options, _canonicalNode(0, parent, paramType, operator, compValue)));
+    }
+
+    function _canonicalNode(
+        uint256 node,
+        uint8[] memory parent,
+        uint8[] memory paramType,
+        uint8[] memory operator,
+        bytes32[] memory compValue
+    )
+        internal
+        pure
+        returns (bytes32)
+    {
+        uint256 n = parent.length;
+        uint256 childCount;
+        for (uint256 j = node + 1; j < n; j++) {
+            if (parent[j] == node) childCount++;
+        }
+        bytes32[] memory children = new bytes32[](childCount);
+        bool[] memory inertLeaf = new bool[](childCount);
+        uint256 c;
+        for (uint256 j = node + 1; j < n; j++) {
+            if (parent[j] != node) continue;
+            children[c] = _canonicalNode(j, parent, paramType, operator, compValue);
+            inertLeaf[c] = operator[j] == OP_PASS && !_hasChildren(j, parent);
+            c++;
+        }
+        if (operator[node] == OP_MATCHES) {
+            while (childCount > 0 && inertLeaf[childCount - 1]) childCount--;
+            assembly {
+                mstore(children, childCount)
+            }
+        }
+        if (operator[node] == 1 || operator[node] == OP_OR || operator[node] == 3) _sort(children);
+        bytes32 value = operator[node] >= OP_EQUAL_TO ? compValue[node] : bytes32(0);
+        return keccak256(abi.encode(paramType[node], operator[node], value, children));
+    }
+
+    function _hasChildren(uint256 node, uint8[] memory parent) internal pure returns (bool) {
+        for (uint256 j = node + 1; j < parent.length; j++) {
+            if (parent[j] == node) return true;
+        }
+        return false;
+    }
+
+    function _sort(bytes32[] memory a) internal pure {
+        for (uint256 i = 1; i < a.length; i++) {
+            bytes32 v = a[i];
+            uint256 j = i;
+            while (j > 0 && a[j - 1] > v) {
+                a[j] = a[j - 1];
+                j--;
+            }
+            a[j] = v;
+        }
+    }
+
+    // ─── Storage slots
+    // ────────────────────────────────────────────
+
+    function _roleBase() internal pure returns (uint256) {
+        return uint256(keccak256(abi.encode(MANAGER_ROLE, SLOT_ROLES)));
+    }
+
+    function _memberSlot(address m) internal pure returns (bytes32) {
+        return keccak256(abi.encode(m, _roleBase()));
+    }
+
+    function _targetSlot(address t) internal pure returns (bytes32) {
+        return keccak256(abi.encode(t, _roleBase() + 1));
+    }
+
+    function _scopeConfigSlot(bytes32 key) internal pure returns (bytes32) {
+        return keccak256(abi.encode(key, _roleBase() + 2));
+    }
+
+    function _unwrapperSlot(address to) internal pure returns (bytes32) {
+        return keccak256(abi.encode(_fkey(to, IMultiSend.multiSend.selector), SLOT_UNWRAPPERS));
+    }
+
+    function _defaultRoleSlot(address m) internal pure returns (bytes32) {
+        return keccak256(abi.encode(m, SLOT_DEFAULT_ROLES));
+    }
+
+    /// @dev Roles `_key(target, selector)`: bytes20(target) || selector || 0
+    function _fkey(address t, bytes4 sel) internal pure returns (bytes32) {
+        return bytes32(bytes20(t)) | (bytes32(sel) >> 160);
+    }
+
+    // ─── Probes
+    // ───────────────────────────────────────────────────
+
+    function _allowedVia(address module, address target, bytes memory data) internal {
+        uint256 snap = vm.snapshotState();
+        vm.prank(karpatkey);
+        IZodiacRoles(module).execTransactionWithRole(target, 0, data, IZodiacRoles.Operation.Call, MANAGER_ROLE, false);
+        vm.revertToState(snap);
+    }
+
+    function _blockedVia(address module, address target, bytes memory data, IZodiacRoles.Status status) internal {
+        vm.prank(karpatkey);
         if (status == IZodiacRoles.Status.FunctionNotAllowed) {
-            // FunctionNotAllowed carries the selector in the `info` field.
             vm.expectRevert(
                 abi.encodeWithSelector(IZodiacRoles.ConditionViolation.selector, status, bytes32(bytes4(data)))
             );
         } else {
             _expectConditionViolation(status);
         }
-        roles.execTransactionWithRole(target, 0, data, IZodiacRoles.Operation.Call, MANAGER_ROLE, false);
-        vm.stopPrank();
+        IZodiacRoles(module).execTransactionWithRole(target, 0, data, IZodiacRoles.Operation.Call, MANAGER_ROLE, false);
     }
 
-    function _assertAllowed(address target, bytes memory data) internal {
-        vm.startPrank(karpatkey);
-        _safeExecuteTransaction(target, data);
-        vm.stopPrank();
+    function _allowedViaDelegate(address module, address target, bytes memory data) internal {
+        uint256 snap = vm.snapshotState();
+        vm.prank(karpatkey);
+        IZodiacRoles(module)
+            .execTransactionWithRole(target, 0, data, IZodiacRoles.Operation.DelegateCall, MANAGER_ROLE, true);
+        vm.revertToState(snap);
     }
 
-    // ─── Call builders used by the assertions ────────────────────
+    function _blockedViaDelegate(
+        address module,
+        address target,
+        bytes memory data,
+        IZodiacRoles.Status status
+    )
+        internal
+    {
+        vm.prank(karpatkey);
+        _expectConditionViolation(status);
+        IZodiacRoles(module)
+            .execTransactionWithRole(target, 0, data, IZodiacRoles.Operation.DelegateCall, MANAGER_ROLE, true);
+    }
+
+    function _assertCowSwapOrderPermitted(address m, address sell, address buy) internal {
+        uint256 snap = vm.snapshotState();
+        vm.prank(karpatkey);
+        IZodiacRoles(m)
+            .execTransactionWithRole(
+                COWSWAP_ORDER_SIGNER,
+                0,
+                _signOrderCall(sell, buy, address(endowmentSafe)),
+                IZodiacRoles.Operation.DelegateCall,
+                MANAGER_ROLE,
+                false
+            );
+        vm.revertToState(snap);
+    }
+
+    function _assertCowSwapOrderBlocked(address m, address sell, address buy) internal {
+        _assertCowSwapOrderBlockedTo(m, sell, buy, address(endowmentSafe));
+    }
+
+    function _assertCowSwapOrderBlockedTo(address m, address sell, address buy, address receiver) internal {
+        vm.prank(karpatkey);
+        _expectConditionViolation(IZodiacRoles.Status.OrViolation);
+        IZodiacRoles(m)
+            .execTransactionWithRole(
+                COWSWAP_ORDER_SIGNER,
+                0,
+                _signOrderCall(sell, buy, receiver),
+                IZodiacRoles.Operation.DelegateCall,
+                MANAGER_ROLE,
+                false
+            );
+    }
+
+    function _assertMinimalProxyOf(address proxy, address implementation) internal view {
+        bytes memory expected =
+            abi.encodePacked(hex"363d3d373d3d3d363d73", implementation, hex"5af43d82803e903d91602b57fd5bf3");
+        assertEq(keccak256(proxy.code), keccak256(expected), "not an EIP-1167 clone of the expected mastercopy");
+    }
+
+    // ─── Call builders
+    // ────────────────────────────────────────────
 
     function _approveCall(address spender) internal pure returns (bytes memory) {
         return abi.encodeWithSelector(IERC20.approve.selector, spender, uint256(1));
+    }
+
+    function _transferCall(address to, uint256 amount) internal pure returns (bytes memory) {
+        return abi.encodeWithSelector(IERC20.transfer.selector, to, amount);
     }
 
     function _depositCall() internal view returns (bytes memory) {
         return abi.encodeWithSelector(IMetaMorphoV1.deposit.selector, uint256(1), address(endowmentSafe));
     }
 
-    /// @dev Fluid Merkle distributor: claim(recipient, cumulativeAmount, positionType,
-    ///      positionId, cycle, merkleProof, metadata)
     function _fluidClaimCall(address recipient) internal pure returns (bytes memory) {
         return abi.encodeWithSignature(
             "claim(address,uint256,uint8,bytes32,uint256,bytes32[],bytes)",
@@ -916,6 +1256,24 @@ contract Proposal_ENS_KPK_Update_10_Test is ENS_Governance, SafeHelper, ZodiacRo
         return abi.encodeWithSelector(
             IMerklDistributor.claim.selector, users, new address[](1), new uint256[](1), new bytes32[][](1)
         );
+    }
+
+    function _signOrderCall(address sell, address buy, address receiver) internal pure returns (bytes memory) {
+        ICowSwapOrderSigner.Data memory order = ICowSwapOrderSigner.Data({
+            sellToken: IERC20(sell),
+            buyToken: IERC20(buy),
+            receiver: receiver,
+            sellAmount: 0,
+            buyAmount: 0,
+            validTo: 0,
+            appData: bytes32(0),
+            feeAmount: 0,
+            kind: bytes32(0),
+            partiallyFillable: false,
+            sellTokenBalance: bytes32(0),
+            buyTokenBalance: bytes32(0)
+        });
+        return abi.encodeWithSelector(ICowSwapOrderSigner.signOrder.selector, order, uint32(0), uint256(0));
     }
 
     function _swapData() internal pure returns (IPendleRouterV4.SwapData memory) {
@@ -981,666 +1339,21 @@ contract Proposal_ENS_KPK_Update_10_Test is ENS_Governance, SafeHelper, ZodiacRo
         );
     }
 
-    // ─── Generated Calldata
-    // ──────────────────────────────────────
+    // ─── Byte helpers
+    // ─────────────────────────────────────────────
 
-    function _generateCallData()
-        public
-        override
-        returns (address[] memory, uint256[] memory, string[] memory, bytes[] memory, string memory)
-    {
-        targets = new address[](1);
-        values = new uint256[](1);
-        calldatas = new bytes[](1);
-        signatures = new string[](1);
-
-        bytes memory multiSendTransactions = _buildMultiSendTransactions();
-        _assertDerivedPayloadMatches(multiSendTransactions);
-
-        bytes memory multiSendData = abi.encodeWithSelector(IMultiSend.multiSend.selector, multiSendTransactions);
-
-        (targets[0], calldatas[0]) =
-            _buildSafeExecDelegateCalldata(address(endowmentSafe), MULTISEND, multiSendData, address(timelock));
-        values[0] = 0;
-        signatures[0] = "";
-        description = "Pre-draft: [Executable] Endowment permissions to kpk - Update #10";
-
-        return (targets, values, signatures, calldatas, description);
-    }
-
-    /// @notice Diff the manually derived MultiSend body against the payload published
-    ///         with the forum post (re-encoded verbatim into expectedMultiSend.txt).
-    function _assertDerivedPayloadMatches(bytes memory derived) internal view {
-        bytes memory expected = vm.parseBytes(vm.readFile(string.concat(dirPath(), "/expectedMultiSend.txt")));
-        assertEq(derived.length, expected.length, "derived MultiSend length differs from published payload");
-        assertEq(keccak256(derived), keccak256(expected), "derived MultiSend differs from published payload");
-    }
-
-    // ─── MultiSend Bundle Assembly
-    // ───────────────────────────────
-
-    function _buildMultiSendTransactions() internal returns (bytes memory) {
-        return bytes.concat(
-            _buildSubRolesSetup(), // TX  0-7
-            _buildApproveRescopes(), // TX  8-12 (CoW signOrder rescope sits at TX 11)
-            _buildSyrupScopes(), // TX 13-16
-            _buildEthAndUsdcYieldVaults(), // TX 17-24
-            _buildPyusdAndSentora(), // TX 25-30
-            _buildRlusdAndSentora(), // TX 31-36
-            _buildUsdcVaults(), // TX 37-44
-            _buildAaveHorizon(), // TX 45-47
-            _buildEulerRwaVault(), // TX 48-51
-            _buildPendle(), // TX 52-57
-            _buildAnnotationAddition() // TX 58
-        );
-    }
-
-    /// @dev TX 0-7 — deploy the sub-Roles Modifier and chain it under MANAGER.
-    function _buildSubRolesSetup() internal view returns (bytes memory) {
-        // Roles.setUp(abi.encode(owner, avatar, target)); all three start as the Safe.
-        bytes memory initializer = abi.encodeWithSelector(
-            IRolesAdmin.setUp.selector,
-            abi.encode(address(endowmentSafe), address(endowmentSafe), address(endowmentSafe))
-        );
-
-        bytes32[] memory roleKeys = new bytes32[](1);
-        roleKeys[0] = MANAGER_ROLE;
-        bool[] memory memberOf = new bool[](1);
-        memberOf[0] = true;
-
-        return bytes.concat(
-            _packTx(
-                MODULE_PROXY_FACTORY,
-                abi.encodeWithSelector(
-                    IModuleProxyFactory.deployModule.selector, ROLES_MASTERCOPY, initializer, SUB_ROLES_SALT_NONCE
-                )
-            ),
-            _packTx(address(roles), abi.encodeWithSelector(IRolesAdmin.enableModule.selector, SUB_ROLES)),
-            _packTx(
-                SUB_ROLES,
-                abi.encodeWithSelector(
-                    IRolesModifier.setTransactionUnwrapper.selector,
-                    MULTISEND_HANDLER_A,
-                    MULTISEND_SELECTOR,
-                    MULTISEND_UNWRAPPER
-                )
-            ),
-            _packTx(
-                SUB_ROLES,
-                abi.encodeWithSelector(
-                    IRolesModifier.setTransactionUnwrapper.selector,
-                    MULTISEND_HANDLER_B,
-                    MULTISEND_SELECTOR,
-                    MULTISEND_UNWRAPPER
-                )
-            ),
-            _packTx(
-                address(roles), abi.encodeWithSelector(IRolesAdmin.setDefaultRole.selector, SUB_ROLES, MANAGER_ROLE)
-            ),
-            _packTx(
-                    address(roles),
-                    abi.encodeWithSelector(IRolesAdmin.assignRoles.selector, SUB_ROLES, roleKeys, memberOf)
-                ),
-            _packTx(SUB_ROLES, abi.encodeWithSelector(IRolesAdmin.setTarget.selector, address(roles))),
-            _packTx(SUB_ROLES, abi.encodeWithSelector(IRolesAdmin.transferOwnership.selector, karpatkey))
-        );
-    }
-
-    /// @dev TX 8-12 — approve() spender lists for WETH, USDS, sUSDS, USDC, with the
-    ///      CoW signOrder rescope interleaved at TX 11.
-    function _buildApproveRescopes() internal pure returns (bytes memory) {
-        return bytes.concat(
-            _scopeApprove(WETH, _wethApproveSpenders()),
-            _scopeApprove(USDS, _usdsApproveSpenders()),
-            _scopeApprove(SUSDS, _susdsApproveSpenders()),
-            _buildCowSwapSignOrderScope(),
-            _scopeApprove(USDC, _usdcApproveSpenders())
-        );
-    }
-
-    /// @dev TX 11 — CoW Protocol signOrder, delegatecall-scoped. The syrup tokens are NOT
-    ///      merged into the general sell/buy lists: they are added as two isolated pairs,
-    ///      so syrupUSDC may only be traded against USDC and syrupUSDT only against USDT.
-    function _buildCowSwapSignOrderScope() internal pure returns (bytes memory) {
-        return _packTx(
-            address(roles),
-            abi.encodeWithSelector(
-                IRolesModifier.scopeFunction.selector,
-                MANAGER_ROLE,
-                COWSWAP_ORDER_SIGNER,
-                ICowSwapOrderSigner.signOrder.selector,
-                _buildCowSwapSignOrderConditions(),
-                EXEC_DELEGATE_CALL
-            )
-        );
-    }
-
-    /// @dev TX 13-16 — the syrup tokens become scoped targets whose only permitted call is
-    ///      approve() to the CoW vault relayer.
-    function _buildSyrupScopes() internal pure returns (bytes memory) {
-        address[] memory relayer = new address[](1);
-        relayer[0] = GPV2_VAULT_RELAYER;
-        return bytes.concat(
-            _scopeTarget(SYRUP_USDC),
-            _scopeApprove(SYRUP_USDC, relayer),
-            _scopeTarget(SYRUP_USDT),
-            _scopeApprove(SYRUP_USDT, relayer)
-        );
-    }
-
-    /// @dev signOrder condition tree, 93 nodes. Root MATCHES over a single Data tuple
-    ///      parameter, which is an OR of three alternative shapes:
-    ///        [2] syrupUSDT/USDT pair, receiver = Avatar
-    ///        [3] syrupUSDC/USDC pair, receiver = Avatar
-    ///        [4] the pre-existing general lists (27 sell, 17 buy), receiver = Avatar
-    function _buildCowSwapSignOrderConditions() internal pure returns (ConditionFlat[] memory) {
-        address[] memory sell = _cowSwapSellTokens();
-        address[] memory buy = _cowSwapBuyTokens();
-        ConditionFlat[] memory c = new ConditionFlat[](93);
-        uint256 i = 0;
-
-        c[i++] = ConditionFlat(0, PARAM_TYPE_CALLDATA, OP_MATCHES, "");
-        c[i++] = ConditionFlat(0, PARAM_TYPE_NONE, OP_OR, "");
-        // [2-4] the three alternative Data shapes
-        for (uint8 v = 0; v < 3; v++) {
-            c[i++] = ConditionFlat(1, PARAM_TYPE_TUPLE, OP_MATCHES, "");
+    function _word(bytes memory b, uint256 offset) internal pure returns (bytes32 w) {
+        require(offset <= b.length, "word out of range");
+        assembly {
+            w := mload(add(add(b, 32), offset))
         }
-        // [5-40] each variant: sellToken OR, buyToken OR, receiver = Avatar, 9 x PASS
-        for (uint8 v = 2; v <= 4; v++) {
-            c[i++] = ConditionFlat(v, PARAM_TYPE_NONE, OP_OR, "");
-            c[i++] = ConditionFlat(v, PARAM_TYPE_NONE, OP_OR, "");
-            c[i++] = ConditionFlat(v, PARAM_TYPE_STATIC, OP_EQUAL_TO_AVATAR, "");
-            for (uint256 j = 0; j < 9; j++) {
-                c[i++] = ConditionFlat(v, PARAM_TYPE_STATIC, OP_PASS, "");
-            }
+    }
+
+    function _slice(bytes memory b, uint256 offset, uint256 len) internal pure returns (bytes memory out) {
+        require(offset + len <= b.length, "slice out of range");
+        out = new bytes(len);
+        for (uint256 i; i < len; i++) {
+            out[i] = b[offset + i];
         }
-        // [41-48] the two isolated pairs, sell then buy for each variant
-        i = _appendPair(c, i, 5, SYRUP_USDT, USDT);
-        i = _appendPair(c, i, 6, SYRUP_USDT, USDT);
-        i = _appendPair(c, i, 17, SYRUP_USDC, USDC);
-        i = _appendPair(c, i, 18, SYRUP_USDC, USDC);
-        // [49-92] the pre-existing general lists
-        for (uint256 j = 0; j < sell.length; j++) {
-            c[i++] = ConditionFlat(29, PARAM_TYPE_STATIC, OP_EQUAL_TO, abi.encode(sell[j]));
-        }
-        for (uint256 j = 0; j < buy.length; j++) {
-            c[i++] = ConditionFlat(30, PARAM_TYPE_STATIC, OP_EQUAL_TO, abi.encode(buy[j]));
-        }
-
-        require(i == 93, "signOrder condition count");
-        return c;
-    }
-
-    function _appendPair(
-        ConditionFlat[] memory c,
-        uint256 i,
-        uint8 parent,
-        address a,
-        address b
-    )
-        internal
-        pure
-        returns (uint256)
-    {
-        c[i++] = ConditionFlat(parent, PARAM_TYPE_STATIC, OP_EQUAL_TO, abi.encode(a));
-        c[i++] = ConditionFlat(parent, PARAM_TYPE_STATIC, OP_EQUAL_TO, abi.encode(b));
-        return i;
-    }
-
-    /// @dev 27 sell tokens, unchanged from Update #9, sorted ascending.
-    function _cowSwapSellTokens() internal pure returns (address[] memory) {
-        address[] memory t = new address[](27);
-        t[0] = 0x35fA164735182de50811E8e2E824cFb9B6118ac2; // eETH
-        t[1] = 0x40D16FC0246aD3160Ccc09B8D0D3A2cD28aE6C2f; // GHO
-        t[2] = 0x48C3399719B582dD63eB5AADf12A40B4C3f52FA2; // SWISE
-        t[3] = 0x4e3FBD56CD56c3e72c1403e103b45Db9da5B9D2B; // CVX
-        t[4] = 0x58D97B57BB95320F9a05dC918Aef65434969c2B2; // MORPHO
-        t[5] = 0x5A98FcBEA516Cf06857215779Fd812CA3beF1B32; // LDO
-        t[6] = 0x6B175474E89094C44Da98b954EedeAC495271d0F; // DAI
-        t[7] = 0x6f40d4A6237C257fff2dB00FA0510DeEECd303eb; // FLUID
-        t[8] = 0x7f39C581F595B53c5cb19bD0b3f8dA6c935E2Ca0; // wstETH
-        t[9] = 0x856c4Efb76C1D1AE02e20CEB03A2A6a08b0b8dC3; // OETH
-        t[10] = USDC;
-        t[11] = 0xA35b1B31Ce002FBF2058D22F30f95D405200A15b; // ETHx
-        t[12] = SUSDS;
-        t[13] = 0xae78736Cd615f374D3085123A210448E74Fc6393; // rETH
-        t[14] = 0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84; // stETH
-        t[15] = 0xba100000625a3754423978a60c9317c58a424e3D; // BAL
-        t[16] = 0xc00e94Cb662C3520282E6f5717214004A7f26888; // COMP
-        t[17] = WETH;
-        t[18] = 0xC0c293ce456fF0ED870ADd98a0828Dd4d2903DBF; // AURA
-        t[19] = 0xc20059e0317DE91738d13af027DfC4a50781b066; // SPK
-        t[20] = 0xCd5fE23C85820F7B72D0926FC9b05b43E359b7ee; // weETH
-        t[21] = 0xD33526068D116cE69F19A9ee46F0bd304F21A51f; // RPL
-        t[22] = 0xD533a949740bb3306d119CC777fa900bA034cd52; // CRV
-        t[23] = USDT;
-        t[24] = USDS;
-        t[25] = 0xE95A203B1a91a908F9B9CE46459d101078c2c3cb; // ankrETH
-        t[26] = 0xf1C9acDc66974dFB6dEcB12aA385b9cD01190E38; // osETH
-        return t;
-    }
-
-    /// @dev 17 buy tokens, unchanged from Update #9, sorted ascending.
-    function _cowSwapBuyTokens() internal pure returns (address[] memory) {
-        address[] memory t = new address[](17);
-        t[0] = 0x35fA164735182de50811E8e2E824cFb9B6118ac2;
-        t[1] = 0x40D16FC0246aD3160Ccc09B8D0D3A2cD28aE6C2f;
-        t[2] = 0x6B175474E89094C44Da98b954EedeAC495271d0F;
-        t[3] = 0x7f39C581F595B53c5cb19bD0b3f8dA6c935E2Ca0;
-        t[4] = 0x856c4Efb76C1D1AE02e20CEB03A2A6a08b0b8dC3;
-        t[5] = USDC;
-        t[6] = 0xA35b1B31Ce002FBF2058D22F30f95D405200A15b;
-        t[7] = SUSDS;
-        t[8] = 0xae78736Cd615f374D3085123A210448E74Fc6393;
-        t[9] = 0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84;
-        t[10] = WETH;
-        t[11] = 0xCd5fE23C85820F7B72D0926FC9b05b43E359b7ee;
-        t[12] = USDT;
-        t[13] = USDS;
-        t[14] = 0xE95A203B1a91a908F9B9CE46459d101078c2c3cb;
-        t[15] = NATIVE_ETH;
-        t[16] = 0xf1C9acDc66974dFB6dEcB12aA385b9cD01190E38;
-        return t;
-    }
-
-    /// @dev TX 12-19
-    function _buildEthAndUsdcYieldVaults() internal pure returns (bytes memory) {
-        return bytes.concat(_scopeVault(KPK_ETH_YIELD), _scopeVault(KPK_USDC_YIELD));
-    }
-
-    /// @dev TX 20-25
-    function _buildPyusdAndSentora() internal pure returns (bytes memory) {
-        address[] memory spenders = new address[](1);
-        spenders[0] = SENTORA_PYUSD_MAIN;
-        return bytes.concat(_scopeTarget(PYUSD), _scopeApprove(PYUSD, spenders), _scopeVault(SENTORA_PYUSD_MAIN));
-    }
-
-    /// @dev TX 26-31
-    function _buildRlusdAndSentora() internal pure returns (bytes memory) {
-        address[] memory spenders = new address[](2);
-        spenders[0] = SENTORA_RLUSD_MAIN;
-        spenders[1] = AAVE_V3_HORIZON_POOL;
-        return bytes.concat(_scopeTarget(RLUSD), _scopeApprove(RLUSD, spenders), _scopeVault(SENTORA_RLUSD_MAIN));
-    }
-
-    /// @dev TX 32-39
-    function _buildUsdcVaults() internal pure returns (bytes memory) {
-        return bytes.concat(_scopeVault(SMOKEHOUSE_USDC), _scopeVault(STEAKHOUSE_HIGH_YIELD_USDC));
-    }
-
-    /// @dev TX 40-42 — supply/withdraw pinned to the RLUSD reserve, beneficiary = Avatar.
-    function _buildAaveHorizon() internal pure returns (bytes memory) {
-        ConditionFlat[] memory supplyConditions = new ConditionFlat[](4);
-        supplyConditions[0] = ConditionFlat(0, PARAM_TYPE_CALLDATA, OP_MATCHES, "");
-        supplyConditions[1] = ConditionFlat(0, PARAM_TYPE_STATIC, OP_EQUAL_TO, abi.encode(RLUSD));
-        supplyConditions[2] = ConditionFlat(0, PARAM_TYPE_STATIC, OP_PASS, "");
-        supplyConditions[3] = ConditionFlat(0, PARAM_TYPE_STATIC, OP_EQUAL_TO_AVATAR, "");
-
-        return bytes.concat(
-            _scopeTarget(AAVE_V3_HORIZON_POOL),
-            _scopeFunction(AAVE_V3_HORIZON_POOL, IAaveV3Pool.supply.selector, supplyConditions),
-            // withdraw(asset, amount, to) has the same three leading params
-            _scopeFunction(AAVE_V3_HORIZON_POOL, IAaveV3Pool.withdraw.selector, supplyConditions)
-        );
-    }
-
-    /// @dev TX 43-46
-    function _buildEulerRwaVault() internal pure returns (bytes memory) {
-        return _scopeVault(KPK_USDC_PRIME_RWA);
-    }
-
-    /// @dev TX 47-52
-    function _buildPendle() internal pure returns (bytes memory) {
-        address[] memory ptSpender = new address[](1);
-        ptSpender[0] = PENDLE_ROUTER_V4;
-
-        return bytes.concat(
-            _scopeTarget(PT_SUSDS_26NOV2026),
-            _scopeApprove(PT_SUSDS_26NOV2026, ptSpender),
-            _scopeTarget(PENDLE_ROUTER_V4),
-            _scopeFunction(
-                PENDLE_ROUTER_V4, IPendleRouterV4.swapExactTokenForPt.selector, _swapExactTokenForPtConditions()
-            ),
-            _scopeFunction(
-                PENDLE_ROUTER_V4, IPendleRouterV4.swapExactPtForToken.selector, _swapExactPtForTokenConditions()
-            ),
-            _scopeFunction(PENDLE_ROUTER_V4, IPendleRouterV4.redeemPyToToken.selector, _redeemPyToTokenConditions())
-        );
-    }
-
-    /// @dev TX 53
-    function _buildAnnotationAddition() internal view returns (bytes memory) {
-        string memory payload = vm.readFile(string.concat(dirPath(), "/annotationAddition.json"));
-        return _packTx(
-            ANNOTATION_REGISTRY,
-            abi.encodeWithSelector(IAnnotationRegistry.post.selector, payload, "ROLES_PERMISSION_ANNOTATION")
-        );
-    }
-
-    // ─── Scoping primitives
-    // ──────────────────────────────────────
-
-    function _scopeTarget(address target) internal pure returns (bytes memory) {
-        return
-            _packTx(address(roles), abi.encodeWithSelector(IRolesModifier.scopeTarget.selector, MANAGER_ROLE, target));
-    }
-
-    function _scopeFunction(
-        address target,
-        bytes4 selector,
-        ConditionFlat[] memory conditions
-    )
-        internal
-        pure
-        returns (bytes memory)
-    {
-        return _packTx(
-            address(roles),
-            abi.encodeWithSelector(
-                IRolesModifier.scopeFunction.selector, MANAGER_ROLE, target, selector, conditions, EXEC_NONE
-            )
-        );
-    }
-
-    /// @dev approve(spender, amount) with the spender pinned to a whitelist.
-    ///      A single entry is expressed as a bare EqualTo; two or more as an Or group.
-    function _scopeApprove(address token, address[] memory spenders) internal pure returns (bytes memory) {
-        ConditionFlat[] memory conditions;
-        if (spenders.length == 1) {
-            conditions = new ConditionFlat[](2);
-            conditions[0] = ConditionFlat(0, PARAM_TYPE_CALLDATA, OP_MATCHES, "");
-            conditions[1] = ConditionFlat(0, PARAM_TYPE_STATIC, OP_EQUAL_TO, abi.encode(spenders[0]));
-        } else {
-            conditions = new ConditionFlat[](2 + spenders.length);
-            conditions[0] = ConditionFlat(0, PARAM_TYPE_CALLDATA, OP_MATCHES, "");
-            conditions[1] = ConditionFlat(0, PARAM_TYPE_NONE, OP_OR, "");
-            for (uint256 i = 0; i < spenders.length; i++) {
-                conditions[2 + i] = ConditionFlat(1, PARAM_TYPE_STATIC, OP_EQUAL_TO, abi.encode(spenders[i]));
-            }
-        }
-        return _scopeFunction(token, IERC20.approve.selector, conditions);
-    }
-
-    /// @dev scopeTarget + deposit/withdraw/redeem with receiver and owner pinned to the Avatar.
-    function _scopeVault(address vault) internal pure returns (bytes memory) {
-        ConditionFlat[] memory depositConditions = new ConditionFlat[](3);
-        depositConditions[0] = ConditionFlat(0, PARAM_TYPE_CALLDATA, OP_MATCHES, "");
-        depositConditions[1] = ConditionFlat(0, PARAM_TYPE_STATIC, OP_PASS, "");
-        depositConditions[2] = ConditionFlat(0, PARAM_TYPE_STATIC, OP_EQUAL_TO_AVATAR, "");
-
-        ConditionFlat[] memory exitConditions = new ConditionFlat[](4);
-        exitConditions[0] = ConditionFlat(0, PARAM_TYPE_CALLDATA, OP_MATCHES, "");
-        exitConditions[1] = ConditionFlat(0, PARAM_TYPE_STATIC, OP_PASS, "");
-        exitConditions[2] = ConditionFlat(0, PARAM_TYPE_STATIC, OP_EQUAL_TO_AVATAR, "");
-        exitConditions[3] = ConditionFlat(0, PARAM_TYPE_STATIC, OP_EQUAL_TO_AVATAR, "");
-
-        return bytes.concat(
-            _scopeTarget(vault),
-            _scopeFunction(vault, IMetaMorphoV1.deposit.selector, depositConditions),
-            _scopeFunction(vault, IMetaMorphoV1.withdraw.selector, exitConditions),
-            _scopeFunction(vault, IMetaMorphoV1.redeem.selector, exitConditions)
-        );
-    }
-
-    // ─── Pendle condition trees
-    // ──────────────────────────────────
-    //
-    // Shared shape across the three Pendle functions:
-    //   receiver          = Avatar
-    //   market / YT       = pinned to the PT-sUSDS-26NOV2026 instance
-    //   tokenIn/tokenOut  } in {sUSDS, USDS}
-    //   tokenMintSy/RedeemSy
-    //   pendleSwap        = address(0)   -- no external aggregator
-    //   swapData.swapType = 0, extRouter = address(0), extCalldata = ""
-    //   limit.limitRouter = address(0), normalFills = flashFills = []
-
-    /// @dev abi.encode of an empty dynamic value: offset 0x20 followed by length 0.
-    function _emptyDynamic() internal pure returns (bytes memory) {
-        return abi.encode(bytes(""));
-    }
-
-    /// @dev SwapData tuple, children of `parent`: swapType == 0, extRouter == 0, extCalldata == "".
-    ///      `needScale` is left unconstrained as a trailing parameter.
-    function _appendSwapData(ConditionFlat[] memory c, uint256 i, uint8 parent) internal pure returns (uint256) {
-        c[i++] = ConditionFlat(parent, PARAM_TYPE_STATIC, OP_EQUAL_TO, abi.encode(uint256(0)));
-        c[i++] = ConditionFlat(parent, PARAM_TYPE_STATIC, OP_EQUAL_TO, abi.encode(address(0)));
-        c[i++] = ConditionFlat(parent, PARAM_TYPE_DYNAMIC, OP_EQUAL_TO, _emptyDynamic());
-        return i;
-    }
-
-    /// @dev FillOrderParams[] element template: Order tuple + signature + makingAmount, all PASS.
-    function _appendFillOrderTemplate(
-        ConditionFlat[] memory c,
-        uint256 i,
-        uint8 orderTupleParent
-    )
-        internal
-        pure
-        returns (uint256)
-    {
-        for (uint256 j = 0; j < 11; j++) {
-            c[i++] = ConditionFlat(orderTupleParent, PARAM_TYPE_STATIC, OP_PASS, "");
-        }
-        c[i++] = ConditionFlat(orderTupleParent, PARAM_TYPE_DYNAMIC, OP_PASS, "");
-        return i;
-    }
-
-    /// @dev swapExactTokenForPt(receiver, market, minPtOut, guessPtOut, input, limit) — 60 nodes.
-    function _swapExactTokenForPtConditions() internal pure returns (ConditionFlat[] memory) {
-        ConditionFlat[] memory c = new ConditionFlat[](60);
-        uint256 i = 0;
-
-        // [0-6] root and its six parameters
-        c[i++] = ConditionFlat(0, PARAM_TYPE_CALLDATA, OP_MATCHES, "");
-        c[i++] = ConditionFlat(0, PARAM_TYPE_STATIC, OP_EQUAL_TO_AVATAR, ""); // receiver
-        c[i++] = ConditionFlat(0, PARAM_TYPE_STATIC, OP_EQUAL_TO, abi.encode(PENDLE_MARKET_SUSDS)); // market
-        c[i++] = ConditionFlat(0, PARAM_TYPE_STATIC, OP_PASS, ""); // minPtOut
-        c[i++] = ConditionFlat(0, PARAM_TYPE_TUPLE, OP_PASS, ""); // guessPtOut
-        c[i++] = ConditionFlat(0, PARAM_TYPE_TUPLE, OP_MATCHES, ""); // input
-        c[i++] = ConditionFlat(0, PARAM_TYPE_TUPLE, OP_MATCHES, ""); // limit
-
-        // [7-11] ApproxParams — five unconstrained fields
-        for (uint256 j = 0; j < 5; j++) {
-            c[i++] = ConditionFlat(4, PARAM_TYPE_STATIC, OP_PASS, "");
-        }
-
-        // [12-16] TokenInput
-        c[i++] = ConditionFlat(5, PARAM_TYPE_NONE, OP_OR, ""); // tokenIn
-        c[i++] = ConditionFlat(5, PARAM_TYPE_STATIC, OP_PASS, ""); // netTokenIn
-        c[i++] = ConditionFlat(5, PARAM_TYPE_NONE, OP_OR, ""); // tokenMintSy
-        c[i++] = ConditionFlat(5, PARAM_TYPE_STATIC, OP_EQUAL_TO, abi.encode(address(0))); // pendleSwap
-        c[i++] = ConditionFlat(5, PARAM_TYPE_TUPLE, OP_MATCHES, ""); // swapData
-
-        // [17-20] LimitOrderData
-        c[i++] = ConditionFlat(6, PARAM_TYPE_STATIC, OP_EQUAL_TO, abi.encode(address(0))); // limitRouter
-        c[i++] = ConditionFlat(6, PARAM_TYPE_STATIC, OP_PASS, ""); // epsSkipMarket
-        c[i++] = ConditionFlat(6, PARAM_TYPE_ARRAY, OP_EQUAL_TO, _emptyDynamic()); // normalFills == []
-        c[i++] = ConditionFlat(6, PARAM_TYPE_ARRAY, OP_EQUAL_TO, _emptyDynamic()); // flashFills == []
-
-        // [21-24] token whitelists
-        i = _appendTokenPair(c, i, 12);
-        i = _appendTokenPair(c, i, 14);
-
-        // [25-27] swapData children
-        i = _appendSwapData(c, i, 16);
-
-        // [28-29] array element templates
-        c[i++] = ConditionFlat(19, PARAM_TYPE_TUPLE, OP_PASS, "");
-        c[i++] = ConditionFlat(20, PARAM_TYPE_TUPLE, OP_PASS, "");
-
-        // [30-35] FillOrderParams fields
-        c[i++] = ConditionFlat(28, PARAM_TYPE_TUPLE, OP_PASS, ""); // order
-        c[i++] = ConditionFlat(28, PARAM_TYPE_DYNAMIC, OP_PASS, ""); // signature
-        c[i++] = ConditionFlat(28, PARAM_TYPE_STATIC, OP_PASS, ""); // makingAmount
-        c[i++] = ConditionFlat(29, PARAM_TYPE_TUPLE, OP_PASS, "");
-        c[i++] = ConditionFlat(29, PARAM_TYPE_DYNAMIC, OP_PASS, "");
-        c[i++] = ConditionFlat(29, PARAM_TYPE_STATIC, OP_PASS, "");
-
-        // [36-59] Order struct templates
-        i = _appendFillOrderTemplate(c, i, 30);
-        i = _appendFillOrderTemplate(c, i, 33);
-
-        require(i == 60, "swapExactTokenForPt condition count");
-        return c;
-    }
-
-    /// @dev swapExactPtForToken(receiver, market, exactPtIn, output, limit) — 54 nodes.
-    function _swapExactPtForTokenConditions() internal pure returns (ConditionFlat[] memory) {
-        ConditionFlat[] memory c = new ConditionFlat[](54);
-        uint256 i = 0;
-
-        c[i++] = ConditionFlat(0, PARAM_TYPE_CALLDATA, OP_MATCHES, "");
-        c[i++] = ConditionFlat(0, PARAM_TYPE_STATIC, OP_EQUAL_TO_AVATAR, ""); // receiver
-        c[i++] = ConditionFlat(0, PARAM_TYPE_STATIC, OP_EQUAL_TO, abi.encode(PENDLE_MARKET_SUSDS)); // market
-        c[i++] = ConditionFlat(0, PARAM_TYPE_STATIC, OP_PASS, ""); // exactPtIn
-        c[i++] = ConditionFlat(0, PARAM_TYPE_TUPLE, OP_MATCHES, ""); // output
-        c[i++] = ConditionFlat(0, PARAM_TYPE_TUPLE, OP_MATCHES, ""); // limit
-
-        // [6-10] TokenOutput
-        c[i++] = ConditionFlat(4, PARAM_TYPE_NONE, OP_OR, ""); // tokenOut
-        c[i++] = ConditionFlat(4, PARAM_TYPE_STATIC, OP_PASS, ""); // minTokenOut
-        c[i++] = ConditionFlat(4, PARAM_TYPE_NONE, OP_OR, ""); // tokenRedeemSy
-        c[i++] = ConditionFlat(4, PARAM_TYPE_STATIC, OP_EQUAL_TO, abi.encode(address(0))); // pendleSwap
-        c[i++] = ConditionFlat(4, PARAM_TYPE_TUPLE, OP_MATCHES, ""); // swapData
-
-        // [11-14] LimitOrderData
-        c[i++] = ConditionFlat(5, PARAM_TYPE_STATIC, OP_EQUAL_TO, abi.encode(address(0)));
-        c[i++] = ConditionFlat(5, PARAM_TYPE_STATIC, OP_PASS, "");
-        c[i++] = ConditionFlat(5, PARAM_TYPE_ARRAY, OP_EQUAL_TO, _emptyDynamic());
-        c[i++] = ConditionFlat(5, PARAM_TYPE_ARRAY, OP_EQUAL_TO, _emptyDynamic());
-
-        // [15-18] token whitelists
-        i = _appendTokenPair(c, i, 6);
-        i = _appendTokenPair(c, i, 8);
-
-        // [19-21] swapData children
-        i = _appendSwapData(c, i, 10);
-
-        // [22-23] array element templates
-        c[i++] = ConditionFlat(13, PARAM_TYPE_TUPLE, OP_PASS, "");
-        c[i++] = ConditionFlat(14, PARAM_TYPE_TUPLE, OP_PASS, "");
-
-        // [24-29] FillOrderParams fields
-        c[i++] = ConditionFlat(22, PARAM_TYPE_TUPLE, OP_PASS, "");
-        c[i++] = ConditionFlat(22, PARAM_TYPE_DYNAMIC, OP_PASS, "");
-        c[i++] = ConditionFlat(22, PARAM_TYPE_STATIC, OP_PASS, "");
-        c[i++] = ConditionFlat(23, PARAM_TYPE_TUPLE, OP_PASS, "");
-        c[i++] = ConditionFlat(23, PARAM_TYPE_DYNAMIC, OP_PASS, "");
-        c[i++] = ConditionFlat(23, PARAM_TYPE_STATIC, OP_PASS, "");
-
-        // [30-53] Order struct templates
-        i = _appendFillOrderTemplate(c, i, 24);
-        i = _appendFillOrderTemplate(c, i, 27);
-
-        require(i == 54, "swapExactPtForToken condition count");
-        return c;
-    }
-
-    /// @dev redeemPyToToken(receiver, YT, netPyIn, output) — 17 nodes.
-    function _redeemPyToTokenConditions() internal pure returns (ConditionFlat[] memory) {
-        ConditionFlat[] memory c = new ConditionFlat[](17);
-        uint256 i = 0;
-
-        c[i++] = ConditionFlat(0, PARAM_TYPE_CALLDATA, OP_MATCHES, "");
-        c[i++] = ConditionFlat(0, PARAM_TYPE_STATIC, OP_EQUAL_TO_AVATAR, ""); // receiver
-        c[i++] = ConditionFlat(0, PARAM_TYPE_STATIC, OP_EQUAL_TO, abi.encode(PENDLE_YT_SUSDS)); // YT
-        c[i++] = ConditionFlat(0, PARAM_TYPE_STATIC, OP_PASS, ""); // netPyIn
-        c[i++] = ConditionFlat(0, PARAM_TYPE_TUPLE, OP_MATCHES, ""); // output
-
-        // [5-9] TokenOutput
-        c[i++] = ConditionFlat(4, PARAM_TYPE_NONE, OP_OR, ""); // tokenOut
-        c[i++] = ConditionFlat(4, PARAM_TYPE_STATIC, OP_PASS, ""); // minTokenOut
-        c[i++] = ConditionFlat(4, PARAM_TYPE_NONE, OP_OR, ""); // tokenRedeemSy
-        c[i++] = ConditionFlat(4, PARAM_TYPE_STATIC, OP_EQUAL_TO, abi.encode(address(0))); // pendleSwap
-        c[i++] = ConditionFlat(4, PARAM_TYPE_TUPLE, OP_MATCHES, ""); // swapData
-
-        // [10-13] token whitelists
-        i = _appendTokenPair(c, i, 5);
-        i = _appendTokenPair(c, i, 7);
-
-        // [14-16] swapData children
-        i = _appendSwapData(c, i, 9);
-
-        require(i == 17, "redeemPyToToken condition count");
-        return c;
-    }
-
-    /// @dev The {sUSDS, USDS} pair used for every Pendle token whitelist.
-    function _appendTokenPair(ConditionFlat[] memory c, uint256 i, uint8 parent) internal pure returns (uint256) {
-        c[i++] = ConditionFlat(parent, PARAM_TYPE_STATIC, OP_EQUAL_TO, abi.encode(SUSDS));
-        c[i++] = ConditionFlat(parent, PARAM_TYPE_STATIC, OP_EQUAL_TO, abi.encode(USDS));
-        return i;
-    }
-
-    // ─── approve() spender lists (sorted ascending, as emitted by the payload) ───
-
-    /// @dev WETH — 15 spenders: the 14 in place since Update #9 plus kpk ETH Yield.
-    function _wethApproveSpenders() internal pure returns (address[] memory) {
-        address[] memory s = new address[](15);
-        s[0] = PERMIT2;
-        s[1] = 0x13f4EA83D0bd40E75C8222255bc855a974568Dd4;
-        s[2] = 0x56C526b0159a258887e0d79ec3a80dfb940d0cD7;
-        s[3] = KPK_ETH_YIELD; // new
-        s[4] = UNISWAP_V3_ROUTER;
-        s[5] = AAVE_V3_POOL;
-        s[6] = 0xB188b1CB84Fb0bA13cb9ee1292769F903A9feC59; // Aura RewardPoolDepositWrapper
-        s[7] = BALANCER_V2_VAULT;
-        s[8] = 0xBb50A5341368751024ddf33385BA8cf61fE65FF9;
-        s[9] = MORPHO_BLUE;
-        s[10] = AAVE_V3_POOL_L1_BRIDGE;
-        s[11] = GPV2_VAULT_RELAYER;
-        s[12] = 0xcc7d5785AD5755B6164e21495E07aDb0Ff11C2A8;
-        s[13] = ETHERFI_DEPOSIT_ADAPTER;
-        s[14] = 0xd564F765F9aD3E7d2d6cA782100795a885e8e7C8;
-        return s;
-    }
-
-    /// @dev USDS — 10 spenders, adding the Pendle Router.
-    function _usdsApproveSpenders() internal pure returns (address[] memory) {
-        address[] memory s = new address[](10);
-        s[0] = 0x0650CAF159C5A49f711e8169D4336ECB9b950275;
-        s[1] = 0x5D409e56D886231aDAf00c8775665AD0f9897b56;
-        s[2] = UNISWAP_V3_ROUTER;
-        s[3] = AAVE_V3_POOL;
-        s[4] = PENDLE_ROUTER_V4; // new
-        s[5] = 0xA188EEC8F81263234dA3622A406892F3D630f98c;
-        s[6] = SUSDS;
-        s[7] = AAVE_V3_POOL_L1_BRIDGE;
-        s[8] = GPV2_VAULT_RELAYER;
-        s[9] = 0xf86141a5657Cf52AEB3E30eBccA5Ad3a8f714B89;
-        return s;
-    }
-
-    /// @dev sUSDS — 3 spenders, adding the Pendle Router.
-    function _susdsApproveSpenders() internal pure returns (address[] memory) {
-        address[] memory s = new address[](3);
-        s[0] = UNISWAP_V3_ROUTER;
-        s[1] = PENDLE_ROUTER_V4; // new
-        s[2] = GPV2_VAULT_RELAYER;
-        return s;
-    }
-
-    /// @dev USDC — 18 spenders, adding the four new USDC-denominated vaults.
-    function _usdcApproveSpenders() internal pure returns (address[] memory) {
-        address[] memory s = new address[](18);
-        s[0] = KPK_USDC_PRIME_RWA; // new
-        s[1] = 0x4Ef53d2cAa51C447fdFEEedee8F07FD1962C9ee6;
-        s[2] = 0x56C526b0159a258887e0d79ec3a80dfb940d0cD7;
-        s[3] = UNISWAP_V3_ROUTER;
-        s[4] = AAVE_V3_POOL;
-        s[5] = 0x9Fb7b4477576Fe5B32be4C1843aFB1e55F251B33;
-        s[6] = 0xA188EEC8F81263234dA3622A406892F3D630f98c;
-        s[7] = BALANCER_V2_VAULT;
-        s[8] = MORPHO_BLUE;
-        s[9] = CURVE_3POOL;
-        s[10] = STEAKHOUSE_HIGH_YIELD_USDC; // new
-        s[11] = SMOKEHOUSE_USDC; // new
-        s[12] = AAVE_V3_POOL_L1_BRIDGE;
-        s[13] = 0xc3d688B66703497DAA19211EEdff47f25384cdc3;
-        s[14] = GPV2_VAULT_RELAYER;
-        s[15] = 0xd0A61F2963622e992e6534bde4D52fd0a89F39E0;
-        s[16] = KPK_USDC_YIELD; // new
-        s[17] = 0xe108fbc04852B5df72f9E44d7C29F47e7A993aDd;
-        return s;
     }
 }
