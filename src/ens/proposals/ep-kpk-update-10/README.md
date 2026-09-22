@@ -1,113 +1,157 @@
-# Endowment permissions to kpk — Update #10
+# Endowment permissions to kpk: Update #10
 
-Forum thread: https://discuss.ens.domains/t/draft-endowment-permissions-to-kpk-update-10/22323
+## Proposal summary
 
-The review has two rounds because kpk changed how the update executes halfway through.
+[Forum post 4](https://discuss.ens.domains/t/draft-endowment-permissions-to-kpk-update-10/22323/4) replaces the
+Endowment Safe's current Roles Modifier with a preconfigured replacement containing the existing MANAGER permissions
+plus Update #10. The Foundation schedules execution through the EndowmentTimelock, whose delay is nine days. The
+permission payload from round 1 is retained as the independently derived delta; it is no longer the executable proposal.
 
-| Round | Executable artefact                                                      | Test                    | Status                       |
-| ----- | ------------------------------------------------------------------------ | ----------------------- | ---------------------------- |
-| 1     | `ensPermissionsUpdate10.json`, 59 Roles admin calls on the live Modifier | `update10Payload.t.sol` | superseded, retained (delta) |
-| 2     | `ENS_Switch_ZRM.json`, swap the Modifier for a pre-configured v2.1.1     | `calldataCheck.t.sol`   | current                      |
+**Recommendation: NEEDS_REVIEW. Do not schedule the switch while the replacement is owned by kpk's test Safe.** The
+tests simulate ownership transfer in the successful-switch scenario. Green tests do not mean that this external
+precondition has been satisfied or that an actual scheduled transaction has been reviewed.
 
-## Round 2 — revised execution (forum post 4, 2026-09-14)
+## Calldata verification
 
-Instead of editing the Endowment's Zodiac Roles Modifier, the update now replaces it. kpk deployed and configured a new
-Modifier on Roles v2.1.1 and asks the Endowment Safe to swap modules:
+Published source:
+[`ENS_Switch_ZRM.json`, commit `8f4fb0c34d8d1cc51d874930eb067c53d31b7f84`](https://github.com/karpatkey/client-configs/blob/8f4fb0c34d8d1cc51d874930eb067c53d31b7f84/clients/ens-dao/mainnet/payloads/ENS_Switch_ZRM.json),
+also checked against the current upstream file. Both entries target the Endowment Safe,
+`0x4F2083f5fBede34C2714aFfb3105539775f7FE64`, with operation Call and value zero.
 
-```
-TX 0   EndowmentSafe.disableModule(SENTINEL, 0x703806E61847984346d2D7DDd853049627e50A40)   old Main, v2.1.0
-TX 1   EndowmentSafe.enableModule(0xa23BEBFD3628D6Dd7B0638c147db11d9B6FaBD59)              new Main, v2.1.1
-```
+| Call                             | Selector     | Arguments                                                                       | Result |
+| -------------------------------- | ------------ | ------------------------------------------------------------------------------- | ------ |
+| `disableModule(address,address)` | `0xe009cfde` | predecessor `address(1)`; old Main `0x703806E61847984346d2D7DDd853049627e50A40` | PASS   |
+| `enableModule(address)`          | `0x610b5925` | new Main `0xa23BEBFD3628D6Dd7B0638c147db11d9B6FaBD59`                           | PASS   |
 
-Artefacts, all in `karpatkey/client-configs` at commit `8f4fb0c34d` (PR #252):
+The manual interface-based derivation equals the published **274-byte MultiSend body**. The old Main is at the head of
+the Safe's module list, so its predecessor is the sentinel. Reversing the calls with that predecessor fails atomically
+under the reviewed wrapper.
 
-- `clients/ens-dao/mainnet/payloads/ENS_Switch_ZRM.json` — the batch, re-encoded here as `expectedSwitchMultiSend.txt`
-- `clients/ens-dao/mainnet/payloads/ens-main-zrm-compare-eth.html` — kpk's own diff page (not relied upon)
+[`referenceExecution.json`](referenceExecution.json) records the **unscheduled reference** used in the simulation: Safe
+`execTransaction` to MultiSendCallOnly 1.3.0, DelegateCall, all gas/refund fields zero, and the EndowmentTimelock's
+preapproved signature. It includes the target, value, predecessor, salt, delay, full schedule/execute calldata and
+reference operation ID. Solidity independently derives and compares these fields.
 
-On-chain objects (block 25,941,653, tx `0x9b5b71d1…e3d60`, plus five configuration transactions up to block 25,941,858):
+- Safe calldata: **868 bytes**, keccak256 `0x24a2088d4064ae77c68c6077caad94f4376809f3a401c451dc7a7525ab501105`.
+- Reference operation ID: `0x350becbe0c44ac653c437c8d378b01c0ab30b69a23486da9c9f1d063525878f3`.
+- The reference salt is `keccak256("ENS_Switch_ZRM")`, predecessor zero, delay 777,600 seconds. These are review
+  assumptions, not a claim about a Foundation-submitted operation.
 
-| Object      | Address                                      | Notes                                                                  |
-| ----------- | -------------------------------------------- | ---------------------------------------------------------------------- |
-| new Main    | `0xa23BEBFD3628D6Dd7B0638c147db11d9B6FaBD59` | EIP-1167 clone of Roles v2.1.1; avatar/target = Endowment Safe         |
-| Sub         | `0x48dC0d88766a59E119e3f2585BC1dC5436Ee6ce0` | clone of v2.1.1; owner = kpk pod; target = new Main; member of MANAGER |
-| mastercopy  | `0xF2964CE6161ce0e75964Fe7927cE114cb0B283D5` | canonical v2.1.1 (Zodiac README); bytecode reproduced from source      |
-| owner (now) | `0xC01318baB7ee1f5ba734172bF7718b5DC6Ec90E1` | kpk's "test" instance Safe, 1-of-9 — see finding 1                     |
+The Foundation's eventual `CallScheduled` transaction must be checked against its complete operation tuple. A different
+wrapper can change the outcome: the boundary test demonstrates nonzero `safeTxGas` allowing a failed Safe action to
+consume its nonce and mark the timelock operation done without switching modules. An operation ID alone does not prove
+the scheduled bytes match this review.
 
-The Endowment Safe's sole owner is the EndowmentTimelock (`0x0bcC3dA6…`, 9-day delay) since "Empowering the ENS
-Foundation" executed at block 25,729,925, so the batch is executed by the ENS Foundation Safe scheduling it there. It is
-not executable as an ENS DAO proposal.
+## Assertion results
 
-### Files
+The historical simulation forks block **25,984,900**. A current-state recheck is pinned separately to block
+**26,034,037**, hash `0x9879ebe29da19e645f50115471695a7d237b2410f2f1513183c5a94b21748898` (2026-09-22 15:51:11 UTC). The
+fork is selected with `REVIEW_BLOCK`; omitting it always runs the historical regression, not a live monitor.
 
-| File                           | Purpose                                                                                     |
-| ------------------------------ | ------------------------------------------------------------------------------------------- |
-| `calldataCheck.t.sol`          | Round-2 review: derives the switch batch, executes it through the Foundation path, verifies |
-| `expectedSwitchMultiSend.txt`  | `ENS_Switch_ZRM.json` re-encoded as a MultiSend body — the diff target, not a source        |
-| `rolesReplay.py`               | Reconstructs both Modifiers' MANAGER policy from their event histories and diffs them       |
-| `rolesDiff.txt`                | Output of `rolesReplay.py` at block 25,984,988                                              |
-| `roleStateKeys.json`           | Every target and (target, selector) either Modifier ever configured; consumed by the test   |
-| `update10Payload.t.sol`        | Round-1 review of the 59-call payload, pinned to block 25,647,900 — the Update #10 delta    |
-| `expectedMultiSend.txt`        | Round-1 diff target (the regenerated payload, byte-identical to the manual derivation)      |
-| `annotationAddition.json`      | Round-1: annotation content posted by the payload's last transaction                        |
-| `postFoundationSequence.t.sol` | Round-1 local simulation of the payload under Foundation ownership (block 25,676,000)       |
-| `forum-post.md`                | Round-1 findings as posted (thread post 2)                                                  |
-| `forum-reply-round-2.md`       | Round-2 findings, reply to thread post 4                                                    |
+| Area             | Before execution                                                                          | After execution / adversarial check                                                                                                               |
+| ---------------- | ----------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Safe control     | EndowmentTimelock sole owner, threshold 1; modules old Main and Allowance; nonce captured | Modules new Main and Allowance; old Main disabled; nonce increases exactly once; old Main execution rejected                                      |
+| Timing and veto  | Foundation proposer, open executor, nine-day delay; active Security Council veto          | Early execution rejected, including one second before readiness; replay and unmet predecessor rejected; veto cancels execution                    |
+| Modifier wiring  | New Main/Sub clone implementation, owner/avatar/target, members, default role, adapters   | Main gates pod and Sub; Sub cannot bypass MANAGER by forwarding a forbidden call                                                                  |
+| Policy storage   | Old Main independently reconstructed and Update #10 applied                               | 161 historical targets and 360 historical function keys compared: 151 active targets, 332 configured functions, 28 revoked functions zero on both |
+| Conditions       | Decode actual packed buffers from storage                                                 | 316 byte-identical permission entries; 15 safe Or reorderings; one root trailing Static Pass difference; no policy mismatch                       |
+| Permissions      | Probe permissions absent on old Main                                                      | Positive and negative vault, approval, Horizon, Pendle, syrup and distributor checks; all ten missing round-1 negative cases restored             |
+| Batching         | Old Main unwraps MultiSend 1.3.0                                                          | New Main unwraps both 1.4.1 entrypoints and rejects 1.3.0                                                                                         |
+| Owner compromise | Actual new Main owner remains test Safe                                                   | Untransferred owner widens `sUSDS.transfer`; pod transfers the Safe's entire observed balance to another recipient                                |
 
-### Running
+Positive permission probes intentionally allow the downstream protocol call to fail (for example, insufficient balance
+or an invalid reward proof). They prove authorization by Roles, not economic execution of every protocol action. The
+actual Safe switch, veto, ownership exploit and failure-boundary tests assert observable state changes or exact reverts.
+
+The event replay and storage comparison are complementary. The event census finds keys outside the committed fixture; a
+standalone fixed-key storage test cannot exclude a newly introduced key. Re-run the full replay and compare its output
+before scheduling and execution. The replay rejects unknown events, unsupported allowance histories, target mismatches
+and unproven normalization cases. Or alternatives are only normalized with matching decoder type trees and supported
+pure operators. Only a trailing Static Pass directly under the root Calldata Matches is pruned; Dynamic, Array and
+nested Tuple counterexamples are retained as regressions.
+
+## Mastercopy verification
+
+The old Main is an EIP-1167 clone of `0x9646fDAD06d3e24444381f44362a3B0eB343D337`. The new Main and Sub
+(`0x48dC0d88766a59E119e3f2585BC1dC5436Ee6ce0`) use `0xF2964CE6161ce0e75964Fe7927cE114cb0B283D5`, the v2.1.1 replacement
+in
+[upstream mastercopies.json](https://github.com/gnosisguild/zodiac-modifier-roles/blob/218a5164d739c107b132034436978e78cdd90c95/packages/evm/mastercopies.json).
+
+The verified-source changes are:
+
+1. EIP-1271 signature verification requires the `staticcall` to succeed.
+2. `_arraySome` visits payload elements and resets allowance consumption between alternatives.
+3. `_bitmask` uses the encoded length of dynamic bytes instead of padded payload length.
+
+Fresh recompilation of both Etherscan-verified source bundles used solc 0.8.21, optimizer 100 runs, Shanghai, and their
+deployed Integrity/Packer link addresses. The executable runtimes match after removing the 53-byte CBOR metadata
+trailer: 24,356 bytes (v2.1.1) and 24,348 bytes (v2.1.0). Full metadata-inclusive bytecode does **not** match. The
+linked libraries also match after removing CBOR and normalizing the leading 20-byte library self-address. See
+[adversarial-review.md](adversarial-review.md) for hashes and provenance.
+
+`_or` and `EqualTo` did not change; the prior report misidentified those two hunks. Neither ArraySome nor Bitmask nor
+allowance operators occurs in the reviewed MANAGER policies. The pod's fallback handler is zero at the recheck block,
+consistent with the stated interim mitigation. That observed configuration is not a claim that MANAGER restrictions
+alone universally prevent the signature vulnerability. The EIP-1271 change is verified by source and deployed-code
+comparison; this review does not include a runtime regression for the appended-contract-signature path.
+
+## Findings
+
+1. **CRITICAL: ownership transfer is still missing.** At the recheck block, `owner()` of the new Main is
+   `0xC01318baB7ee1f5ba734172bF7718b5DC6Ec90E1`, a 1-of-9 test Safe. Once enabled, that owner can rewrite policy without
+   the Foundation timelock or veto. Transfer ownership to the Endowment Safe before scheduling, then repeat state and
+   policy verification. The historical exploit moves about 2.94 million sUSDS; the current proof uses the observed
+   balance without assuming a fixed amount.
+2. **IMPORTANT: the final scheduled wrapper remains unreviewed.** The published file contains only the two Safe module
+   calls. Publish the scheduling transaction and complete operation tuple so the wrapper, operation ID and veto window
+   can be verified. The event already exposes the ID and calldata; a forum notice helps reviewers locate it. The forum's
+   reference to an executable DAO vote should be updated to the Foundation path.
+3. **IMPORTANT: Sub ownership permits delegation beyond Harvest.** The kpk pod owns the Sub and can grant third parties
+   any subset of MANAGER, or transfer the Sub, without a new ENS transaction. The Main limits delegated authority to
+   MANAGER; it does not permanently restrict the Sub to three distributors. The pod also remains a direct Main member,
+   so not every transaction goes through the Sub. Confirm the intended delegation policy and the controller of the
+   published Harvest member, `0x14C2d2D64C4860ACF7CF39068eb467D7556197de`.
+4. **INFO: Harvest remains unconfigured.** The Sub has no enabled members at the recheck block. The test simulates a
+   configuration and verifies the Main's ceiling; it does not certify a future live Harvest policy. Verify its actual
+   role key, members, permissions and adapters after configuration.
+
+## Reproduction and files
+
+Install Foundry, Node/npm and Python dependencies, then run from the repository root:
 
 ```bash
+git clone https://github.com/blockful/dao-proposals.git
+cd dao-proposals
+git checkout ens/kpk-update-10-zrm-switch
+npm ci
+export MAINNET_RPC_URL="<archive-mainnet-rpc>"
 forge test --match-path "src/ens/proposals/ep-kpk-update-10/*" -vv
+REVIEW_BLOCK=26034037 forge test --match-path "src/ens/proposals/ep-kpk-update-10/*" -vv
 ```
 
-`rolesReplay.py` needs `eth-abi` and `eth-utils` and an archive RPC in `ETH_RPC_URL`; it refetches both event histories
-and regenerates `rolesDiff.txt` and `roleStateKeys.json`.
+For the independent event census and its regression suite (requires uv):
 
-### What the round-2 test proves
+```bash
+uv run src/ens/proposals/ep-kpk-update-10/rolesReplay.py --block 26034037 --no-write
+uv run --python 3.13 --with pytest --with eth-abi --with eth-utils --with "eth-hash[pycryptodome]" python -m pytest src/ens/proposals/ep-kpk-update-10/test_roles_replay.py -q
+```
 
-1. **Calldata.** The switch batch derived from the two Safe calls above is byte-identical to `ENS_Switch_ZRM.json`
-   (`prevModule = SENTINEL` is correct: the old Main heads the Safe's module list).
-2. **Execution path.** Scheduled by the Foundation Safe on the EndowmentTimelock, executable by anyone after nine days,
-   cancellable by the Security Council veto wrapper. The DAO Timelock cannot execute it (`GS026`).
-3. **Effect.** Modules become `[new Main, Allowance module]`; the old Main is disabled and can no longer execute
-   (`GS104`), while remaining a dormant contract owned by the Safe. One Safe nonce is consumed.
-4. **Policy equivalence, structurally.** `test_structuralEquivalence…` replays the round-1 Update #10 admin calls onto
-   the old Main in the fork and compares the two Modifiers slot by slot over all 161 targets and 332 (target, selector)
-   keys either Modifier ever configured: target clearance equal everywhere; condition trees, decoded from the packed
-   buffers the Modifiers evaluate, canonically equal everywhere. 316 headers are byte-identical, 15 differ only in the
-   order of Or alternatives (unordered by `PermissionChecker._or`) and one, `USDC.transfer`, only by a trailing
-   unconstrained parameter (inert: `Decoder.inspect` derives the payload layout from the condition tree). Negative
-   controls show the comparison tolerates reordering and detects a one-spender change or a wildcard. Members are the pod
-   and the Sub; no allowances; no other roles; unwrappers are MultiSend and MultiSendCallOnly 1.4.1.
-5. **Policy equivalence, behaviourally.** Every Update #10 permission verified in round 1 is re-asserted on the new Main
-   after the switch (vaults, approvals, Horizon, Pendle, syrup pairs, distributor claims), together with the
-   pre-existing approval lists and `USDC.transfer` pinned to the DAO Timelock. The Sub, once kpk configures the Harvest
-   role on it, cannot redirect payouts or reach anything beyond the three distributors.
-6. **MultiSend routing.** After the switch, batches must go through MultiSend 1.4.1; the 1.3.0 contracts are no longer
-   unwrappers (and vice versa before).
+`rolesReplay.py` uses inline dependency metadata. Its default online end block is resolved once for both histories.
+`--block` pins the snapshot and `--no-write` preserves the committed historical fixtures. Saved `--logs` inputs must
+carry matching addresses and `toBlock` metadata.
 
-The v2.1.1 mastercopy differs from v2.1.0 in three places (sources verified on Etherscan, runtime bytecode reproduced
-with solc 0.8.21 / 100 runs): `SignatureChecker` now requires the EIP-1271 `staticcall` to succeed; `_or` iterates the
-payload's children and resets consumptions per alternative; dynamic `EqualTo` values are plucked using the encoded
-length instead of the payload size.
+Use the commit linked by the review handoff for immutable reproduction. The two round-1 suites and the explicitly
+historical ownership-precondition regression keep their original fork blocks even when `REVIEW_BLOCK` is supplied. RPC
+values are supplied locally and must not be committed.
 
-### Findings
-
-1. **Blocking precondition — the new Main is owned by kpk's test Safe, not by the Endowment Safe.** `owner()` is
-   `0xC01318…`, a 1-of-9 Safe. kpk's PR #252 lists the ownership transfer as "handled separately"; the forum post does
-   not mention it. Until it is transferred, any single signer of that Safe can rewrite the Endowment's policy after the
-   switch with no delay and no veto (`test_finding_…` moves the Safe's 2.9M sUSDS in one block). `test_switch` simulates
-   the transfer as a precondition; `test_precondition_…` fails once the on-chain owner changes and must then be updated
-   together with a re-run.
-2. **Not a DAO vote.** The batch is executed by the Foundation through the EndowmentTimelock. The proposal thread still
-   describes an on-chain executable vote; the veto window is only usable if the timelock operation id is published when
-   scheduled.
-3. **Harvest role still unconfigured.** The Sub has no roles or members; kpk configures it after the switch. The
-   simulated configuration cannot exceed the MANAGER policy.
-
-## Round 1 — the permission payload (forum posts 1–3)
-
-`update10Payload.t.sol` manually derives the 59-transaction payload from the forum specification and proves it equals
-kpk's regenerated payload (`expectedMultiSend.txt`), then asserts every permission it adds. Round-1 findings
-(`forum-post.md`): the undisclosed sub-Roles instance, item 5 missing (later added as isolated syrup pairs), and a wrong
-Steakhouse address in the spec; all answered by kpk in post 3. The payload is no longer executed as such, but the test
-remains the reference derivation of the Update #10 delta that round 2 depends on.
+| File                                                                        | Purpose                                                                 |
+| --------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| `calldataCheck.t.sol`                                                       | Switch, policy equivalence, authorization and semantic regression tests |
+| `executionBoundary.t.sol`                                                   | Full reference bytes, delay/replay/dependency and Safe failure behavior |
+| `referenceExecution.json`                                                   | Explicit unscheduled reference operation                                |
+| `expectedSwitchMultiSend.txt`                                               | Published batch comparison fixture                                      |
+| `rolesReplay.py`, `roleStateKeys.json`, `rolesDiff.txt`                     | Event reconstruction and storage-key census                             |
+| `adversarial-review.md`                                                     | Recovered swarm status, confirmed fixes and verification limits         |
+| `forum-reply-round-2.md`                                                    | Concise reply draft                                                     |
+| `update10Payload.t.sol`, `expectedMultiSend.txt`, `annotationAddition.json` | Historical 59-call delta and round-1 fixtures                           |
+| `postFoundationSequence.t.sol`, `forum-post.md`                             | Historical execution-path test and original findings                    |

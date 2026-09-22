@@ -1,28 +1,9 @@
-# Calldata security verification: PUR #10, revised execution
+# PUR #10: revised execution security review
 
-We reviewed the switch batch (`ENS_Switch_ZRM.json`, `karpatkey/client-configs` @ `8f4fb0c34d`) and the new Roles Modifier it enables.
+The two published Safe calls match our independent byte derivation. On a mainnet fork, the replacement Modifier has the existing MANAGER policy plus Update #10: 151 active targets and 332 configured functions, with no new allowance. The old and new implementation code and the Foundation timelock path were verified. [Tests](https://github.com/blockful/dao-proposals/blob/0c09f458306eabb8abe5d990e7ecbbf8d12bdc43/src/ens/proposals/ep-kpk-update-10/calldataCheck.t.sol) and [review report](https://github.com/blockful/dao-proposals/pull/119).
 
-## Result
+**Do not schedule the switch yet.** The new Modifier `0xa23BEBFD…` is still owned by kpk's **1-of-9 test Safe**, not the Endowment Safe. After the switch, one signer could change Endowment permissions without the nine-day delay or Security Council veto. Please transfer ownership to `0x4F2083f5…`; we will recheck the final state.
 
-- **Batch.** `disableModule(SENTINEL, 0x703806E6…)` + `enableModule(0xa23BEBFD…)`, derived independently, is byte-identical to the published batch.
-- **Policy.** The new Modifier is the current MANAGER policy plus the Update #10 additions, nothing else. We reconstructed both policies from their full on-chain event histories and diffed them (151 targets and 332 functions each, no allowances, no other roles, members: kpk pod and Sub), then repeated the comparison inside the test directly against storage. Every permission verified in round 1 passes on the new Modifier after the switch.
-- **Code.** `0xa23BEBFD…` and the Sub `0x48dC0d88…` are clones of the canonical Roles v2.1.1 mastercopy; its verified source recompiles to the on-chain bytecode.
-- **Execution.** Scheduled by the Foundation Safe on the EndowmentTimelock, the swap executes after nine days; the Security Council veto cancels it; the DAO Timelock cannot execute it.
+The published JSON specifies the two inner Safe calls, not the complete Foundation-scheduled transaction. Please share the final scheduling transaction so we can verify every wrapper byte and the operation ID. Different Safe gas fields can mark a failed switch complete. The forum's “on-chain executable vote” wording should reflect Foundation execution.
 
-Tests: [calldataCheck.t.sol](https://github.com/blockful/dao-proposals/blob/19c4ed985f579e5ee40328bbb85bb5cbc28f7d58/src/ens/proposals/ep-kpk-update-10/calldataCheck.t.sol) (the event replay is in the same directory).
-
-## Findings
-
-**1. Blocking: the new Modifier is owned by kpk's test Safe (`0xC01318ba…`, 1-of-9), not by the Endowment Safe.** After the switch, any single signer of that Safe could rewrite the Endowment's policy with no delay and no veto; our simulation moves the Safe's 2.9M sUSDS in one block. Please transfer ownership of `0xa23BEBFD…` to the Endowment Safe (`0x4F2083f5…`) before the batch is scheduled and let us know. We will re-run the verification against the final state.
-
-**2. This is a Foundation execution, not a DAO vote.** Please publish the timelock operation id when the batch is scheduled, so the Security Council's veto window is usable.
-
-**3. The Harvest role is not yet configured on the Sub.** Once kpk configures it, our simulation shows it cannot exceed the MANAGER policy.
-
-## Reproduction
-
-```
-git clone https://github.com/blockful/dao-proposals.git
-git checkout 19c4ed985f579e5ee40328bbb85bb5cbc28f7d58
-forge test --match-path "src/ens/proposals/ep-kpk-update-10/*" -vv
-```
+The Sub has no Harvest role or members configured yet. Its owner, the kpk pod, can later delegate any permission within MANAGER; the three-distributor limit applies only to the proposed Harvest configuration. Please confirm the intended member/controller and delegation policy before that configuration goes live.
