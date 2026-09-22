@@ -1,3 +1,4 @@
+SNAPSHOT BLOCK 25984900
 old Main events: {'OwnershipTransferred': 2, 'RolesModSetup': 1, 'Initialized': 1, 'SetUnwrapAdapter': 3, 'EnabledModule': 2, 'AssignRoles': 1, 'ScopeTarget': 170, 'ScopeFunction': 259, 'AllowFunction': 137, 'TargetSet': 1, 'AvatarSet': 1, 'DisabledModule': 1, 'RevokeFunction': 28, 'RevokeTarget': 10}
 new Main events: {'OwnershipTransferred': 1, 'RolesModSetup': 1, 'Initialized': 1, 'SetUnwrapAdapter': 2, 'AvatarSet': 1, 'TargetSet': 1, 'EnabledModule': 2, 'AssignRoles': 2, 'SetDefaultRole': 1, 'ScopeTarget': 151, 'ScopeFunction': 204, 'AllowFunction': 128}
 
@@ -39,9 +40,10 @@ DEFAULT    old+delta {'0xa5dd28EC9C69627A96202897b35B88827854bd3b': '0x4d414e414
            new       {'0x48dC0d88766a59E119e3f2585BC1dC5436Ee6ce0': '0x4d414e4147455200000000000000000000000000000000000000000000000000'}
 UNWRAPPERS old       {('0xA238CBeb142c10Ef7Ad8442C6D1f9E89e07e7761', '0x8d80ff0a'): '0xB4Cd4bb764C089f20DA18700CE8bc5e49F369efD'} 
            new       {('0x38869bf66a61cF6bDB996A6aE40D5853Fd43B526', '0x8d80ff0a'): '0xB4Cd4bb764C089f20DA18700CE8bc5e49F369efD', ('0x9641d764fc13c8B624c04430C7356C1C7C8102e2', '0x8d80ff0a'): '0xB4Cd4bb764C089f20DA18700CE8bc5e49F369efD'}
+WIRING differences above are reported separately: superseded/new Sub membership, modules and default role; old/new MultiSend unwrappers. They are not MANAGER policy mismatches.
 ALLOWANCES old {}  new {}
 OTHER ROLES old []  new []
 OWNER/AVATAR/TARGET old ('0x4F2083f5fBede34C2714aFfb3105539775f7FE64', '0x4F2083f5fBede34C2714aFfb3105539775f7FE64', '0x4F2083f5fBede34C2714aFfb3105539775f7FE64') 
                     new ('0xC01318baB7ee1f5ba734172bF7718b5DC6Ec90E1', '0x4F2083f5fBede34C2714aFfb3105539775f7FE64', '0x4F2083f5fBede34C2714aFfb3105539775f7FE64')
 
-roleStateKeys.json written: 161 targets, 332 function keys
+roleStateKeys.json written: 161 targets, 360 function keys

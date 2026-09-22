@@ -34,7 +34,7 @@ interface ISafeModules {
 interface IOZTimelock {
     function schedule(address t, uint256 v, bytes calldata d, bytes32 p, bytes32 s, uint256 delay) external;
     function execute(address t, uint256 v, bytes calldata d, bytes32 p, bytes32 s) external payable;
-    function hashOperation(address t, uint256 v, bytes calldata d, bytes32 p, bytes32 s) external pure returns (bytes32);
+    function hashOperation(address, uint256, bytes calldata, bytes32, bytes32) external pure returns (bytes32);
     function isOperationPending(bytes32 id) external view returns (bool);
     function isOperationReady(bytes32 id) external view returns (bool);
     function isOperationDone(bytes32 id) external view returns (bool);
@@ -85,8 +85,8 @@ interface IRolesAdmin {
  *   - the new Main's MANAGER policy equals the old Main's policy with the verified
  *     Update #10 payload applied, checked slot by slot on-chain (`test_structuralEquivalence…`)
  *     and behaviourally for every Update #10 permission (`_afterExecution`);
- *   - the precondition that is NOT yet met on-chain: the new Main is still owned by kpk's
- *     test Safe, not by the Endowment Safe (`test_precondition…`, `test_finding…`).
+ *   - the missing ownership precondition at the historical review block, and its exploit
+ *     (`test_precondition…`, `test_finding…`). These regressions do not assert current ownership.
  */
 contract Proposal_ENS_KPK_Update_10_Switch_Test is Test, MultiSendHelper, ZodiacRolesHelper {
     // ─── Actors and infrastructure
@@ -103,7 +103,7 @@ contract Proposal_ENS_KPK_Update_10_Switch_Test is Test, MultiSendHelper, Zodiac
     address private constant ROLES_MASTERCOPY_V210 = 0x9646fDAD06d3e24444381f44362a3B0eB343D337;
     address private constant ROLES_MASTERCOPY_V211 = 0xF2964CE6161ce0e75964Fe7927cE114cb0B283D5;
 
-    /// @dev kpk's "test" instance Safe (1-of-9), deployer and current owner of the new Main
+    /// @dev kpk's "test" instance Safe (1-of-9), owner of the new Main at the historical review block
     address private constant KPK_TEST_SAFE = 0xC01318baB7ee1f5ba734172bF7718b5DC6Ec90E1;
 
     address private constant DAO_TIMELOCK = ENSConstants.TIMELOCK;
@@ -177,13 +177,14 @@ contract Proposal_ENS_KPK_Update_10_Switch_Test is Test, MultiSendHelper, Zodiac
     IOZTimelock private constant endowmentTimelock = IOZTimelock(ENSConstants.ENDOWMENT_TIMELOCK);
 
     uint256 private safeNonceBefore;
+    uint256 private constant HISTORICAL_REVIEW_BLOCK = 25_984_900;
 
     // ─── Fork
     // ─────────────────────────────────────────────────────
 
     function setUp() public {
-        // After the new Main's last configuration transaction (block 25,941,858).
-        vm.createSelectFork({ blockNumber: 25_984_900, urlOrAlias: "mainnet" });
+        // Defaults to the historical review; override for an explicit later-block smoke run.
+        vm.createSelectFork({ blockNumber: vm.envOr("REVIEW_BLOCK", HISTORICAL_REVIEW_BLOCK), urlOrAlias: "mainnet" });
         vm.label(OLD_MAIN, "oldMain");
         vm.label(NEW_MAIN, "newMain");
         vm.label(SUB_ROLES, "subRoles");
@@ -204,30 +205,28 @@ contract Proposal_ENS_KPK_Update_10_Switch_Test is Test, MultiSendHelper, Zodiac
         _afterExecution();
     }
 
-    /// @dev Tripwire for the open precondition: the new Main must be owned by the Endowment
-    ///      Safe before the switch executes. Today it is owned by kpk's 1-of-9 test Safe.
-    ///      This test is expected to start failing once kpk transfers ownership; update the
-    ///      review then rather than deleting it.
-    function test_precondition_newMainIsStillOwnedByKpkTestSafe() public view {
-        assertEq(IRolesAdmin(NEW_MAIN).owner(), KPK_TEST_SAFE, "new Main owner changed: re-review");
+    /// @dev Historical regression: ownership was still at kpk's 1-of-9 test Safe at the
+    ///      original review block. Keep it pinned even when REVIEW_BLOCK selects a later fork.
+    function test_precondition_newMainIsStillOwnedByKpkTestSafe() public {
+        vm.createSelectFork({ blockNumber: HISTORICAL_REVIEW_BLOCK, urlOrAlias: "mainnet" });
+        assertEq(IRolesAdmin(NEW_MAIN).owner(), KPK_TEST_SAFE, "historical new Main owner");
         assertEq(ISafe(KPK_TEST_SAFE).getThreshold(), 1, "kpk test Safe threshold");
         assertEq(ISafe(KPK_TEST_SAFE).getOwners().length, 9, "kpk test Safe owner count");
     }
 
-    /// @dev What the missing ownership transfer means in practice: with the switch executed
-    ///      as published, the owner of the new Main rewrites the Endowment's policy at will,
-    ///      without the Foundation, the timelock, the Security Council or a DAO vote.
+    /// @dev At the selected fork, the untransferred owner can rewrite policy after the
+    ///      switch without the Foundation, timelock, Security Council or DAO vote.
     function test_finding_withoutOwnershipTransferKpkTestSafeRewritesThePolicy() public {
         _executeViaEndowmentTimelock(_generateCallData());
         assertEq(IRolesAdmin(NEW_MAIN).owner(), KPK_TEST_SAFE, "precondition not simulated in this test");
 
-        // The Safe's idle sUSDS at the fork block (about 2.94M sUSDS).
+        // Drain the entire sUSDS balance observed at the selected fork.
         address sink = address(0xdead);
         uint256 amount = IERC20(SUSDS).balanceOf(address(endowmentSafe));
-        assertGt(amount, 1_000_000e18, "Endowment sUSDS balance");
+        assertGt(amount, 0, "Endowment sUSDS balance");
         uint256 sinkBefore = IERC20(SUSDS).balanceOf(sink);
 
-        // Today the pod cannot transfer sUSDS at all (approve only, spender-pinned).
+        // Before the edit the pod cannot transfer sUSDS (approve only, spender-pinned).
         _blockedVia(NEW_MAIN, SUSDS, _transferCall(sink, amount), IZodiacRoles.Status.FunctionNotAllowed);
 
         // The test Safe (any 1 of its 9 signers) opens sUSDS.transfer to any recipient...
@@ -283,14 +282,9 @@ contract Proposal_ENS_KPK_Update_10_Switch_Test is Test, MultiSendHelper, Zodiac
     function test_switchIsNotExecutableByTheDaoTimelock() public {
         (, bytes memory execData) = _buildSafeMultiSendCalldata(_switchBatch(), address(endowmentSafe), DAO_TIMELOCK);
         vm.prank(DAO_TIMELOCK);
-        vm.expectRevert(bytes("GS026"));
-        ISafe(address(endowmentSafe))
-            .execTransaction(
-                multiSendTarget(), 0, "", 1, 0, 0, 0, address(0), address(0), _buildPreApprovedSignature(DAO_TIMELOCK)
-            );
-        vm.prank(DAO_TIMELOCK);
-        (bool ok,) = address(endowmentSafe).call(execData);
+        (bool ok, bytes memory reason) = address(endowmentSafe).call(execData);
         assertFalse(ok, "DAO Timelock must not be able to execute the switch");
+        assertEq(reason, abi.encodeWithSignature("Error(string)", "GS026"), "real switch signature rejection");
     }
 
     /// @dev Operational consequence described in kpk's post: after the switch the pod must
@@ -326,10 +320,11 @@ contract Proposal_ENS_KPK_Update_10_Switch_Test is Test, MultiSendHelper, Zodiac
     ///
     ///        targets     raw slot equality (clearance + execution options);
     ///        functions   canonical condition-tree equality, computed here from the packed
-    ///                    buffers the modifiers actually evaluate. 316 of the 332 headers are
-    ///                    byte-identical; 15 differ only in the order of Or alternatives and
-    ///                    one in a trailing unconstrained parameter, both of which the checker
-    ///                    treats identically (PermissionChecker._or, Decoder.inspect).
+    ///                    buffers the modifiers actually evaluate. Of 360 historical keys,
+    ///                    28 are revoked on both Mains and 332 are configured: 316 headers
+    ///                    match byte-for-byte, 15 only reorder side-effect-free Or alternatives
+    ///                    with identical decoder type trees, and one omits a trailing Static
+    ///                    Pass directly under the root Calldata Matches.
     function test_structuralEquivalence_oldMainPlusUpdate10EqualsNewMain() public {
         string memory json = vm.readFile(string.concat(DIR, "/roleStateKeys.json"));
         address[] memory targets = vm.parseJsonAddressArray(json, ".targets");
@@ -337,7 +332,8 @@ contract Proposal_ENS_KPK_Update_10_Switch_Test is Test, MultiSendHelper, Zodiac
         bytes32[] memory identical = vm.parseJsonBytes32Array(json, ".identical");
         bytes32[] memory orderOnly = vm.parseJsonBytes32Array(json, ".orderOnly");
         bytes32[] memory trailingPassOnly = vm.parseJsonBytes32Array(json, ".trailingPassOnly");
-        assertEq(identical.length + orderOnly.length + trailingPassOnly.length, functionKeys.length, "key classes");
+        assertEq(identical.length + orderOnly.length + trailingPassOnly.length, 332, "configured key classes");
+        assertEq(functionKeys.length, 360, "all historical function keys, including revoked entries");
 
         // Layout probe: USDC is a scoped target on both modifiers today.
         assertEq(uint256(vm.load(OLD_MAIN, _targetSlot(USDC))), CLEARANCE_FUNCTION, "layout probe old");
@@ -358,22 +354,7 @@ contract Proposal_ENS_KPK_Update_10_Switch_Test is Test, MultiSendHelper, Zodiac
             );
         }
 
-        // Functions
-        uint256 rawEqual;
-        uint256 configured;
-        for (uint256 i; i < functionKeys.length; i++) {
-            bytes32 ho = vm.load(OLD_MAIN, _scopeConfigSlot(functionKeys[i]));
-            bytes32 hn = vm.load(NEW_MAIN, _scopeConfigSlot(functionKeys[i]));
-            if (ho == hn) rawEqual++;
-            if (hn != bytes32(0)) configured++;
-            assertEq(
-                _canonicalScopeConfig(OLD_MAIN, functionKeys[i]),
-                _canonicalScopeConfig(NEW_MAIN, functionKeys[i]),
-                string.concat("condition tree differs: ", vm.toString(functionKeys[i]))
-            );
-        }
-        assertEq(configured, functionKeys.length, "every key configured on the new Main");
-        assertEq(rawEqual, identical.length, "byte-identical header count");
+        _assertAllFunctionKeys(functionKeys, identical.length);
         for (uint256 i; i < identical.length; i++) {
             assertEq(
                 vm.load(OLD_MAIN, _scopeConfigSlot(identical[i])),
@@ -447,6 +428,32 @@ contract Proposal_ENS_KPK_Update_10_Switch_Test is Test, MultiSendHelper, Zodiac
         assertTrue(_canonicalScopeConfig(OLD_MAIN, usdcApprove) != before, "control (c): wildcard must be detected");
     }
 
+    function _assertAllFunctionKeys(bytes32[] memory functionKeys, uint256 identicalCount) internal {
+        uint256 rawEqual;
+        uint256 configured;
+        uint256 revoked;
+        for (uint256 i; i < functionKeys.length; i++) {
+            if (i > 0) assertLt(uint256(functionKeys[i - 1]), uint256(functionKeys[i]), "unique sorted function keys");
+            bytes32 ho = vm.load(OLD_MAIN, _scopeConfigSlot(functionKeys[i]));
+            bytes32 hn = vm.load(NEW_MAIN, _scopeConfigSlot(functionKeys[i]));
+            if (ho == hn) rawEqual++;
+            if (hn != bytes32(0)) {
+                configured++;
+            } else {
+                assertEq(ho, bytes32(0), "historically revoked entry must be zero on both Mains");
+                revoked++;
+            }
+            assertEq(
+                _canonicalScopeConfig(OLD_MAIN, functionKeys[i]),
+                _canonicalScopeConfig(NEW_MAIN, functionKeys[i]),
+                string.concat("condition tree differs: ", vm.toString(functionKeys[i]))
+            );
+        }
+        assertEq(configured, 332, "configured keys after the delta");
+        assertEq(revoked, 28, "historically revoked keys remain zero on both Mains");
+        assertEq(rawEqual, identicalCount + revoked, "byte-identical header count including revoked entries");
+    }
+
     /// @dev USDC.approve spender list of the new Main (Update #10 state; 14 pre-existing
     ///      spenders plus the four vaults added by Update #10), as an Or group.
     function _usdcApproveSpenders() internal pure returns (address[] memory t) {
@@ -493,6 +500,158 @@ contract Proposal_ENS_KPK_Update_10_Switch_Test is Test, MultiSendHelper, Zodiac
         address[] memory s = _usdcApproveSpenders();
         s[0] = address(0xdead);
         return _approveConditions(s);
+    }
+
+    function test_canonicalizationRetainsTrailingDynamicPass() public {
+        ConditionFlat[] memory c = new ConditionFlat[](2);
+        c[0] = ConditionFlat(0, PARAM_TYPE_CALLDATA, OP_MATCHES, "");
+        c[1] = ConditionFlat(0, PARAM_TYPE_STATIC, OP_EQUAL_TO, abi.encode(DAO_TIMELOCK));
+        bytes32 before = _scopeComparisonProbe(c);
+        bytes memory data = _transferCall(DAO_TIMELOCK, 1_000_000);
+        _allowedVia(OLD_MAIN, USDC, data);
+
+        ConditionFlat[] memory extended = new ConditionFlat[](3);
+        extended[0] = c[0];
+        extended[1] = c[1];
+        extended[2] = ConditionFlat(0, PARAM_TYPE_DYNAMIC, OP_PASS, "");
+        bytes32 afterHash = _scopeComparisonProbe(extended);
+        vm.prank(karpatkey);
+        vm.expectRevert(abi.encodeWithSignature("CalldataOutOfBounds()"));
+        IZodiacRoles(OLD_MAIN).execTransactionWithRole(USDC, 0, data, IZodiacRoles.Operation.Call, MANAGER_ROLE, false);
+        assertNotEq(before, afterHash, "Dynamic Pass affects decoding and must remain in the hash");
+
+        extended[2].paramType = PARAM_TYPE_STATIC;
+        assertEq(before, _scopeComparisonProbe(extended), "root trailing Static Pass is inert");
+        _allowedVia(OLD_MAIN, USDC, data);
+    }
+
+    function test_canonicalizationRetainsArrayMatchesArity() public {
+        ConditionFlat[] memory c = new ConditionFlat[](3);
+        c[0] = ConditionFlat(0, PARAM_TYPE_CALLDATA, OP_MATCHES, "");
+        c[1] = ConditionFlat(0, PARAM_TYPE_ARRAY, OP_MATCHES, "");
+        c[2] = ConditionFlat(1, PARAM_TYPE_STATIC, OP_EQUAL_TO, abi.encode(uint256(7)));
+        bytes32 before = _scopeComparisonProbe(c);
+        uint256[] memory values = new uint256[](1);
+        values[0] = 7;
+        bytes memory data = abi.encodeWithSelector(IERC20.transfer.selector, values);
+        _allowedVia(OLD_MAIN, USDC, data);
+
+        ConditionFlat[] memory extended = new ConditionFlat[](4);
+        extended[0] = c[0];
+        extended[1] = c[1];
+        extended[2] = c[2];
+        extended[3] = ConditionFlat(1, PARAM_TYPE_STATIC, OP_PASS, "");
+        bytes32 afterHash = _scopeComparisonProbe(extended);
+        _blockedVia(OLD_MAIN, USDC, data, IZodiacRoles.Status.ParameterNotAMatch);
+        assertNotEq(before, afterHash, "Array Matches arity must remain in the hash");
+    }
+
+    function test_canonicalizationRetainsTupleSiblingOffsets() public {
+        ConditionFlat[] memory c = new ConditionFlat[](4);
+        c[0] = ConditionFlat(0, PARAM_TYPE_CALLDATA, OP_MATCHES, "");
+        c[1] = ConditionFlat(0, PARAM_TYPE_TUPLE, OP_MATCHES, "");
+        c[2] = ConditionFlat(0, PARAM_TYPE_STATIC, OP_EQUAL_TO, abi.encode(uint256(9)));
+        c[3] = ConditionFlat(1, PARAM_TYPE_STATIC, OP_EQUAL_TO, abi.encode(uint256(7)));
+        bytes32 before = _scopeComparisonProbe(c);
+        bytes memory data = abi.encodeWithSelector(IERC20.transfer.selector, uint256(7), uint256(9), uint256(8));
+        _allowedVia(OLD_MAIN, USDC, data);
+
+        ConditionFlat[] memory extended = new ConditionFlat[](5);
+        for (uint256 i; i < c.length; i++) {
+            extended[i] = c[i];
+        }
+        extended[4] = ConditionFlat(1, PARAM_TYPE_STATIC, OP_PASS, "");
+        bytes32 afterHash = _scopeComparisonProbe(extended);
+        _blockedVia(OLD_MAIN, USDC, data, IZodiacRoles.Status.ParameterNotAllowed);
+        assertNotEq(before, afterHash, "Tuple Pass shifts following parameter offsets");
+    }
+
+    function test_canonicalizationRetainsHeterogeneousOrOrder() public {
+        ConditionFlat[] memory c = new ConditionFlat[](5);
+        c[0] = ConditionFlat(0, PARAM_TYPE_CALLDATA, OP_MATCHES, "");
+        c[1] = ConditionFlat(0, PARAM_TYPE_NONE, OP_OR, "");
+        c[2] = ConditionFlat(1, 6, OP_MATCHES, ""); // AbiEncoded
+        c[3] = ConditionFlat(1, PARAM_TYPE_DYNAMIC, OP_EQUAL_TO, abi.encode(uint256(8)));
+        c[4] = ConditionFlat(2, PARAM_TYPE_STATIC, OP_EQUAL_TO, abi.encode(uint256(7)));
+        bytes32 before = _scopeComparisonProbe(c);
+        bytes memory data = abi.encodeWithSelector(IERC20.transfer.selector, abi.encode(uint256(7)));
+        _allowedVia(OLD_MAIN, USDC, data);
+
+        (c[2], c[3]) = (c[3], c[2]);
+        c[4].parent = 3;
+        // Integrity only admits the AbiEncoded-first ordering. Mutate its stored buffer
+        // to demonstrate why the comparator must not normalize a different decoder layout.
+        vm.prank(address(endowmentSafe));
+        vm.expectRevert(abi.encodeWithSignature("UnsuitableChildTypeTree(uint256)", uint256(1)));
+        IRolesModifier(OLD_MAIN).scopeFunction(MANAGER_ROLE, USDC, IERC20.transfer.selector, c, EXEC_NONE);
+        bytes32 key = _fkey(USDC, IERC20.transfer.selector);
+        address pointer = address(uint160(uint256(vm.load(OLD_MAIN, _scopeConfigSlot(key)))));
+        bytes memory buffer = pointer.code;
+        (buffer[6], buffer[8]) = (buffer[8], buffer[6]);
+        buffer[9] = bytes1(uint8(3));
+        vm.etch(pointer, buffer);
+        bytes32 afterHash = _canonicalScopeConfig(OLD_MAIN, key);
+        _blockedVia(OLD_MAIN, USDC, data, IZodiacRoles.Status.OrViolation);
+        assertNotEq(before, afterHash, "first Or alternative selects the decoder type tree");
+    }
+
+    function test_canonicalizationPreservesStatefulOrAndOtherLogicalOrder() public pure {
+        uint8[] memory parent = new uint8[](5);
+        parent[3] = 1;
+        parent[4] = 2;
+        uint8[] memory paramType = new uint8[](5);
+        paramType[1] = PARAM_TYPE_CALLDATA;
+        paramType[2] = PARAM_TYPE_CALLDATA;
+        uint8[] memory operator = new uint8[](5);
+        operator[1] = OP_MATCHES;
+        operator[2] = OP_MATCHES;
+        bytes32[] memory values = new bytes32[](5);
+        values[3] = bytes32(uint256(1));
+        values[4] = bytes32(uint256(2));
+        // Custom and all three allowance operators are outside the reorder equivalence.
+        uint8[4] memory statefulOps = [uint8(22), uint8(28), uint8(29), uint8(30)];
+        operator[0] = OP_OR;
+        for (uint256 i; i < statefulOps.length; i++) {
+            operator[3] = statefulOps[i];
+            operator[4] = statefulOps[i];
+            paramType[3] = statefulOps[i] >= 29 ? PARAM_TYPE_NONE : PARAM_TYPE_STATIC;
+            paramType[4] = paramType[3];
+            bytes32 before = _canonicalNode(0, parent, paramType, operator, values);
+            (values[3], values[4]) = (values[4], values[3]);
+            assertNotEq(before, _canonicalNode(0, parent, paramType, operator, values), "stateful Or order");
+        }
+        operator[3] = OP_EQUAL_TO;
+        operator[4] = OP_EQUAL_TO;
+        paramType[3] = PARAM_TYPE_STATIC;
+        paramType[4] = PARAM_TYPE_STATIC;
+        for (uint8 logical = 1; logical <= 3; logical += 2) {
+            operator[0] = logical;
+            bytes32 before = _canonicalNode(0, parent, paramType, operator, values);
+            (values[3], values[4]) = (values[4], values[3]);
+            assertNotEq(before, _canonicalNode(0, parent, paramType, operator, values), "And/Nor order");
+        }
+    }
+
+    function _scopeComparisonProbe(ConditionFlat[] memory c) internal returns (bytes32) {
+        vm.prank(address(endowmentSafe));
+        IRolesModifier(OLD_MAIN).scopeFunction(MANAGER_ROLE, USDC, IERC20.transfer.selector, c, EXEC_NONE);
+        return _canonicalScopeConfig(OLD_MAIN, _fkey(USDC, IERC20.transfer.selector));
+    }
+
+    function test_canonicalizationDetectsRevokedFunctionReactivation() public {
+        bytes32[] memory keys =
+            vm.parseJsonBytes32Array(vm.readFile(string.concat(DIR, "/roleStateKeys.json")), ".functionKeys");
+        bool tested;
+        for (uint256 i; i < keys.length; i++) {
+            bytes32 slot = _scopeConfigSlot(keys[i]);
+            if (vm.load(OLD_MAIN, slot) != bytes32(0) || vm.load(NEW_MAIN, slot) != bytes32(0)) continue;
+            assertEq(_canonicalScopeConfig(OLD_MAIN, keys[i]), bytes32(0), "revoked old key");
+            vm.store(NEW_MAIN, slot, bytes32(uint256(1) << 216)); // wildcarded function, no execution options
+            assertNotEq(_canonicalScopeConfig(NEW_MAIN, keys[i]), bytes32(0), "reactivated function must differ");
+            tested = true;
+            break;
+        }
+        assertTrue(tested, "historically revoked keys must be present in the fixture");
     }
 
     // ─── Before
@@ -587,7 +746,7 @@ contract Proposal_ENS_KPK_Update_10_Switch_Test is Test, MultiSendHelper, Zodiac
                 USDC, 0, _approveCall(GPV2_VAULT_RELAYER), IZodiacRoles.Operation.Call, MANAGER_ROLE, false
             );
 
-        // Today's policy on the old Main: Update #10 venues unreachable, existing calls intact.
+        // Policy at the selected fork: Update #10 venues unreachable on the old Main, existing calls intact.
         _blockedVia(OLD_MAIN, KPK_USDC_YIELD, _depositCall(), IZodiacRoles.Status.TargetAddressNotAllowed);
         _blockedVia(
             OLD_MAIN, PENDLE_ROUTER_V4, _redeemPyToTokenCall(SUSDS), IZodiacRoles.Status.TargetAddressNotAllowed
@@ -599,14 +758,14 @@ contract Proposal_ENS_KPK_Update_10_Switch_Test is Test, MultiSendHelper, Zodiac
         _blockedVia(OLD_MAIN, USDC, _transferCall(address(0xdead), 1), IZodiacRoles.Status.ParameterNotAllowed);
         _assertDistributorClaimsPinned(OLD_MAIN);
 
-        // ── Precondition (NOT met on-chain at the fork block) ──
-        // The new Main is owned by kpk's test Safe. Ownership must sit with the Endowment
+        // ── Ownership precondition (missing at the historical review block) ──
+        // Ownership must sit with the Endowment
         // Safe before the switch, otherwise the policy is editable outside the
         // Foundation → EndowmentTimelock path (see test_finding_…). Simulated here so the
         // rest of the verification describes the intended end state.
         address ownerAtFork = IRolesAdmin(NEW_MAIN).owner();
         if (ownerAtFork != address(endowmentSafe)) {
-            console2.log("PRECONDITION NOT MET: new Main owner is", ownerAtFork);
+            console2.log("PRECONDITION NOT MET AT SELECTED FORK: new Main owner is", ownerAtFork);
             console2.log("  simulating transferOwnership(endowmentSafe) before the switch");
             vm.prank(ownerAtFork);
             IRolesAdmin(NEW_MAIN).transferOwnership(address(endowmentSafe));
@@ -637,6 +796,8 @@ contract Proposal_ENS_KPK_Update_10_Switch_Test is Test, MultiSendHelper, Zodiac
         // Safe.execTransaction(MultiSendCallOnly 1.3.0, delegatecall, pre-approved by the
         // EndowmentTimelock, the Safe's sole owner)
         (, execData) = _buildSafeMultiSendCalldata(batch, address(endowmentSafe), ENSConstants.ENDOWMENT_TIMELOCK);
+        string memory referenceJson = vm.readFile(string.concat(DIR, "/referenceExecution.json"));
+        assertEq(execData, vm.parseJsonBytes(referenceJson, ".data"), "independently encoded Safe execution");
     }
 
     function multiSendTarget() internal pure returns (address) {
@@ -771,6 +932,12 @@ contract Proposal_ENS_KPK_Update_10_Switch_Test is Test, MultiSendHelper, Zodiac
             abi.encodeWithSelector(IMetaMorphoV1.redeem.selector, uint256(1), address(0xdead), safe),
             IZodiacRoles.Status.ParameterNotAllowed
         );
+        _blockedVia(
+            m,
+            vault,
+            abi.encodeWithSelector(IMetaMorphoV1.redeem.selector, uint256(1), safe, address(0xdead)),
+            IZodiacRoles.Status.ParameterNotAllowed
+        );
         _blockedVia(m, vault, _transferCall(address(0xdead), 1), IZodiacRoles.Status.FunctionNotAllowed);
     }
 
@@ -846,6 +1013,18 @@ contract Proposal_ENS_KPK_Update_10_Switch_Test is Test, MultiSendHelper, Zodiac
             ),
             IZodiacRoles.Status.ParameterNotAllowed
         );
+        _blockedVia(
+            m,
+            PENDLE_ROUTER_V4,
+            abi.encodeWithSelector(
+                IPendleRouterV4.redeemPyToToken.selector,
+                address(endowmentSafe),
+                address(0xdead),
+                uint256(1),
+                _tokenOutput(SUSDS)
+            ),
+            IZodiacRoles.Status.ParameterNotAllowed
+        );
         _allowedVia(m, PENDLE_ROUTER_V4, _swapExactPtForTokenCall(PENDLE_MARKET_SUSDS, SUSDS));
         _blockedVia(
             m,
@@ -905,6 +1084,8 @@ contract Proposal_ENS_KPK_Update_10_Switch_Test is Test, MultiSendHelper, Zodiac
         _allowedVia(m, SYRUP_USDC, _approveCall(GPV2_VAULT_RELAYER));
         _allowedVia(m, SYRUP_USDT, _approveCall(GPV2_VAULT_RELAYER));
         _blockedVia(m, SYRUP_USDC, _approveCall(address(0xdead)), IZodiacRoles.Status.ParameterNotAllowed);
+        _blockedVia(m, SYRUP_USDT, _approveCall(address(0xdead)), IZodiacRoles.Status.ParameterNotAllowed);
+        _blockedVia(m, SYRUP_USDC, _transferCall(address(0xdead), 1), IZodiacRoles.Status.FunctionNotAllowed);
         _blockedVia(m, SYRUP_USDT, _transferCall(address(0xdead), 1), IZodiacRoles.Status.FunctionNotAllowed);
     }
 
@@ -934,8 +1115,9 @@ contract Proposal_ENS_KPK_Update_10_Switch_Test is Test, MultiSendHelper, Zodiac
         _allowedVia(m, FLUID_DISTRIBUTOR, _fluidClaimCall(address(endowmentSafe)));
         _allowedVia(m, FLUID_GHO_DISTRIBUTOR, _fluidClaimCall(address(endowmentSafe)));
         _allowedVia(m, MERKL_DISTRIBUTOR, _merklClaimCall(address(endowmentSafe)));
-        _blockedVia(m, FLUID_DISTRIBUTOR, _fluidClaimCall(address(0xdead)), IZodiacRoles.Status.ParameterNotAllowed);
-        _blockedVia(m, FLUID_GHO_DISTRIBUTOR, _fluidClaimCall(address(0xdead)), IZodiacRoles.Status.ParameterNotAllowed);
+        bytes memory badClaim = _fluidClaimCall(address(0xdead));
+        _blockedVia(m, FLUID_DISTRIBUTOR, badClaim, IZodiacRoles.Status.ParameterNotAllowed);
+        _blockedVia(m, FLUID_GHO_DISTRIBUTOR, badClaim, IZodiacRoles.Status.ParameterNotAllowed);
         _blockedVia(m, MERKL_DISTRIBUTOR, _merklClaimCall(address(0xdead)), IZodiacRoles.Status.OrViolation);
     }
 
@@ -1030,8 +1212,8 @@ contract Proposal_ENS_KPK_Update_10_Switch_Test is Test, MultiSendHelper, Zodiac
 
     /// @dev Canonical hash of a scopeConfig entry, computed from the packed buffer the
     ///      modifier evaluates (BufferPacker layout): wildcard entries hash their execution
-    ///      options; scoped entries hash the condition tree with And/Or/Nor children sorted
-    ///      and trailing Pass leaves of Matches nodes pruned.
+    ///      options; only side-effect-free Or alternatives with identical decoder type trees
+    ///      are sorted. Only trailing Static Pass leaves of a root Calldata Matches are pruned.
     function _canonicalScopeConfig(address module, bytes32 key) internal view returns (bytes32) {
         uint256 header = uint256(vm.load(module, _scopeConfigSlot(key)));
         if (header == 0) return bytes32(0);
@@ -1080,18 +1262,86 @@ contract Proposal_ENS_KPK_Update_10_Switch_Test is Test, MultiSendHelper, Zodiac
         for (uint256 j = node + 1; j < n; j++) {
             if (parent[j] != node) continue;
             children[c] = _canonicalNode(j, parent, paramType, operator, compValue);
-            inertLeaf[c] = operator[j] == OP_PASS && !_hasChildren(j, parent);
+            inertLeaf[c] = paramType[j] == PARAM_TYPE_STATIC && operator[j] == OP_PASS && !_hasChildren(j, parent);
             c++;
         }
-        if (operator[node] == OP_MATCHES) {
+        if (node == 0 && paramType[node] == PARAM_TYPE_CALLDATA && operator[node] == OP_MATCHES) {
             while (childCount > 0 && inertLeaf[childCount - 1]) childCount--;
             assembly {
                 mstore(children, childCount)
             }
         }
-        if (operator[node] == 1 || operator[node] == OP_OR || operator[node] == 3) _sort(children);
+        if (operator[node] == OP_OR && _canReorderOr(node, parent, paramType, operator)) _sort(children);
         bytes32 value = operator[node] >= OP_EQUAL_TO ? compValue[node] : bytes32(0);
         return keccak256(abi.encode(paramType[node], operator[node], value, children));
+    }
+
+    function _canReorderOr(
+        uint256 node,
+        uint8[] memory parent,
+        uint8[] memory paramType,
+        uint8[] memory operator
+    )
+        internal
+        pure
+        returns (bool)
+    {
+        if (!_sideEffectFree(node, parent, operator)) return false;
+        bytes32 firstType;
+        bool first = true;
+        for (uint256 j = node + 1; j < parent.length; j++) {
+            if (parent[j] != node) continue;
+            bytes32 childType = _decoderTypeTree(j, parent, paramType, operator);
+            if (!first && childType != firstType) return false;
+            firstType = childType;
+            first = false;
+        }
+        return !first;
+    }
+
+    function _sideEffectFree(uint256 node, uint8[] memory parent, uint8[] memory operator)
+        internal
+        pure
+        returns (bool)
+    {
+        // Custom conditions and allowance consumption can make the first successful
+        // alternative observable. Reject unknown operators in the allowance range too.
+        if (operator[node] == 22 || operator[node] >= 28) return false;
+        for (uint256 j = node + 1; j < parent.length; j++) {
+            if (parent[j] == node && !_sideEffectFree(j, parent, operator)) return false;
+        }
+        return true;
+    }
+
+    /// @dev Mirrors Topology.typeTree: logical nodes and arrays use their first child as
+    ///      the decoding template. Positional children are kept in order, without pruning.
+    function _decoderTypeTree(
+        uint256 node,
+        uint8[] memory parent,
+        uint8[] memory paramType,
+        uint8[] memory operator
+    )
+        internal
+        pure
+        returns (bytes32)
+    {
+        uint256 childCount;
+        for (uint256 j = node + 1; j < parent.length; j++) {
+            if (parent[j] == node) childCount++;
+        }
+        bytes32[] memory children = new bytes32[](childCount);
+        uint256 c;
+        for (uint256 j = node + 1; j < parent.length; j++) {
+            if (parent[j] != node) continue;
+            bytes32 childType = _decoderTypeTree(j, parent, paramType, operator);
+            if (operator[node] >= 1 && operator[node] <= 3) return childType;
+            children[c++] = childType;
+            if (paramType[node] == PARAM_TYPE_ARRAY) break;
+        }
+        assembly {
+            mstore(children, c)
+        }
+        return keccak256(abi.encode(paramType[node], children));
     }
 
     function _hasChildren(uint256 node, uint8[] memory parent) internal pure returns (bool) {
@@ -1148,6 +1398,8 @@ contract Proposal_ENS_KPK_Update_10_Switch_Test is Test, MultiSendHelper, Zodiac
     // ─── Probes
     // ───────────────────────────────────────────────────
 
+    /// @dev Proves permission-layer acceptance; the inner venue call may fail for missing
+    ///      balances or approvals because shouldRevert is false. Authorization still reverts on denial.
     function _allowedVia(address module, address target, bytes memory data) internal {
         uint256 snap = vm.snapshotState();
         vm.prank(karpatkey);
