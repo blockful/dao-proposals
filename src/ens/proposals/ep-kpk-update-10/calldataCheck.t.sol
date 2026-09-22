@@ -107,11 +107,6 @@ contract Proposal_ENS_KPK_Update_10_Switch_Test is Test, MultiSendHelper, Zodiac
     address private constant KPK_TEST_SAFE = 0xC01318baB7ee1f5ba734172bF7718b5DC6Ec90E1;
 
     address private constant DAO_TIMELOCK = ENSConstants.TIMELOCK;
-    address private constant ENDOWMENT_TIMELOCK = 0x0bcC3dA6aD796F59288C0961602675E88A2B406C;
-    address private constant FOUNDATION_SAFE = 0x9C7dB6B1085ec4D07f75c0BD91AD3FcD368fA19E;
-    address private constant SC_VETO = 0x0A9387643ce6291f8C545286675D76bCd0Ba3EdD;
-    address private constant SC_SAFE = 0x7101B78638e34444F0a5AdE9e1149fbEeC029931;
-    address private constant ALLOWANCE_MODULE = 0xCFbFaC74C26F8647cBDb8c5caf80BB5b32E43134;
     address private constant SENTINEL = address(0x1);
 
     address private constant MULTISEND_130 = 0xA238CBeb142c10Ef7Ad8442C6D1f9E89e07e7761;
@@ -179,7 +174,7 @@ contract Proposal_ENS_KPK_Update_10_Switch_Test is Test, MultiSendHelper, Zodiac
     bytes32 private constant HARVEST_ROLE = 0x4841525645535400000000000000000000000000000000000000000000000000;
     address private constant HARVEST_MEMBER = 0x14C2d2D64C4860ACF7CF39068eb467D7556197de;
 
-    IOZTimelock private constant endowmentTimelock = IOZTimelock(ENDOWMENT_TIMELOCK);
+    IOZTimelock private constant endowmentTimelock = IOZTimelock(ENSConstants.ENDOWMENT_TIMELOCK);
 
     uint256 private safeNonceBefore;
 
@@ -193,8 +188,8 @@ contract Proposal_ENS_KPK_Update_10_Switch_Test is Test, MultiSendHelper, Zodiac
         vm.label(NEW_MAIN, "newMain");
         vm.label(SUB_ROLES, "subRoles");
         vm.label(address(endowmentSafe), "endowmentSafe");
-        vm.label(ENDOWMENT_TIMELOCK, "endowmentTimelock");
-        vm.label(FOUNDATION_SAFE, "foundationSafe");
+        vm.label(ENSConstants.ENDOWMENT_TIMELOCK, "endowmentTimelock");
+        vm.label(ENSConstants.FOUNDATION_SAFE, "foundationSafe");
         vm.label(KPK_TEST_SAFE, "kpkTestSafe");
         vm.label(karpatkey, "kpkPod");
     }
@@ -260,14 +255,20 @@ contract Proposal_ENS_KPK_Update_10_Switch_Test is Test, MultiSendHelper, Zodiac
     function test_securityCouncilCanVetoTheScheduledSwitch() public {
         bytes memory execData = _generateCallData();
         bytes32 id = endowmentTimelock.hashOperation(address(endowmentSafe), 0, execData, bytes32(0), SALT);
-        vm.prank(FOUNDATION_SAFE);
+        vm.prank(ENSConstants.FOUNDATION_SAFE);
         endowmentTimelock.schedule(address(endowmentSafe), 0, execData, bytes32(0), SALT, 9 days);
         assertTrue(endowmentTimelock.isOperationPending(id), "not scheduled");
 
-        assertEq(ISecurityCouncil(SC_VETO).owner(), SC_SAFE, "veto wrapper owner");
-        assertGt(ISecurityCouncil(SC_VETO).expiration(), block.timestamp + 9 days, "veto expired");
-        vm.prank(SC_SAFE);
-        ISecurityCouncil(SC_VETO).veto(id);
+        assertEq(
+            ISecurityCouncil(ENSConstants.SECURITY_COUNCIL_VETO).owner(),
+            ENSConstants.SECURITY_COUNCIL_SAFE,
+            "veto wrapper owner"
+        );
+        assertGt(
+            ISecurityCouncil(ENSConstants.SECURITY_COUNCIL_VETO).expiration(), block.timestamp + 9 days, "veto expired"
+        );
+        vm.prank(ENSConstants.SECURITY_COUNCIL_SAFE);
+        ISecurityCouncil(ENSConstants.SECURITY_COUNCIL_VETO).veto(id);
         assertFalse(endowmentTimelock.isOperationPending(id), "veto did not cancel");
 
         vm.warp(block.timestamp + 9 days);
@@ -502,18 +503,23 @@ contract Proposal_ENS_KPK_Update_10_Switch_Test is Test, MultiSendHelper, Zodiac
         assertEq(safe.VERSION(), "1.3.0", "Safe version");
         address[] memory owners = safe.getOwners();
         assertEq(owners.length, 1, "Safe owner count");
-        assertEq(owners[0], ENDOWMENT_TIMELOCK, "Safe owner");
+        assertEq(owners[0], ENSConstants.ENDOWMENT_TIMELOCK, "Safe owner");
         assertEq(safe.getThreshold(), 1, "Safe threshold");
         (address[] memory mods,) = safe.getModulesPaginated(SENTINEL, 10);
         assertEq(mods.length, 2, "Safe module count");
         assertEq(mods[0], OLD_MAIN, "old Main is the list head (prevModule = SENTINEL)");
-        assertEq(mods[1], ALLOWANCE_MODULE, "Allowance module");
+        assertEq(mods[1], ENSConstants.ALLOWANCE_MODULE, "Allowance module");
         safeNonceBefore = ISafeModules(address(endowmentSafe)).nonce();
 
         // EndowmentTimelock: Foundation proposes, Security Council vetoes, anyone executes.
         assertEq(endowmentTimelock.getMinDelay(), 9 days, "min delay");
-        assertTrue(endowmentTimelock.hasRole(keccak256("PROPOSER_ROLE"), FOUNDATION_SAFE), "Foundation proposer");
-        assertTrue(endowmentTimelock.hasRole(keccak256("PROPOSER_ROLE"), SC_VETO), "SC wrapper proposer");
+        assertTrue(
+            endowmentTimelock.hasRole(keccak256("PROPOSER_ROLE"), ENSConstants.FOUNDATION_SAFE), "Foundation proposer"
+        );
+        assertTrue(
+            endowmentTimelock.hasRole(keccak256("PROPOSER_ROLE"), ENSConstants.SECURITY_COUNCIL_VETO),
+            "SC wrapper proposer"
+        );
         assertTrue(endowmentTimelock.hasRole(keccak256("EXECUTOR_ROLE"), address(0)), "open executor");
         assertFalse(endowmentTimelock.hasRole(keccak256("PROPOSER_ROLE"), DAO_TIMELOCK), "DAO Timelock not proposer");
 
@@ -630,7 +636,7 @@ contract Proposal_ENS_KPK_Update_10_Switch_Test is Test, MultiSendHelper, Zodiac
 
         // Safe.execTransaction(MultiSendCallOnly 1.3.0, delegatecall, pre-approved by the
         // EndowmentTimelock, the Safe's sole owner)
-        (, execData) = _buildSafeMultiSendCalldata(batch, address(endowmentSafe), ENDOWMENT_TIMELOCK);
+        (, execData) = _buildSafeMultiSendCalldata(batch, address(endowmentSafe), ENSConstants.ENDOWMENT_TIMELOCK);
     }
 
     function multiSendTarget() internal pure returns (address) {
@@ -643,7 +649,7 @@ contract Proposal_ENS_KPK_Update_10_Switch_Test is Test, MultiSendHelper, Zodiac
         uint256 delay = endowmentTimelock.getMinDelay();
         bytes32 id = endowmentTimelock.hashOperation(address(endowmentSafe), 0, execData, bytes32(0), SALT);
 
-        vm.prank(FOUNDATION_SAFE);
+        vm.prank(ENSConstants.FOUNDATION_SAFE);
         endowmentTimelock.schedule(address(endowmentSafe), 0, execData, bytes32(0), SALT, delay);
         assertTrue(endowmentTimelock.isOperationPending(id), "not pending");
 
@@ -669,10 +675,10 @@ contract Proposal_ENS_KPK_Update_10_Switch_Test is Test, MultiSendHelper, Zodiac
         (address[] memory mods,) = ISafe(address(endowmentSafe)).getModulesPaginated(SENTINEL, 10);
         assertEq(mods.length, 2, "Safe module count after switch");
         assertEq(mods[0], NEW_MAIN, "new Main enabled");
-        assertEq(mods[1], ALLOWANCE_MODULE, "Allowance module untouched");
+        assertEq(mods[1], ENSConstants.ALLOWANCE_MODULE, "Allowance module untouched");
         assertFalse(ISafeModules(address(endowmentSafe)).isModuleEnabled(OLD_MAIN), "old Main still enabled");
         assertEq(ISafeModules(address(endowmentSafe)).nonce(), safeNonceBefore + 1, "one Safe transaction");
-        assertEq(ISafe(address(endowmentSafe)).getOwners()[0], ENDOWMENT_TIMELOCK, "owner unchanged");
+        assertEq(ISafe(address(endowmentSafe)).getOwners()[0], ENSConstants.ENDOWMENT_TIMELOCK, "owner unchanged");
 
         // The old Main is dormant: still owned by the Safe, but it can no longer execute.
         assertEq(IRolesAdmin(OLD_MAIN).owner(), address(endowmentSafe), "old Main owner");
