@@ -7,8 +7,9 @@ discussion, all published switch calls, the Safe/timelock wrapper, complete Main
 packed condition buffers, authorization, Sub delegation, implementation provenance, and the report's claims.
 
 **NEEDS_REVIEW remains the proposal recommendation.** The new Main is still owned by the 1-of-9 test Safe at block
-26,034,037. Ownership transfer, the actual scheduled operation and future Harvest configuration are external state that
-this review cannot declare completed. The [security report](README.md) lists the actions needed before approval.
+26,034,037, at the fresh pin 26,037,425 ([review-2026-09-23.md](review-2026-09-23.md)) and at block 26,038,524.
+Ownership transfer, the actual scheduled operation and future Harvest configuration are external state that this review
+cannot declare completed. The [security report](README.md) lists the actions needed before approval.
 
 ## Recovered swarm and continuation
 
@@ -20,8 +21,9 @@ Failure to run is not confirmation of a finding.**
 This continuation recovered the raw evidence, consolidated 25 topics, freshly fetched primary sources and chain state,
 reproduced the actionable defects, and added permanent regressions. It does not claim the original 144-refuter procedure
 completed. The new completeness critic identified one further missing security-path check: appended EIP-1271 module
-signatures, which direct-member prank tests do not exercise. Final review verdicts are recorded separately against the
-exact reviewed commit.
+signatures, which direct-member prank tests do not exercise. It is now covered by `eip1271Path.t.sol` (second pass,
+below). Final review verdicts are recorded in [review-2026-09-23.md](review-2026-09-23.md) at commit
+`ff971bfeaec1568dd8378a584813c3819fd8310c`.
 
 ## Finding disposition
 
@@ -33,7 +35,7 @@ exact reviewed commit.
 | R4: unsafe logical reordering                    | Confirmed guard gap and fixed. Only pure Or subtrees with equal decoder type trees may be sorted; And/Nor remain ordered. The broader claim that both heterogeneous Or orders can be configured was refuted: Integrity rejects one ordering. A local buffer mutation isolates the decoder difference without claiming both are deployable. |
 | R5: wrong mastercopy diff description            | Confirmed and corrected: `_arraySome` and `_bitmask`, not `_or` and EqualTo. Fresh source comparison and compilation support the correction.                                                                                                                                                                                               |
 | R6–R7: Harvest ceiling and standing delegation   | Confirmed disclosure gap. The pod owns the Sub and can delegate any MANAGER-bounded subset or transfer the Sub. Three-distributor scope is a proposed configuration, not a permanent architectural cap. Pod remains a direct Main member.                                                                                                  |
-| R8: signature safeguard narrative                | Zero pod fallback handler independently verified. The signature patch is identified separately from MANAGER policy; no universal historical no-loss claim is adopted. The EIP-1271 change is source- and bytecode-verified; the appended-contract-signature path lacks a runtime regression in this review.                                |
+| R8: signature safeguard narrative                | Zero pod fallback handler independently verified. The signature patch is identified separately from MANAGER policy; no universal historical no-loss claim is adopted. The EIP-1271 change is source- and bytecode-verified; the appended-contract-signature path has a runtime regression (eip1271Path.t.sol).                             |
 | R9: module-head drift                            | Relevant precondition. Recheck head before execution; wrong predecessor fails atomically only under the reviewed Safe failure-propagation settings.                                                                                                                                                                                        |
 | R10: ten missing negatives                       | Restored: seven vault redeem owner pins, foreign Pendle YT, syrupUSDT bad spender and syrupUSDC forbidden transfer.                                                                                                                                                                                                                        |
 | R11: positive probes versus protocol success     | Clarified. Roles permission acceptance can be proved even when the inner venue call fails; those probes do not prove balances, liquidity or reward proofs.                                                                                                                                                                                 |
@@ -45,7 +47,7 @@ exact reviewed commit.
 | R17: stale forum/delta annotations               | Forum's old payload URL is explicitly struck through, so it is not an active competing payload. DAO-vote wording is still stale. Historical round-1 comments are not used as the current specification.                                                                                                                                    |
 | R18: operation notice versus veto ability        | Corrected: CallScheduled exposes ID/calldata without a forum notice. Publishing the scheduling transaction improves discoverability and enables complete-byte review.                                                                                                                                                                      |
 | R19: Foundation controls veto configuration      | Existing control-stack context, not a new effect of the two-call switch. Tests assert the current veto remains active through the simulated window.                                                                                                                                                                                        |
-| R20: unsupported replay behavior                 | Unknown topics/actions and allowance histories fail closed. Delta parser rejects unsupported execution modes, values, truncation and unknown old-Main methods. Wiring differences are reported separately from the target/function verdict.                                                                                                |
+| R20: unsupported replay behavior                 | Unknown topics/actions and allowance histories fail closed. Delta parser rejects unsupported execution modes, values, truncation and unknown old-Main methods. Wiring and owner are part of the exit code (1 on any difference, 3 while the owner is not the Endowment Safe).                                                              |
 | R21: old annotation not reposted                 | Historical annotation is not part of the two-call switch and does not grant permissions. No annotation-equivalence claim is made.                                                                                                                                                                                                          |
 | R22: approval delta mapping                      | Existing tests preserve spender lists while adding WETH→ETH-yield, USDS→Pendle, and USDC→four vaults. Syrup pairs remain isolated; no global cross-product expansion is asserted.                                                                                                                                                          |
 | R23: HARVEST/HARVESTER naming                    | Live role key remains unconfigured; verify the eventual key and members instead of assuming the prose label.                                                                                                                                                                                                                               |
@@ -54,8 +56,8 @@ exact reviewed commit.
 
 ## Source and bytecode provenance
 
-Current snapshot: Ethereum block **26,034,037**, hash
-`0x9879ebe29da19e645f50115471695a7d237b2410f2f1513183c5a94b21748898`, **2026-09-22 15:51:11 UTC**. Historical fork:
+Continuation snapshot (superseded by the 26,037,425 recheck in review-2026-09-23.md): Ethereum block **26,034,037**,
+hash `0x9879ebe29da19e645f50115471695a7d237b2410f2f1513183c5a94b21748898`, **2026-09-22 15:51:11 UTC**. Historical fork:
 25,984,900. Complete event histories contain 617 old-Main and 495 new-Main events; neither has configuration events
 after the historical fork. The Sub has eight setup events and no role/member configuration.
 
@@ -85,17 +87,44 @@ are `0x61c5b1be435391fdd7bc6703f3740c0d11728a8c` / `0x869718c939652084bc491fbc5c
 | New Packer  |               2,138 | `0xc28f5fb0c8857669286d01e3df89f310d5ddfbf98205ad46d2f7d28767a76c82` |                                      2,085 |
 | Old Packer  |               2,138 | `0xd22ba4e0e51926cd6562bcb9709899789662a165e2ef7669e9a16602313f087d` |                                      2,085 |
 
-Normalization removes the trailing CBOR length plus its two-byte suffix (53 bytes total). Libraries additionally
-normalize the leading PUSH20 self-address that deployment replaces. Old/new Packer executable code then matches each
-other. All three clone byte sequences are exactly 45-byte EIP-1167 proxies pointing at the expected mastercopy.
+Normalization removes the 51-byte CBOR metadata payload and its two-byte length suffix (53 bytes total). Libraries
+additionally normalize the leading PUSH20 self-address that deployment replaces. Old/new Packer executable code then
+matches each other. All three clone byte sequences are exactly 45-byte EIP-1167 proxies pointing at the expected
+mastercopy.
 
 ## Regression evidence and limits
 
 The original nine committed Foundry tests passed before changes. Five new semantic regressions failed against the old
 comparator for the expected equality defects, then passed after hardening. Python regressions likewise distinguished the
 original unsafe behavior from the hardened implementation, including CLI nonzero exit on target mismatches. The final
-test commands and immutable commit are provided in the handoff; [README.md](README.md) contains the reproduction recipe.
+test commands are in [README.md](README.md); reproduce at commit `ff971bfeaec1568dd8378a584813c3819fd8310c`.
 
 No production state was changed. Ownership handover, a real scheduled transaction, future Harvest permissions,
 protocol-level economics, and universal historical exploitability are not certified. This review verifies authorization
 and execution at explicit state snapshots. It is not an investment-risk assessment of the permitted venues.
+
+## Second pass (HEAD 93aec85)
+
+A second adversarial pass ran 39 agents against the hardened HEAD, all of which completed: five attackers (Solidity
+hardening with mutation testing, Python tooling with crafted logs and mutants, documented claims, the EIP-1271 signature
+path, and five carried items), two refuters for every important finding, a completeness critic and four gap attackers.
+It returned 39 findings: 8 confirmed, 6 contested, 25 informational, none refuted and none that changes the
+recommendation. Every re-derived byte, hash, count, bytecode match and policy-equivalence result held.
+
+| Topic                                         | Disposition and evidence                                                                                                                                                                                                                                                                |
+| --------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| S1: no fail-closed exit criterion             | Confirmed. With the test Safe bundling a second pod role (Target clearance on sUSDS) and a rogue `sUSDS.transfer` unwrapper into its ownership transfer, every behavioural test stayed green and the replay exited 0. Fixed: `failClosedGate.t.sol` and replay wiring/owner exit codes. |
+| S2: replay exit code ignored wiring and owner | Confirmed. Fixed with an expected-wiring check (exit 1) and an owner check (exit 3); five rogue-wiring and one owner regression added.                                                                                                                                                  |
+| S3: structural fixture not pinned             | Confirmed: emptying `.targets` stayed green and a revoked-key substitution hid a reactivated function. Fixed: counts and content hashes of all five fixture arrays are asserted.                                                                                                        |
+| S4: who can fix ownership                     | Confirmed. Only the test Safe can call `transferOwnership`; it can also renounce; the open executor runs the switch whoever owns the Main. The required sequence and the May 2024 precedent are now stated.                                                                             |
+| S5: EIP-1271 runtime regression               | Closed: `eip1271Path.t.sol` (6 tests) shows revert-with-magic accepted on v2.1.0 and rejected on v2.1.1, a live positive control, real members rejected, and replay blocked.                                                                                                            |
+| S6: batch and forwarding controls             | Added `test_batchNegativeControls…`: old and new Main reject the same malformed or forbidden batches with the same error; Sub-originated batches stay bounded by MANAGER. Four of seven policy or adapter mutants had previously passed every test.                                     |
+| S7: closure after the transfer                | Added `closureAfterTransfer.t.sol` (15 tests, 3 fuzzed, 2 negative controls): no MANAGER path reaches Roles or Safe administration; the EP 6.23 fallback-handler switch is the only Safe self-configuration.                                                                            |
+| S8: Or-reorder guard                          | Two Integrity-valid Or trees with equal decoder types but different operators authorise differently (revert order). Guard tightened to identical operator/type shape in Solidity and Python; the 15 real reorderings are unaffected.                                                    |
+| S9: weak isolated tests                       | Execution-option controls added; GS013 pinned as the Safe-level reason; the revoked-reactivation test now runs the real comparison after a passing control; `test_precondition…` renamed `test_historical…`.                                                                            |
+| S10: Python input hygiene                     | Replay rejects reorged, duplicate and foreign-address logs and mismatched AssignRoles arrays; JSON output is deterministic; dependency resolution is pinned; caches and downloads are ignored.                                                                                          |
+| S11: documents                                | Unpinned links and the 20/20 fresh-pin count corrected; forum reply no longer says the Foundation path was verified; ETH sink, EP 6.23, veto expiry, Allowance module and baseline provenance disclosed.                                                                                |
+
+Validation after applying the fixes: 43 Foundry tests pass with the gate skipped at blocks 25,984,900, 26,037,425 and
+26,038,450; the gate fails on the owner at the head; 48 Python regressions pass; on real data the replay reports
+316/15/1/0 with no wiring mismatch and exits 3.
