@@ -1,5 +1,8 @@
 # Endowment permissions to kpk: Update #10
 
+**Latest recheck:** [full security review, 2026-09-23](review-2026-09-23.md), pinned to Ethereum block 26,037,425. The
+recommendation remains **NEEDS_REVIEW**.
+
 ## Proposal summary
 
 [Forum post 4](https://discuss.ens.domains/t/draft-endowment-permissions-to-kpk-update-10/22323/4) replaces the
@@ -16,7 +19,8 @@ precondition has been satisfied or that an actual scheduled transaction has been
 Published source:
 [`ENS_Switch_ZRM.json`, commit `8f4fb0c34d8d1cc51d874930eb067c53d31b7f84`](https://github.com/karpatkey/client-configs/blob/8f4fb0c34d8d1cc51d874930eb067c53d31b7f84/clients/ens-dao/mainnet/payloads/ENS_Switch_ZRM.json),
 also checked against the current upstream file. Both entries target the Endowment Safe,
-`0x4F2083f5fBede34C2714aFfb3105539775f7FE64`, with operation Call and value zero.
+`0x4F2083f5fBede34C2714aFfb3105539775f7FE64`, with value zero. Operation Call is the independently derived MultiSend
+encoding; the Builder JSON does not state an operation.
 
 | Call                             | Selector     | Arguments                                                                       | Result |
 | -------------------------------- | ------------ | ------------------------------------------------------------------------------- | ------ |
