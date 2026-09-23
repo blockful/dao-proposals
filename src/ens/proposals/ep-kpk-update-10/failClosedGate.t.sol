@@ -2,6 +2,7 @@
 pragma solidity >=0.8.25 <0.9.0;
 
 import { Test } from "@forge-std/src/Test.sol";
+import { console2 } from "@forge-std/src/console2.sol";
 import { Vm } from "@forge-std/src/Vm.sol";
 import { ENSConstants } from "@ens/Constants.sol";
 import { ISafe } from "@ens/interfaces/ISafe.sol";
@@ -15,6 +16,11 @@ interface IRolesRead {
     function defaultRoles(address module) external view returns (bytes32);
     function unwrappers(bytes32 key) external view returns (address);
     function getModulesPaginated(address start, uint256 pageSize) external view returns (address[] memory, address);
+}
+
+interface IRolesOwnable {
+    function transferOwnership(address newOwner) external;
+    function setTransactionUnwrapper(address to, bytes4 selector, address adapter) external;
 }
 
 interface ITimelockRead {
@@ -90,16 +96,55 @@ contract Proposal_ENS_KPK_Update_10_Fail_Closed_Gate_Test is Test {
 
     uint256 private gateBlock;
 
-    /// @dev Operational check, not a historical regression: runs only when REVIEW_GATE_BLOCK names
-    ///      the block to certify (the transfer block, the CallScheduled block, the block before execute).
+    /// @dev Pinned state for the default (regression) mode: the reviewed block, where the new Main is
+    ///      still owned by kpk's test Safe.
+    uint256 private constant PINNED_UNTRANSFERRED_BLOCK = 26_037_425;
+
+    /// @dev REVIEW_GATE_BLOCK set: certify that block (the ownership-transfer block, the CallScheduled
+    ///      block, the block before execute). Unset: regression mode at PINNED_UNTRANSFERRED_BLOCK.
     function setUp() public {
         gateBlock = vm.envOr("REVIEW_GATE_BLOCK", uint256(0));
-        if (gateBlock != 0) vm.createSelectFork({ blockNumber: gateBlock, urlOrAlias: "mainnet" });
+        vm.createSelectFork({
+            blockNumber: gateBlock == 0 ? PINNED_UNTRANSFERRED_BLOCK : gateBlock, urlOrAlias: "mainnet"
+        });
     }
 
-    // ── One entry point: any failing assertion is the fail-closed trigger.
+    /// @notice Certification (REVIEW_GATE_BLOCK set): every check must pass at that block.
+    ///         Regression (unset): proves the gate is not vacuous. It rejects the real pinned state
+    ///         (owner not transferred), accepts an in-fork honest transfer, and rejects that transfer
+    ///         combined with a rogue sUSDS.transfer unwrapper. Regression mode is NOT a certification;
+    ///         rogue admin events bundled with a real transfer are caught by the event-history scan,
+    ///         which only sees on-chain logs (validated on anvil forks, see README).
     function test_gate() public {
-        vm.skip(gateBlock == 0, "set REVIEW_GATE_BLOCK to run the pre-scheduling/pre-execution gate");
+        if (gateBlock != 0) {
+            _gate();
+            return;
+        }
+        console2.log("REVIEW_GATE_BLOCK unset: regression mode at block 26,037,425, not a certification");
+
+        vm.expectRevert(bytes("newMain owner != Endowment Safe"));
+        this.gate();
+
+        uint256 snap = vm.snapshotState();
+        vm.prank(TEST_SAFE);
+        IRolesOwnable(NEW_MAIN).transferOwnership(ES);
+        this.gate(); // honest end state passes
+
+        vm.prank(ES);
+        IRolesOwnable(NEW_MAIN)
+            .setTransactionUnwrapper(0xa3931d71877C0E7a3148CB7Eb4463524FEc27fbD, TRANSFER_SEL, address(0xbad));
+        vm.expectRevert(bytes("rogue transfer unwrapper"));
+        this.gate();
+        vm.revertToState(snap);
+    }
+
+    /// @dev External entry so the regression mode can expect a revert from the full gate.
+    function gate() external {
+        _gate();
+    }
+
+    // ── One entry point: any failing requirement is the fail-closed trigger.
+    function _gate() internal {
         _checkModuleWiring();
         _checkUnwrappers();
         _checkSafeConfig();
