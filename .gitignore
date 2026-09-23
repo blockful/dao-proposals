@@ -28,3 +28,8 @@ broadcast/*/31337/
 .playwright-mcp/
 
 .worktrees/
+
+# python caches and replay downloads
+__pycache__/
+.pytest_cache/
+src/ens/proposals/ep-kpk-update-10/logs-*-main.json

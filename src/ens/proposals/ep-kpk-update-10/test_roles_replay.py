@@ -27,6 +27,31 @@ def test_unknown_event_fails_when_replay_cannot_model_it() -> None:
         replay.replay(logs)
 
 
+def _log(block: int, index: int, address: str = replay.NEW, removed: bool = False) -> dict:
+    return {"topics": [], "data": "0x", "blockNumber": hex(block), "logIndex": hex(index), "address": address, "removed": removed}
+
+
+@pytest.mark.parametrize(
+    "logs",
+    [
+        [_log(1, 0, removed=True)],
+        [_log(1, 0), _log(1, 0)],
+        [_log(1, 0, address=replay.OLD)],
+    ],
+    ids=["removed", "duplicate-position", "foreign-address"],
+)
+def test_replay_rejects_untrustworthy_log_input(logs: list[dict]) -> None:
+    # Given reorged, duplicated or foreign logs, when replayed for the new Main, then input validation fails first.
+    with pytest.raises(RuntimeError):
+        replay.replay(logs, replay.NEW)
+
+
+def test_assign_roles_rejects_mismatched_arrays() -> None:
+    # Given an AssignRoles decode with more role keys than membership flags, when applied, then it fails closed.
+    with pytest.raises(RuntimeError):
+        replay.Roles().apply("AssignRoles", {"module": replay.POD, "roleKeys": [b"\x00" * 32, b"\x01" * 32], "memberOf": [True]})
+
+
 def test_unknown_action_fails_when_state_machine_cannot_model_it() -> None:
     # Given a decoded action outside the explicitly handled set.
     state = replay.Roles()
@@ -136,6 +161,7 @@ def test_cli_fails_when_histories_are_incomparable(tmp_path: Path, mutation: str
         logs = [log]
         if mutation == "unknown" and name == "new":
             logs.append({"topics": ["0x" + "ff" * 32], "data": "0x", "blockNumber": "0x1", "logIndex": "0x1"})
+        logs = [{**entry, "address": address} for entry in logs]  # real RPC logs carry their emitter
         (tmp_path / f"{name}.json").write_text(json.dumps({"address": address, "toBlock": end, "logs": logs}), encoding="utf-8")
     runner = "import rolesReplay as r; import sys; r.HERE=sys.argv[1]; requested=sys.argv[2:]; sys.argv=['rolesReplay.py','--logs',sys.argv[1]+'/old.json',sys.argv[1]+'/new.json']+requested; r.main()"
     # When the real CLI comparison runs.
@@ -163,6 +189,107 @@ def test_cli_preserves_artifacts_when_no_write_is_requested(tmp_path: Path) -> N
     runner = "import rolesReplay as r; import sys; r.HERE=sys.argv[1]; sys.argv=['rolesReplay.py','--logs',sys.argv[1]+'/old.json',sys.argv[1]+'/new.json','--no-write']; r.main()"
     # When the real CLI runs with --no-write.
     completed = subprocess.run([sys.executable, "-c", runner, str(tmp_path)], cwd=Path(replay.__file__).parent, capture_output=True, text=True, check=False)
-    # Then the comparison succeeds without replacing the artifact.
-    assert completed.returncode == 0, completed.stderr
+    # Then the artifact is not replaced (empty histories fail the wiring gate, so the exit code is not asserted).
+    assert "roleStateKeys.json not written" in completed.stdout, completed.stderr
     assert marker.read_text(encoding="utf-8") == "existing-artifact"
+
+
+# ─── Verdict and wiring regressions (second adversarial pass) ────────────────────
+SCOPE_FN = "ScopeFunction(bytes32,address,bytes4,(uint8,uint8,uint8,bytes)[],uint8)"
+FN_TYPES = ["bytes32", "address", "bytes4", "(uint8,uint8,uint8,bytes)[]", "uint8"]
+ROLE = bytes.fromhex(replay.MANAGER[2:])
+EVIL = "0x000000000000000000000000000000000000dEaD"
+ZERO = "0x" + "00" * 20
+
+
+def _word(byte: int) -> bytes:
+    return bytes([byte]) * 32
+
+
+def _log(sig: str, types: list, args: list, index: int) -> dict:
+    return {"topics": ["0x" + keccak(text=sig).hex()], "data": "0x" + encode(types, args).hex(), "blockNumber": "0x1", "logIndex": hex(index)}
+
+
+def _indexed(sig: str, previous: str, current: str, index: int) -> dict:
+    topic = lambda a: "0x" + "00" * 12 + a[2:].lower()
+    return {"topics": ["0x" + keccak(text=sig).hex(), topic(previous), topic(current)], "data": "0x", "blockNumber": "0x1", "logIndex": hex(index)}
+
+
+def _history(conditions: list, options: int = 0) -> list:
+    return [_log("ScopeTarget(bytes32,address)", ["bytes32", "address"], [ROLE, replay.OLD], 0),
+            _log(SCOPE_FN, FN_TYPES, [ROLE, replay.OLD, b"\x12\x34\x56\x78", conditions, options], 1)]
+
+
+def _wiring(owner: str = replay.SAFE, extra: tuple = ()) -> list:
+    multisend = bytes.fromhex(replay.MULTISEND[2:])
+    assign = ("AssignRoles(address,bytes32[],bool[])", ["address", "bytes32[]", "bool[]"])
+    unwrap = ("SetUnwrapAdapter(address,bytes4,address)", ["address", "bytes4", "address"])
+    return [
+        _log(*assign, [replay.POD, [ROLE], [True]], 10), _log(*assign, [replay.SUB, [ROLE], [True]], 11),
+        _log("EnabledModule(address)", ["address"], [replay.POD], 12), _log("EnabledModule(address)", ["address"], [replay.SUB], 13),
+        _log("SetDefaultRole(address,bytes32)", ["address", "bytes32"], [replay.SUB, ROLE], 14),
+        _log(*unwrap, [replay.MS141, multisend, replay.ADAPTER], 15), _log(*unwrap, [replay.CO141, multisend, replay.ADAPTER], 16),
+        _indexed("AvatarSet(address,address)", ZERO, replay.SAFE, 17), _indexed("TargetSet(address,address)", ZERO, replay.SAFE, 18),
+        _indexed("OwnershipTransferred(address,address)", ZERO, owner, 19),
+    ] + list(extra)
+
+
+def _run(tmp_path: Path, old_logs: list, new_logs: list) -> int:
+    (tmp_path / "expectedMultiSend.txt").write_text("0x", encoding="utf-8")
+    for name, address, logs in (("old", replay.OLD, old_logs), ("new", replay.NEW, new_logs)):
+        logs = [{**entry, "address": address} for entry in logs]  # real RPC logs carry their emitter
+        (tmp_path / f"{name}.json").write_text(json.dumps({"address": address, "toBlock": 1, "logs": logs}), encoding="utf-8")
+    runner = "import rolesReplay as r, sys; r.HERE=sys.argv[1]; sys.argv=['x','--logs',sys.argv[1]+'/old.json',sys.argv[1]+'/new.json','--no-write']; r.main()"
+    return subprocess.run([sys.executable, "-c", runner, str(tmp_path)], cwd=Path(replay.__file__).parent, capture_output=True, text=True, check=False).returncode
+
+
+BASE = [(0, 5, 5, b""), (0, 0, 2, b""), (1, 1, 16, _word(1)), (1, 1, 16, _word(2))]
+
+
+@pytest.mark.parametrize("new_conditions,new_options,expected", [
+    (BASE, 0, 0),                                             # identical
+    ([BASE[0], BASE[1], BASE[3], BASE[2]], 0, 0),             # pure Or reorder only
+    ([BASE[0], BASE[1], BASE[2], (1, 1, 16, _word(3))], 0, 1),  # widened alternative
+    ([BASE[0], BASE[1], BASE[3], BASE[2]], 1, 1),             # reorder plus Send option
+])
+def test_cli_function_verdict(tmp_path: Path, new_conditions: list, new_options: int, expected: int) -> None:
+    assert _run(tmp_path, _history(BASE), _history(new_conditions, new_options) + _wiring()) == expected
+
+
+def test_cli_fails_when_function_only_on_one_side(tmp_path: Path) -> None:
+    assert _run(tmp_path, _history(BASE)[:1], _history(BASE) + _wiring()) == 1
+
+
+def test_canonical_keeps_order_when_stateful_operator_is_nested() -> None:
+    # Integrity-valid: Calldata > Or > two Tuples, each with a WithinAllowance field.
+    a = [(0, 5, 5, "0x"), (0, 0, 2, "0x"), (1, 3, 5, "0x"), (1, 3, 5, "0x"), (2, 1, 28, "0x" + "11" * 32), (3, 1, 28, "0x" + "22" * 32)]
+    b = a[:4] + [(2, 1, 28, "0x" + "22" * 32), (3, 1, 28, "0x" + "11" * 32)]
+    assert replay.canonical(a) != replay.canonical(b)
+
+
+ROGUE = bytes.fromhex("41" * 32)
+
+
+@pytest.mark.parametrize("extra", [
+    (_log("AssignRoles(address,bytes32[],bool[])", ["address", "bytes32[]", "bool[]"], [replay.POD, [ROGUE], [True]], 20),
+     _log("AllowTarget(bytes32,address,uint8)", ["bytes32", "address", "uint8"], [ROGUE, replay.OLD, 3], 21)),
+    (_log("SetUnwrapAdapter(address,bytes4,address)", ["address", "bytes4", "address"], [replay.OLD, bytes.fromhex("a9059cbb"), EVIL], 20),),
+    (_log("SetDefaultRole(address,bytes32)", ["address", "bytes32"], [replay.POD, ROLE], 20),),
+    (_log("AssignRoles(address,bytes32[],bool[])", ["address", "bytes32[]", "bool[]"], [EVIL, [ROLE], [True]], 20),
+     _log("EnabledModule(address)", ["address"], [EVIL], 21)),
+    (_indexed("AvatarSet(address,address)", replay.SAFE, EVIL, 20),),
+])
+def test_cli_fails_on_rogue_new_main_wiring(tmp_path: Path, extra: tuple) -> None:
+    assert _run(tmp_path, _history(BASE), _history(BASE) + _wiring(extra=extra)) == 1
+
+
+def test_cli_blocks_until_owner_is_endowment_safe(tmp_path: Path) -> None:
+    assert _run(tmp_path, _history(BASE), _history(BASE) + _wiring(owner="0xC01318baB7ee1f5ba734172bF7718b5DC6Ec90E1")) == 3
+
+
+def test_order_is_retained_when_or_children_differ_in_operator() -> None:
+    # Integrity-valid; Pass-first authorizes 4-byte calldata, EqualTo-first reverts reading the word.
+    timelock = "0x" + "00" * 12 + "fe89cc7abb2c4183683ab71653c4cdc9b02d44b7"
+    a = [(0, 5, 5, "0x"), (0, 0, 2, "0x"), (1, 1, 0, "0x"), (1, 1, 16, timelock)]
+    b = a[:2] + [a[3], a[2]]
+    assert replay.canonical(a) != replay.canonical(b)

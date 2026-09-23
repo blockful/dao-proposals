@@ -15,6 +15,7 @@ import { IMultiSend } from "@ens/interfaces/IMultiSend.sol";
 import { IMetaMorphoV1 } from "@ens/interfaces/IMetaMorphoV1.sol";
 import { ICowSwapOrderSigner } from "@ens/interfaces/ICowSwapOrderSigner.sol";
 import { ISecurityCouncil } from "@ens/interfaces/ISecurityCouncil.sol";
+import { IWETH } from "@ens/interfaces/IWETH.sol";
 
 // Target interfaces shared with the round-1 derivation of the Update #10 permission set.
 import { IAaveV3Pool, IPendleRouterV4, IMerklDistributor } from "./update10Payload.t.sol";
@@ -57,6 +58,23 @@ interface IRolesAdmin {
     function assignRoles(address module, bytes32[] memory roleKeys, bool[] memory memberOf) external;
 }
 
+/// @notice Roles v2.1.x errors on the batch path (PermissionChecker.sol, Roles.sol)
+interface IRolesBatchErrors {
+    error MalformedMultiEntrypoint();
+    error FunctionSignatureTooShort();
+    error ModuleTransactionFailed();
+}
+
+/// @notice Roles v2.1.x unwrapper administration (Periphery.sol)
+interface IRolesUnwrapAdmin {
+    function setTransactionUnwrapper(address to, bytes4 selector, address adapter) external;
+}
+
+/// @notice CowswapOrderSigner.unsignOrder (0x5a66c223), wildcarded with DelegateCall on both Mains
+interface ICowSwapOrderUnsigner {
+    function unsignOrder(ICowSwapOrderSigner.Data calldata order) external;
+}
+
 /**
  * @title Endowment permissions to kpk — Update #10, revised execution (module swap)
  * @notice Second-round review of
@@ -85,8 +103,9 @@ interface IRolesAdmin {
  *   - the new Main's MANAGER policy equals the old Main's policy with the verified
  *     Update #10 payload applied, checked slot by slot on-chain (`test_structuralEquivalence…`)
  *     and behaviourally for every Update #10 permission (`_afterExecution`);
- *   - the missing ownership precondition at the historical review block, and its exploit
- *     (`test_precondition…`, `test_finding…`). These regressions do not assert current ownership.
+ *   - the missing ownership precondition at the historical review block (`test_historical…`,
+ *     pinned) and its exploit at the selected fork (`test_finding…`, skipped once the Endowment
+ *     Safe owns the new Main). Neither certifies current ownership: run failClosedGate.t.sol.
  */
 contract Proposal_ENS_KPK_Update_10_Switch_Test is Test, MultiSendHelper, ZodiacRolesHelper {
     // ─── Actors and infrastructure
@@ -207,7 +226,7 @@ contract Proposal_ENS_KPK_Update_10_Switch_Test is Test, MultiSendHelper, Zodiac
 
     /// @dev Historical regression: ownership was still at kpk's 1-of-9 test Safe at the
     ///      original review block. Keep it pinned even when REVIEW_BLOCK selects a later fork.
-    function test_precondition_newMainIsStillOwnedByKpkTestSafe() public {
+    function test_historical_newMainOwnedByKpkTestSafeAtReviewBlock() public {
         vm.createSelectFork({ blockNumber: HISTORICAL_REVIEW_BLOCK, urlOrAlias: "mainnet" });
         assertEq(IRolesAdmin(NEW_MAIN).owner(), KPK_TEST_SAFE, "historical new Main owner");
         assertEq(ISafe(KPK_TEST_SAFE).getThreshold(), 1, "kpk test Safe threshold");
@@ -217,8 +236,12 @@ contract Proposal_ENS_KPK_Update_10_Switch_Test is Test, MultiSendHelper, Zodiac
     /// @dev At the selected fork, the untransferred owner can rewrite policy after the
     ///      switch without the Foundation, timelock, Security Council or DAO vote.
     function test_finding_withoutOwnershipTransferKpkTestSafeRewritesThePolicy() public {
+        address ownerAtFork = IRolesAdmin(NEW_MAIN).owner();
+        vm.skip(
+            ownerAtFork == address(endowmentSafe), "new Main owned by the Endowment Safe: finding closed at this fork"
+        );
+        assertEq(ownerAtFork, KPK_TEST_SAFE, "unexpected new Main owner at this fork: re-review");
         _executeViaEndowmentTimelock(_generateCallData());
-        assertEq(IRolesAdmin(NEW_MAIN).owner(), KPK_TEST_SAFE, "precondition not simulated in this test");
 
         // Drain the entire sUSDS balance observed at the selected fork.
         address sink = address(0xdead);
@@ -334,6 +357,32 @@ contract Proposal_ENS_KPK_Update_10_Switch_Test is Test, MultiSendHelper, Zodiac
         bytes32[] memory trailingPassOnly = vm.parseJsonBytes32Array(json, ".trailingPassOnly");
         assertEq(identical.length + orderOnly.length + trailingPassOnly.length, 332, "configured key classes");
         assertEq(functionKeys.length, 360, "all historical function keys, including revoked entries");
+        assertEq(targets.length, 161, "all historical target keys");
+        assertEq(
+            keccak256(abi.encode(targets)),
+            0x84ce32c16765072185e1aab3890f929c79b2d4e47bec3d33998361a2d299078a,
+            "targets fixture"
+        );
+        assertEq(
+            keccak256(abi.encode(functionKeys)),
+            0x8375f809fe4c7069a6d247cc53b6dfedf92ffa46494cd541063f1a3937658812,
+            "functionKeys fixture"
+        );
+        assertEq(
+            keccak256(abi.encode(identical)),
+            0xe09ee4e7bc31258ad3f0f8dd1943a378491b03e7aaf26dbcaaca4c7b26d44d9a,
+            "identical fixture"
+        );
+        assertEq(
+            keccak256(abi.encode(orderOnly)),
+            0x1ebd9610aa36796404bd9b6acd5886cca42183f197ecd9b30fb8ceab26e597f1,
+            "orderOnly fixture"
+        );
+        assertEq(
+            keccak256(abi.encode(trailingPassOnly)),
+            0xd88276949656900525ed34beae950400d03f9b0ba66bf8c1ef1a8a655098b48c,
+            "trailingPassOnly fixture"
+        );
 
         // Layout probe: USDC is a scoped target on both modifiers today.
         assertEq(uint256(vm.load(OLD_MAIN, _targetSlot(USDC))), CLEARANCE_FUNCTION, "layout probe old");
@@ -417,6 +466,11 @@ contract Proposal_ENS_KPK_Update_10_Switch_Test is Test, MultiSendHelper, Zodiac
             "control (a): header must change"
         );
         assertEq(_canonicalScopeConfig(OLD_MAIN, usdcApprove), before, "control (a): canonical tree must not change");
+        // (d) execution options of a scoped function are part of the comparison.
+        vm.prank(address(endowmentSafe));
+        IRolesModifier(OLD_MAIN)
+            .scopeFunction(MANAGER_ROLE, USDC, IERC20.approve.selector, _usdcApproveReversed(), EXEC_DELEGATE_CALL);
+        assertTrue(_canonicalScopeConfig(OLD_MAIN, usdcApprove) != before, "control (d): options must be detected");
         // (b) a one-spender change is detected.
         vm.prank(address(endowmentSafe));
         IRolesModifier(OLD_MAIN)
@@ -426,6 +480,11 @@ contract Proposal_ENS_KPK_Update_10_Switch_Test is Test, MultiSendHelper, Zodiac
         vm.prank(address(endowmentSafe));
         IRolesAdmin(OLD_MAIN).allowFunction(MANAGER_ROLE, USDC, IERC20.approve.selector, EXEC_NONE);
         assertTrue(_canonicalScopeConfig(OLD_MAIN, usdcApprove) != before, "control (c): wildcard must be detected");
+        // (e) execution options of a wildcarded function are part of the comparison.
+        bytes32 wildcardNone = _canonicalScopeConfig(OLD_MAIN, usdcApprove);
+        vm.prank(address(endowmentSafe));
+        IRolesAdmin(OLD_MAIN).allowFunction(MANAGER_ROLE, USDC, IERC20.approve.selector, EXEC_SEND);
+        assertTrue(_canonicalScopeConfig(OLD_MAIN, usdcApprove) != wildcardNone, "control (e): wildcard options");
     }
 
     function _assertAllFunctionKeys(bytes32[] memory functionKeys, uint256 identicalCount) internal {
@@ -638,20 +697,31 @@ contract Proposal_ENS_KPK_Update_10_Switch_Test is Test, MultiSendHelper, Zodiac
         return _canonicalScopeConfig(OLD_MAIN, _fkey(USDC, IERC20.transfer.selector));
     }
 
+    /// @dev A function revoked on the old Main and silently re-scoped on the new Main must fail the
+    ///      real comparison. Control first: with the delta applied the full key comparison passes.
     function test_canonicalizationDetectsRevokedFunctionReactivation() public {
-        bytes32[] memory keys =
-            vm.parseJsonBytes32Array(vm.readFile(string.concat(DIR, "/roleStateKeys.json")), ".functionKeys");
-        bool tested;
+        string memory json = vm.readFile(string.concat(DIR, "/roleStateKeys.json"));
+        bytes32[] memory keys = vm.parseJsonBytes32Array(json, ".functionKeys");
+        uint256 identicalCount = vm.parseJsonBytes32Array(json, ".identical").length;
+        _applyUpdate10DeltaToOldMain();
+        this.assertAllFunctionKeysExternal(keys, identicalCount);
+
+        bool reactivated;
         for (uint256 i; i < keys.length; i++) {
             bytes32 slot = _scopeConfigSlot(keys[i]);
             if (vm.load(OLD_MAIN, slot) != bytes32(0) || vm.load(NEW_MAIN, slot) != bytes32(0)) continue;
-            assertEq(_canonicalScopeConfig(OLD_MAIN, keys[i]), bytes32(0), "revoked old key");
             vm.store(NEW_MAIN, slot, bytes32(uint256(1) << 216)); // wildcarded function, no execution options
-            assertNotEq(_canonicalScopeConfig(NEW_MAIN, keys[i]), bytes32(0), "reactivated function must differ");
-            tested = true;
+            reactivated = true;
             break;
         }
-        assertTrue(tested, "historically revoked keys must be present in the fixture");
+        assertTrue(reactivated, "historically revoked keys must be present in the fixture");
+        vm.expectRevert();
+        this.assertAllFunctionKeysExternal(keys, identicalCount);
+    }
+
+    /// @dev External entry so a failing comparison can be caught with vm.expectRevert.
+    function assertAllFunctionKeysExternal(bytes32[] memory keys, uint256 identicalCount) external {
+        _assertAllFunctionKeys(keys, identicalCount);
     }
 
     // ─── Before
@@ -756,6 +826,7 @@ contract Proposal_ENS_KPK_Update_10_Switch_Test is Test, MultiSendHelper, Zodiac
         _allowedVia(OLD_MAIN, USDC, _approveCall(GPV2_VAULT_RELAYER));
         _allowedVia(OLD_MAIN, USDC, _transferCall(DAO_TIMELOCK, 1));
         _blockedVia(OLD_MAIN, USDC, _transferCall(address(0xdead), 1), IZodiacRoles.Status.ParameterNotAllowed);
+        _assertEthSinkOnlyToDaoTimelock(OLD_MAIN);
         _assertDistributorClaimsPinned(OLD_MAIN);
 
         // ── Ownership precondition (missing at the historical review block) ──
@@ -765,6 +836,7 @@ contract Proposal_ENS_KPK_Update_10_Switch_Test is Test, MultiSendHelper, Zodiac
         // rest of the verification describes the intended end state.
         address ownerAtFork = IRolesAdmin(NEW_MAIN).owner();
         if (ownerAtFork != address(endowmentSafe)) {
+            assertEq(ownerAtFork, KPK_TEST_SAFE, "unexpected new Main owner: re-review before simulating a transfer");
             console2.log("PRECONDITION NOT MET AT SELECTED FORK: new Main owner is", ownerAtFork);
             console2.log("  simulating transferOwnership(endowmentSafe) before the switch");
             vm.prank(ownerAtFork);
@@ -860,6 +932,7 @@ contract Proposal_ENS_KPK_Update_10_Switch_Test is Test, MultiSendHelper, Zodiac
         _allowedVia(NEW_MAIN, USDC, _transferCall(DAO_TIMELOCK, 1));
         _blockedVia(NEW_MAIN, USDC, _transferCall(address(0xdead), 1), IZodiacRoles.Status.ParameterNotAllowed);
         _blockedVia(NEW_MAIN, address(0xdead), "", IZodiacRoles.Status.TargetAddressNotAllowed);
+        _assertEthSinkOnlyToDaoTimelock(NEW_MAIN);
         _blockedVia(NEW_MAIN, NEW_MAIN, "", IZodiacRoles.Status.TargetAddressNotAllowed);
         _blockedVia(NEW_MAIN, OLD_MAIN, "", IZodiacRoles.Status.TargetAddressNotAllowed);
         _blockedVia(NEW_MAIN, SUB_ROLES, "", IZodiacRoles.Status.TargetAddressNotAllowed);
@@ -1111,6 +1184,30 @@ contract Proposal_ENS_KPK_Update_10_Switch_Test is Test, MultiSendHelper, Zodiac
         _allowedVia(m, SUSDS, _approveCall(UNISWAP_V3_ROUTER));
     }
 
+    /// @dev EP 6.39 sink, carried over: MANAGER may send any amount of ETH (empty calldata,
+    ///      Send only) to the DAO Timelock, and ETH nowhere else.
+    function _assertEthSinkOnlyToDaoTimelock(address m) internal {
+        uint256 amount = address(endowmentSafe).balance;
+        assertGt(amount, 0, "Endowment ETH balance");
+        uint256 snap = vm.snapshotState();
+        uint256 timelockBefore = DAO_TIMELOCK.balance;
+        vm.prank(karpatkey);
+        IZodiacRoles(m)
+            .execTransactionWithRole(DAO_TIMELOCK, amount, "", IZodiacRoles.Operation.Call, MANAGER_ROLE, true);
+        assertEq(DAO_TIMELOCK.balance - timelockBefore, amount, "ETH reached the DAO Timelock");
+        vm.revertToState(snap);
+
+        vm.prank(karpatkey);
+        _expectConditionViolation(IZodiacRoles.Status.TargetAddressNotAllowed);
+        IZodiacRoles(m).execTransactionWithRole(address(0xdead), 1, "", IZodiacRoles.Operation.Call, MANAGER_ROLE, true);
+        vm.prank(karpatkey);
+        _expectConditionViolation(IZodiacRoles.Status.SendNotAllowed);
+        IZodiacRoles(m)
+            .execTransactionWithRole(
+                USDC, 1, _transferCall(DAO_TIMELOCK, 1), IZodiacRoles.Operation.Call, MANAGER_ROLE, true
+            );
+    }
+
     function _assertDistributorClaimsPinned(address m) internal {
         _allowedVia(m, FLUID_DISTRIBUTOR, _fluidClaimCall(address(endowmentSafe)));
         _allowedVia(m, FLUID_GHO_DISTRIBUTOR, _fluidClaimCall(address(endowmentSafe)));
@@ -1291,7 +1388,9 @@ contract Proposal_ENS_KPK_Update_10_Switch_Test is Test, MultiSendHelper, Zodiac
         bool first = true;
         for (uint256 j = node + 1; j < parent.length; j++) {
             if (parent[j] != node) continue;
-            bytes32 childType = _decoderTypeTree(j, parent, paramType, operator);
+            // Identical operator/type shape (compValues excluded): implies identical decoder type
+            // trees and identical read positions, so neither decoding nor revert order depends on order.
+            bytes32 childType = _shape(j, parent, paramType, operator);
             if (!first && childType != firstType) return false;
             firstType = childType;
             first = false;
@@ -1313,9 +1412,10 @@ contract Proposal_ENS_KPK_Update_10_Switch_Test is Test, MultiSendHelper, Zodiac
         return true;
     }
 
-    /// @dev Mirrors Topology.typeTree: logical nodes and arrays use their first child as
-    ///      the decoding template. Positional children are kept in order, without pruning.
-    function _decoderTypeTree(
+    /// @dev Operator/type shape of a subtree (compValues excluded). Equal shapes imply equal
+    ///      decoder type trees (Topology.typeTree) and equal read positions, so reordering such
+    ///      side-effect-free Or alternatives changes neither decoding nor which child can revert.
+    function _shape(
         uint256 node,
         uint8[] memory parent,
         uint8[] memory paramType,
@@ -1325,23 +1425,13 @@ contract Proposal_ENS_KPK_Update_10_Switch_Test is Test, MultiSendHelper, Zodiac
         pure
         returns (bytes32)
     {
-        uint256 childCount;
-        for (uint256 j = node + 1; j < parent.length; j++) {
-            if (parent[j] == node) childCount++;
-        }
-        bytes32[] memory children = new bytes32[](childCount);
+        bytes32[] memory ch = new bytes32[](parent.length);
         uint256 c;
         for (uint256 j = node + 1; j < parent.length; j++) {
-            if (parent[j] != node) continue;
-            bytes32 childType = _decoderTypeTree(j, parent, paramType, operator);
-            if (operator[node] >= 1 && operator[node] <= 3) return childType;
-            children[c++] = childType;
-            if (paramType[node] == PARAM_TYPE_ARRAY) break;
+            if (parent[j] == node) ch[c++] = _shape(j, parent, paramType, operator);
         }
-        assembly {
-            mstore(children, c)
-        }
-        return keccak256(abi.encode(paramType[node], children));
+        assembly { mstore(ch, c) }
+        return keccak256(abi.encode(paramType[node], operator[node], ch));
     }
 
     function _hasChildren(uint256 node, uint8[] memory parent) internal pure returns (bool) {
@@ -1607,11 +1697,424 @@ contract Proposal_ENS_KPK_Update_10_Switch_Test is Test, MultiSendHelper, Zodiac
         }
     }
 
+    // ─── Batch negative controls (MultiSend unwrapping, Sub forwarding) ─────────
+
+    bytes32 private constant SUB_PROBE_ROLE = keccak256("BATCH_PROBE");
+    address private constant SUB_PROBE_MEMBER = address(0xB0B);
+    uint8 private constant EXEC_BOTH = 3;
+    bytes32 private constant MULTISEND_UNWRAPPER_CODEHASH =
+        0x1f6e088be5e6ef9d0fbe0547d3fa9a9e40d823433fd8a4449215b5663209a1eb;
+    address private probeCaller;
+    bytes32 private probeRole;
+
+    /// @dev Old Main + MultiSend 1.3.0 and new Main + MultiSend 1.4.1 / MultiSendCallOnly 1.4.1
+    ///      authorise exactly the same batches: one forbidden item, an inner delegatecall
+    ///      without the DelegateCall option, a nested MultiSend, inner value without Send,
+    ///      outer value or Call, and every non-canonical encoding are rejected with the same
+    ///      Roles error. Sub-originated batches, value and delegatecall are bounded by the
+    ///      new Main's MANAGER policy even when the Sub is configured maximally permissive.
+    function test_batchNegativeControls_oldAndNewMainRejectTheSameBatches() public {
+        _beforeExecution();
+        // Adapter provenance: the deployed runtime is byte-identical (metadata included) to a
+        // solc 0.8.21 / 100 runs / shanghai build of upstream zodiac-modifier-roles
+        // MultiSendUnwrapper. It is stateless and not a proxy.
+        assertEq(MULTISEND_UNWRAPPER.codehash, MULTISEND_UNWRAPPER_CODEHASH, "MultiSendUnwrapper runtime");
+        _assertBatchBoundary(OLD_MAIN, MULTISEND_130, karpatkey, MANAGER_ROLE);
+        _blockedViaDelegate(
+            OLD_MAIN, MULTISEND_CALL_ONLY_130, _ms(_okItem()), IZodiacRoles.Status.TargetAddressNotAllowed
+        );
+
+        _executeViaEndowmentTimelock(_generateCallData());
+
+        _assertBatchBoundary(NEW_MAIN, MULTISEND_141, karpatkey, MANAGER_ROLE);
+        _assertBatchBoundary(NEW_MAIN, MULTISEND_CALL_ONLY_141, karpatkey, MANAGER_ROLE);
+
+        // MultiSendCallOnly: the unwrapper authorises an inner DelegateCall-option item, but
+        // the contract itself refuses to delegatecall, so the batch cannot execute.
+        bytes memory signItem =
+            _packDelegateCall(COWSWAP_ORDER_SIGNER, _signOrderCall(USDC, WETH, address(endowmentSafe)));
+        vm.prank(karpatkey);
+        vm.expectRevert(IRolesBatchErrors.ModuleTransactionFailed.selector);
+        IZodiacRoles(NEW_MAIN)
+            .execTransactionWithRole(
+                MULTISEND_CALL_ONLY_141, 0, _ms(signItem), IZodiacRoles.Operation.DelegateCall, MANAGER_ROLE, true
+            );
+
+        // Sub → new Main: the pod (Sub owner) removes the Sub's own unwrappers and allows
+        // the MultiSends and every probed target with Send + DelegateCall on a Sub role.
+        address[10] memory open = [
+            MULTISEND_141,
+            MULTISEND_CALL_ONLY_141,
+            MULTISEND_130,
+            USDC,
+            SUSDS,
+            WETH,
+            COWSWAP_ORDER_SIGNER,
+            address(0xdead),
+            NEW_MAIN,
+            address(endowmentSafe)
+        ];
+        bytes32[] memory keys = new bytes32[](1);
+        keys[0] = SUB_PROBE_ROLE;
+        bool[] memory member = new bool[](1);
+        member[0] = true;
+        vm.startPrank(karpatkey);
+        IRolesAdmin(SUB_ROLES).assignRoles(SUB_PROBE_MEMBER, keys, member);
+        IRolesUnwrapAdmin(SUB_ROLES).setTransactionUnwrapper(MULTISEND_141, IMultiSend.multiSend.selector, address(0));
+        IRolesUnwrapAdmin(SUB_ROLES)
+            .setTransactionUnwrapper(MULTISEND_CALL_ONLY_141, IMultiSend.multiSend.selector, address(0));
+        for (uint256 i; i < open.length; ++i) {
+            IRolesAdmin(SUB_ROLES).allowTarget(SUB_PROBE_ROLE, open[i], EXEC_BOTH);
+        }
+        vm.stopPrank();
+        _assertBatchBoundary(SUB_ROLES, MULTISEND_141, SUB_PROBE_MEMBER, SUB_PROBE_ROLE);
+        _assertBatchBoundary(SUB_ROLES, MULTISEND_CALL_ONLY_141, SUB_PROBE_MEMBER, SUB_PROBE_ROLE);
+
+        // Sub-forwarded single calls: value and delegatecall to non-permitted targets.
+        _subRejects(
+            USDC,
+            1,
+            _approveCall(GPV2_VAULT_RELAYER),
+            IZodiacRoles.Operation.Call,
+            _cv(IZodiacRoles.Status.SendNotAllowed, 0)
+        );
+        _subRejects(
+            USDC,
+            0,
+            _approveCall(GPV2_VAULT_RELAYER),
+            IZodiacRoles.Operation.DelegateCall,
+            _cv(IZodiacRoles.Status.DelegateCallNotAllowed, 0)
+        );
+        _subRejects(
+            address(0xdead), 1, "", IZodiacRoles.Operation.Call, _cv(IZodiacRoles.Status.TargetAddressNotAllowed, 0)
+        );
+        _subRejects(
+            address(0xdead),
+            0,
+            "",
+            IZodiacRoles.Operation.DelegateCall,
+            _cv(IZodiacRoles.Status.TargetAddressNotAllowed, 0)
+        );
+        _subRejects(
+            WETH,
+            0,
+            abi.encodeWithSelector(IWETH.deposit.selector),
+            IZodiacRoles.Operation.DelegateCall,
+            _cv(IZodiacRoles.Status.DelegateCallNotAllowed, 0)
+        );
+        _subRejects(
+            NEW_MAIN,
+            0,
+            abi.encodeWithSelector(IRolesAdmin.allowTarget.selector, MANAGER_ROLE, SUSDS, EXEC_BOTH),
+            IZodiacRoles.Operation.Call,
+            _cv(IZodiacRoles.Status.TargetAddressNotAllowed, 0)
+        );
+        _subRejects(
+            address(endowmentSafe),
+            0,
+            abi.encodeWithSelector(ISafeModules.enableModule.selector, address(0xdead)),
+            IZodiacRoles.Operation.Call,
+            _cv(IZodiacRoles.Status.FunctionNotAllowed, bytes32(ISafeModules.enableModule.selector))
+        );
+    }
+
+    /// @dev One module/MultiSend pair. `caller` holds `role` on `m`; for the Sub, every
+    ///      rejection below is raised by the new Main and bubbles through the Sub.
+    function _assertBatchBoundary(address m, address ms, address caller, bytes32 role) internal {
+        probeCaller = caller;
+        probeRole = role;
+        _assertBatchItems(m, ms);
+        _assertBatchEncodings(m, ms);
+    }
+
+    function _assertBatchItems(address m, address ms) internal {
+        bytes memory ok = _okItem();
+        bytes memory good = _ms(ok);
+
+        // Positive controls: an allowed batch, a Send function carrying value, the CoW signer.
+        _batchAuthorized(m, ms, good);
+        _batchAuthorized(
+            m, ms, _ms(bytes.concat(ok, _packCallWithValue(WETH, 1, abi.encodeWithSelector(IWETH.deposit.selector))))
+        );
+        bytes memory signItem =
+            _packDelegateCall(COWSWAP_ORDER_SIGNER, _signOrderCall(USDC, WETH, address(endowmentSafe)));
+        ICowSwapOrderSigner.Data memory order;
+        bytes memory unsignItem = _packDelegateCall(
+            COWSWAP_ORDER_SIGNER, abi.encodeWithSelector(ICowSwapOrderUnsigner.unsignOrder.selector, order)
+        );
+        _batchAuthorized(m, ms, _ms(bytes.concat(ok, signItem, unsignItem)));
+
+        // (a) one forbidden item anywhere rejects the whole batch.
+        bytes memory transferOut = _packCall(SUSDS, _transferCall(address(0xdead), 1));
+        _batchRejected(
+            m,
+            ms,
+            _ms(bytes.concat(ok, transferOut)),
+            _cv(IZodiacRoles.Status.FunctionNotAllowed, bytes32(IERC20.transfer.selector))
+        );
+        _batchRejected(
+            m,
+            ms,
+            _ms(bytes.concat(transferOut, ok)),
+            _cv(IZodiacRoles.Status.FunctionNotAllowed, bytes32(IERC20.transfer.selector))
+        );
+        _batchRejected(
+            m,
+            ms,
+            _ms(bytes.concat(ok, _packCall(USDC, _transferCall(address(0xdead), 1)))),
+            _cv(IZodiacRoles.Status.ParameterNotAllowed, 0)
+        );
+        _batchRejected(
+            m,
+            ms,
+            _ms(bytes.concat(ok, _packCall(address(0xdead), ""))),
+            _cv(IZodiacRoles.Status.TargetAddressNotAllowed, 0)
+        );
+
+        // (b) inner delegatecall to a function or target without the DelegateCall option.
+        _batchRejected(
+            m,
+            ms,
+            _ms(bytes.concat(ok, _packDelegateCall(USDC, _approveCall(GPV2_VAULT_RELAYER)))),
+            _cv(IZodiacRoles.Status.DelegateCallNotAllowed, 0)
+        );
+        _batchRejected(
+            m,
+            ms,
+            _ms(_packDelegateCall(WETH, abi.encodeWithSelector(IWETH.deposit.selector))),
+            _cv(IZodiacRoles.Status.DelegateCallNotAllowed, 0)
+        );
+        _batchRejected(
+            m, ms, _ms(_packDelegateCall(address(0xdead), "")), _cv(IZodiacRoles.Status.TargetAddressNotAllowed, 0)
+        );
+
+        // (c) nested batches, the adapter, the Roles modules and the Safe's module list.
+        address[7] memory unknown = [
+            MULTISEND_130,
+            MULTISEND_CALL_ONLY_130,
+            MULTISEND_141,
+            MULTISEND_CALL_ONLY_141,
+            MULTISEND_UNWRAPPER,
+            NEW_MAIN,
+            OLD_MAIN
+        ];
+        for (uint256 i; i < unknown.length; ++i) {
+            _batchRejected(
+                m,
+                ms,
+                _ms(bytes.concat(ok, _packDelegateCall(unknown[i], good))),
+                _cv(IZodiacRoles.Status.TargetAddressNotAllowed, 0)
+            );
+            _batchRejected(
+                m,
+                ms,
+                _ms(bytes.concat(ok, _packCall(unknown[i], good))),
+                _cv(IZodiacRoles.Status.TargetAddressNotAllowed, 0)
+            );
+        }
+        _batchRejected(
+            m,
+            ms,
+            _ms(
+                _packCall(
+                    address(endowmentSafe), abi.encodeWithSelector(ISafeModules.enableModule.selector, address(0xdead))
+                )
+            ),
+            _cv(IZodiacRoles.Status.FunctionNotAllowed, bytes32(ISafeModules.enableModule.selector))
+        );
+
+        // (d) inner value on a function without Send.
+        _batchRejected(
+            m,
+            ms,
+            _ms(bytes.concat(ok, _packCallWithValue(USDC, 1, _approveCall(GPV2_VAULT_RELAYER)))),
+            _cv(IZodiacRoles.Status.SendNotAllowed, 0)
+        );
+        _batchRejected(
+            m,
+            ms,
+            _ms(bytes.concat(ok, _packCallWithValue(address(0xdead), 1, ""))),
+            _cv(IZodiacRoles.Status.TargetAddressNotAllowed, 0)
+        );
+
+        // (h) the DelegateCall-enabled CoW functions keep their conditions and options inside a batch.
+        _batchRejected(
+            m,
+            ms,
+            _ms(bytes.concat(ok, _packDelegateCall(COWSWAP_ORDER_SIGNER, _signOrderCall(USDC, WETH, address(0xdead))))),
+            // Old tree: receiver is a Matches leaf. Update #10 re-scoped signOrder as an Or over pairs.
+            m == OLD_MAIN ? _cv(IZodiacRoles.Status.ParameterNotAllowed, 0) : _cv(IZodiacRoles.Status.OrViolation, 0)
+        );
+        _batchRejected(
+            m,
+            ms,
+            _ms(
+                bytes.concat(
+                    ok,
+                    _packDelegateCall(
+                        COWSWAP_ORDER_SIGNER, _signOrderCall(SUSDS, address(0xdead), address(endowmentSafe))
+                    )
+                )
+            ),
+            _cv(IZodiacRoles.Status.OrViolation, 0)
+        );
+        _batchRejected(
+            m,
+            ms,
+            _ms(
+                abi.encodePacked(
+                    uint8(1),
+                    COWSWAP_ORDER_SIGNER,
+                    uint256(1),
+                    uint256(bytes(_signOrderCall(USDC, WETH, address(endowmentSafe))).length),
+                    _signOrderCall(USDC, WETH, address(endowmentSafe))
+                )
+            ),
+            _cv(IZodiacRoles.Status.SendNotAllowed, 0)
+        );
+        _batchRejected(
+            m,
+            ms,
+            _ms(_packDelegateCall(COWSWAP_ORDER_SIGNER, _approveCall(GPV2_VAULT_RELAYER))),
+            _cv(IZodiacRoles.Status.FunctionNotAllowed, bytes32(IERC20.approve.selector))
+        );
+    }
+
+    function _assertBatchEncodings(address m, address ms) internal {
+        bytes memory ok = _okItem();
+        bytes memory good = _ms(ok);
+        bytes memory transferOut = _packCall(SUSDS, _transferCall(address(0xdead), 1));
+
+        // (e) outer value or outer Call to the MultiSend.
+        bytes memory malformed = abi.encodeWithSelector(IRolesBatchErrors.MalformedMultiEntrypoint.selector);
+        _outerRejected(m, ms, 1, good, IZodiacRoles.Operation.DelegateCall, malformed);
+        _outerRejected(m, ms, 0, good, IZodiacRoles.Operation.Call, malformed);
+
+        // (f) non-canonical encodings.
+        bytes memory badOffset = bytes.concat(good);
+        _setWord(badOffset, 4, bytes32(uint256(0x40)));
+        _batchRejected(m, ms, badOffset, malformed);
+        _batchRejected(m, ms, bytes.concat(good, bytes32(0)), malformed);
+        bytes memory longer = bytes.concat(good);
+        _setWord(longer, 36, bytes32(ok.length + 32));
+        _batchRejected(m, ms, longer, malformed);
+        bytes memory shorter = bytes.concat(good);
+        _setWord(shorter, 36, bytes32(ok.length - 1));
+        _batchRejected(m, ms, shorter, malformed);
+        bytes memory hidden = _ms(bytes.concat(ok, transferOut));
+        _setWord(hidden, 36, bytes32(ok.length));
+        _batchRejected(m, ms, hidden, malformed);
+        bytes memory innerLie = bytes.concat(ok);
+        _setWord(innerLie, 53, bytes32(uint256(type(uint256).max)));
+        _batchRejected(m, ms, _ms(innerLie), malformed);
+        bytes memory badOp = bytes.concat(ok);
+        badOp[0] = bytes1(uint8(2));
+        _batchRejected(m, ms, _ms(badOp), malformed);
+        _batchRejected(m, ms, _ms(""), malformed);
+        _batchRejected(
+            m,
+            ms,
+            _ms(abi.encodePacked(uint8(0), USDC, uint256(0), uint256(2), bytes2(0xffff))),
+            abi.encodeWithSelector(IRolesBatchErrors.FunctionSignatureTooShort.selector)
+        );
+        // A different selector on the MultiSend is not unwrapped: the MultiSend is an unknown target.
+        _batchRejected(
+            m,
+            ms,
+            abi.encodeWithSelector(IERC20.approve.selector, address(0xdead), 1),
+            _cv(IZodiacRoles.Status.TargetAddressNotAllowed, 0)
+        );
+    }
+
+    function _okItem() internal pure returns (bytes memory) {
+        return _packCall(USDC, _approveCall(GPV2_VAULT_RELAYER));
+    }
+
+    function _ms(bytes memory batch) internal pure returns (bytes memory) {
+        return abi.encodeWithSelector(IMultiSend.multiSend.selector, batch);
+    }
+
+    function _cv(IZodiacRoles.Status status, bytes32 info) internal pure returns (bytes memory) {
+        return abi.encodeWithSelector(IZodiacRoles.ConditionViolation.selector, status, info);
+    }
+
+    function _setWord(bytes memory b, uint256 offset, bytes32 w) internal pure {
+        require(offset + 32 <= b.length, "word out of range");
+        assembly {
+            mstore(add(add(b, 32), offset), w)
+        }
+    }
+
+    function _batchAuthorized(address m, address ms, bytes memory data) internal {
+        uint256 snap = vm.snapshotState();
+        vm.prank(probeCaller);
+        IZodiacRoles(m).execTransactionWithRole(ms, 0, data, IZodiacRoles.Operation.DelegateCall, probeRole, false);
+        vm.revertToState(snap);
+    }
+
+    function _batchRejected(address m, address ms, bytes memory data, bytes memory revertData) internal {
+        _outerRejected(m, ms, 0, data, IZodiacRoles.Operation.DelegateCall, revertData);
+    }
+
+    function _outerRejected(
+        address m,
+        address ms,
+        uint256 value,
+        bytes memory data,
+        IZodiacRoles.Operation op,
+        bytes memory revertData
+    )
+        internal
+    {
+        vm.prank(probeCaller);
+        vm.expectRevert(revertData);
+        IZodiacRoles(m).execTransactionWithRole(ms, value, data, op, probeRole, false);
+    }
+
+    function _subRejects(
+        address to,
+        uint256 value,
+        bytes memory data,
+        IZodiacRoles.Operation op,
+        bytes memory revertData
+    )
+        internal
+    {
+        vm.prank(SUB_PROBE_MEMBER);
+        vm.expectRevert(revertData);
+        IZodiacRoles(SUB_ROLES).execTransactionWithRole(to, value, data, op, SUB_PROBE_ROLE, false);
+    }
+
     function _slice(bytes memory b, uint256 offset, uint256 len) internal pure returns (bytes memory out) {
         require(offset + len <= b.length, "slice out of range");
         out = new bytes(len);
         for (uint256 i; i < len; i++) {
             out[i] = b[offset + i];
         }
+    }
+
+    /// @dev Or children with the same decoder type tree but different operators can still differ in
+    ///      behaviour: `_or` returns at the first passing child, and an EqualTo on a Static word the
+    ///      decoder never bounds-checked reverts on short calldata. Both trees pass Integrity.
+    function test_canonicalizationRetainsOrRevertOrder() public {
+        ConditionFlat[] memory a = new ConditionFlat[](4);
+        a[0] = ConditionFlat(0, PARAM_TYPE_CALLDATA, OP_MATCHES, "");
+        a[1] = ConditionFlat(0, PARAM_TYPE_NONE, OP_OR, "");
+        a[2] = ConditionFlat(1, PARAM_TYPE_STATIC, OP_PASS, "");
+        a[3] = ConditionFlat(1, PARAM_TYPE_STATIC, OP_EQUAL_TO, abi.encode(DAO_TIMELOCK));
+        bytes memory shortCall = abi.encodePacked(IERC20.transfer.selector);
+        bytes memory exec = abi.encodeCall(
+            IZodiacRoles.execTransactionWithRole, (USDC, 0, shortCall, IZodiacRoles.Operation.Call, MANAGER_ROLE, false)
+        );
+        bytes32 ha = _scopeComparisonProbe(a);
+        vm.prank(karpatkey);
+        (bool okA,) = OLD_MAIN.call(exec);
+        ConditionFlat[] memory b = new ConditionFlat[](4);
+        (b[0], b[1], b[2], b[3]) = (a[0], a[1], a[3], a[2]);
+        bytes32 hb = _scopeComparisonProbe(b);
+        vm.prank(karpatkey);
+        (bool okB,) = OLD_MAIN.call(exec);
+        assertTrue(okA && !okB, "child order is observable through reverts");
+        assertTrue(ha != hb, "comparator must keep Or order when child shapes differ");
     }
 }

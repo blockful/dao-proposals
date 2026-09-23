@@ -92,6 +92,12 @@ contract Proposal_ENS_KPK_Update_10_Execution_Boundary_Test is Test, MultiSendHe
     function test_zeroGasWrapperRevertsFailedSwitchAtomically() public {
         bytes memory data = _reversedBatchWrapper(0);
         uint256 nonceBefore = ISafeModules(ENSConstants.ENDOWMENT_SAFE).nonce();
+        // Pin the Safe-level reason: GS013 (inner call failed with safeTxGas == 0 and gasPrice == 0),
+        // not a signature, gas or nonce rejection that the timelock would wrap identically.
+        vm.prank(ENSConstants.ENDOWMENT_TIMELOCK);
+        (bool ok, bytes memory reason) = ENSConstants.ENDOWMENT_SAFE.call(data);
+        assertFalse(ok, "wrapper must fail");
+        assertEq(reason, abi.encodeWithSignature("Error(string)", "GS013"), "Safe-level failure reason");
         bytes32 id = _schedule(data, bytes32(0));
         vm.warp(block.timestamp + 9 days);
         vm.expectRevert(bytes("TimelockController: underlying transaction reverted"));

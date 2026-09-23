@@ -2,6 +2,8 @@
 # /// script
 # requires-python = ">=3.13"
 # dependencies = ["eth-abi", "eth-utils", "eth-hash[pycryptodome]"]
+# [tool.uv]
+# exclude-newer = "2026-09-23T00:00:00Z"
 # ///
 # ─── How to run ───
 # Install uv: curl -LsSf https://astral.sh/uv/install.sh | sh
@@ -44,6 +46,14 @@ OLD = '0x703806E61847984346d2D7DDd853049627e50A40'
 NEW = '0xa23BEBFD3628D6Dd7B0638c147db11d9B6FaBD59'
 OLD_CREATED, NEW_CREATED = 19_736_050, 25_941_653
 MANAGER = '0x4d414e4147455200000000000000000000000000000000000000000000000000'
+# Expected new-Main wiring after Update #10 (fail closed on anything else).
+POD, SUB = '0xb423e0f6E7430fa29500c5cC9bd83D28c8BD8978', '0x48dC0d88766a59E119e3f2585BC1dC5436Ee6ce0'
+SAFE, ADAPTER, MULTISEND = '0x4F2083f5fBede34C2714aFfb3105539775f7FE64', '0xB4Cd4bb764C089f20DA18700CE8bc5e49F369efD', '0x8d80ff0a'
+MS141, CO141 = '0x38869bf66a61cF6bDB996A6aE40D5853Fd43B526', '0x9641d764fc13c8B624c04430C7356C1C7C8102e2'
+EXPECTED_NEW_WIRING = {
+    'members': {MANAGER: {POD, SUB}}, 'modules': {POD, SUB}, 'default': {SUB: MANAGER}, 'roles': {MANAGER},
+    'unwrappers': {(MS141, MULTISEND): ADAPTER, (CO141, MULTISEND): ADAPTER}, 'avatar_target': (SAFE, SAFE),
+}
 HERE = os.path.dirname(os.path.abspath(__file__))
 
 # ─── ABI (Roles v2.1.x events and admin functions) ──────────────────────────────
@@ -128,6 +138,7 @@ class Roles:
             s.role(a['roleKey'])['functions'][(cs(a['targetAddress']), hx(a['selector']))] = ('scoped', a['options'], conds)
         elif name == 'RevokeFunction': s.role(a['roleKey'])['functions'].pop((cs(a['targetAddress']), hx(a['selector'])), None)
         elif name == 'AssignRoles':
+            if len(a['roleKeys']) != len(a['memberOf']): raise ReplayError('AssignRoles arrays differ in length')
             for k, m in zip(a['roleKeys'], a['memberOf']):
                 s.members.setdefault(hx(k), set()); (s.members[hx(k)].add if m else s.members[hx(k)].discard)(cs(a['module']))
         elif name == 'SetDefaultRole': s.default[cs(a['module'])] = hx(a['defaultRoleKey'])
@@ -141,8 +152,14 @@ class Roles:
         elif name in ('RolesModSetup', 'Initialized', 'ExecutionFromModuleSuccess', 'ExecutionFromModuleFailure', 'HashExecuted', 'HashInvalidated'): pass
         else: raise ReplayError('unsupported replay action: ' + name)
 
-def replay(logs):
-    st, counts = Roles(), {}
+def replay(logs, address=None):
+    st, counts, seen = Roles(), {}, set()
+    for l in logs:
+        if l.get('removed'): raise ReplayError('reorged (removed) log in input')
+        position = (int(l['blockNumber'], 16), int(l['logIndex'], 16))
+        if position in seen: raise ReplayError(f'duplicate log position {position}')
+        seen.add(position)
+        if address is not None and l.get('address', '').lower() != address.lower(): raise ReplayError('log from a foreign address')
     for l in sorted(logs, key=lambda l: (int(l['blockNumber'], 16), int(l['logIndex'], 16))):
         name, args = decode_log(l)
         counts[name] = counts.get(name, 0) + 1; st.apply(name, args)
@@ -215,7 +232,7 @@ def main():
         if write_outputs:
             json.dump({'address': OLD, 'toBlock': latest, 'logs': old_logs}, open(os.path.join(HERE, 'logs-old-main.json'), 'w')); json.dump({'address': NEW, 'toBlock': latest, 'logs': new_logs}, open(os.path.join(HERE, 'logs-new-main.json'), 'w'))
     print('SNAPSHOT BLOCK', latest)
-    old, oc = replay(old_logs); new, nc = replay(new_logs)
+    old, oc = replay(old_logs, OLD); new, nc = replay(new_logs, NEW)
     print('old Main events:', oc); print('new Main events:', nc)
     applied, skipped = apply_admin_calls(old, decode_multisend(open(os.path.join(HERE, 'expectedMultiSend.txt')).read()), OLD)
     print(f'\nUpdate #10 delta applied to old Main: {len(applied)} admin calls {sorted(set(applied))}; skipped (not Roles admin on old Main): {len(skipped)}')
@@ -253,8 +270,17 @@ def main():
         'functionKeys': sorted({fkey(*k) for k in o['functionKeys'] | n['functionKeys']}),
         'identical': sorted(fkey(*k) for k in identical), 'orderOnly': sorted(fkey(*k) for k in order_only), 'trailingPassOnly': sorted(fkey(*k) for k in trailing_only),
     }
-    if write_outputs: json.dump(keys, open(os.path.join(HERE, 'roleStateKeys.json'), 'w'), indent=1)
+    if write_outputs:
+        with open(os.path.join(HERE, 'roleStateKeys.json'), 'w') as f:
+            json.dump(keys, f, indent=2); f.write('\n')  # run Prettier afterwards to match the committed layout
     print(f"\nroleStateKeys.json {'written' if write_outputs else 'not written'}: {len(keys['targets'])} targets, {len(keys['functionKeys'])} function keys")
-    sys.exit(1 if mismatch or target_mismatch or set(ot) ^ set(nt) or set(of) ^ set(nf) else 0)
+    wiring = {'members': {k: v for k, v in new.members.items() if v}, 'modules': new.modules, 'roles': set(new.roles),
+              'default': {k: v for k, v in new.default.items() if int(v, 16)},
+              'unwrappers': {k: v for k, v in new.unwrappers.items() if int(v, 16)}, 'avatar_target': (new.avatar, new.target)}
+    wiring_mismatch = {k: wiring[k] for k in EXPECTED_NEW_WIRING if wiring[k] != EXPECTED_NEW_WIRING[k]}
+    print('NEW MAIN WIRING MISMATCH:', wiring_mismatch or 'none')
+    print('NEW MAIN OWNER:', new.owner, 'OK' if new.owner == SAFE else '-> BLOCKING: not the Endowment Safe (exit 3)')
+    if wiring_mismatch or mismatch or target_mismatch or set(ot) ^ set(nt) or set(of) ^ set(nf): sys.exit(1)
+    sys.exit(0 if new.owner == SAFE else 3)
 
 if __name__ == '__main__': main()
