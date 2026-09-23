@@ -159,7 +159,7 @@ Install Foundry, Node/npm and Python dependencies, then run from the repository 
 ```bash
 git clone https://github.com/blockful/dao-proposals.git
 cd dao-proposals
-git checkout ff971bfeaec1568dd8378a584813c3819fd8310c
+git checkout 72df520ab6e4b15d5fe554107db79ca12e1538be
 npm ci
 export MAINNET_RPC_URL="<archive-mainnet-rpc>"
 forge test --match-path "src/ens/proposals/ep-kpk-update-10/*" -vv
@@ -167,7 +167,8 @@ REVIEW_BLOCK=26037425 forge test --match-path "src/ens/proposals/ep-kpk-update-1
 ```
 
 **Fail-closed gate.** Run this at the ownership-transfer block, at the `CallScheduled` block, and again before the
-operation becomes ready. Every test must pass; `test_finding…` is skipped once the Endowment Safe owns the new Main:
+operation becomes ready. Every test must pass; `test_finding…` is skipped once the Endowment Safe owns the new Main.
+Without `REVIEW_GATE_BLOCK` the gate only runs a pinned regression at block 26,037,425 and certifies nothing:
 
 ```bash
 REVIEW_BLOCK=<block> REVIEW_GATE_BLOCK=<block> forge test --match-path "src/ens/proposals/ep-kpk-update-10/*" -vv
@@ -196,7 +197,7 @@ wiring difference; 3 = policy and wiring match but the owner is not the Endowmen
 After regenerating `roleStateKeys.json`, run Prettier and update the fixture hashes in `calldataCheck.t.sol` in the same
 commit.
 
-Reproduce at commit `ff971bfeaec1568dd8378a584813c3819fd8310c`; the branch moves. The two round-1 suites and the
+Reproduce at commit `72df520ab6e4b15d5fe554107db79ca12e1538be`; the branch moves. The two round-1 suites and the
 explicitly historical ownership-precondition regression keep their original fork blocks even when `REVIEW_BLOCK` is
 supplied. RPC values are supplied locally and must not be committed.
 
@@ -204,7 +205,7 @@ supplied. RPC values are supplied locally and must not be committed.
 | --------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
 | `calldataCheck.t.sol`                                                       | Switch, policy equivalence, authorization and semantic regression tests  |
 | `executionBoundary.t.sol`                                                   | Full reference bytes, delay/replay/dependency and Safe failure behavior  |
-| `failClosedGate.t.sol`                                                      | Opt-in gate (`REVIEW_GATE_BLOCK`) to run before scheduling and execution |
+| `failClosedGate.t.sol`                                                      | Gate: certifies `REVIEW_GATE_BLOCK`; otherwise a pinned regression       |
 | `eip1271Path.t.sol`                                                         | Appended EIP-1271 module-signature regression, old versus new Main       |
 | `closureAfterTransfer.t.sol`                                                | After the transfer, no MANAGER path reaches Roles or Safe administration |
 | `review-2026-09-23.md`                                                      | Fresh-pin security review                                                |

@@ -23,7 +23,7 @@ reproduced the actionable defects, and added permanent regressions. It does not 
 completed. The new completeness critic identified one further missing security-path check: appended EIP-1271 module
 signatures, which direct-member prank tests do not exercise. It is now covered by `eip1271Path.t.sol` (second pass,
 below). Final review verdicts are recorded in [review-2026-09-23.md](review-2026-09-23.md) at commit
-`ff971bfeaec1568dd8378a584813c3819fd8310c`.
+`72df520ab6e4b15d5fe554107db79ca12e1538be`.
 
 ## Finding disposition
 
@@ -97,7 +97,7 @@ mastercopy.
 The original nine committed Foundry tests passed before changes. Five new semantic regressions failed against the old
 comparator for the expected equality defects, then passed after hardening. Python regressions likewise distinguished the
 original unsafe behavior from the hardened implementation, including CLI nonzero exit on target mismatches. The final
-test commands are in [README.md](README.md); reproduce at commit `ff971bfeaec1568dd8378a584813c3819fd8310c`.
+test commands are in [README.md](README.md); reproduce at commit `72df520ab6e4b15d5fe554107db79ca12e1538be`.
 
 No production state was changed. Ownership handover, a real scheduled transaction, future Harvest permissions,
 protocol-level economics, and universal historical exploitability are not certified. This review verifies authorization
@@ -125,6 +125,7 @@ recommendation. Every re-derived byte, hash, count, bytecode match and policy-eq
 | S10: Python input hygiene                     | Replay rejects reorged, duplicate and foreign-address logs and mismatched AssignRoles arrays; JSON output is deterministic; dependency resolution is pinned; caches and downloads are ignored.                                                                                          |
 | S11: documents                                | Unpinned links and the 20/20 fresh-pin count corrected; forum reply no longer says the Foundation path was verified; ETH sink, EP 6.23, veto expiry, Allowance module and baseline provenance disclosed.                                                                                |
 
-Validation after applying the fixes: 43 Foundry tests pass with the gate skipped at blocks 25,984,900, 26,037,425 and
-26,038,450; the gate fails on the owner at the head; 48 Python regressions pass; on real data the replay reports
-316/15/1/0 with no wiring mismatch and exits 3.
+Validation after applying the fixes: all 44 Foundry tests pass at blocks 25,984,900, 26,037,425 and 26,038,600, with the
+gate in its pinned regression mode (the CI test job counts skipped tests as failures, so the gate never skips);
+certifying the head with `REVIEW_GATE_BLOCK` fails on the owner; 48 Python regressions pass; on real data the replay
+reports 316/15/1/0 with no wiring mismatch and exits 3.
