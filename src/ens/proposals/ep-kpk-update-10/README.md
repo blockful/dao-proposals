@@ -48,8 +48,8 @@ the scheduled bytes match this review.
 
 ## Assertion results
 
-The historical simulation forks block **25,984,900**. A current-state recheck is pinned separately to block
-**26,034,037**, hash `0x9879ebe29da19e645f50115471695a7d237b2410f2f1513183c5a94b21748898` (2026-09-22 15:51:11 UTC). The
+The historical simulation forks block **25,984,900**. The latest current-state recheck is pinned separately to block
+**26,037,425**, hash `0xfb29dae51cd328ec64208e4135cee8bbbb702d8e8d58aa6b3d58b11da297ce31` (2026-09-23 03:13:47 UTC). The
 fork is selected with `REVIEW_BLOCK`; omitting it always runs the historical regression, not a live monitor.
 
 | Area             | Before execution                                                                          | After execution / adversarial check                                                                                                               |
@@ -130,13 +130,13 @@ git checkout ens/kpk-update-10-zrm-switch
 npm ci
 export MAINNET_RPC_URL="<archive-mainnet-rpc>"
 forge test --match-path "src/ens/proposals/ep-kpk-update-10/*" -vv
-REVIEW_BLOCK=26034037 forge test --match-path "src/ens/proposals/ep-kpk-update-10/*" -vv
+REVIEW_BLOCK=26037425 forge test --match-path "src/ens/proposals/ep-kpk-update-10/*" -vv
 ```
 
 For the independent event census and its regression suite (requires uv):
 
 ```bash
-uv run src/ens/proposals/ep-kpk-update-10/rolesReplay.py --block 26034037 --no-write
+uv run src/ens/proposals/ep-kpk-update-10/rolesReplay.py --block 26037425 --no-write
 uv run --python 3.13 --with pytest --with eth-abi --with eth-utils --with "eth-hash[pycryptodome]" python -m pytest src/ens/proposals/ep-kpk-update-10/test_roles_replay.py -q
 ```
 
