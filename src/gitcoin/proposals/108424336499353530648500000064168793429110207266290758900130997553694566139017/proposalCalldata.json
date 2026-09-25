@@ -1,0 +1,18 @@
+{
+  "proposalId": "108424336499353530648500000064168793429110207266290758900130997553694566139017",
+  "blockNumber": "26041897",
+  "votingStart": "26055037",
+  "votingEnd": "26095357",
+  "executableCalls": [
+    {
+      "target": "0x57a8865cfB1eCEf7253c27da6B4BC3dAEE5Be518",
+      "calldata": "0x4dd18bf5000000000000000000000000ef41cbd211076e8b1901e214bf751d404cf06638",
+      "value": "0"
+    },
+    {
+      "target": "0xef41CbD211076E8b1901e214Bf751d404Cf06638",
+      "calldata": "0xb9a61961",
+      "value": "0"
+    }
+  ]
+}
