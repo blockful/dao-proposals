@@ -9,6 +9,17 @@ struct ConditionFlat {
 }
 
 interface IRolesModifier {
+    function execTransactionWithRole(
+        address to,
+        uint256 value,
+        bytes calldata data,
+        uint8 operation,
+        bytes32 roleKey,
+        bool shouldRevert
+    )
+        external
+        returns (bool success);
+
     function setTransactionUnwrapper(address handler, bytes4 selector, address adapter) external;
     function revokeTarget(bytes32 roleKey, address targetAddress) external;
     function revokeFunction(bytes32 roleKey, address targetAddress, bytes4 selector) external;
