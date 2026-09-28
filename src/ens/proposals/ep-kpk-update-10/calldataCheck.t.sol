@@ -7,6 +7,7 @@ import { IERC20 } from "@forge-std/src/interfaces/IERC20.sol";
 import { ENSConstants } from "@ens/Constants.sol";
 import { MultiSendHelper } from "@ens/helpers/MultiSendHelper.sol";
 import { ZodiacRolesHelper } from "@ens/helpers/ZodiacRolesHelper.sol";
+import { IMultiSend } from "@ens/interfaces/IMultiSend.sol";
 import { ISafe } from "@ens/interfaces/ISafe.sol";
 import { ITimelock } from "@ens/interfaces/ITimelock.sol";
 import { IZodiacRoles } from "@ens/interfaces/IZodiacRoles.sol";
@@ -19,6 +20,24 @@ interface ISafeModules {
     function enableModule(address module) external;
     function isModuleEnabled(address module) external view returns (bool);
     function nonce() external view returns (uint256);
+}
+
+interface ISafeTxHash {
+    function getTransactionHash(
+        address to,
+        uint256 value,
+        bytes calldata data,
+        uint8 operation,
+        uint256 safeTxGas,
+        uint256 baseGas,
+        uint256 gasPrice,
+        address gasToken,
+        address refundReceiver,
+        uint256 nonce
+    )
+        external
+        view
+        returns (bytes32);
 }
 
 interface IRolesModifierView {
@@ -144,6 +163,9 @@ interface IMerklDistributor {
  * The Endowment Safe replaces its Roles Modifier with a new one that has the same MANAGER
  * permissions plus PUR #10. The Foundation schedules it on the Endowment timelock (not a DAO
  * vote), so the test runs it through the timelock.
+ *
+ * Foundation Safe tx (nonce 0):
+ * https://app.safe.global/transactions/tx?safe=eth:0x9C7dB6B1085ec4D07f75c0BD91AD3FcD368fA19E&id=multisig_0x9C7dB6B1085ec4D07f75c0BD91AD3FcD368fA19E_0x2960b2149fd387e6241eb299802fbfb6762291130566d1d5b98f128ef4964ecf
  */
 contract Proposal_ENS_KPK_Update_10_Test is Test, MultiSendHelper, ZodiacRolesHelper {
     string private constant SWITCH_JSON = "src/ens/proposals/ep-kpk-update-10/ENS_Switch_ZRM.json";
@@ -156,6 +178,12 @@ contract Proposal_ENS_KPK_Update_10_Test is Test, MultiSendHelper, ZodiacRolesHe
     address private constant ROLES_MASTERCOPY_V211 = 0xF2964CE6161ce0e75964Fe7927cE114cb0B283D5;
     address private constant POD = ENSConstants.KARPATKEY;
     address private constant SENTINEL = address(0x1);
+
+    // ─── Foundation Safe tx
+    bytes32 private constant FOUNDATION_SAFE_TX_HASH =
+        0x2960b2149fd387e6241eb299802fbfb6762291130566d1d5b98f128ef4964ecf;
+    bytes32 private constant SALT = "ENS-ZRM-SWITCH";
+    address private constant MULTI_SEND_CALL_ONLY_V141 = 0x9641d764fc13c8B624c04430C7356C1C7C8102e2;
 
     // ─── Tokens
     address private constant USDC = ENSConstants.USDC;
@@ -219,6 +247,7 @@ contract Proposal_ENS_KPK_Update_10_Test is Test, MultiSendHelper, ZodiacRolesHe
         assertEq(modules[0], OLD_MAIN, "current Modifier heads the list");
         assertEq(modules[1], ENSConstants.ALLOWANCE_MODULE, "Allowance module");
         assertEq(endowmentTimelock.getMinDelay(), 9 days, "timelock delay");
+        assertEq(ISafeModules(ENSConstants.FOUNDATION_SAFE).nonce(), 0, "Foundation tx is next");
         safeNonceBefore = ISafeModules(SAFE).nonce();
 
         // New Modifier: Roles v2.1.1, owned by the Safe, pod and Sub as members
@@ -290,25 +319,37 @@ contract Proposal_ENS_KPK_Update_10_Test is Test, MultiSendHelper, ZodiacRolesHe
             "call 2 matches enableModule(new Modifier)"
         );
 
-        // Safe transaction signed by the timelock
-        (, execData) = _buildSafeMultiSendCalldata(
-            bytes.concat(_packCall(SAFE, disableCall), _packCall(SAFE, enableCall)),
+        // Endowment Safe tx signed by the timelock, batched with MultiSendCallOnly 1.4.1
+        bytes memory batch = bytes.concat(_packCall(SAFE, disableCall), _packCall(SAFE, enableCall));
+        (, execData) = _buildSafeExecDelegateCalldata(
             SAFE,
+            MULTI_SEND_CALL_ONLY_V141,
+            abi.encodeCall(IMultiSend.multiSend, (batch)),
             ENSConstants.ENDOWMENT_TIMELOCK
+        );
+
+        // Must match the Foundation Safe tx that schedules it
+        bytes memory scheduleCall = abi.encodeCall(ITimelock.schedule, (SAFE, 0, execData, bytes32(0), SALT, 9 days));
+        assertEq(
+            ISafeTxHash(ENSConstants.FOUNDATION_SAFE)
+                .getTransactionHash(
+                    ENSConstants.ENDOWMENT_TIMELOCK, 0, scheduleCall, 0, 0, 0, 0, address(0), address(0), 0
+                ),
+            FOUNDATION_SAFE_TX_HASH,
+            "Foundation Safe tx"
         );
     }
 
     function _executeViaEndowmentTimelock(bytes memory execData) internal {
-        bytes32 salt = keccak256("ENS_Switch_ZRM");
         vm.prank(ENSConstants.FOUNDATION_SAFE);
-        endowmentTimelock.schedule(SAFE, 0, execData, bytes32(0), salt, 9 days);
+        endowmentTimelock.schedule(SAFE, 0, execData, bytes32(0), SALT, 9 days);
 
         vm.expectRevert(bytes("TimelockController: operation is not ready"));
-        endowmentTimelock.execute(SAFE, 0, execData, bytes32(0), salt);
+        endowmentTimelock.execute(SAFE, 0, execData, bytes32(0), SALT);
 
         vm.warp(block.timestamp + 9 days);
         vm.prank(address(0xA11CE)); // anyone can execute
-        endowmentTimelock.execute(SAFE, 0, execData, bytes32(0), salt);
+        endowmentTimelock.execute(SAFE, 0, execData, bytes32(0), SALT);
     }
 
     // ─── After
