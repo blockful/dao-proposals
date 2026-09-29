@@ -1,0 +1,18 @@
+{
+  "space": "0x594EB60b35C4E91A06a5df988e0504f7463cB769",
+  "proposalId": 5,
+  "author": "0x61F31C7B10ab421dD45aaC97813286A5Ed8aA880",
+  "proposeTx": "0xac40a1d7fc085af0025deb3367cf3e6945af91bd4093672762f65952b8b98f3c",
+  "metadataURI": "ipfs://bafkreieol5yhoal3qav3cizien5hmmnrnre55nwx5uk5tcuprab2yy3br4",
+  "executionStrategy": "0x5716a3b2d988Bd7a2D95942ee8a175D27a75E7bB",
+  "executionPayloadHash": "0x404395cd7f9284437b243055ff230c654e20353f448a8fafc5059bc972f8ed1e",
+  "transactions": [
+    {
+      "to": "0x77B19Bcb9BDad5bB6F9756d085084a1aa03b9fD0",
+      "value": "0",
+      "data": "0x8a4068dd",
+      "operation": 1,
+      "salt": "1"
+    }
+  ]
+}
