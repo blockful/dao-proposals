@@ -23,6 +23,16 @@ library ENSConstants {
     address internal constant ZODIAC_ROLES = 0x703806E61847984346d2D7DDd853049627e50A40;
     address internal constant KARPATKEY = 0xb423e0f6E7430fa29500c5cC9bd83D28c8BD8978;
     address internal constant MULTI_SEND = 0x40A2aCCbd92BCA938b02010E17A5b8929b49130D;
+    // Owns the Endowment Safe (9-day delay)
+    address internal constant ENDOWMENT_TIMELOCK = 0x0bcC3dA6aD796F59288C0961602675E88A2B406C;
+    // ENS Foundation Safe, schedules on the Endowment timelock
+    address internal constant FOUNDATION_SAFE = 0x9C7dB6B1085ec4D07f75c0BD91AD3FcD368fA19E;
+    // Security Council veto on the Endowment timelock
+    address internal constant SECURITY_COUNCIL_VETO = 0x0A9387643ce6291f8C545286675D76bCd0Ba3EdD;
+    // Security Council Safe
+    address internal constant SECURITY_COUNCIL_SAFE = 0x7101B78638e34444F0a5AdE9e1149fbEeC029931;
+    // Allowance Module on the Endowment Safe
+    address internal constant ALLOWANCE_MODULE = 0xCFbFaC74C26F8647cBDb8c5caf80BB5b32E43134;
 
     // ─── Multisigs
     // ──────────────────────────────────────────────────────
