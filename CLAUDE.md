@@ -48,6 +48,23 @@ When given a Tally URL or asked to review a proposal:
    Report the mismatch.
 5. **One proposal per test.** Each proposal gets its own directory under `src/<dao>/proposals/`.
 
+## Forum Posts
+
+A proposal's forum post lives next to its test as `forum-post.md`. When it lands on `main`, the Forum draft workflow
+saves it as a reply draft on the topic its frontmatter names; someone then reviews and posts it from the Blockful forum
+account. Leave `COMMIT_HASH` / `SHORT_HASH` as placeholders — the workflow fills them with the merge commit.
+
+```markdown
+---
+topic: https://www.comp.xyz/t/<slug>/<id>
+---
+
+## Live proposal calldata security verification
+```
+
+Only DAOs with a `forumUrl` in `src/dao-registry.json` and `<DAO>_FORUM_API_KEY` / `<DAO>_FORUM_USERNAME` passed to the
+workflow get drafted (today: Compound). A post without frontmatter is skipped.
+
 ## Solidity Conventions
 
 - Pragma: `>=0.8.25 <0.9.0`
