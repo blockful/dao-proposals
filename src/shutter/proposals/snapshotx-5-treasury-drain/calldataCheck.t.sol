@@ -227,6 +227,7 @@ contract Proposal_Shutter_SnapshotX_5_Test is Test {
         uint256 subdaoBefore = IERC20(SHU).balanceOf(SUBDAO);
         assertGt(usdcBefore, 0);
         assertGt(susdsBefore, 0);
+        assertGt(shuBefore, 0);
 
         _passProposal();
         SPACE.execute(PROPOSAL_ID, _actualPayload());
@@ -236,7 +237,6 @@ contract Proposal_Shutter_SnapshotX_5_Test is Test {
         assertEq(IERC20(SUSDS).balanceOf(SAFE), 0, "all sUSDS redeemed");
         assertEq(SAFE.balance, 0, "all ETH sent out");
         assertEq(IERC20(SHU).balanceOf(SAFE), 0, "all SHU dumped");
-        assertGt(shuBefore, 0);
         assertEq(IERC20(SHU).balanceOf(SUBDAO), subdaoBefore, "decoy 1 SHU never sent");
         assertGt(IERC20(USDS).balanceOf(RECIPIENT), 0, "USDS to attacker");
         assertGt(RECIPIENT.balance, 0, "ETH to attacker");
