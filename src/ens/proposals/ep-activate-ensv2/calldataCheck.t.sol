@@ -72,13 +72,14 @@ contract Proposal_ENS_EP_Activate_ENSv2_Test is ENS_Governance {
     address constant REGISTRAR_MIGRATION = 0x60C7C2A24b5e86C38639Fd1586917a8FEF66a56d;
     address constant LEGACY_MULTISIG = 0xCF60916b6CB4753f58533808fA610FcbD4098Ec0;
 
-    // v2 contracts deployed by Labs on 2 Oct 2026 (the draft still shows them in angle brackets)
+    // v2 contracts
     address constant ENS_V2_RESOLVER = 0x8486D32948cDeF5c24236718318c6326D5d006A9;
     address constant REVERSE_REGISTRAR_ADAPTER = 0x349151735790269a9C14668B58D7C83b5ecb9607;
     address constant DEFAULT_REVERSE_REGISTRAR_ADAPTER = 0xd86E32499eCAFe9c181dd7410f93A1a9bB61ef0d;
     address constant ETH_RENEWER_V1 = 0xE038B778b1fbF47A84018820626afc908c9C62B1;
     address constant GRAVEYARD = 0xDa021A2C1C2F99574D861Ef8c6fA745851BEB7F6;
     address constant MANAGED_UNIVERSAL_RESOLVER = 0xcFFd2Ae680CD110D28739a70922636B5937b022B;
+    address constant UNIVERSAL_RESOLVER_V2 = 0xae5B680305A73511E1825e1196b4ed284061CA07;
     IAddressSet publicResolverSet = IAddressSet(0xfFCedA021CBDF20f1a66ebbef32E49d208cAbf62);
     address constant PUBLIC_RESOLVER_2023 = 0x231b0Ee14048e9dCcD1d247744d114a4EB5E8E63;
     address constant PUBLIC_RESOLVER_CURRENT = 0xF29100983E058B709F3D539b0c765937B804AC15;
@@ -132,7 +133,7 @@ contract Proposal_ENS_EP_Activate_ENSv2_Test is ENS_Governance {
         calldatas = new bytes[](numTransactions);
         signatures = new string[](numTransactions);
 
-        // 1. .eth resolves through v2
+        // 1. .eth resolver -> v2
         targets[0] = address(rsc);
         calldatas[0] =
             abi.encodeWithSelector(IRegistrarSecurityController.setRegistrarResolver.selector, ENS_V2_RESOLVER);
@@ -166,17 +167,17 @@ contract Proposal_ENS_EP_Activate_ENSv2_Test is ENS_Governance {
         calldatas[10] =
             abi.encodeWithSelector(IRegistrarSecurityController.transferRegistrarOwnership.selector, ETH_RENEWER_V1);
 
-        // 12. Universal Resolver goes through the managed proxy
+        // 12. UR -> managed proxy
         targets[11] = address(universalResolver);
         calldatas[11] = abi.encodeWithSelector(IUniversalResolverProxy.upgradeTo.selector, MANAGED_UNIVERSAL_RESOLVER);
 
-        // 13-14. public resolvers for locked names
+        // 13-14. public resolvers
         targets[12] = address(publicResolverSet);
         calldatas[12] = abi.encodeWithSelector(IAddressSet.approve.selector, PUBLIC_RESOLVER_2023, true);
         targets[13] = address(publicResolverSet);
         calldatas[13] = abi.encodeWithSelector(IAddressSet.approve.selector, PUBLIC_RESOLVER_CURRENT, true);
 
-        // 15. HCA implementation
+        // 15. HCA
         targets[14] = address(hcaFactory);
         calldatas[14] =
             abi.encodeWithSelector(IStandaloneHCAFactory.setImplementationApproval.selector, HCA_IMPLEMENTATION, true);
@@ -201,15 +202,15 @@ contract Proposal_ENS_EP_Activate_ENSv2_Test is ENS_Governance {
         assertTrue(publicResolverSet.includes(PUBLIC_RESOLVER_CURRENT));
         assertTrue(hcaFactory.approvedImplementations(HCA_IMPLEMENTATION));
 
-        // v1 registrations are closed
+        // v1 registrations closed
         vm.prank(ETH_REGISTRAR_CONTROLLER);
         vm.expectRevert();
         baseRegistrar.register(uint256(labelhash("ensv2-freeze-check")), address(this), 365 days);
 
-        // lookups don't change
+        // same lookup
         assertEq(_resolveNick(), nickAddrBefore);
 
-        // renewals work in USDC and pay the timelock
+        // USDC renewal, paid to the timelock
         IERC20 usdc = IERC20(ENSConstants.USDC);
         IETHRenewerV1 renewer = IETHRenewerV1(ETH_RENEWER_V1);
         uint256 price = renewer.getRenewPrice("nick", 365 days, usdc);
@@ -223,6 +224,35 @@ contract Proposal_ENS_EP_Activate_ENSv2_Test is ENS_Governance {
         vm.stopPrank();
         assertEq(baseRegistrar.nameExpires(uint256(labelhash("nick"))), expiry + 365 days);
         assertEq(usdc.balanceOf(address(timelock)), timelockBalance + price);
+    }
+
+    // on.eth isn't reserved on v2, so it stops resolving at stage 4
+    function test_onEthStopsResolvingAtStage4() public {
+        IUniversalResolver ur = IUniversalResolver(address(universalResolver));
+        bytes memory name = abi.encodePacked(uint8(4), "base", uint8(2), "on", uint8(3), "eth", uint8(0));
+        bytes memory data = abi.encodeWithSignature("text(bytes32,string)", namehash("base.on.eth"), "chainId");
+
+        (bytes memory result,) = ur.resolve(name, data);
+        assertEq(abi.decode(result, (string)), "eip155:8453");
+        bytes memory nick = _resolveNick();
+
+        (targets, values, signatures, calldatas, description) = _generateCallData();
+        vm.startPrank(address(timelock));
+        for (uint256 i; i < targets.length; i++) {
+            (bool ok,) = targets[i].call(calldatas[i]);
+            assertTrue(ok);
+        }
+        vm.stopPrank();
+        (result,) = ur.resolve(name, data);
+        assertEq(abi.decode(result, (string)), "eip155:8453");
+
+        // stage 4: SC points the managed proxy to UR v2
+        vm.prank(SECURITY_COUNCIL_SAFE);
+        IUniversalResolverProxy(MANAGED_UNIVERSAL_RESOLVER).upgradeTo(UNIVERSAL_RESOLVER_V2);
+
+        vm.expectRevert(abi.encodeWithSignature("ResolverNotFound(bytes)", name));
+        ur.resolve(name, data);
+        assertEq(_resolveNick(), nick); // nick.eth is reserved, still works
     }
 
     function _isProposalSubmitted() public pure override returns (bool) {
