@@ -1,0 +1,13 @@
+{
+  "proposalId": "608",
+  "blockNumber": "26010608",
+  "votingStart": "26023748",
+  "votingEnd": "26045391",
+  "executableCalls": [
+    {
+      "target": "0x5b2962121b4334fe563F7062feA975f51313EDE3",
+      "calldata": "0x",
+      "value": 0
+    }
+  ]
+}
