@@ -68,6 +68,7 @@ contract Proposal_ENS_EP_Activate_ENSv2_Test is ENS_Governance {
 
     // v1 controllers removed in calls 4-8
     address constant ETH_REGISTRAR_CONTROLLER = 0x59E16fcCd424Cc24e280Be16E11Bcd56fb0CE547;
+    address constant ETH_REGISTRAR_CONTROLLER_2023 = 0x253553366Da8546fC250F225fe3d25d0C782303b;
     address constant LEGACY_ETH_REGISTRAR_CONTROLLER = 0x283Af0B28c62C092C9727F1Ee09c02CA627EB7F5;
     address constant REGISTRAR_MIGRATION = 0x60C7C2A24b5e86C38639Fd1586917a8FEF66a56d;
     address constant LEGACY_MULTISIG = 0xCF60916b6CB4753f58533808fA610FcbD4098Ec0;
@@ -85,13 +86,14 @@ contract Proposal_ENS_EP_Activate_ENSv2_Test is ENS_Governance {
     IStandaloneHCAFactory hcaFactory = IStandaloneHCAFactory(0x742bf21897a78e2C98cC5f5C5473A370a081e561);
     address constant HCA_IMPLEMENTATION = 0x0e03Ae22bA5F4F6af8f51AC7a6d84488Db33A98a;
 
-    address[5] removedControllers;
+    address[6] removedControllers;
     bytes nickAddrBefore;
 
     function setUp() public override {
         super.setUp();
         removedControllers = [
             ETH_REGISTRAR_CONTROLLER,
+            ETH_REGISTRAR_CONTROLLER_2023,
             LEGACY_ETH_REGISTRAR_CONTROLLER,
             ENSConstants.NAME_WRAPPER,
             REGISTRAR_MIGRATION,
@@ -125,7 +127,7 @@ contract Proposal_ENS_EP_Activate_ENSv2_Test is ENS_Governance {
         override
         returns (address[] memory, uint256[] memory, string[] memory, bytes[] memory, string memory)
     {
-        uint256 numTransactions = 15;
+        uint256 numTransactions = 16;
 
         targets = new address[](numTransactions);
         values = new uint256[](numTransactions);
@@ -146,7 +148,7 @@ contract Proposal_ENS_EP_Activate_ENSv2_Test is ENS_Governance {
             IENSNewReverseRegistrar.setController.selector, DEFAULT_REVERSE_REGISTRAR_ADAPTER, true
         );
 
-        // 4-8. remove the v1 controllers
+        // 4-9. remove the v1 controllers
         for (uint256 i; i < removedControllers.length; i++) {
             targets[3 + i] = address(rsc);
             calldatas[3 + i] = abi.encodeWithSelector(
@@ -154,31 +156,31 @@ contract Proposal_ENS_EP_Activate_ENSv2_Test is ENS_Governance {
             );
         }
 
-        // 9-10. renewer and graveyard
-        targets[8] = address(rsc);
-        calldatas[8] =
-            abi.encodeWithSelector(IRegistrarSecurityController.addRegistrarController.selector, ETH_RENEWER_V1);
+        // 10-11. renewer and graveyard
         targets[9] = address(rsc);
-        calldatas[9] = abi.encodeWithSelector(IRegistrarSecurityController.addRegistrarController.selector, GRAVEYARD);
-
-        // 11. renewer takes the BaseRegistrar
+        calldatas[9] =
+            abi.encodeWithSelector(IRegistrarSecurityController.addRegistrarController.selector, ETH_RENEWER_V1);
         targets[10] = address(rsc);
-        calldatas[10] =
+        calldatas[10] = abi.encodeWithSelector(IRegistrarSecurityController.addRegistrarController.selector, GRAVEYARD);
+
+        // 12. renewer takes the BaseRegistrar
+        targets[11] = address(rsc);
+        calldatas[11] =
             abi.encodeWithSelector(IRegistrarSecurityController.transferRegistrarOwnership.selector, ETH_RENEWER_V1);
 
-        // 12. Universal Resolver goes through the managed proxy
-        targets[11] = address(universalResolver);
-        calldatas[11] = abi.encodeWithSelector(IUniversalResolverProxy.upgradeTo.selector, MANAGED_UNIVERSAL_RESOLVER);
+        // 13. Universal Resolver goes through the managed proxy
+        targets[12] = address(universalResolver);
+        calldatas[12] = abi.encodeWithSelector(IUniversalResolverProxy.upgradeTo.selector, MANAGED_UNIVERSAL_RESOLVER);
 
-        // 13-14. public resolvers for locked names
-        targets[12] = address(publicResolverSet);
-        calldatas[12] = abi.encodeWithSelector(IAddressSet.approve.selector, PUBLIC_RESOLVER_2023, true);
+        // 14-15. public resolvers for locked names
         targets[13] = address(publicResolverSet);
-        calldatas[13] = abi.encodeWithSelector(IAddressSet.approve.selector, PUBLIC_RESOLVER_CURRENT, true);
+        calldatas[13] = abi.encodeWithSelector(IAddressSet.approve.selector, PUBLIC_RESOLVER_2023, true);
+        targets[14] = address(publicResolverSet);
+        calldatas[14] = abi.encodeWithSelector(IAddressSet.approve.selector, PUBLIC_RESOLVER_CURRENT, true);
 
-        // 15. HCA implementation
-        targets[14] = address(hcaFactory);
-        calldatas[14] =
+        // 16. HCA implementation
+        targets[15] = address(hcaFactory);
+        calldatas[15] =
             abi.encodeWithSelector(IStandaloneHCAFactory.setImplementationApproval.selector, HCA_IMPLEMENTATION, true);
 
         description = "Pre-draft: EP X.Y Activate ENSv2";
