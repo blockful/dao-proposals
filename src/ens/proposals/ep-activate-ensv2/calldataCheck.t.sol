@@ -73,18 +73,18 @@ contract Proposal_ENS_EP_Activate_ENSv2_Test is ENS_Governance {
     address constant LEGACY_MULTISIG = 0xCF60916b6CB4753f58533808fA610FcbD4098Ec0;
 
     // v2 contracts
-    address constant ENS_V2_RESOLVER = 0x8486D32948cDeF5c24236718318c6326D5d006A9;
+    address constant ENS_V2_RESOLVER = 0xa6D451C5E283Bdd0a7c193910F55db57512AA7B2;
     address constant REVERSE_REGISTRAR_ADAPTER = 0x349151735790269a9C14668B58D7C83b5ecb9607;
     address constant DEFAULT_REVERSE_REGISTRAR_ADAPTER = 0xd86E32499eCAFe9c181dd7410f93A1a9bB61ef0d;
-    address constant ETH_RENEWER_V1 = 0xE038B778b1fbF47A84018820626afc908c9C62B1;
+    address constant ETH_RENEWER_V1 = 0x56c447F308F463A01121C41E72b0E7e7557fCb68;
     address constant GRAVEYARD = 0xDa021A2C1C2F99574D861Ef8c6fA745851BEB7F6;
     address constant MANAGED_UNIVERSAL_RESOLVER = 0xcFFd2Ae680CD110D28739a70922636B5937b022B;
-    address constant UNIVERSAL_RESOLVER_V2 = 0xae5B680305A73511E1825e1196b4ed284061CA07;
+    address constant UNIVERSAL_RESOLVER_V2 = 0x7C027C9cE787d85DDAD999c8601be4139a9ac39D;
     IAddressSet publicResolverSet = IAddressSet(0xfFCedA021CBDF20f1a66ebbef32E49d208cAbf62);
     address constant PUBLIC_RESOLVER_2023 = 0x231b0Ee14048e9dCcD1d247744d114a4EB5E8E63;
     address constant PUBLIC_RESOLVER_CURRENT = 0xF29100983E058B709F3D539b0c765937B804AC15;
     IStandaloneHCAFactory hcaFactory = IStandaloneHCAFactory(0x742bf21897a78e2C98cC5f5C5473A370a081e561);
-    address constant HCA_IMPLEMENTATION = 0x0e03Ae22bA5F4F6af8f51AC7a6d84488Db33A98a;
+    address constant HCA_IMPLEMENTATION = 0x116F462FA078ec0009e9b25DCd60309E70aaC4F4;
 
     address[5] removedControllers;
     bytes nickAddrBefore;
@@ -101,7 +101,7 @@ contract Proposal_ENS_EP_Activate_ENSv2_Test is ENS_Governance {
     }
 
     function _selectFork() public override {
-        vm.createSelectFork({ blockNumber: 26_151_800, urlOrAlias: "mainnet" });
+        vm.createSelectFork({ blockNumber: 26_185_800, urlOrAlias: "mainnet" });
     }
 
     function _beforeProposal() public override {
@@ -210,12 +210,12 @@ contract Proposal_ENS_EP_Activate_ENSv2_Test is ENS_Governance {
         // same lookup
         assertEq(_resolveAddr("nick"), nickAddrBefore);
 
-        // USDC renewal, paid to the timelock
+        // USDC renewal, paid to the endowment
         IERC20 usdc = IERC20(ENSConstants.USDC);
         IETHRenewerV1 renewer = IETHRenewerV1(ETH_RENEWER_V1);
         uint256 price = renewer.getRenewPrice("nick", 365 days, usdc);
         uint256 expiry = baseRegistrar.nameExpires(uint256(labelhash("nick")));
-        uint256 timelockBalance = usdc.balanceOf(address(timelock));
+        uint256 endowmentBalance = usdc.balanceOf(ENSConstants.ENDOWMENT_SAFE);
         address payer = makeAddr("payer");
         deal(address(usdc), payer, price);
         vm.startPrank(payer);
@@ -223,10 +223,10 @@ contract Proposal_ENS_EP_Activate_ENSv2_Test is ENS_Governance {
         renewer.renew(RenewData("nick", 365 days, bytes32(0)), usdc);
         vm.stopPrank();
         assertEq(baseRegistrar.nameExpires(uint256(labelhash("nick"))), expiry + 365 days);
-        assertEq(usdc.balanceOf(address(timelock)), timelockBalance + price);
+        assertEq(usdc.balanceOf(ENSConstants.ENDOWMENT_SAFE), endowmentBalance + price);
     }
 
-    // on.eth isn't reserved on v2, so it stops resolving at stage 4
+    // on.eth has no v2 entry yet; if the final sync doesn't add it, it stops resolving at stage 4
     function test_onEthStopsResolvingAtStage4() public {
         IUniversalResolver ur = IUniversalResolver(address(universalResolver));
         bytes memory name = abi.encodePacked(uint8(4), "base", uint8(2), "on", uint8(3), "eth", uint8(0));
