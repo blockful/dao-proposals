@@ -2,12 +2,12 @@
 
 **Verdict: do not pass. The Security Council should cancel it.**
 
-| | |
-|---|---|
-| Space | `0x594EB60b35C4E91A06a5df988e0504f7463cB769` (Shutter DAO 0x36, Snapshot X) |
-| Proposer | `0x61F31C7B10ab421dD45aaC97813286A5Ed8aA880` |
-| Execution | `0x5716…E7bB` AvatarExecutionStrategy → treasury Safe `0x36bD…32c4` |
-| Voting | blocks 26,095,502 → 26,117,102 (≈ Oct 1 → Oct 4, 2026) |
+|           |                                                                             |
+| --------- | --------------------------------------------------------------------------- |
+| Space     | `0x594EB60b35C4E91A06a5df988e0504f7463cB769` (Shutter DAO 0x36, Snapshot X) |
+| Proposer  | `0x61F31C7B10ab421dD45aaC97813286A5Ed8aA880`                                |
+| Execution | `0x5716…E7bB` AvatarExecutionStrategy → treasury Safe `0x36bD…32c4`         |
+| Voting    | blocks 26,095,502 → 26,117,102 (≈ Oct 1 → Oct 4, 2026)                      |
 
 ## Claimed vs. actual
 
@@ -24,8 +24,8 @@ Running as the Safe, the drainer:
 4. Sells all SHU (path SHU→USDC→WETH) with 30% slippage tolerance.
 5. Sends all ETH to `0xef79…Fbc0`.
 
-The fork simulation leaves the Safe with 0 SHU, 0 USDC, 0 WETH, 0 sUSDS and 0 ETH. The attacker receives about 554k
-USDS and about 60 ETH.
+The fork simulation leaves the Safe with 0 SHU, 0 USDC, 0 WETH, 0 sUSDS and 0 ETH. The attacker receives about 554k USDS
+and about 60 ETH.
 
 ## Proposer origin
 
@@ -45,8 +45,9 @@ spoofed-token transfers.
 
 `forge test --match-path 'src/shutter/proposals/snapshotx-5-treasury-drain/*' -vv`
 
-- `test_onchainProposalMatchesDrainerPayload`: rebuilds the payload hash and shows that it does not match the description.
+- `test_onchainProposalMatchesDrainerPayload`: rebuilds the payload hash and shows that it does not match the
+  description.
 - `test_proposerBoughtJustAboveThreshold`
 - `test_execution_drainsTreasury`
-- `test_councilVeto_blocksDrain` / `test_councilVeto_worksNow`: `Space.cancel(5)` from the Council Safe
-  `0x3ea7…c0C0` (5-of-8) stops the drain.
+- `test_councilVeto_blocksDrain` / `test_councilVeto_worksNow`: `Space.cancel(5)` from the Council Safe `0x3ea7…c0C0`
+  (5-of-8) stops the drain.
