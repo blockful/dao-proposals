@@ -23,13 +23,14 @@ calldata from the Calldata block (call 2 byte for byte, call 1 with the stand-in
 
 1. **Blocker: no actions attached.** Publishing the draft as it is would create a proposal with no calls. The two calls
    need to be added as actions, with the new registrar's address once deployed. Re-review then (see below).
-2. **Timeline: DNSSEC in ENS stops working on 2026-10-22 00:00 UTC, before this can execute.** The draft says resolution
-   and imports broke at the 11 October rollover. They have not yet: the gateway still serves the root DNSKEY RRset with
-   the KSK-2017 signature made on 2026-10-01, which the current oracle accepts until it expires at 2026-10-22 00:00 UTC
-   (the test verifies a live gateway proof on the current oracle, then shows the root link failing one second after
-   expiry). A proposal takes at least ~8.4 days to execute (45,818-block vote, 2-day timelock), so gasless resolution
-   and imports will be down for several days even if the proposal went up today. The description should say so, and the
-   gap is worth planning for.
+2. **Timeline: gateway proofs stop verifying by 2026-10-22 00:00 UTC at the latest, before this can execute.** The draft
+   says resolution and imports broke at the 11 October rollover. Through the gateway they have not yet: it still serves
+   the root DNSKEY RRset with the KSK-2017 signature made on 2026-10-01, which the current oracle accepts until it
+   expires at 2026-10-22 00:00 UTC (the test verifies a live gateway proof on the current oracle, then shows the root
+   link failing one second after expiry). That date is the latest cutoff, not a guaranteed one: the rest of each proof
+   is re-signed far more often, and the gateway could switch to the KSK-2024-signed RRset sooner. A proposal takes at
+   least ~8.4 days to execute (45,818-block vote, 2-day timelock), so there will be a gap of several days even if the
+   proposal went up today. The description should say so, and the gap is worth planning for.
 3. **The 2021 DNSRegistrar (`0x58774Bb8acD458A640aF0B88238369A167546ef2`) stays a Root controller.** The draft's reason
    for removing the 2024 registrar applies to it as well, and it is easier to abuse: its `claim` enables the parent name
    before it checks the proof, an empty proof for a name with no stored record does not revert, and its suffix list
