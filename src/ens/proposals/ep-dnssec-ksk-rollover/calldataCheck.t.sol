@@ -170,6 +170,7 @@ contract Proposal_ENS_EP_DNSSEC_KSK_Rollover_Draft_Test is ENS_Governance {
 
         _assertControllerRights();
         _assertTldMigration();
+        _assertDaoControlsAnchors();
 
         // The lifecycle moved the clock ~9 days past the fixtures' RRSIG windows. Rewind to the fetch
         // time so the proofs are submitted as if freshly fetched; contract state is unaffected.
@@ -273,6 +274,45 @@ contract Proposal_ENS_EP_DNSSEC_KSK_Rollover_Draft_Test is ENS_Governance {
             ++n;
         }
         assertEq(n, calldatas.length, "calldata lines in the description");
+
+        _assertDescribedArguments(body);
+    }
+
+    /// @dev The Transactions table's argument cells, in row order, and every existing address the
+    ///      stand-ins are wired with.
+    function _assertDescribedArguments(string memory body) internal {
+        string memory compact = vm.replace(body, " ", "");
+        uint256 newController = _describedAt(compact, "|`controller`|`0x<newDNSRegistrar>`|");
+        uint256 enabled = _describedAt(compact, "|`enabled`|`true`|");
+        uint256 oldController =
+            _describedAt(compact, string.concat("|`controller`|`", vm.toString(address(currentRegistrar)), "`|"));
+        uint256 disabled = _describedAt(compact, "|`enabled`|`false`|");
+        assertTrue(
+            newController < enabled && enabled < oldController && oldController < disabled,
+            "Transactions table argument order"
+        );
+
+        string memory lower = vm.toLowercase(body);
+        address[9] memory wiring = [
+            address(suffixes),
+            RSASHA1,
+            RSASHA256,
+            P256SHA256,
+            SHA1_DIGEST,
+            SHA256_DIGEST,
+            ENSConstants.ENS_REGISTRY,
+            address(registrar2021),
+            address(timelock)
+        ];
+        for (uint256 i; i < wiring.length; ++i) {
+            _describedAt(lower, vm.toLowercase(vm.toString(wiring[i])));
+        }
+        _describedAt(body, GATEWAY_URL);
+    }
+
+    function _describedAt(string memory haystack, string memory needle) internal pure returns (uint256 at) {
+        at = vm.indexOf(haystack, needle);
+        assertTrue(at != type(uint256).max, string.concat("not in description: ", needle));
     }
 
     /// @dev The draft's "Deployed contracts" table and "Verifying this proposal" checklist.
@@ -306,6 +346,9 @@ contract Proposal_ENS_EP_DNSSEC_KSK_Rollover_Draft_Test is ENS_Governance {
         assertEq(newRegistrar.previousRegistrar(), address(currentRegistrar));
         assertTrue(newRegistrar.wasRegistrar(address(currentRegistrar)));
         assertTrue(newRegistrar.wasRegistrar(address(registrar2021)));
+        // The list 10_deploy_dnsregistrar.ts builds by walking previousRegistrar() on-chain
+        assertTrue(newRegistrar.wasRegistrar(currentRegistrar.previousRegistrar()));
+        assertFalse(newRegistrar.wasRegistrar(address(newRegistrar)));
     }
 
     function _assertProofsBeforeExecution() internal {
@@ -348,9 +391,9 @@ contract Proposal_ENS_EP_DNSSEC_KSK_Rollover_Draft_Test is ENS_Governance {
         assertEq(registry.owner(node), address(0));
         assertFalse(root.locked(label));
 
-        // The current registrar can no longer assign TLDs through the root
+        // The current registrar can no longer assign TLDs through the root (Controllable's bare require)
         vm.prank(address(currentRegistrar));
-        vm.expectRevert();
+        vm.expectRevert(bytes(""));
         root.setSubnodeOwner(label, address(currentRegistrar));
 
         // The 2021 registrar still can, and anyone can make it: `claim` enables the parent name before
@@ -379,6 +422,19 @@ contract Proposal_ENS_EP_DNSSEC_KSK_Rollover_Draft_Test is ENS_Governance {
         bytes32 claimed = namehash(bytes(CLAIMED_NAME));
         assertGt(currentRegistrar.inceptions(claimed), 0);
         assertEq(newRegistrar.inceptions(claimed), currentRegistrar.inceptions(claimed));
+    }
+
+    /// @dev The draft's "future rollovers are a single setAnchors call": only the DAO can make it.
+    function _assertDaoControlsAnchors() internal {
+        bytes memory anchors = newOracle.anchors();
+        address anyone = makeAddr("anyone");
+        vm.prank(anyone);
+        vm.expectRevert(abi.encodeWithSelector(IDNSSEC.OwnableUnauthorizedAccount.selector, anyone));
+        newOracle.setAnchors(anchors);
+
+        vm.prank(address(timelock));
+        newOracle.setAnchors(anchors);
+        assertEq(newOracle.anchors(), anchors);
     }
 
     function _assertClaims() internal {

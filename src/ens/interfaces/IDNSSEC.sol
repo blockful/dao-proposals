@@ -12,6 +12,7 @@ interface IDNSSEC {
 
     error SignatureExpired(uint32 expiration, uint32 now);
     error NoMatchingProof(bytes signerName);
+    error OwnableUnauthorizedAccount(address account);
 
     function anchors() external view returns (bytes memory);
     function algorithms(uint8 id) external view returns (address);
