@@ -416,6 +416,12 @@ contract Proposal_ENS_EP_DNSSEC_KSK_Rollover_Draft_Test is ENS_Governance {
         _assertTld("domains", address(newRegistrar), address(newResolver));
         _assertTld("xyz", address(newRegistrar), address(newResolver));
 
+        // A TLD held by a third party is not migrated, even if it uses the current resolver: .hiphop's
+        // owner has to point it at the new resolver, or gasless names under it stay broken
+        assertEq(registry.resolver(namehash("hiphop")), address(currentResolver));
+        vm.expectRevert(IDNSRegistrar.PreconditionNotMet.selector);
+        newRegistrar.enableNode(_dnsName("hiphop"));
+
         // Imported names stay with their owners
         assertEq(registry.owner(namehash("ens.domains")), ENS_DOMAINS_OWNER);
         // Stored `_ens` TXT inceptions carry over from the current registrar

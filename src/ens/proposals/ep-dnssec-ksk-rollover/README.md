@@ -21,32 +21,55 @@ calldata from the Calldata block (call 2 byte for byte, call 1 with the stand-in
 
 ## Findings
 
+Reviewed in depth by five independent reviewers (calldata and governance, the PR #572 code, DNSSEC timeline, Root
+controllers, and a mutation audit of this test). Each claim below was re-checked against mainnet, the upstream sources
+or the published packages before it went in.
+
 1. **Blocker: no actions attached.** Publishing the draft as it is would create a proposal with no calls. The two calls
    need to be added as actions, with the new registrar's address once deployed. Re-review then (see below).
-2. **Timeline: gateway proofs stop verifying by 2026-10-22 00:00 UTC at the latest, before this can execute.** The draft
-   says resolution and imports broke at the 11 October rollover. Through the gateway they have not yet: it still serves
-   the root DNSKEY RRset with the KSK-2017 signature made on 2026-10-01, which the current oracle accepts until it
-   expires at 2026-10-22 00:00 UTC (the test verifies a live gateway proof on the current oracle, then shows the root
-   link failing one second after expiry). That date is the latest cutoff, not a guaranteed one: the rest of each proof
-   is re-signed far more often, and the gateway could switch to the KSK-2024-signed RRset sooner. A proposal takes at
-   least ~8.4 days to execute (45,818-block vote, 2-day timelock), so there will be a gap of several days even if the
-   proposal went up today. The description should say so, and the gap is worth planning for.
-3. **The 2021 DNSRegistrar (`0x58774Bb8acD458A640aF0B88238369A167546ef2`) stays a Root controller.** The draft's reason
+2. **Timeline: imports are already broken; gasless resolution breaks by 2026-10-22 00:00 UTC at the latest.**
+   - Imports through the ENS app have failed since the 11 October switch, as the draft says: the app (ensjs 4.3.0,
+     `@ensdomains/dnsprovejs` 0.5.1) builds proofs from Cloudflare DoH and only trusts KSK-2010 and KSK-2017, so it
+     stops before any transaction.
+   - Gasless resolution has not broken yet, contrary to the draft: the ENS gateway still replays the root DNSKEY RRset
+     with the KSK-2017 signature made on 2026-10-01, which the current oracle accepts until it expires at 2026-10-22
+     00:00 UTC (the test verifies a live gateway proof on the current oracle, then shows the root link failing one
+     second after expiry). It stops sooner if the gateway changes what it serves.
+   - Execution takes at least 8 days 9 hours from `propose` (45,818-block vote, 2-day timelock), so gasless resolution
+     will be down for several days even if the proposal went up today.
+3. **The proposal alone does not restore DNSSEC; off-chain work is a prerequisite and is not in the draft.**
+   - The gateway must be redeployed with the KSK-2024 anchor (its public repo pins `dnsprovejs` 0.4.1; 1.0.1 is the
+     first release with 38696), ideally before execution. Otherwise gasless resolution stays broken, and once anyone
+     claims through the new registrar with the current root signature, every gateway-built proof that still carries the
+     older root signature reverts `StaleProof` (shown in the test), for any name.
+   - The ENS app and ensjs must move to `dnsprovejs` >= 1.0.1, and ensjs's `ensLegacyDnssecImpl` (`0x0fc3…`) must point
+     at the new oracle, or imports stay broken after execution. The draft's "no user action is needed" holds for users,
+     not for these clients.
+   - `.hiphop` is held by a third party and uses the current resolver; `enableNode` cannot migrate it
+     (`PreconditionNotMet`, in the test), so its owner has to switch the resolver. All other DNS TLDs (1,285) are held
+     by the current registrar and will migrate.
+   - `dnssec.ens.eth` and `dnsregistrar.ens.eth` still resolve to the current oracle and registrar.
+4. **The 2021 DNSRegistrar (`0x58774Bb8acD458A640aF0B88238369A167546ef2`) stays a Root controller.** The draft's reason
    for removing the 2024 registrar applies to it as well, and it is easier to abuse: its `claim` enables the parent name
    before it checks the proof, an empty proof for a name with no stored record does not revert, and its suffix list
-   accepts any single label. So any account can call `claim("x.<label>", "")` and make it take any unowned TLD through
-   Root (shown on the fork; `eth_call` on mainnet succeeds too). The DAO can undo it, and the new registrar can reclaim
-   real public suffixes, but it is a free squat on the ENS root. Suggested third call:
-   `setController(0x58774Bb8acD458A640aF0B88238369A167546ef2, false)`. Nothing depends on it holding the role.
-4. **Note: mixed proof sources after the first claim.** Once anyone claims through the new registrar with the current
-   root signature (inception 2026-10-11), a proof that still uses the gateway's older root signature reverts
-   `StaleProof`. This is the new stale-ancestor check doing its job. It only matters until 2026-10-22, but clients and
-   the gateway should serve the current RRset.
-5. **Note: the draft's "previous registrars `[0xB32c…, 0x58774…, ...]`".** The deploy script walks `previousRegistrar()`
-   and stops at the 2021 deployment, so the list is exactly those two. Check `wasRegistrar` on the deployed contract.
+   accepts any single label. So anyone can make it take any unowned TLD through Root (shown on the fork; `eth_call` on
+   mainnet succeeds too), including the 162 real IANA TLDs that ENS does not hold, and it can then clear names under a
+   TLD it holds. It holds no TLD today, so revoking it breaks nothing; undoing a squat would need the DAO or the
+   Security Council. Suggested third call: `setController(0x58774Bb8acD458A640aF0B88238369A167546ef2, false)`.
+5. **Minor: the KSK-2017 anchor is inert after 2026-10-22.** IANA publishes KSK-2017 with the REVOKE bit on 2027-01-11
+   and removes it on 2027-03-22; the new oracle rejects revoked keys, so DS 20326 will not validate anything again.
+   Consider deploying with KSK-2024 only, or plan the `setAnchors` call that drops it.
+6. **Minor: the draft's "previous registrars `[0xB32c…, 0x58774…, ...]`".** The deploy script walks
+   `previousRegistrar()` and stops at the 2021 deployment, so the list is exactly those two. Check `wasRegistrar` on the
+   deployed contract.
+
+The PR #572 code review found no critical or high issue: revoked-key handling (including the root's 2027 KSK-2017
+revocation), chain integrity, inception keying and the `enableNode` boundaries all held under fork tests. One
+informational upstream note: `StaleProof`'s first-write comparison treats any inception after 2038-01-19 as stale (same
+in the deployed registrar).
 
 Checked and consistent with the draft: Root is owned by the timelock and `0xB32c…` is a controller; the current oracle's
-anchors are exactly KSK-2010 and KSK-2017 (digests match IANA) with no KSK-2024; a, b and k root servers serve the root
+anchors are exactly KSK-2010 and KSK-2017 (digests match IANA) with no KSK-2024; all 13 root servers serve the root
 DNSKEY RRset signed only by key tag 38696; the KSK-2024 DS in upstream's fixture matches IANA; the algorithm and digest
 table matches the current oracle; the suffix list and gateway URL are the current ones; PR #572 is merged into `staging`
 as `f0151aa`.
@@ -64,8 +87,9 @@ precompile at `0x100`, and under the repo's default `cancun` every P-256 signatu
 - **Description:** checks the derived calls against the Transactions table and Calldata block.
 - **Lifecycle:** propose, vote, queue and execute the two calls.
 - **After:**
-  - Root rejects the 2024 registrar, and the 2021 registrar can still take an unowned TLD (finding 3).
-  - Anyone can migrate `.domains` and `.xyz` to the new registrar and resolver.
+  - Root rejects the 2024 registrar, and the 2021 registrar can still take an unowned TLD (finding 4).
+  - Only the DAO can call `setAnchors` on the new oracle.
+  - Anyone can migrate `.domains` and `.xyz` to the new registrar and resolver; `.hiphop` cannot be migrated.
   - `ens.domains` keeps its owner, and stored inceptions carry over.
   - `proveAndClaim` of `ens.domains` with a KSK-2024 chain succeeds on the new registrar and fails on the old one, and
     an older chain is then rejected as stale.
@@ -97,4 +121,4 @@ Supporting files:
    deployment.
 3. Check the deployed runtime bytecode against `upstream/artifacts`, masking immutables and the metadata tail.
 4. Check `owner()` is the timelock, plus the anchors, algorithms, digests and constructor arguments.
-5. Re-check finding 3 against the final action list.
+5. Re-check findings 3 and 4 against the final action list and the gateway's state.

@@ -8,6 +8,7 @@ import { IDNSSEC } from "./IDNSSEC.sol";
 ///      2021 deployment has no `previousRegistrar` either.
 interface IDNSRegistrar {
     error StaleProof(bytes name, uint16 typeCovered, uint32 lastTime, uint32 time);
+    error PreconditionNotMet();
 
     function ens() external view returns (address);
     function oracle() external view returns (address);
