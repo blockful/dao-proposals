@@ -73,7 +73,7 @@ precompile at `0x100`, and under the repo's default `cancun` every P-256 signatu
 Mutating either call (call 1 with `enabled = false`, or call 2 revoking the wrong registrar) makes the test fail; the
 wrong-registrar mutant is caught by the description check before the proposal is submitted.
 
-`forum-post.md` is the review message for the draft thread; fill in `COMMIT_HASH` and `SHORT_HASH` once committed.
+`forum-post.md` is the review message for the draft thread.
 
 ```bash
 forge test --match-path "src/ens/proposals/ep-dnssec-ksk-rollover/*" -vv

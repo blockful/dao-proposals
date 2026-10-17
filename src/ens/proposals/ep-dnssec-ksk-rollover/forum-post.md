@@ -20,10 +20,10 @@ Points to address before publishing:
 
 Once the contracts are deployed and the actions are attached, we will re-run the review against the real addresses, including comparing the deployed bytecode against `f0151aa` and checking ownership, anchors and constructor arguments.
 
-The simulation and tests can be found [here](https://github.com/blockful/dao-proposals/blob/COMMIT_HASH/src/ens/proposals/ep-dnssec-ksk-rollover/calldataCheck.t.sol).
+The simulation and tests can be found [here](https://github.com/blockful/dao-proposals/blob/8c76e3e8f7f460d22bed71a87eba726172f7bb83/src/ens/proposals/ep-dnssec-ksk-rollover/calldataCheck.t.sol).
 
 To verify locally:
 
 1. Clone: `git clone https://github.com/blockful/dao-proposals.git`
-2. Checkout: `git checkout SHORT_HASH`
+2. Checkout: `git checkout 8c76e3e`
 3. Run: `forge test --match-path "src/ens/proposals/ep-dnssec-ksk-rollover/*" -vv`
