@@ -1,11 +1,16 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.25 <0.9.0;
 
-import {Test} from "@forge-std/src/Test.sol";
-import {CalldataComparison} from "@contracts/base/CalldataComparison.sol";
+import { Test } from "@forge-std/src/Test.sol";
+import { CalldataComparison } from "@contracts/base/CalldataComparison.sol";
 
 interface IGitcoinGovernor {
-    function hashProposal(address[] calldata targets, uint256[] calldata values, bytes[] calldata calldatas, bytes32 descriptionHash)
+    function hashProposal(
+        address[] calldata targets,
+        uint256[] calldata values,
+        bytes[] calldata calldatas,
+        bytes32 descriptionHash
+    )
         external
         pure
         returns (uint256);
@@ -24,11 +29,23 @@ interface IGitcoinTimelock {
     function setPendingAdmin(address newPendingAdmin) external;
     function admin() external view returns (address);
     function pendingAdmin() external view returns (address);
-    function queueTransaction(address target, uint256 value, string calldata signature, bytes calldata data, uint256 eta)
+    function queueTransaction(
+        address target,
+        uint256 value,
+        string calldata signature,
+        bytes calldata data,
+        uint256 eta
+    )
         external
         returns (bytes32);
 
-    function executeTransaction(address target, uint256 value, string calldata signature, bytes calldata data, uint256 eta)
+    function executeTransaction(
+        address target,
+        uint256 value,
+        string calldata signature,
+        bytes calldata data,
+        uint256 eta
+    )
         external
         payable
         returns (bytes memory);
@@ -39,7 +56,7 @@ interface IGitcoinTimelock {
 contract Proposal_GTC_UpgradeGovernor_Test is Test, CalldataComparison {
     uint256 internal constant CREATION_BLOCK = 26_041_897;
     uint256 internal constant PROPOSAL_ID =
-        108424336499353530648500000064168793429110207266290758900130997553694566139017;
+        108_424_336_499_353_530_648_500_000_064_168_793_429_110_207_266_290_758_900_130_997_553_694_566_139_017;
     uint256 internal constant VOTING_START = 26_055_037;
     uint256 internal constant VOTING_END = 26_095_357;
 
@@ -57,7 +74,7 @@ contract Proposal_GTC_UpgradeGovernor_Test is Test, CalldataComparison {
     address internal guardianBefore;
 
     function setUp() public {
-        vm.createSelectFork({urlOrAlias: "mainnet", blockNumber: CREATION_BLOCK});
+        vm.createSelectFork({ urlOrAlias: "mainnet", blockNumber: CREATION_BLOCK });
         vm.label(GOVERNOR_ADDRESS, "GTC Governor Bravo");
         vm.label(TIMELOCK_ADDRESS, "Gitcoin Timelock");
         vm.label(NEW_GOVERNOR_ADDRESS, "Gitcoin Governor Charlie");
@@ -81,13 +98,11 @@ contract Proposal_GTC_UpgradeGovernor_Test is Test, CalldataComparison {
         bytes memory setPendingAdminData = abi.encode(NEW_GOVERNOR_ADDRESS);
         bytes memory acceptAdminData = bytes("");
         vm.prank(GOVERNOR_ADDRESS);
-        bytes32 setPendingAdminTx = TIMELOCK.queueTransaction(
-            TIMELOCK_ADDRESS, 0, "setPendingAdmin(address)", setPendingAdminData, eta
-        );
+        bytes32 setPendingAdminTx =
+            TIMELOCK.queueTransaction(TIMELOCK_ADDRESS, 0, "setPendingAdmin(address)", setPendingAdminData, eta);
         vm.prank(GOVERNOR_ADDRESS);
-        bytes32 acceptAdminTx = TIMELOCK.queueTransaction(
-            NEW_GOVERNOR_ADDRESS, 0, "__acceptAdmin()", acceptAdminData, eta
-        );
+        bytes32 acceptAdminTx =
+            TIMELOCK.queueTransaction(NEW_GOVERNOR_ADDRESS, 0, "__acceptAdmin()", acceptAdminData, eta);
         assertTrue(TIMELOCK.queuedTransactions(setPendingAdminTx), "first action was not queued");
         assertTrue(TIMELOCK.queuedTransactions(acceptAdminTx), "second action was not queued");
 
