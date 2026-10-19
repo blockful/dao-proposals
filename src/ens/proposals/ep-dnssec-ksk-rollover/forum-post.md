@@ -12,7 +12,8 @@ Points to address:
    - the gateway needs redeploying with the KSK-2024 anchor (its public repo pins `dnsprovejs` 0.4.1), ideally before execution. Otherwise resolution stays down, and once anyone claims with the current root signature, gateway-built proofs fail the new `StaleProof` check;
    - the ENS app and ensjs need `dnsprovejs` >= 1.0.1, and ensjs's oracle address must be updated, or imports stay broken;
    - `.hiphop` is held by a third party with the old resolver and cannot be migrated by `enableNode`; its owner has to switch it;
-   - `dnssec.ens.eth` and `dnsregistrar.ens.eth` still point at the old contracts.
+   - `dnssec.ens.eth` and `dnsregistrar.ens.eth` still point at the old contracts;
+   - ENSv2's DNS resolver (`DNSTLDResolver` 0xab48…, redeployed 18 Oct) is bound to the old oracle as an immutable, so v2 needs its own `DNSTLDResolver` redeploy and TLD move after the new oracle is deployed, and v2 resolution should not be switched on before that.
 4. **Also deauthorise the 2021 DNSRegistrar.** `0x58774Bb8acD458A640aF0B88238369A167546ef2` is still a Root controller and can be used to take unowned TLDs. It holds none today, so revoking it breaks nothing. We suggest adding `setController(0x58774Bb8acD458A640aF0B88238369A167546ef2, false)`.
 5. **Minor.** After 22 October the KSK-2017 anchor will never validate anything again: IANA revokes KSK-2017 on 2027-01-11 and removes it on 2027-03-22. Consider deploying with KSK-2024 only, or plan the `setAnchors` call. Also, the previous-registrars list resolves to exactly two addresses, not `[..., ...]`.
 

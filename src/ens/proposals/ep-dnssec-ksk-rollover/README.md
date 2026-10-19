@@ -49,6 +49,12 @@ or the published packages before it went in.
      (`PreconditionNotMet`, in the test), so its owner has to switch the resolver. All other DNS TLDs (1,285) are held
      by the current registrar and will migrate.
    - `dnssec.ens.eth` and `dnsregistrar.ens.eth` still resolve to the current oracle and registrar.
+   - ENSv2's DNS path does not pick up the new oracle. The `DNSTLDResolver` redeployed on 2026-10-18
+     (`0xab48304a2520ce420e636aacd48a8bb3e7e485ee`, resolver of all 1,275 DNS TLDs in the v2 root) has
+     `DNSSEC_ORACLE = 0x0fc3…` as an immutable. Once v2 resolution is switched on, gasless DNS names through v2 fail
+     from 2026-10-22 whether or not this proposal has executed, until ENS Labs deploys a `DNSTLDResolver` bound to the
+     new oracle and moves the 1,275 TLDs to it again (only the Labs deployer holds the v2 root roles for that before
+     handover).
 4. **The 2021 DNSRegistrar (`0x58774Bb8acD458A640aF0B88238369A167546ef2`) stays a Root controller.** The draft's reason
    for removing the 2024 registrar applies to it as well, and it is easier to abuse: its `claim` enables the parent name
    before it checks the proof, an empty proof for a name with no stored record does not revert, and its suffix list
