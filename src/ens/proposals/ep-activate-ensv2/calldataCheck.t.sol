@@ -1,0 +1,259 @@
+// SPDX-License-Identifier: MIT
+pragma solidity >=0.8.25 <0.9.0;
+
+import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+
+import { ENS_Governance } from "@ens/ens.t.sol";
+import { ENSConstants } from "@ens/Constants.sol";
+import { IENSRegistrar } from "@ens/interfaces/IENSRegistrar.sol";
+import { IENSRegistryWithFallback } from "@ens/interfaces/IENSRegistryWithFallback.sol";
+import { IENSReverseRegistrar } from "@ens/interfaces/IENSReverseRegistrar.sol";
+import { IENSNewReverseRegistrar } from "@ens/interfaces/IENSNewReverseRegistrar.sol";
+
+interface IRegistrarSecurityController {
+    function owner() external view returns (address);
+    function addRegistrarController(address controller) external;
+    function removeRegistrarController(address controller) external;
+    function setRegistrarResolver(address resolver) external;
+    function transferRegistrarOwnership(address newOwner) external;
+}
+
+interface IUniversalResolverProxy {
+    function upgradeTo(address newImplementation) external;
+    function implementation() external view returns (address);
+    function admin() external view returns (address);
+}
+
+interface IUniversalResolver {
+    function resolve(bytes calldata name, bytes calldata data) external view returns (bytes memory, address);
+}
+
+interface IAddrResolver {
+    function addr(bytes32 node) external view returns (address);
+}
+
+struct RenewData {
+    string label;
+    uint64 duration;
+    bytes32 referrer;
+}
+
+interface IETHRenewerV1 {
+    function renew(RenewData calldata rd, IERC20 paymentToken) external;
+    function getRenewPrice(string calldata label, uint64 duration, IERC20 paymentToken) external view returns (uint256);
+}
+
+interface IAddressSet {
+    function approve(address addr, bool approved) external;
+    function includes(address addr) external view returns (bool);
+}
+
+interface IStandaloneHCAFactory {
+    function setImplementationApproval(address implementation, bool approved) external;
+    function approvedImplementations(address implementation) external view returns (bool);
+}
+
+contract Proposal_ENS_EP_Activate_ENSv2_Test is ENS_Governance {
+    IENSRegistrar baseRegistrar = IENSRegistrar(0x57f1887a8BF19b14fC0dF6Fd9B2acc9Af147eA85);
+    IENSRegistryWithFallback ensRegistry = IENSRegistryWithFallback(ENSConstants.ENS_REGISTRY);
+    IRegistrarSecurityController rsc = IRegistrarSecurityController(0x7dd4d97653A67C2FD7fbA0a84825eC09524D4E1b);
+    IENSReverseRegistrar reverseRegistrar = IENSReverseRegistrar(0xa58E81fe9b61B5c3fE2AFD33CF304c454AbFc7Cb);
+    IENSNewReverseRegistrar defaultReverseRegistrar =
+        IENSNewReverseRegistrar(0x283F227c4Bd38ecE252C4Ae7ECE650B0e913f1f9);
+    IUniversalResolverProxy universalResolver = IUniversalResolverProxy(0xeEeEEEeE14D718C2B47D9923Deab1335E144EeEe);
+
+    address constant UNIVERSAL_RESOLVER_V1 = 0xED73a03F19e8D849E44a39252d222c6ad5217E1e;
+    address constant ETH_OWNED_RESOLVER = 0x30200E0cb040F38E474E53EF437c95A1bE723b2B;
+    address constant SECURITY_COUNCIL_SAFE = 0x7101B78638e34444F0a5AdE9e1149fbEeC029931;
+
+    address constant ETH_REGISTRAR_CONTROLLER = 0x59E16fcCd424Cc24e280Be16E11Bcd56fb0CE547;
+    address constant LEGACY_ETH_REGISTRAR_CONTROLLER = 0x283Af0B28c62C092C9727F1Ee09c02CA627EB7F5;
+    address constant REGISTRAR_MIGRATION = 0x60C7C2A24b5e86C38639Fd1586917a8FEF66a56d;
+    address constant LEGACY_MULTISIG = 0xCF60916b6CB4753f58533808fA610FcbD4098Ec0;
+
+    address constant ENS_V2_RESOLVER = 0x3071AD643cE4Ed8b3D67b289845b45dB82b068A4;
+    address constant REVERSE_REGISTRAR_ADAPTER = 0x349151735790269a9C14668B58D7C83b5ecb9607;
+    address constant DEFAULT_REVERSE_REGISTRAR_ADAPTER = 0xd86E32499eCAFe9c181dd7410f93A1a9bB61ef0d;
+    address constant ETH_RENEWER_V1 = 0x56c447F308F463A01121C41E72b0E7e7557fCb68;
+    address constant GRAVEYARD = 0xDa021A2C1C2F99574D861Ef8c6fA745851BEB7F6;
+    address constant MANAGED_UNIVERSAL_RESOLVER = 0xcFFd2Ae680CD110D28739a70922636B5937b022B;
+    address constant UNIVERSAL_RESOLVER_V2 = 0x06Fdd07F007ADaC667177b46aB2EB9A75132Cfd5;
+    IAddressSet publicResolverSet = IAddressSet(0xfFCedA021CBDF20f1a66ebbef32E49d208cAbf62);
+    address constant PUBLIC_RESOLVER_2023 = 0x231b0Ee14048e9dCcD1d247744d114a4EB5E8E63;
+    address constant PUBLIC_RESOLVER_CURRENT = 0xF29100983E058B709F3D539b0c765937B804AC15;
+    IStandaloneHCAFactory hcaFactory = IStandaloneHCAFactory(0x742bf21897a78e2C98cC5f5C5473A370a081e561);
+    address constant HCA_IMPLEMENTATION = 0x116F462FA078ec0009e9b25DCd60309E70aaC4F4;
+
+    address[5] removedControllers;
+    bytes nickAddrBefore;
+
+    function setUp() public override {
+        super.setUp();
+        removedControllers = [
+            ETH_REGISTRAR_CONTROLLER,
+            ENSConstants.NAME_WRAPPER,
+            REGISTRAR_MIGRATION,
+            LEGACY_MULTISIG,
+            LEGACY_ETH_REGISTRAR_CONTROLLER
+        ];
+    }
+
+    function _selectFork() public override {
+        vm.createSelectFork({ blockNumber: 26_221_944, urlOrAlias: "mainnet" });
+    }
+
+    function _beforeProposal() public override {
+        assertEq(rsc.owner(), address(timelock));
+        assertEq(baseRegistrar.owner(), address(rsc));
+        for (uint256 i; i < removedControllers.length; i++) {
+            assertTrue(baseRegistrar.controllers(removedControllers[i]));
+        }
+        assertFalse(baseRegistrar.controllers(ETH_RENEWER_V1));
+        assertFalse(baseRegistrar.controllers(GRAVEYARD));
+        assertEq(ensRegistry.resolver(namehash("eth")), ETH_OWNED_RESOLVER);
+        assertEq(universalResolver.implementation(), UNIVERSAL_RESOLVER_V1);
+        assertEq(IUniversalResolverProxy(MANAGED_UNIVERSAL_RESOLVER).admin(), SECURITY_COUNCIL_SAFE);
+        assertFalse(publicResolverSet.includes(PUBLIC_RESOLVER_2023));
+        assertFalse(hcaFactory.approvedImplementations(HCA_IMPLEMENTATION));
+
+        nickAddrBefore = _resolveAddr("nick");
+    }
+
+    function _generateCallData()
+        public
+        override
+        returns (address[] memory, uint256[] memory, string[] memory, bytes[] memory, string memory)
+    {
+        uint256 numTransactions = 15;
+
+        targets = new address[](numTransactions);
+        values = new uint256[](numTransactions);
+        calldatas = new bytes[](numTransactions);
+        signatures = new string[](numTransactions);
+
+        targets[0] = address(rsc);
+        calldatas[0] =
+            abi.encodeWithSelector(IRegistrarSecurityController.setRegistrarResolver.selector, ENS_V2_RESOLVER);
+
+        targets[1] = address(defaultReverseRegistrar);
+        calldatas[1] = abi.encodeWithSelector(
+            IENSNewReverseRegistrar.setController.selector, DEFAULT_REVERSE_REGISTRAR_ADAPTER, true
+        );
+        targets[2] = address(reverseRegistrar);
+        calldatas[2] =
+            abi.encodeWithSelector(IENSReverseRegistrar.setController.selector, REVERSE_REGISTRAR_ADAPTER, true);
+
+        targets[3] = address(publicResolverSet);
+        calldatas[3] = abi.encodeWithSelector(IAddressSet.approve.selector, PUBLIC_RESOLVER_2023, true);
+        targets[4] = address(publicResolverSet);
+        calldatas[4] = abi.encodeWithSelector(IAddressSet.approve.selector, PUBLIC_RESOLVER_CURRENT, true);
+
+        targets[5] = address(hcaFactory);
+        calldatas[5] =
+            abi.encodeWithSelector(IStandaloneHCAFactory.setImplementationApproval.selector, HCA_IMPLEMENTATION, true);
+
+        for (uint256 i; i < removedControllers.length; i++) {
+            targets[6 + i] = address(rsc);
+            calldatas[6 + i] = abi.encodeWithSelector(
+                IRegistrarSecurityController.removeRegistrarController.selector, removedControllers[i]
+            );
+        }
+
+        targets[11] = address(rsc);
+        calldatas[11] = abi.encodeWithSelector(IRegistrarSecurityController.addRegistrarController.selector, GRAVEYARD);
+        targets[12] = address(rsc);
+        calldatas[12] =
+            abi.encodeWithSelector(IRegistrarSecurityController.addRegistrarController.selector, ETH_RENEWER_V1);
+
+        targets[13] = address(rsc);
+        calldatas[13] =
+            abi.encodeWithSelector(IRegistrarSecurityController.transferRegistrarOwnership.selector, ETH_RENEWER_V1);
+
+        targets[14] = address(universalResolver);
+        calldatas[14] = abi.encodeWithSelector(IUniversalResolverProxy.upgradeTo.selector, MANAGED_UNIVERSAL_RESOLVER);
+
+        description = getDescriptionFromMarkdown();
+
+        return (targets, values, signatures, calldatas, description);
+    }
+
+    function _afterExecution() public override {
+        assertEq(baseRegistrar.owner(), ETH_RENEWER_V1);
+        assertTrue(baseRegistrar.controllers(ETH_RENEWER_V1));
+        assertTrue(baseRegistrar.controllers(GRAVEYARD));
+        for (uint256 i; i < removedControllers.length; i++) {
+            assertFalse(baseRegistrar.controllers(removedControllers[i]));
+        }
+        assertEq(ensRegistry.resolver(namehash("eth")), ENS_V2_RESOLVER);
+        assertTrue(reverseRegistrar.controllers(REVERSE_REGISTRAR_ADAPTER));
+        assertTrue(defaultReverseRegistrar.controllers(DEFAULT_REVERSE_REGISTRAR_ADAPTER));
+        assertEq(universalResolver.implementation(), MANAGED_UNIVERSAL_RESOLVER);
+        assertTrue(publicResolverSet.includes(PUBLIC_RESOLVER_2023));
+        assertTrue(publicResolverSet.includes(PUBLIC_RESOLVER_CURRENT));
+        assertTrue(hcaFactory.approvedImplementations(HCA_IMPLEMENTATION));
+
+        vm.prank(ETH_REGISTRAR_CONTROLLER);
+        vm.expectRevert();
+        baseRegistrar.register(uint256(labelhash("ensv2-freeze-check")), address(this), 365 days);
+
+        assertEq(_resolveAddr("nick"), nickAddrBefore);
+
+        IERC20 usdc = IERC20(ENSConstants.USDC);
+        IETHRenewerV1 renewer = IETHRenewerV1(ETH_RENEWER_V1);
+        uint256 price = renewer.getRenewPrice("nick", 365 days, usdc);
+        uint256 expiry = baseRegistrar.nameExpires(uint256(labelhash("nick")));
+        uint256 endowmentBalance = usdc.balanceOf(ENSConstants.ENDOWMENT_SAFE);
+        address payer = makeAddr("payer");
+        deal(address(usdc), payer, price);
+        vm.startPrank(payer);
+        usdc.approve(ETH_RENEWER_V1, price);
+        renewer.renew(RenewData("nick", 365 days, bytes32(0)), usdc);
+        vm.stopPrank();
+        assertEq(baseRegistrar.nameExpires(uint256(labelhash("nick"))), expiry + 365 days);
+        assertEq(usdc.balanceOf(ENSConstants.ENDOWMENT_SAFE), endowmentBalance + price);
+    }
+
+    // on.eth has no v2 reservation yet
+    function test_onEthStopsResolvingAtStage4() public {
+        IUniversalResolver ur = IUniversalResolver(address(universalResolver));
+        bytes memory name = abi.encodePacked(uint8(4), "base", uint8(2), "on", uint8(3), "eth", uint8(0));
+        bytes memory data = abi.encodeWithSignature("text(bytes32,string)", namehash("base.on.eth"), "chainId");
+
+        (bytes memory result,) = ur.resolve(name, data);
+        assertEq(abi.decode(result, (string)), "eip155:8453");
+        bytes memory nick = _resolveAddr("nick");
+
+        (targets, values, signatures, calldatas, description) = _generateCallData();
+        vm.startPrank(address(timelock));
+        for (uint256 i; i < targets.length; i++) {
+            (bool ok,) = targets[i].call(calldatas[i]);
+            assertTrue(ok);
+        }
+        vm.stopPrank();
+        (result,) = ur.resolve(name, data);
+        assertEq(abi.decode(result, (string)), "eip155:8453");
+
+        // stage 4
+        vm.prank(SECURITY_COUNCIL_SAFE);
+        IUniversalResolverProxy(MANAGED_UNIVERSAL_RESOLVER).upgradeTo(UNIVERSAL_RESOLVER_V2);
+
+        vm.expectRevert(abi.encodeWithSignature("ResolverNotFound(bytes)", name));
+        ur.resolve(name, data);
+        assertEq(_resolveAddr("nick"), nick);
+    }
+
+    function _isProposalSubmitted() public pure override returns (bool) {
+        return true;
+    }
+
+    function dirPath() public pure override returns (string memory) {
+        return "src/ens/proposals/ep-activate-ensv2";
+    }
+
+    function _resolveAddr(string memory label) internal view returns (bytes memory result) {
+        bytes memory name = abi.encodePacked(uint8(bytes(label).length), label, uint8(3), "eth", uint8(0));
+        bytes memory data =
+            abi.encodeWithSelector(IAddrResolver.addr.selector, namehash(bytes(string.concat(label, ".eth"))));
+        (result,) = IUniversalResolver(address(universalResolver)).resolve(name, data);
+    }
+}
