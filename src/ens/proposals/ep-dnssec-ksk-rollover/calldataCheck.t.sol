@@ -15,12 +15,14 @@ interface IAddrResolver {
 
 /// @notice Draft "[Executable] Upgrade DNSSEC oracle and registrar for the 2026 root KSK rollover"
 ///         (ens.gov.blockful.io draft a9adfa71-3cde-44f5-950b-ff97602bdeef, by nick.eth).
-/// @dev The draft has no actions attached and its new contracts are `0x<TBD>`, so there is no
-///      proposalCalldata.json to compare against. The calldata is built from the draft's
-///      Specification / Transactions sections, and the three new contracts are deployed on the fork
-///      from ensdomains/ens-contracts commit f0151aa (see upstream/build.sh), wired as the draft's
-///      "Deployed contracts" table says. Proofs in fixtures/proofs.json were fetched at the fork
-///      block (see fixtures/fetch_proofs.py).
+/// @dev The draft has no actions attached and still lists its new contracts as `0x<TBD>`, so there is
+///      no proposalCalldata.json to compare against. The calldata is built from the draft's
+///      Specification / Transactions sections and checked against its description. ENS Labs deployed
+///      the three contracts on 2026-10-20; their runtime code matches upstream/artifacts (built from
+///      ensdomains/ens-contracts 06fd01e by upstream/build.sh; check with upstream/verify-deployed.py).
+///      Proofs in fixtures/proofs.json were fetched at the fork block (see fixtures/fetch_proofs.py);
+///      fixtures/proofs-2026-10-17.json is the earlier snapshot, from before the gateway switched to
+///      KSK-2024.
 ///      Runs on Osaka: the P256SHA256 algorithm contract (id 13) calls the P256VERIFY precompile at
 ///      0x100 (EIP-7951), which mainnet has since Osaka. Under the repo default (cancun) every P-256
 ///      signature fails to verify.
@@ -82,26 +84,37 @@ contract Proposal_ENS_EP_DNSSEC_KSK_Rollover_Draft_Test is ENS_Governance {
     // Not a TLD in DNS or ENS, and not in the current public suffix list
     string constant UNOWNED_LABEL = "notarealtldzz";
 
-    // ─── Stand-ins for the contracts ENS Labs will deploy (`0x<TBD>` in the draft)
+    // ─── Deployed by ENS Labs on 2026-10-20 (blocks 26,230,856-866), `0x<TBD>` in the draft
     // ─
-    IDNSSEC newOracle;
-    IOffchainDNSResolver newResolver;
-    IDNSRegistrar newRegistrar;
+    IDNSSEC constant newOracle = IDNSSEC(0x668ad4467129d49ECbe6274d95197797C0E262AA);
+    IOffchainDNSResolver constant newResolver = IOffchainDNSResolver(0xEbBcBFBE4A8F3357e7d1d444406C28cFa34f1261);
+    IDNSRegistrar constant newRegistrar = IDNSRegistrar(0x8284c9D6e7882Fe1DE49C79062a4c797F0988B3D);
 
     string proofs;
+    string legacyProofs;
     uint256 proofTime;
 
     function setUp() public override {
         super.setUp();
         proofs = vm.readFile(string.concat(dirPath(), "/fixtures/proofs.json"));
+        legacyProofs = vm.readFile(string.concat(dirPath(), "/fixtures/proofs-2026-10-17.json"));
         assertEq(vm.parseJsonUint(proofs, ".forkBlock"), block.number, "fixtures fetched at a different block");
         proofTime = vm.parseJsonUint(proofs, ".forkTimestamp");
-        _deployNewContracts();
+
+        vm.label(address(newOracle), "newDNSSECImpl");
+        vm.label(address(newResolver), "newOffchainDNSResolver");
+        vm.label(address(newRegistrar), "newDNSRegistrar");
+        vm.label(address(currentOracle), "currentDNSSECImpl");
+        vm.label(address(currentRegistrar), "currentDNSRegistrar");
+        vm.label(address(registrar2021), "dnsRegistrar2021");
+        vm.label(address(currentResolver), "currentOffchainDNSResolver");
+        vm.label(address(root), "root");
     }
 
     function _selectFork() public override {
-        // Block fixtures/proofs.json was fetched at; every RRSIG in it is valid at this block's timestamp
-        vm.createSelectFork({ blockNumber: 26_214_036, urlOrAlias: "mainnet" });
+        // Block fixtures/proofs.json was fetched at (after the 2026-10-20 deployment); every RRSIG in it
+        // is valid at this block's timestamp
+        vm.createSelectFork({ blockNumber: 26_295_292, urlOrAlias: "mainnet" });
     }
 
     function _proposer() public pure override returns (address) {
@@ -129,7 +142,7 @@ contract Proposal_ENS_EP_DNSSEC_KSK_Rollover_Draft_Test is ENS_Governance {
         );
 
         _assertMatchesDescription();
-        _assertNewContractsMatchDraft();
+        _assertDeployedContractsMatchDraft();
         _assertProofsBeforeExecution();
 
         // TLDs exercised below are held by the current registrar and resolved by the current resolver
@@ -184,71 +197,12 @@ contract Proposal_ENS_EP_DNSSEC_KSK_Rollover_Draft_Test is ENS_Governance {
     }
 
     /*//////////////////////////////////////////////////////////////////////////
-                                    DEPLOYMENT
-    //////////////////////////////////////////////////////////////////////////*/
-
-    /// @dev Mirrors upstream deploy/dnssec-oracle/10_deploy_oracle.ts and deploy/dnsregistrar/{00,10},
-    ///      plus the ownership transfer the draft says ENS Labs will make.
-    function _deployNewContracts() internal {
-        string memory out = string.concat(dirPath(), "/upstream/artifacts/");
-
-        newOracle = IDNSSEC(
-            deployCode(
-                string.concat(out, "DNSSECImpl.json"),
-                abi.encode(
-                    bytes.concat(_rootAnchor(KSK_2017_TAG, KSK_2017_DIGEST), _rootAnchor(KSK_2024_TAG, KSK_2024_DIGEST))
-                )
-            )
-        );
-        newOracle.setAlgorithm(ALG_RSASHA1, RSASHA1);
-        newOracle.setAlgorithm(ALG_RSASHA1_NSEC3, RSASHA1);
-        newOracle.setAlgorithm(ALG_RSASHA256, RSASHA256);
-        newOracle.setAlgorithm(ALG_P256SHA256, P256SHA256);
-        newOracle.setDigest(DIGEST_SHA1, SHA1_DIGEST);
-        newOracle.setDigest(DIGEST_SHA256, SHA256_DIGEST);
-        newOracle.transferOwnership(address(timelock));
-
-        newResolver = IOffchainDNSResolver(
-            deployCode(
-                string.concat(out, "OffchainDNSResolver.json"),
-                abi.encode(ENSConstants.ENS_REGISTRY, address(newOracle), GATEWAY_URL)
-            )
-        );
-
-        // As 10_deploy_dnsregistrar.ts builds it: walk previousRegistrar() from the current deployment
-        address[] memory previousRegistrars = new address[](2);
-        previousRegistrars[0] = address(currentRegistrar);
-        previousRegistrars[1] = address(registrar2021);
-        newRegistrar = IDNSRegistrar(
-            deployCode(
-                string.concat(out, "DNSRegistrar.json"),
-                abi.encode(
-                    previousRegistrars,
-                    address(newResolver),
-                    address(newOracle),
-                    address(suffixes),
-                    ENSConstants.ENS_REGISTRY
-                )
-            )
-        );
-
-        vm.label(address(newOracle), "newDNSSECImpl");
-        vm.label(address(newResolver), "newOffchainDNSResolver");
-        vm.label(address(newRegistrar), "newDNSRegistrar");
-        vm.label(address(currentOracle), "currentDNSSECImpl");
-        vm.label(address(currentRegistrar), "currentDNSRegistrar");
-        vm.label(address(registrar2021), "dnsRegistrar2021");
-        vm.label(address(currentResolver), "currentOffchainDNSResolver");
-        vm.label(address(root), "root");
-    }
-
-    /*//////////////////////////////////////////////////////////////////////////
                                 BEFORE EXECUTION
     //////////////////////////////////////////////////////////////////////////*/
 
     /// @dev The draft has no actions attached, so the comparison target is its description: the
     ///      Transactions table (target, value, function) and the Calldata block. The new registrar's
-    ///      address is a placeholder there and is filled in with the stand-in's.
+    ///      address is still a placeholder there and is filled in with the deployed one.
     function _assertMatchesDescription() internal {
         string memory body = vm.readFile(string.concat(dirPath(), "/proposalDescription.md"));
 
@@ -264,22 +218,27 @@ contract Proposal_ENS_EP_DNSSEC_KSK_Rollover_Draft_Test is ENS_Governance {
 
         // Calldata block: one hex line per transaction, in order
         string memory placeholder = "<new DNSRegistrar, 20 bytes>";
-        string memory standIn = vm.replace(vm.toLowercase(vm.toString(address(newRegistrar))), "0x", "");
+        string memory deployed = vm.replace(vm.toLowercase(vm.toString(address(newRegistrar))), "0x", "");
         string[] memory lines = vm.split(body, "\n");
         uint256 n;
         for (uint256 i; i < lines.length; ++i) {
             if (vm.indexOf(lines[i], "0x") != 0) continue;
             assertLt(n, calldatas.length, "more calldata lines than transactions");
-            assertEq(vm.parseBytes(vm.replace(lines[i], placeholder, standIn)), calldatas[n], "description calldata");
+            assertEq(vm.parseBytes(vm.replace(lines[i], placeholder, deployed)), calldatas[n], "description calldata");
             ++n;
         }
         assertEq(n, calldatas.length, "calldata lines in the description");
 
         _assertDescribedArguments(body);
+
+        // FINDING: the draft does not name the deployed contracts yet
+        string memory lower = vm.toLowercase(body);
+        assertEq(vm.indexOf(lower, vm.toLowercase(vm.toString(address(newRegistrar)))), type(uint256).max);
+        assertEq(vm.indexOf(lower, vm.toLowercase(vm.toString(address(newOracle)))), type(uint256).max);
     }
 
     /// @dev The Transactions table's argument cells, in row order, and every existing address the
-    ///      stand-ins are wired with.
+    ///      deployed contracts are wired with.
     function _assertDescribedArguments(string memory body) internal {
         string memory compact = vm.replace(body, " ", "");
         uint256 newController = _describedAt(compact, "|`controller`|`0x<newDNSRegistrar>`|");
@@ -315,8 +274,9 @@ contract Proposal_ENS_EP_DNSSEC_KSK_Rollover_Draft_Test is ENS_Governance {
         assertTrue(at != type(uint256).max, string.concat("not in description: ", needle));
     }
 
-    /// @dev The draft's "Deployed contracts" table and "Verifying this proposal" checklist.
-    function _assertNewContractsMatchDraft() internal view {
+    /// @dev The draft's "Deployed contracts" table and "Verifying this proposal" checklist, on the
+    ///      contracts ENS Labs deployed.
+    function _assertDeployedContractsMatchDraft() internal view {
         assertEq(newOracle.owner(), address(timelock));
         assertEq(
             newOracle.anchors(),
@@ -353,32 +313,37 @@ contract Proposal_ENS_EP_DNSSEC_KSK_Rollover_Draft_Test is ENS_Governance {
 
     function _assertProofsBeforeExecution() internal {
         IDNSSEC.RRSetWithSignature[] memory gateway = _proof("ensDomainsClaim", "gateway");
-        IDNSSEC.RRSetWithSignature[] memory ksk2024 = _proof("ensDomainsClaim", "ksk2024");
+        IDNSSEC.RRSetWithSignature[] memory staleRoot = _proof("ensDomainsClaim", "staleRoot");
 
-        // The gateway still serves a root DNSKEY RRset signed by KSK-2017 before the rollover, so the
-        // current oracle still verifies its proofs today...
-        assertEq(vm.parseJsonUint(proofs, ".proofs.ensDomainsClaim.gatewayRootKeyTag"), KSK_2017_TAG);
-        (bytes memory txtRRset,) = currentOracle.verifyRRSet(gateway);
-
-        // ...but not a chain that starts from the root DNSKEY RRset the root servers serve now
+        // The gateway now serves the root DNSKEY RRset signed by KSK-2024, the same chain the root
+        // servers serve, and the current oracle rejects it: gasless resolution and imports through the
+        // current stack are down until this proposal executes
+        assertEq(vm.parseJsonUint(proofs, ".proofs.ensDomainsClaim.gatewayRootKeyTag"), KSK_2024_TAG);
         assertEq(vm.parseJsonUint(proofs, ".rootDnskeyKeyTag"), KSK_2024_TAG);
+        assertEq(
+            keccak256(vm.parseJsonBytes(proofs, ".proofs.ensDomainsClaim.gateway")),
+            keccak256(vm.parseJsonBytes(proofs, ".proofs.ensDomainsClaim.ksk2024"))
+        );
         vm.expectRevert(abi.encodeWithSelector(IDNSSEC.NoMatchingProof.selector, _dnsName("")));
-        currentOracle.verifyRRSet(ksk2024);
+        currentOracle.verifyRRSet(gateway);
 
-        // The new oracle verifies both, ending in the same _ens.ens.domains TXT RRset
-        (bytes memory rrs,) = newOracle.verifyRRSet(ksk2024);
-        assertEq(rrs, txtRRset);
-        (rrs,) = newOracle.verifyRRSet(gateway);
+        // The new oracle verifies it, and a chain with an older, still valid KSK-2024 root signature
+        // (2026-10-11), both ending in the same _ens.ens.domains TXT RRset
+        (bytes memory txtRRset,) = newOracle.verifyRRSet(gateway);
+        (bytes memory rrs,) = newOracle.verifyRRSet(staleRoot);
         assertEq(rrs, txtRRset);
 
-        // The gateway's KSK-2017 root signature lapses at 2026-10-22 00:00 UTC; after that the current
-        // oracle cannot verify the root link at all. The KSK-2024 one is valid until 2026-11-01.
-        uint32 lapse = uint32(vm.parseJsonUint(proofs, ".proofs.ensDomainsClaim.gatewayRootExpiration"));
+        // Until 2026-10-22 00:00 UTC the gateway served a KSK-2017 root signature from 2026-10-01
+        // (fixtures/proofs-2026-10-17.json), which the current oracle accepted up to that second
+        IDNSSEC.RRSetWithSignature[] memory legacyGateway = abi.decode(
+            vm.parseJsonBytes(legacyProofs, ".proofs.ensDomainsClaim.gateway"), (IDNSSEC.RRSetWithSignature[])
+        );
+        assertEq(vm.parseJsonUint(legacyProofs, ".proofs.ensDomainsClaim.gatewayRootKeyTag"), KSK_2017_TAG);
+        uint32 lapse = uint32(vm.parseJsonUint(legacyProofs, ".proofs.ensDomainsClaim.gatewayRootExpiration"));
         assertEq(lapse, 1_792_627_200, "2026-10-22T00:00:00Z");
-        currentOracle.verifyRRSet(_rootLink(gateway), lapse);
+        currentOracle.verifyRRSet(_rootLink(legacyGateway), lapse);
         vm.expectRevert(abi.encodeWithSelector(IDNSSEC.SignatureExpired.selector, lapse, lapse + 1));
-        currentOracle.verifyRRSet(_rootLink(gateway), lapse + 1);
-        newOracle.verifyRRSet(_rootLink(ksk2024), lapse + 1);
+        currentOracle.verifyRRSet(_rootLink(legacyGateway), lapse + 1);
     }
 
     /*//////////////////////////////////////////////////////////////////////////
@@ -445,33 +410,34 @@ contract Proposal_ENS_EP_DNSSEC_KSK_Rollover_Draft_Test is ENS_Governance {
 
     function _assertClaims() internal {
         IDNSSEC.RRSetWithSignature[] memory gateway = _proof("ensDomainsClaim", "gateway");
-        IDNSSEC.RRSetWithSignature[] memory ksk2024 = _proof("ensDomainsClaim", "ksk2024");
+        IDNSSEC.RRSetWithSignature[] memory staleRoot = _proof("ensDomainsClaim", "staleRoot");
         bytes memory ensDomains = _dnsName("ens.domains");
 
         // The current registrar cannot verify a KSK-2024 chain
         vm.expectRevert(abi.encodeWithSelector(IDNSSEC.NoMatchingProof.selector, _dnsName("")));
-        currentRegistrar.proveAndClaim(ensDomains, ksk2024);
+        currentRegistrar.proveAndClaim(ensDomains, gateway);
 
         // The new registrar can; the claim re-asserts the owner in the TXT record
-        newRegistrar.proveAndClaim(ensDomains, ksk2024);
+        newRegistrar.proveAndClaim(ensDomains, gateway);
         assertEq(registry.owner(namehash("ens.domains")), ENS_DOMAINS_OWNER);
         uint32 rootInception = uint32(vm.parseJsonUint(proofs, ".rootDnskeyInception"));
         assertEq(newRegistrar.getInception(_dnsName(""), TYPE_DNSKEY), rootInception);
 
-        // A chain with an older, still unexpired root signature (the gateway's 2026-10-01 KSK-2017
-        // one) is now rejected: the stale-ancestor check the draft describes
-        uint32 gatewayRootInception = uint32(vm.parseJsonUint(proofs, ".proofs.ensDomainsClaim.gatewayRootInception"));
-        assertLt(gatewayRootInception, rootInception);
+        // FINDING: a chain built on the older, still valid KSK-2024 root signature (2026-10-11) is now
+        // rejected for every name, although the oracle accepts it and the signed RRset is the same.
+        // ens-contracts #583 (open) changes this; the deployed registrar does not have it.
+        uint32 staleInception = uint32(vm.parseJsonUint(proofs, ".proofs.ensDomainsClaim.staleRootInception"));
+        assertLt(staleInception, rootInception);
         vm.expectRevert(
             abi.encodeWithSelector(
-                IDNSRegistrar.StaleProof.selector, _dnsName(""), TYPE_DNSKEY, rootInception, gatewayRootInception
+                IDNSRegistrar.StaleProof.selector, _dnsName(""), TYPE_DNSKEY, rootInception, staleInception
             )
         );
-        newRegistrar.proveAndClaim(ensDomains, gateway);
+        newRegistrar.proveAndClaim(ensDomains, staleRoot);
     }
 
     function _assertGaslessResolution() internal {
-        bytes memory response = vm.parseJsonBytes(proofs, ".proofs.taytemsXyzGasless.ksk2024");
+        bytes memory response = vm.parseJsonBytes(proofs, ".proofs.taytemsXyzGasless.gateway");
         bytes memory query = abi.encodeCall(IAddrResolver.addr, (namehash("taytems.xyz")));
         bytes memory extraData = abi.encode(_dnsName("taytems.xyz"), query, bytes4(0));
 

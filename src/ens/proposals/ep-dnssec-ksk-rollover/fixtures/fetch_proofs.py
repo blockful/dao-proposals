@@ -11,10 +11,14 @@ DNSSEC.RRSetWithSignature[]:
              a.root-servers.net, which since 2026-10-11 is signed only by KSK-2024
              (key tag 38696). Every other link is the gateway's.
 
+  staleRoot - (only with OLD_FIXTURE) the same chain with link 0 replaced by the root DNSKEY
+             link of OLD_FIXTURE's `ksk2024` proof: an older, still valid signature over the
+             root DNSKEY RRset, to exercise the registrar's stale-ancestor check.
+
 RRSIGs expire, so the proofs only verify inside the window recorded in the output; the
 test pins its fork to `forkBlock` and replays the proofs at `proofTime`.
 
-Usage: python3 -I fixtures/fetch_proofs.py <RPC_URL> > fixtures/proofs.json
+Usage: python3 -I fixtures/fetch_proofs.py <RPC_URL> [OLD_FIXTURE] > fixtures/proofs.json
 Needs `dig` and network access.
 """
 
@@ -151,6 +155,7 @@ def window(links):
 
 def main():
     rpc = sys.argv[1]
+    old = json.load(open(sys.argv[2])) if len(sys.argv) > 2 else None
     block = json.loads(
         subprocess.check_output(["cast", "block", "latest", "--json", "--rpc-url", rpc], text=True)
     )
@@ -169,7 +174,7 @@ def main():
     for key, name in NAMES.items():
         gw = abi_decode_rrsets(gateway_proof(name))
         ksk = [root_link] + gw[1:]
-        out["proofs"][key] = {
+        entry = {
             "name": name,
             "dnsName": "0x" + dns_encode(name).hex(),
             "gatewayRootKeyTag": int.from_bytes(gw[0][0][16:18], "big"),
@@ -180,6 +185,13 @@ def main():
             "gateway": "0x" + abi_encode_rrsets(gw).hex(),
             "ksk2024": "0x" + abi_encode_rrsets(ksk).hex(),
         }
+        if old:
+            old_root = abi_decode_rrsets(bytes.fromhex(old["proofs"][key]["ksk2024"][2:]))[0]
+            stale = [old_root] + gw[1:]
+            entry["staleRootInception"] = int.from_bytes(old_root[0][12:16], "big")
+            entry["staleRootWindow"] = window(stale)
+            entry["staleRoot"] = "0x" + abi_encode_rrsets(stale).hex()
+        out["proofs"][key] = entry
     json.dump(out, sys.stdout, indent=2)
     print()
 
