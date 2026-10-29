@@ -13,6 +13,15 @@ interface IAddrResolver {
     function addr(bytes32 node) external view returns (address payable);
 }
 
+interface IRegistryV2 {
+    function getResolver(string calldata label) external view returns (address);
+}
+
+interface IDNSTLDResolverV2 {
+    function DNSSEC_ORACLE() external view returns (address);
+    function ROOT_REGISTRY() external view returns (address);
+}
+
 /// @notice Draft "[Executable] Upgrade DNSSEC oracle and registrar for the 2026 root KSK rollover"
 ///         (ens.gov.blockful.io draft a9adfa71-3cde-44f5-950b-ff97602bdeef, by nick.eth).
 /// @dev The draft has no actions attached and still lists its new contracts as `0x<TBD>`, so there is
@@ -89,6 +98,16 @@ contract Proposal_ENS_EP_DNSSEC_KSK_Rollover_Draft_Test is ENS_Governance {
     IDNSSEC constant newOracle = IDNSSEC(0x668ad4467129d49ECbe6274d95197797C0E262AA);
     IOffchainDNSResolver constant newResolver = IOffchainDNSResolver(0xEbBcBFBE4A8F3357e7d1d444406C28cFa34f1261);
     IDNSRegistrar constant newRegistrar = IDNSRegistrar(0x8284c9D6e7882Fe1DE49C79062a4c797F0988B3D);
+
+    // ─── ENSv2 resolution (live since the ENSv2 activation executed)
+    // ─
+    address constant UNIVERSAL_RESOLVER = 0xeEeEEEeE14D718C2B47D9923Deab1335E144EeEe;
+    address constant MANAGED_UNIVERSAL_RESOLVER = 0xcFFd2Ae680CD110D28739a70922636B5937b022B;
+    address constant UNIVERSAL_RESOLVER_V2 = 0x06Fdd07F007ADaC667177b46aB2EB9A75132Cfd5;
+    IRegistryV2 constant rootRegistryV2 = IRegistryV2(0x2553c09bE6447BeFfdB86FA622ad41fB8f77A91e);
+    IDNSTLDResolverV2 constant dnsTldResolverV2 = IDNSTLDResolverV2(0xaB48304A2520CE420E636AaCD48A8bb3e7e485Ee);
+    // ERC-1967 implementation slot
+    bytes32 constant IMPLEMENTATION_SLOT = 0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc;
 
     string proofs;
     string legacyProofs;
@@ -184,6 +203,7 @@ contract Proposal_ENS_EP_DNSSEC_KSK_Rollover_Draft_Test is ENS_Governance {
         _assertControllerRights();
         _assertTldMigration();
         _assertDaoControlsAnchors();
+        _assertV2DnsStillOnOldOracle();
 
         // The lifecycle moved the clock ~9 days past the fixtures' RRSIG windows. Rewind to the fetch
         // time so the proofs are submitted as if freshly fetched; contract state is unaffected.
@@ -393,6 +413,21 @@ contract Proposal_ENS_EP_DNSSEC_KSK_Rollover_Draft_Test is ENS_Governance {
         bytes32 claimed = namehash(bytes(CLAIMED_NAME));
         assertGt(currentRegistrar.inceptions(claimed), 0);
         assertEq(newRegistrar.inceptions(claimed), currentRegistrar.inceptions(claimed));
+    }
+
+    /// @dev FINDING: name lookups through the Universal Resolver now go through ENSv2, whose DNS TLD
+    ///      resolver is bound to the current oracle as an immutable. This proposal does not change that,
+    ///      so gasless DNS names stay unresolvable there until ENS Labs redeploys it on the new oracle.
+    function _assertV2DnsStillOnOldOracle() internal view {
+        assertEq(
+            address(uint160(uint256(vm.load(UNIVERSAL_RESOLVER, IMPLEMENTATION_SLOT)))), MANAGED_UNIVERSAL_RESOLVER
+        );
+        assertEq(
+            address(uint160(uint256(vm.load(MANAGED_UNIVERSAL_RESOLVER, IMPLEMENTATION_SLOT)))), UNIVERSAL_RESOLVER_V2
+        );
+        assertEq(rootRegistryV2.getResolver("xyz"), address(dnsTldResolverV2));
+        assertEq(dnsTldResolverV2.ROOT_REGISTRY(), address(rootRegistryV2));
+        assertEq(dnsTldResolverV2.DNSSEC_ORACLE(), address(currentOracle));
     }
 
     /// @dev The draft's "future rollovers are a single setAnchors call": only the DAO can make it.
