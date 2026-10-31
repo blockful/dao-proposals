@@ -42,6 +42,7 @@
     "test:coverage:report": "forge coverage --report lcov && genhtml lcov.info --branch-coverage --output-dir coverage",
     "fetch-calldata": "node src/utils/fetchDraft.js",
     "fetch-live-proposal": "node src/utils/fetchLiveProposal.js",
+    "review": "node src/utils/review.js",
     "prepare": "husky"
   },
   "lint-staged": {

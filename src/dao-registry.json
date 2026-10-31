@@ -13,6 +13,7 @@
         "token": "0xC18360217D8F7Ab5e7c516566761Ea12Ce7F9D72"
       },
       "tallySlug": "ens",
+      "proposalUrl": "https://ens.gov.blockful.io/proposals/{id}",
       "proposalPrefix": "ep",
       "contractNaming": "Proposal_ENS_EP_{epoch}_{number}_Test",
       "helpers": ["SafeHelper", "ZodiacRolesHelper", "MultiSendHelper"],

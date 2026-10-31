@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const { execFileSync } = require('child_process');
 
-const ANTICAPTURE_API_BASE = 'https://app.anticapture.com/api/gateful';
+const ANTICAPTURE_API_BASE = 'https://app.anticapture.com/api/user/drafts';
 
 function usage() {
     console.log('Usage: node fetchDraft.js <DRAFT_URL_OR_ID> <OUTPUT_DIR>');
@@ -121,7 +121,7 @@ async function fetchDraft(dao, draftId, outputDir, source) {
     try {
         console.log(`Fetching draft ${draftId} from the Anticapture API...`);
 
-        const response = await fetch(`${ANTICAPTURE_API_BASE}/${dao}/proposal/drafts/${draftId}`);
+        const response = await fetch(`${ANTICAPTURE_API_BASE}/${draftId}`);
         if (response.status === 404) {
             throw new Error(`Draft ${draftId} not found for DAO "${dao}"`);
         }
@@ -133,16 +133,12 @@ async function fetchDraft(dao, draftId, outputDir, source) {
 
         const draft = await response.json();
         const actions = draft.actions || [];
-        if (actions.length === 0) {
-            throw new Error('No actions found in the draft');
-        }
-
         console.log(`Found ${actions.length} action(s)`);
         console.log(`\nDraft Information:`);
         console.log(`  ID: ${draft.id || draftId}`);
         console.log(`  DAO: ${draft.daoId || dao}`);
         console.log(`  Title: ${draft.title || '(untitled)'}`);
-        console.log(`  Author: ${draft.author || 'Unknown'}`);
+        console.log(`  Author: ${draft.authorAddress || 'Unknown'}`);
         console.log(`  Created: ${draft.createdAt || 'Unknown'} — updated: ${draft.updatedAt || 'Unknown'}`);
 
         const executableCalls = actions.map((action, index) => {
@@ -159,7 +155,7 @@ async function fetchDraft(dao, draftId, outputDir, source) {
         const calldataJson = {
             source: source || `https://app.anticapture.com/${dao}/proposals/new?draftId=${draftId}`,
             draftId,
-            author: draft.author,
+            author: draft.authorAddress,
             fetchedAt: new Date().toISOString().replace(/\.\d{3}Z$/, 'Z'),
             executableCalls,
         };
@@ -173,8 +169,12 @@ async function fetchDraft(dao, draftId, outputDir, source) {
         const jsonPath = path.join(resolvedDir, 'proposalCalldata.json');
         const mdPath = path.join(resolvedDir, 'proposalDescription.md');
 
-        fs.writeFileSync(jsonPath, JSON.stringify(calldataJson, null, 2));
-        console.log(`\nWrote ${jsonPath}`);
+        if (actions.length === 0) {
+            console.log('\nNo actions attached, so there is no calldata to save. Compare against the description.');
+        } else {
+            fs.writeFileSync(jsonPath, JSON.stringify(calldataJson, null, 2));
+            console.log(`\nWrote ${jsonPath}`);
+        }
 
         fs.writeFileSync(mdPath, description);
         console.log(`Wrote ${mdPath}`);

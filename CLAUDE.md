@@ -31,10 +31,12 @@ src/
 
 ## How to Review a Proposal
 
-When given a Tally URL or asked to review a proposal:
+Use `/proposal-review <URL>` from the private `blockful-skills` repo. Install it with
+`npx skills@1.5.10 add blockful/blockful-skills@proposal-review -a claude-code -a codex -g -y`.
 
-1. Use `/proposal-review <TALLY_URL>` — detects the phase (live/draft/pre-draft) and walks through the full workflow
-2. The skill lives in the private `blockful-skills` repo (`.claude/skills/tech/proposal-review`), not in this repo
+Every review runs through `src/utils/review.js` and ends the same way: a plain test, a one-line PR description, a squash
+merge and a forum comment ready to paste. `review.js finish` produces the PR text and the forum comment, so use them as
+printed.
 
 ## Golden Rules
 
@@ -66,9 +68,15 @@ forge test --match-path "src/ens/proposals/ep-6-38/*" -vv
 # Run all ENS tests
 forge test --match-path "src/ens/**" -vv
 
-# Fetch live proposal data
-node src/utils/fetchLiveProposal.js <TALLY_URL> <OUTPUT_DIR>
+# Start a review: fetch the proposal, check it against the chain, write the test skeleton
+node src/utils/review.js start <PROPOSAL_URL_OR_ID>
 
-# Fetch draft proposal data (Anticapture draft API)
-node src/utils/fetchDraft.js <ANTICAPTURE_DRAFT_URL_OR_UUID> <OUTPUT_DIR>
+# Check a finished test
+node src/utils/review.js check <PROPOSAL_DIR>
+
+# Commit, open the PR, wait for CI, merge and print the forum comment
+node src/utils/review.js finish <PROPOSAL_DIR> --summary "what moves where" --wait
+
+# Test the review script
+node --test src/utils/review.test.js
 ```
