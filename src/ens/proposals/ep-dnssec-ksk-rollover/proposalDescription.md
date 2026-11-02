@@ -1,4 +1,4 @@
-# \[EP X.Y] \[Executable] Upgrade DNSSEC oracle and registrar for the 2026 root KSK rollover
+# [Executable] Upgrade DNSSEC oracle and registrar for the 2026 root KSK rollover
 
 ## Abstract
 
@@ -6,7 +6,7 @@ On 11 October 2026 at 14:00 UTC, the DNS root zone switched to signing its DNSKE
 
 This proposal replaces the oracle, the DNS registrar and the offchain DNS resolver with new versions from [ensdomains/ens-contracts#572](https://github.com/ensdomains/ens-contracts/pull/572). The new oracle trusts KSK-2017 and KSK-2024, and its anchors can be updated by the DAO in future, so the next root rollover will be a single `setAnchors` call rather than a redeployment. The same release also fixes three lower-severity issues in the oracle and registrar, described below.
 
-The only DAO action required is to authorise the new registrar as a controller of the root, and deauthorise the current one. Existing DNS names in ENS are unaffected, and no user action is needed.
+The only DAO action required is to authorise the new registrar as a controller of the root, and deauthorise the current one and the 2021 one before it. Existing DNS names in ENS are unaffected, and no user action is needed.
 
 ## Background
 
@@ -43,13 +43,13 @@ Separately, the RSA signature forgery issue disclosed in [GHSA-c6rr-7pmc-73wc](h
 
 ## Deployed contracts
 
-ENS Labs will deploy these from commit `f0151aa` and source-verify them on Etherscan before the proposal goes to a vote, and will transfer ownership of the new `DNSSECImpl` to the DAO timelock (`0xFe89cc7aBB2C4183683ab71653C4cdc9B02D44b7`).
+ENS Labs deployed these on 20 October 2026 from `staging` at [`06fd01e`](https://github.com/ensdomains/ens-contracts/commit/06fd01e364fe6b73b8ff7d82c9c0f6f1a1c63c24) (PR #572 plus [#580](https://github.com/ensdomains/ens-contracts/pull/580), which hardens `OffchainDNSResolver`), source-verified them on Etherscan, and transferred ownership of the new `DNSSECImpl` to the DAO timelock (`0xFe89cc7aBB2C4183683ab71653C4cdc9B02D44b7`).
 
 | Contract              | Address   | Constructor arguments                                                                                                                                                                                                                                                                                  |
 | --------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `DNSSECImpl`          | `0x<TBD>` | anchors: DS 20326/8/2, DS 38696/8/2                                                                                                                                                                                                                                                                    |
-| `OffchainDNSResolver` | `0x<TBD>` | registry `0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e`, oracle `0x<new DNSSECImpl>`, gateway `https://dnssec-oracle.ens.domains/`                                                                                                                                                                       |
-| `DNSRegistrar`        | `0x<TBD>` | previous registrars `[0xB32cB5677a7C971689228EC835800432B339bA2B, 0x58774bb8acd458a640af0b88238369a167546ef2, ...]`, resolver `0x<new OffchainDNSResolver>`, oracle `0x<new DNSSECImpl>`, suffixes `0x823BDa9cA8c47d072376eCD595530c8fb2fAa3ED`, registry `0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e` |
+| `DNSSECImpl`          | `0x668ad4467129d49ECbe6274d95197797C0E262AA` | anchors: DS 20326/8/2, DS 38696/8/2                                                                                                                                                                                                                                                                    |
+| `OffchainDNSResolver` | `0xEbBcBFBE4A8F3357e7d1d444406C28cFa34f1261` | registry `0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e`, oracle `0x668ad4467129d49ECbe6274d95197797C0E262AA`, gateway `https://dnssec-oracle.ens.domains/`                                                                                                                                                                       |
+| `DNSRegistrar`        | `0x8284c9D6e7882Fe1DE49C79062a4c797F0988B3D` | previous registrars `[0xB32cB5677a7C971689228EC835800432B339bA2B, 0x58774Bb8acD458A640aF0B88238369A167546ef2]`, resolver `0xEbBcBFBE4A8F3357e7d1d444406C28cFa34f1261`, oracle `0x668ad4467129d49ECbe6274d95197797C0E262AA`, suffixes `0x823BDa9cA8c47d072376eCD595530c8fb2fAa3ED`, registry `0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e` |
 
 The new oracle is configured with the existing algorithm and digest contracts:
 
@@ -65,23 +65,18 @@ The public suffix list contract is unchanged.
 
 ## Specification
 
-The DAO calls `setController` on the root contract (`root.ens.eth`, `0xaB528d626EC275E3faD363fF1393A41F581c5897`) twice: once to authorise the new `DNSRegistrar`, and once to deauthorise the current one. Authorising the new registrar lets it take ownership of DNS TLDs from the old one via the permissionless `enableNode` call. Deauthorising the old registrar stops it from enabling any further TLDs against an oracle that can no longer verify proofs.
+The DAO calls `setController` on the root contract (`root.ens.eth`, `0xaB528d626EC275E3faD363fF1393A41F581c5897`) three times: once to authorise the new `DNSRegistrar`, once to deauthorise the current one, and once to deauthorise the 2021 `DNSRegistrar` (`0x58774Bb8acD458A640aF0B88238369A167546ef2`), which stayed a controller when the current one replaced it in January 2024. Authorising the new registrar lets it take ownership of DNS TLDs from the old one via the permissionless `enableNode` call. Deauthorising the old registrars stops them from enabling any further TLDs against oracles that can no longer verify proofs. The 2021 registrar holds no TLDs, so nothing depends on its role.
 
 ## Transactions
 
 | Address                                      | Value | Function                      | Argument     | Value                                        |
 | -------------------------------------------- | ----- | ----------------------------- | ------------ | -------------------------------------------- |
-| `0xaB528d626EC275E3faD363fF1393A41F581c5897` | 0 ETH | `setController(address,bool)` | `controller` | `0x<new DNSRegistrar>`                       |
+| `0xaB528d626EC275E3faD363fF1393A41F581c5897` | 0 ETH | `setController(address,bool)` | `controller` | `0x8284c9D6e7882Fe1DE49C79062a4c797F0988B3D`                       |
 |                                              |       |                               | `enabled`    | `true`                                       |
 | `0xaB528d626EC275E3faD363fF1393A41F581c5897` | 0 ETH | `setController(address,bool)` | `controller` | `0xB32cB5677a7C971689228EC835800432B339bA2B` |
 |                                              |       |                               | `enabled`    | `false`                                      |
-
-Calldata:
-
-```
-0xe0dba60f000000000000000000000000<new DNSRegistrar, 20 bytes>0000000000000000000000000000000000000000000000000000000000000001
-0xe0dba60f000000000000000000000000b32cb5677a7c971689228ec835800432b339ba2b0000000000000000000000000000000000000000000000000000000000000000
-```
+| `0xaB528d626EC275E3faD363fF1393A41F581c5897` | 0 ETH | `setController(address,bool)` | `controller` | `0x58774Bb8acD458A640aF0B88238369A167546ef2` |
+|                                              |       |                               | `enabled`    | `false`                                      |
 
 ## After execution
 
