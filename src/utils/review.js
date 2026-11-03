@@ -85,7 +85,10 @@ function parseRef(input) {
 
 function proposalLink(daoKey, phase, id) {
     const dao = registry.daos[daoKey];
-    if (phase === 'draft') return `https://${daoKey}.gov.blockful.io/proposals/new?draftId=${id}`;
+    if (phase === 'draft') {
+        if (dao.proposalUrl) return `https://${daoKey}.gov.blockful.io/proposals/new?draftId=${id}`;
+        return `https://app.anticapture.com/${daoKey}/proposals/new?draftId=${id}`;
+    }
     if (phase !== 'live') return null;
     if (dao.proposalUrl) return dao.proposalUrl.replace('{id}', id);
     return dao.tallySlug ? `https://www.tally.xyz/gov/${dao.tallySlug}/proposal/${id}` : null;
@@ -214,6 +217,8 @@ function skeleton({ daoKey, name, phase, dir, proposalId, block, proposer, propo
     const importPath = `@${path.basename(dao.basePath)}/${path.basename(dao.baseTestFile)}`;
     const size = Math.max(calls, 1);
     const live = phase === 'live';
+    const uniLive = live && base === 'UNI_Governance';
+    const ensLive = live && !uniLive;
     const label = proposerName ? ` // ${proposerName}` : '';
 
     return `// SPDX-License-Identifier: MIT
@@ -222,7 +227,7 @@ pragma solidity >=0.8.25 <0.9.0;
 import { ${base} } from "${importPath}";
 
 ${draftLink ? `// ${draftLink}\n` : ''}contract ${contractName(daoKey, name, phase)} is ${base} {
-${live ? `    uint256 constant expectedProposalId = ${proposalId};\n\n` : ''}    function _selectFork() public override {
+${ensLive ? `    uint256 constant expectedProposalId = ${proposalId};\n\n` : ''}    function _selectFork() public override {
         vm.createSelectFork({ blockNumber: ${block}, urlOrAlias: "mainnet" });
     }
 ${
@@ -235,7 +240,7 @@ ${
         : ''
 }
     function _beforeProposal() public override {
-${live ? '        assertEq(proposalId, expectedProposalId);\n' : ''}        // TODO: snapshot and check the state this proposal changes
+${ensLive ? '        assertEq(proposalId, expectedProposalId);\n' : ''}        // TODO: snapshot and check the state this proposal changes
     }
 
     function _generateCallData()
@@ -243,7 +248,7 @@ ${live ? '        assertEq(proposalId, expectedProposalId);\n' : ''}        // T
         override
         returns (address[] memory, uint256[] memory, string[] memory, bytes[] memory, string memory)
     {
-        targets = new address[](${size});
+${uniLive ? `        proposalId = ${proposalId};\n\n` : ''}        targets = new address[](${size});
         values = new uint256[](${size});
         calldatas = new bytes[](${size});
         signatures = new string[](${size});
@@ -438,7 +443,11 @@ function lintTest(source, { phase, calls, dir }) {
     if (dirPath !== null && !dirPath.includes(`"${phase === 'pre-draft' ? '' : dir}"`)) {
         problems.push(`dirPath() must return "${phase === 'pre-draft' ? '' : dir}"`);
     }
-    if (phase === 'live' && !/expectedProposalId|PROPOSAL_ID|_proposalId/.test(code)) {
+    if (
+        phase === 'live' &&
+        !/expectedProposalId|PROPOSAL_ID|_proposalId/.test(code) &&
+        !/\bproposalId\s*=/.test(calldata)
+    ) {
         problems.push('a live review must pin the on-chain proposal ID');
     }
     return problems;
@@ -628,7 +637,7 @@ function forumComment({ phase, link, summary, notes, findings = [], noActions, e
 }
 
 function ciState(checks) {
-    if (!checks.length) return { state: 'pending', names: ['no checks reported yet'] };
+    if (!checks || !checks.length) return { state: 'pending', names: ['no checks reported yet'] };
     const name = (c) => c.name || c.context;
     const badConclusions = ['FAILURE', 'CANCELLED', 'TIMED_OUT', 'ACTION_REQUIRED', 'STARTUP_FAILURE'];
     const isFailed = (c) => badConclusions.includes(c.conclusion) || ['FAILURE', 'ERROR'].includes(c.state);
