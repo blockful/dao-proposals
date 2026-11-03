@@ -1,5 +1,9 @@
 const test = require('node:test');
 const assert = require('node:assert');
+const fs = require('fs');
+const os = require('os');
+const path = require('path');
+const { execFileSync } = require('child_process');
 
 const review = require('./review');
 
@@ -164,4 +168,36 @@ test('CI only counts as passed when every check finished cleanly', () => {
     assert.strictEqual(review.ciState([{ name: 'a', status: 'COMPLETED', conclusion: 'FAILURE' }]).state, 'failed');
     assert.strictEqual(review.ciState([{ context: 'a', state: 'ERROR' }]).state, 'failed');
     assert.strictEqual(review.ciState([{ name: 'a', status: 'COMPLETED', conclusion: 'SUCCESS' }, { name: 'b', status: 'COMPLETED', conclusion: 'SKIPPED' }]).state, 'passed');
+});
+
+test('live skeletons pin the proposal the way each base class expects', () => {
+    const fields = { phase: 'live', proposalId: '93', block: 1, proposer: null, proposerName: null, calls: 1 };
+    const ens = review.skeleton({ ...fields, daoKey: 'ens', name: 'ep-7-2', dir: 'src/ens/proposals/ep-7-2' });
+    assert.match(ens, /assertEq\(proposalId, expectedProposalId\);/);
+    assert.doesNotMatch(ens, /proposalId = expectedProposalId;/);
+
+    const uni = review.skeleton({ ...fields, daoKey: 'uniswap', name: 'proposal-93', dir: 'src/uniswap/proposals/93' });
+    assert.match(uni, /proposalId = expectedProposalId;/);
+    assert.doesNotMatch(uni, /assertEq\(proposalId, expectedProposalId\);/);
+});
+
+test('changed files keep their full paths', () => {
+    const repo = fs.mkdtempSync(path.join(os.tmpdir(), 'review-status-'));
+    const git = (...args) => execFileSync('git', ['-C', repo, ...args], { stdio: 'ignore' });
+    const here = process.cwd();
+    try {
+        git('init', '-q');
+        fs.mkdirSync(path.join(repo, 'src'));
+        fs.writeFileSync(path.join(repo, 'src', 'a.txt'), 'a');
+        fs.writeFileSync(path.join(repo, 'b.txt'), 'b');
+        git('add', '.');
+        git('-c', 'user.email=t@t', '-c', 'user.name=t', 'commit', '-qm', 'init');
+        fs.writeFileSync(path.join(repo, 'src', 'a.txt'), 'changed');
+        git('mv', 'b.txt', 'c.txt');
+        process.chdir(repo);
+        assert.deepStrictEqual(review.changedFiles().sort(), ['c.txt', 'src/a.txt']);
+    } finally {
+        process.chdir(here);
+        fs.rmSync(repo, { recursive: true, force: true });
+    }
 });

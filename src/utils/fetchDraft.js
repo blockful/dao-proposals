@@ -170,6 +170,7 @@ async function fetchDraft(dao, draftId, outputDir, source) {
         const mdPath = path.join(resolvedDir, 'proposalDescription.md');
 
         if (actions.length === 0) {
+            fs.rmSync(jsonPath, { force: true });
             console.log('\nNo actions attached, so there is no calldata to save. Compare against the description.');
         } else {
             fs.writeFileSync(jsonPath, JSON.stringify(calldataJson, null, 2));

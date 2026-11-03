@@ -15,6 +15,7 @@ const DESCRIPTION_FILE = 'proposalDescription.md';
 const PROPOSAL_CREATED = 'ProposalCreated(uint256,address,address[],uint256[],string[],bytes[],uint256,uint256,string)';
 const CHAIN_CHECKED_TYPES = ['governor-timelock'];
 const SKELETON_BASES = ['ENS_Governance', 'UNI_Governance'];
+const DESCRIPTION_HASHED_BASES = ['ENS_Governance'];
 const CI_PENDING_EXIT = 75;
 const CI_WAIT_MS = 9 * 60 * 1000;
 
@@ -214,6 +215,7 @@ function skeleton({ daoKey, name, phase, dir, proposalId, block, proposer, propo
     const importPath = `@${path.basename(dao.basePath)}/${path.basename(dao.baseTestFile)}`;
     const size = Math.max(calls, 1);
     const live = phase === 'live';
+    const hashed = DESCRIPTION_HASHED_BASES.includes(base);
     const label = proposerName ? ` // ${proposerName}` : '';
 
     return `// SPDX-License-Identifier: MIT
@@ -235,7 +237,7 @@ ${
         : ''
 }
     function _beforeProposal() public override {
-${live ? '        assertEq(proposalId, expectedProposalId);\n' : ''}        // TODO: snapshot and check the state this proposal changes
+${live && hashed ? '        assertEq(proposalId, expectedProposalId);\n' : ''}        // TODO: snapshot and check the state this proposal changes
     }
 
     function _generateCallData()
@@ -250,7 +252,7 @@ ${live ? '        assertEq(proposalId, expectedProposalId);\n' : ''}        // T
 
         // TODO: derive every call from the proposal text and interfaces
 
-        description = ${phase === 'pre-draft' ? '"Pre-draft: description TBD"' : 'getDescriptionFromMarkdown()'};
+${live && !hashed ? '        proposalId = expectedProposalId;\n' : ''}        description = ${phase === 'pre-draft' ? '"Pre-draft: description TBD"' : 'getDescriptionFromMarkdown()'};
 
         return (targets, values, signatures, calldatas, description);
     }
@@ -331,6 +333,7 @@ async function start(input, flags) {
     const absolute = path.join(checkout, dir);
     fs.mkdirSync(absolute, { recursive: true });
     for (const file of fs.readdirSync(fetched)) fs.copyFileSync(path.join(fetched, file), path.join(absolute, file));
+    if (ref.phase === 'draft' && !fixture) fs.rmSync(path.join(absolute, JSON_FILE), { force: true });
 
     const testPath = path.join(absolute, TEST_FILE);
     if (fs.existsSync(testPath)) {
@@ -438,7 +441,7 @@ function lintTest(source, { phase, calls, dir }) {
     if (dirPath !== null && !dirPath.includes(`"${phase === 'pre-draft' ? '' : dir}"`)) {
         problems.push(`dirPath() must return "${phase === 'pre-draft' ? '' : dir}"`);
     }
-    if (phase === 'live' && !/expectedProposalId|PROPOSAL_ID|_proposalId/.test(code)) {
+    if (phase === 'live' && !/expectedProposalId|PROPOSAL_ID|_proposalId|proposalId\s*=\s*\d/.test(code)) {
         problems.push('a live review must pin the on-chain proposal ID');
     }
     return problems;
@@ -536,7 +539,7 @@ function check(dirArg, flags) {
         const caught = expectFailureWhenTampered(root, dir, JSON_FILE, tamperFixture);
         record('fails on altered calldata', caught ? [] : ['the test still passes with altered calldata']);
     }
-    if (failures.length === 0 && passed > 0 && phase === 'live') {
+    if (failures.length === 0 && passed > 0 && phase === 'live' && dao && DESCRIPTION_HASHED_BASES.includes(dao.baseTestContract)) {
         const caught = expectFailureWhenTampered(root, dir, DESCRIPTION_FILE, (text) => `${text} `);
         record('fails on altered description', caught ? [] : ['the test still passes with an altered description']);
     }
@@ -640,6 +643,24 @@ function ciState(checks) {
     return { state: 'passed', names: [] };
 }
 
+function changedFiles() {
+    const entries = execFileSync('git', ['status', '--porcelain', '-z'], { encoding: 'utf-8' }).split('\0');
+    const files = [];
+    for (let i = 0; i < entries.length; i++) {
+        if (!entries[i]) continue;
+        files.push(entries[i].slice(3));
+        if (/^[RC]/.test(entries[i])) i++;
+    }
+    return files;
+}
+
+function mergedHasReview(sha, dir) {
+    sh('git', ['fetch', '-q', 'origin', 'main']);
+    const differs = spawnSync('git', ['diff', '--quiet', sha, '--', dir]).status !== 0;
+    const untracked = sh('git', ['ls-files', '--others', '--exclude-standard', '--', dir]);
+    return !differs && !untracked;
+}
+
 function viewPr(number) {
     return JSON.parse(sh('gh', ['pr', 'view', String(number), '--json', 'number,url,state,mergeCommit,statusCheckRollup']));
 }
@@ -680,9 +701,11 @@ function finish(dirArg, flags) {
     const existing = flags['dry-run']
         ? []
         : JSON.parse(sh('gh', ['pr', 'list', '--head', branch, '--state', 'all', '--json', 'number,state,mergeCommit']));
-    if (existing[0] && existing[0].state === 'MERGED') {
-        console.log(`Already merged as ${existing[0].mergeCommit.oid.slice(0, 7)}.`);
-        printComment(existing[0].mergeCommit.oid);
+    const open = existing.find((pr) => pr.state === 'OPEN');
+    const merged = existing.find((pr) => pr.state === 'MERGED');
+    if (!open && merged && mergedHasReview(merged.mergeCommit.oid, dir)) {
+        console.log(`Already merged as ${merged.mergeCommit.oid.slice(0, 7)}.`);
+        printComment(merged.mergeCommit.oid);
         return;
     }
 
@@ -694,18 +717,14 @@ function finish(dirArg, flags) {
         return;
     }
 
-    const outside = sh('git', ['status', '--porcelain'])
-        .split('\n')
-        .filter(Boolean)
-        .map((line) => line.slice(3).replace(/^"|"$/g, ''))
-        .filter((file) => !file.startsWith(dir));
+    const outside = changedFiles().filter((file) => !file.startsWith(`${dir}/`));
     if (outside.length) fail(`uncommitted changes outside the review:\n  ${outside.join('\n  ')}`);
 
     sh('git', ['add', '--', dir]);
     if (spawnSync('git', ['diff', '--cached', '--quiet']).status !== 0) sh('git', ['commit', '-q', '-m', title]);
     sh('git', ['push', '-q', '-u', 'origin', 'HEAD']);
 
-    let number = existing[0] && existing[0].state === 'OPEN' ? existing[0].number : null;
+    let number = open ? open.number : null;
     if (number) {
         sh('gh', ['pr', 'edit', String(number), '--body', body]);
     } else {
@@ -772,6 +791,8 @@ module.exports = {
     directoryName,
     contractName,
     decodeProposalCreated,
+    skeleton,
+    changedFiles,
     commentLines,
     lintTest,
     prTitle,
