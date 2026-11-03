@@ -86,7 +86,10 @@ function parseRef(input) {
 
 function proposalLink(daoKey, phase, id) {
     const dao = registry.daos[daoKey];
-    if (phase === 'draft') return `https://${daoKey}.gov.blockful.io/proposals/new?draftId=${id}`;
+    if (phase === 'draft') {
+        const site = dao.proposalUrl ? new URL(dao.proposalUrl).origin : `https://app.anticapture.com/${daoKey}`;
+        return `${site}/proposals/new?draftId=${id}`;
+    }
     if (phase !== 'live') return null;
     if (dao.proposalUrl) return dao.proposalUrl.replace('{id}', id);
     return dao.tallySlug ? `https://www.tally.xyz/gov/${dao.tallySlug}/proposal/${id}` : null;
@@ -631,7 +634,7 @@ function forumComment({ phase, link, summary, notes, findings = [], noActions, e
 }
 
 function ciState(checks) {
-    if (!checks.length) return { state: 'pending', names: ['no checks reported yet'] };
+    if (!checks || !checks.length) return { state: 'pending', names: ['no checks reported yet'] };
     const name = (c) => c.name || c.context;
     const badConclusions = ['FAILURE', 'CANCELLED', 'TIMED_OUT', 'ACTION_REQUIRED', 'STARTUP_FAILURE'];
     const isFailed = (c) => badConclusions.includes(c.conclusion) || ['FAILURE', 'ERROR'].includes(c.state);

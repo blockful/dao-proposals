@@ -60,6 +60,7 @@ test('proposal links go through the ENS governance front end', () => {
     assert.strictEqual(review.proposalLink('ens', 'live', '7'), 'https://ens.gov.blockful.io/proposals/7');
     assert.strictEqual(review.proposalLink('ens', 'draft', DRAFT), `https://ens.gov.blockful.io/proposals/new?draftId=${DRAFT}`);
     assert.strictEqual(review.proposalLink('uniswap', 'live', '7'), 'https://www.tally.xyz/gov/uniswap/proposal/7');
+    assert.strictEqual(review.proposalLink('uniswap', 'draft', DRAFT), `https://app.anticapture.com/uniswap/proposals/new?draftId=${DRAFT}`);
 });
 
 test('names come from the proposal title', () => {
@@ -164,6 +165,7 @@ test('the forum comment is ready to paste', () => {
 
 test('CI only counts as passed when every check finished cleanly', () => {
     assert.strictEqual(review.ciState([]).state, 'pending');
+    assert.strictEqual(review.ciState(null).state, 'pending');
     assert.strictEqual(review.ciState([{ name: 'a', status: 'IN_PROGRESS', conclusion: '' }]).state, 'pending');
     assert.strictEqual(review.ciState([{ name: 'a', status: 'COMPLETED', conclusion: 'FAILURE' }]).state, 'failed');
     assert.strictEqual(review.ciState([{ context: 'a', state: 'ERROR' }]).state, 'failed');
