@@ -1,0 +1,14 @@
+{
+  "proposalId": "392",
+  "blockNumber": "26115220",
+  "votingStart": "26129620",
+  "votingEnd": "26158420",
+  "executableCalls": [
+    {
+      "target": "0xF62387d21153fdcbB06Ab3026c2089e418688164",
+      "calldata": "0x0000000000000000000000000081e6f9373c1ffb7d7fc702eb15ac805eb5038900000000000000000000000000000000000000000000000000000000e8754700",
+      "value": "0",
+      "signature": "sendOrRegisterDebt(address,uint256)"
+    }
+  ]
+}
