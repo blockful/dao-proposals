@@ -112,7 +112,13 @@ abstract contract CalldataComparison is Test {
 
     function _parseJsonCalldatas(string memory j) internal returns (bytes[] memory result) {
         (bool ok, bytes memory ret) = address(this).call(abi.encodeWithSelector(this._decodeCalldatasArray.selector, j));
-        if (ok) return abi.decode(ret, (bytes[]));
+        if (ok) {
+            result = abi.decode(ret, (bytes[]));
+            // Foundry encodes a single empty bytes value (`0x`) as an empty
+            // bytes[] when selected through a wildcard path. Fall back to the
+            // single-value decoder so the call count is preserved.
+            if (result.length > 0) return result;
+        }
 
         (bool ok2, bytes memory ret2) =
             address(this).call(abi.encodeWithSelector(this._decodeCalldataSingle.selector, j));
