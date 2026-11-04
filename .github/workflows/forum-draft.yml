@@ -1,0 +1,38 @@
+name: Forum draft
+
+# When a forum-post.md lands on main, save it as a reply draft on the forum topic its frontmatter
+# names. Nothing is published: someone logs into the Blockful forum account, reviews the draft, and
+# posts it. See src/utils/postForumDraft.js.
+on:
+  push:
+    branches: [main]
+    paths: ["src/**/forum-post.md"]
+
+permissions:
+  contents: read
+
+jobs:
+  draft:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      # Added or edited in this push; --no-renames so a proposal directory renamed from draft to
+      # live still counts as a new post. -z because proposal directories have spaces in them.
+      - name: Save drafts
+        # bash -eo pipefail, so a failed git diff fails the step instead of drafting nothing
+        shell: bash
+        run: |
+          git diff --name-only --no-renames --diff-filter=AM -z "$BEFORE" "$GITHUB_SHA" -- 'src/*/forum-post.md' \
+            | xargs -0 -r node src/utils/postForumDraft.js
+        env:
+          BEFORE: ${{ github.event.before }}
+          COMMIT_SHA: ${{ github.sha }}
+          COMPOUND_FORUM_API_KEY: ${{ secrets.COMPOUND_FORUM_API_KEY }}
+          COMPOUND_FORUM_USERNAME: ${{ vars.COMPOUND_FORUM_USERNAME }}
