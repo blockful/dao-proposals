@@ -1,18 +1,12 @@
 #!/usr/bin/env bash
 # Rebuilds the DNSSECImpl / OffchainDNSResolver / DNSRegistrar artifacts in ./artifacts from
-# ensdomains/ens-contracts at the commit ENS Labs deployed from: the merge of PR #580 into
-# `staging`, i.e. PR #572 (f0151aa) plus #580's OffchainDNSResolver change. DNSSECImpl and
-# DNSRegistrar compile to the same code at both commits.
-#
-# Sources are compiled unmodified, with the compiler settings from upstream's
-# hardhat.config.ts. upstream/verify-deployed.py compares the runtime bytecode with the
-# mainnet deployments (masking immutables and the metadata tail).
+# ensdomains/ens-contracts at the merge of PR #585, which the deployed contracts were built from.
+# upstream/verify-deployed.py compares them with mainnet.
 #
 # Usage: src/ens/proposals/ep-dnssec-ksk-rollover/upstream/build.sh
-# Then:  git diff --exit-code src/ens/proposals/ep-dnssec-ksk-rollover/upstream/artifacts
 set -euo pipefail
 
-COMMIT=06fd01e364fe6b73b8ff7d82c9c0f6f1a1c63c24
+COMMIT=767cd3748e6f3d66a8280e44c1d31782705ceb62
 OUT="$(cd "$(dirname "$0")" && pwd)/artifacts"
 WORK="$(mktemp -d)"
 trap 'rm -rf "$WORK"' EXIT

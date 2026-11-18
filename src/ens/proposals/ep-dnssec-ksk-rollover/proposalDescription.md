@@ -1,94 +1,112 @@
 # [Executable] Upgrade DNSSEC oracle and registrar for the 2026 root KSK rollover
 
+# \[Executable] Upgrade DNSSEC oracle and registrar for the 2026 root KSK rollover
+
+| **Status**            | Draft                                                                                                                      |
+| --------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| **Discussion Thread** | [Forum](https://discuss.ens.domains/t/executable-upgrade-dnssec-oracle-and-registrar-fro-the-2026-root-ksk-rollover/22497) |
+| **Votes**             | TBD                                                                                                                        |
+
 ## Abstract
 
-On 11 October 2026 at 14:00 UTC, the DNS root zone switched to signing its DNSKEY RRset exclusively with the new root key-signing key, KSK-2024 (key tag 38696). The DNSSEC oracle ENS currently uses (`0x0fc3152971714E5ed7723FAFa650F86A4BaF30C5`) was deployed in January 2024 with trust anchors for KSK-2010 (19036) and KSK-2017 (20326) only, and has no way to update them. As a result it can no longer verify a proof built from the current root DNSKEY RRset. That breaks both ways DNS names are used in ENS: importing or updating a name onchain via `proveAndClaim`, and gasless DNSSEC resolution, since `OffchainDNSResolver` verifies the gateway's proof against the oracle on every lookup.
+The DNS root zone rolled its key-signing key on 11 October 2026. ENS's DNSSEC oracle was deployed with a fixed set of root trust anchors that doesn't include the new key, so it can no longer verify DNSSEC proofs. That breaks both ways DNS names are used in ENS: importing a name onchain, and gasless DNSSEC resolution.
 
-This proposal replaces the oracle, the DNS registrar and the offchain DNS resolver with new versions from [ensdomains/ens-contracts#572](https://github.com/ensdomains/ens-contracts/pull/572). The new oracle trusts KSK-2017 and KSK-2024, and its anchors can be updated by the DAO in future, so the next root rollover will be a single `setAnchors` call rather than a redeployment. The same release also fixes three lower-severity issues in the oracle and registrar, described below.
+This proposal switches ENS over to a new DNSSEC oracle, DNS registrar and offchain DNS resolver. The new oracle trusts the new root key, and its anchors can be updated by the DAO in future instead of requiring a redeployment. The new contracts also fix several lower-severity vulnerabilities in the DNSSEC code, described below. Finally, the proposal authorises a small registrar on ENSv2 that points each DNS TLD at a resolver using the new oracle.
 
-The only DAO action required is to authorise the new registrar as a controller of the root, and deauthorise the current one and the 2021 one before it. Existing DNS names in ENS are unaffected, and no user action is needed.
+Existing DNS names in ENS are unaffected, and no user action is needed.
 
-## Background
+## Motivation
 
-DNSSEC proofs in ENS start from the root zone. The oracle holds a set of root DS records ('trust anchors'), and every proof begins with the root DNSKEY RRset, which must be signed by a key matching one of those anchors. The root zone's KSK is rolled infrequently; the last rollover was in 2018, from KSK-2010 to KSK-2017. KSK-2024 was first published in the root zone on 11 January 2025, and became the sole key signing the root DNSKEY RRset on 11 October 2026.
+### The root key rollover
 
-The current `DNSSECImpl` sets its anchors in the constructor and has no setter, so adding KSK-2024 requires a new deployment. Because `DNSRegistrar` and `OffchainDNSResolver` both take the oracle address as an immutable constructor argument, they need to be redeployed alongside it.
+DNSSEC proofs in ENS start from the root zone. The oracle holds a set of root DS records ('trust anchors'), and every proof begins with the root DNSKEY RRset, which has to be signed by a key matching one of those anchors.
 
-## Changes
+On 11 October 2026 at 14:00 UTC the root zone began signing its DNSKEY RRset with KSK-2024 (key tag 38696) alone. The current oracle, `0x0fc3152971714E5ed7723FAFa650F86A4BaF30C5`, was deployed in January 2024 with anchors for KSK-2010 (19036) and KSK-2017 (20326), and has no function to change them. The last root signature made with KSK-2017 expired on 22 October, so there is no longer any valid proof the current oracle will accept.
 
-All changes are in [PR #572](https://github.com/ensdomains/ens-contracts/pull/572), merged to `staging` as commit [`f0151aa`](https://github.com/ensdomains/ens-contracts/commit/f0151aaf8a53b5b8f725a584fc194997c8226fbd).
-
-### Root key rollover
-
-* **Anchors updated.** The new oracle is deployed with DS records for KSK-2017 (20326) and KSK-2024 (38696). The obsolete KSK-2010 (19036) anchor, retired in 2018, is dropped.
-* **Anchors are now mutable.** `DNSSECImpl` gains an owner-only `setAnchors(bytes)` and emits `AnchorsUpdated` on construction and on every change. The contract is owned by the DAO, so future rollovers (including the eventual removal of KSK-2017) can be handled by a single executable call.
+`DNSRegistrar` and `OffchainDNSResolver` both take the oracle's address as an immutable constructor argument, so they have to be replaced along with it.
 
 ### Security fixes
 
-None of these were considered exploitable in practice without either a compromised DNSSEC key or an unusual DNS configuration, which is why they have been bundled with this upgrade rather than handled as an emergency. They are all fixed in PR #572.
+The new contracts fix the following issues. As far as we can tell, none of the first three can be exploited without a compromised DNSSEC key or an unusual DNS configuration.
 
-1. **Stale ancestor records could be replayed.** `DNSRegistrar` only recorded the RRSIG inception time of the final `_ens.<name>` TXT record in a claim, and rejected claims whose TXT record was older than the last one seen. The DS and DNSKEY RRsets earlier in the chain were not checked, so any validly-signed, unexpired version of them was accepted. If a zone (or its parent, such as a TLD) rolled a key because it had been compromised, an attacker holding the old key could keep building valid claims - and taking over names - from the superseded DNSKEY/DS records until their signatures expired, by signing a fresh TXT record with the compromised key. The new registrar stores the latest inception seen for every `(name, type)` in the chain, and reverts with `StaleProof(name, type, last, inception)` if any RRset in a proof is older than one already submitted. To preserve existing protection, the TXT inception for `_ens.<name>` falls back to the previous registrar's `inceptions(node)` when no value has been stored yet.
-2. **Revoked keys were still accepted.** RFC 5011 §2.4.3 says a DNSKEY with the REVOKE flag set must be treated as permanently invalid for everything except validating its own revocation. The oracle ignored the flag, so a revoked key published in a zone's DNSKEY RRset could still be used to verify signatures. The new oracle rejects any key with the REVOKE bit set. This is more relevant than usual right now, as KSK-2017 is expected to be revoked in the root zone following the rollover, as KSK-2010 was after the 2018 rollover.
-3. **Claim record type and class were not checked.** `DNSClaimChecker` searched the final RRset for a record owned by `_ens.<name>` containing an `a=0x...` string, but did not require it to be a TXT record of class IN. A non-TXT record at `_ens.<name>` whose rdata happened to parse as an owner string would have been accepted as a claim. The checker now requires `CLASS_INET` and `DNSTYPE_TXT`.
+1. **Stale ancestor records could be replayed.** The current registrar records only the RRSIG inception time of the final `_ens.<name>` TXT RRset in a claim. Nothing stopped a proof from reusing older RRsets further up the chain (a DS or DNSKEY set from before a key change, say) for as long as their signatures remained valid. The new registrar stores, for every `(name, type)` in a proof, the latest inception seen and a 28-byte hash of the record data. An RRset that isn't newer than the stored one is accepted only if its data is identical; otherwise the claim reverts with `StaleProof`. For names imported under the current registrar, the TXT inception falls back to the value it recorded.
+2. **Revoked keys were accepted.** RFC 5011 section 2.4.3 requires that a DNSKEY with the REVOKE bit set be treated as invalid for everything except validating its own revocation. The current oracle ignores the flag. The new oracle rejects any signature made by a key with REVOKE set.
+3. **The claim record's class and type weren't checked.** `DNSClaimChecker` read the owner address from the final RRset without requiring it to be a TXT record of class IN. It now requires both.
+4. **`OffchainDNSResolver` trusted the resolver named in a DNS record too far.** A name's `ENS1` TXT record names a resolver contract, which `OffchainDNSResolver` then calls. Interface detection now goes through `ERC165Checker`, and the `addr()` lookup used to turn a name in the TXT record into a resolver address is guarded, so a revert from either call, including an `OffchainLookup`, is no longer passed on to the client.
 
-Separately, the RSA signature forgery issue disclosed in [GHSA-c6rr-7pmc-73wc](https://github.com/ensdomains/ens-contracts/security/advisories/GHSA-c6rr-7pmc-73wc) (missing PKCS#1 v1.5 padding validation) was fixed earlier this year by pointing the existing oracle at patched algorithm contracts. The new oracle uses those same patched contracts from the outset.
+Fixes 1 to 3 were made in [ens-contracts#572](https://github.com/ensdomains/ens-contracts/pull/572), fix 4 in [ens-contracts#580](https://github.com/ensdomains/ens-contracts/pull/580), and the record-hash comparison in fix 1 was added after audit in [ens-contracts#583](https://github.com/ensdomains/ens-contracts/pull/583).
 
 ### Other changes
 
-* `DNSSEC` gains `verifyRRSetAt(input, time)` and `verifyRRSetNow(input)`, which return every verified RRset in the chain (`RRUtils.SignedSet[]`) rather than just the last one. Both existing `verifyRRSet` overloads are retained with their original signatures and return values.
-* `DNSSECImpl` uses OpenZeppelin's `Ownable` in place of the bespoke `Owned` contract. Note that this changes the ownership-transfer function from `setOwner` to `transferOwnership`.
-* `DNSRegistrar` accepts an array of all previous registrars, and treats a TLD owned by any of them as eligible for migration (`wasRegistrar`). Previously only the immediately preceding registrar was recognised.
-* `verifyRRSetAt` and `verifyRRSetNow` revert with `InvalidRRSet` on an empty proof, and the registrar rejects empty proofs up front with `NoOwnerRecordFound`. Previously an empty proof made the oracle return its own anchors as if they were a verified RRset; the registrar then failed to find an owner record in them, so this was not exploitable. The legacy `verifyRRSet` keeps its old behaviour for compatibility.
-* `DNSRegistrar` adds `getInception(name, type)` and emits `InceptionUpdated` whenever a stored inception changes. `inceptions(node)` is kept as a backwards-compatible getter.
-
-## Deployed contracts
-
-ENS Labs deployed these on 20 October 2026 from `staging` at [`06fd01e`](https://github.com/ensdomains/ens-contracts/commit/06fd01e364fe6b73b8ff7d82c9c0f6f1a1c63c24) (PR #572 plus [#580](https://github.com/ensdomains/ens-contracts/pull/580), which hardens `OffchainDNSResolver`), source-verified them on Etherscan, and transferred ownership of the new `DNSSECImpl` to the DAO timelock (`0xFe89cc7aBB2C4183683ab71653C4cdc9B02D44b7`).
-
-| Contract              | Address   | Constructor arguments                                                                                                                                                                                                                                                                                  |
-| --------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `DNSSECImpl`          | `0x668ad4467129d49ECbe6274d95197797C0E262AA` | anchors: DS 20326/8/2, DS 38696/8/2                                                                                                                                                                                                                                                                    |
-| `OffchainDNSResolver` | `0xEbBcBFBE4A8F3357e7d1d444406C28cFa34f1261` | registry `0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e`, oracle `0x668ad4467129d49ECbe6274d95197797C0E262AA`, gateway `https://dnssec-oracle.ens.domains/`                                                                                                                                                                       |
-| `DNSRegistrar`        | `0x8284c9D6e7882Fe1DE49C79062a4c797F0988B3D` | previous registrars `[0xB32cB5677a7C971689228EC835800432B339bA2B, 0x58774Bb8acD458A640aF0B88238369A167546ef2]`, resolver `0xEbBcBFBE4A8F3357e7d1d444406C28cFa34f1261`, oracle `0x668ad4467129d49ECbe6274d95197797C0E262AA`, suffixes `0x823BDa9cA8c47d072376eCD595530c8fb2fAa3ED`, registry `0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e` |
-
-The new oracle is configured with the existing algorithm and digest contracts:
-
-| ID       | Algorithm / digest | Address                                      |
-| -------- | ------------------ | -------------------------------------------- |
-| 5, 7     | RSASHA1            | `0x58e0383e21f25dab957f6664240445a514e9f5e8` |
-| 8        | RSASHA256          | `0xaee0e2c4d5ab2fc164c8b0cc8d3118c1c752c95e` |
-| 13       | P256SHA256         | `0xb091c4f6fac16edda5ee1e0f4738f80011905878` |
-| digest 1 | SHA1               | `0x9c9fcEa62bD0A723b62A2F1e98dE0Ee3df813619` |
-| digest 2 | SHA256             | `0xCFe6edBD47a032585834A6921D1d05CB70FcC36d` |
-
-The public suffix list contract is unchanged.
+* `DNSSECImpl` adds an owner-only `setAnchors(bytes)`, which emits `AnchorsUpdated`. The DAO can handle the next root key rollover with a single call.
+* `DNSSECImpl` adds `verifyRRSetAt` and `verifyRRSetNow`, which return every signed set in the chain. The existing `verifyRRSet` functions keep their ABI. An empty proof now reverts with `InvalidRRSet`.
+* `DNSRegistrar` adds `getInception(name, type)` and emits `InceptionUpdated` whenever a stored inception changes. `inceptions(node)` is kept for compatibility.
 
 ## Specification
 
-The DAO calls `setController` on the root contract (`root.ens.eth`, `0xaB528d626EC275E3faD363fF1393A41F581c5897`) three times: once to authorise the new `DNSRegistrar`, once to deauthorise the current one, and once to deauthorise the 2021 `DNSRegistrar` (`0x58774Bb8acD458A640aF0B88238369A167546ef2`), which stayed a controller when the current one replaced it in January 2024. Authorising the new registrar lets it take ownership of DNS TLDs from the old one via the permissionless `enableNode` call. Deauthorising the old registrars stops them from enabling any further TLDs against oracles that can no longer verify proofs. The 2021 registrar holds no TLDs, so nothing depends on its role.
+### Deployed contracts
 
-## Transactions
+All of these are verified on Etherscan.
 
-| Address                                      | Value | Function                      | Argument     | Value                                        |
-| -------------------------------------------- | ----- | ----------------------------- | ------------ | -------------------------------------------- |
-| `0xaB528d626EC275E3faD363fF1393A41F581c5897` | 0 ETH | `setController(address,bool)` | `controller` | `0x8284c9D6e7882Fe1DE49C79062a4c797F0988B3D`                       |
-|                                              |       |                               | `enabled`    | `true`                                       |
-| `0xaB528d626EC275E3faD363fF1393A41F581c5897` | 0 ETH | `setController(address,bool)` | `controller` | `0xB32cB5677a7C971689228EC835800432B339bA2B` |
-|                                              |       |                               | `enabled`    | `false`                                      |
-| `0xaB528d626EC275E3faD363fF1393A41F581c5897` | 0 ETH | `setController(address,bool)` | `controller` | `0x58774Bb8acD458A640aF0B88238369A167546ef2` |
-|                                              |       |                               | `enabled`    | `false`                                      |
+| Contract                        | Address                                      | Constructor arguments                                                                                                                                                                                                                                                                                                                       |
+| ------------------------------- | -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `DNSSECImpl`                    | `0x668ad4467129d49ECbe6274d95197797C0E262AA` | anchors: root DS records for KSK-2017 (20326) and KSK-2024 (38696)                                                                                                                                                                                                                                                                          |
+| `OffchainDNSResolver`           | `0xA4A2d86B30896fe5c4f2A7F2Ee0BDE3dbff26924` | registry `0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e`, oracle `0x668ad4467129d49ECbe6274d95197797C0E262AA`, gateway `https://dnssec-oracle.ens.domains/`                                                                                                                                                                                    |
+| `DNSRegistrar`                  | `0x084462610A20eFbDB686b30fe587ecA0E234D2EF` | previous registrars \[`0xB32cB5677a7C971689228EC835800432B339bA2B`, `0x58774Bb8acD458A640aF0B88238369A167546ef2`], resolver `0xA4A2d86B30896fe5c4f2A7F2Ee0BDE3dbff26924`, oracle `0x668ad4467129d49ECbe6274d95197797C0E262AA`, suffixes `0x823BDa9cA8c47d072376eCD595530c8fb2fAa3ED`, registry `0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e` |
+| `TemporaryDNSRegistrar` (ENSv2) | `0x9d6D535f08be25A9A2FdA1a1C21217D27d81cC61` | owner `0xFe89cc7aBB2C4183683ab71653C4cdc9B02D44b7`, root registry `0x2553c09bE6447BeFfdB86FA622ad41fB8f77A91e`, token owner `0x5B716D6587d241166bC8914858640F8684F3A2F3`, suffixes `0x823BDa9cA8c47d072376eCD595530c8fb2fAa3ED`, default resolver `0x6695327EE70F41151d2cBADC3ABBb6e4a58e739c`                                              |
 
-## After execution
+Notes:
 
-ENS Labs will run the `20_set_tlds` deploy script, which calls `enableNode` on the new registrar for every DNS TLD currently held by a previous registrar, in batches of 25 via Multicall3. Each call transfers the TLD to the new registrar and sets its resolver to the new `OffchainDNSResolver`. This is permissionless, so anyone can migrate a TLD that has been missed. Until a TLD has been migrated, gasless resolution and imports for names under it will continue to fail as they do today.
+* `DNSSECImpl` was deployed on 20 October and its ownership has already been transferred to the DAO timelock, `0xFe89cc7aBB2C4183683ab71653C4cdc9B02D44b7`. Its algorithms are RSASHA1 (5 and 7) at `0x58E0383E21f25DaB957F6664240445A514E9f5e8`, RSASHA256 (8) at `0xaee0E2c4d5AB2fc164C8b0Cc8D3118C1c752C95E` and P256SHA256 (13) at `0xB091C4F6FAc16eDDA5Ee1E0f4738f80011905878`; its digests are SHA1 (1) at `0x9c9fcEa62bD0A723b62A2F1e98dE0Ee3df813619` and SHA256 (2) at `0xCFe6edBD47a032585834A6921D1d05CB70FcC36d`.
+* `DNSRegistrar` and `OffchainDNSResolver` were deployed on 13 November from the post-audit code, in [ens-contracts#585](https://github.com/ensdomains/ens-contracts/pull/585) (`b6234f4`). Of the previous registrars, `0xB32cB567…` is the current one and `0x58774Bb8…` is the 2021 one.
+* `TemporaryDNSRegistrar` is from [contracts-v2#486](https://github.com/ensdomains/contracts-v2/pull/486). Its default resolver is ENSv2's `DNSTLDResolver`, which was deployed on 28 October against the new oracle.
 
-DNS names that have already been imported into ENS are owned by their users in the registry and are not touched by the migration. Applications and libraries that call the oracle directly (rather than through ENS) should switch to the new `DNSSECImpl` address.
+### The ENSv2 registrar
+
+ENSv2 reserved the DNS TLDs in its root registry at launch. `TemporaryDNSRegistrar` exposes one permissionless operation, `syncTLD(label)` (and `syncTLDs` for batches). For a label on the public suffix list, it either registers the TLD to the DAO's token safe with `DNSTLDResolver` as its resolver, or, if the TLD is already registered, updates its resolver to the current default. It reverts with `TLDNotPublic` for anything else. The token owner and suffix list are immutable; only the DAO can change the default resolver.
+
+It needs two things from the DAO. The first is the `REGISTRAR` and `REGISTER_RESERVED` roles on the root registry (bitmap `0x11`), so that it can register reserved TLDs. The second is operator approval over the tokens held by the DAO token safe, so that it can update the resolver of TLDs the safe already holds. The safe's only owner is the timelock, so the timelock calls `execTransaction` directly with a pre-validated signature.
+
+This registrar only manages TLDs. It will be replaced when DNS imports are enabled on ENSv2.
+
+### Transactions
+
+| # | Target                                                    | Function                                                                                                             | Description                                                                                |
+| - | --------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| 1 | Root `0xaB528d626EC275E3faD363fF1393A41F581c5897`         | `setController(0xB32cB5677a7C971689228EC835800432B339bA2B, false)`                                                   | Deauthorise the current DNSRegistrar                                                       |
+| 2 | Root `0xaB528d626EC275E3faD363fF1393A41F581c5897`         | `setController(0x084462610A20eFbDB686b30fe587ecA0E234D2EF, true)`                                                    | Authorise the new DNSRegistrar                                                             |
+| 3 | RootRegistry `0x2553c09bE6447BeFfdB86FA622ad41fB8f77A91e` | `grantRootRoles(0x11, 0x9d6D535f08be25A9A2FdA1a1C21217D27d81cC61)`                                                   | Grant TemporaryDNSRegistrar `REGISTRAR` and `REGISTER_RESERVED` on the ENSv2 root registry |
+| 4 | DAOTokenSafe `0x5B716D6587d241166bC8914858640F8684F3A2F3` | `execTransaction(...)` calling `setApprovalForAll(0x9d6D535f08be25A9A2FdA1a1C21217D27d81cC61, true)` on RootRegistry | Approve TemporaryDNSRegistrar as operator for TLD tokens held by the safe                  |
+
+### Calldata
+
+```
+1. 0xe0dba60f000000000000000000000000b32cb5677a7c971689228ec835800432b339ba2b0000000000000000000000000000000000000000000000000000000000000000
+
+2. 0xe0dba60f000000000000000000000000084462610a20efbdb686b30fe587eca0e234d2ef0000000000000000000000000000000000000000000000000000000000000001
+
+3. 0x072d5d7700000000000000000000000000000000000000000000000000000000000000110000000000000000000000009d6d535f08be25a9a2fda1a1c21217d27d81cc61
+
+4. 0x6a7612020000000000000000000000002553c09be6447beffdb86fa622ad41fb8f77a91e0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000014000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001c00000000000000000000000000000000000000000000000000000000000000044a22cb4650000000000000000000000009d6d535f08be25a9a2fda1a1c21217d27d81cc610000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000041000000000000000000000000Fe89cc7aBB2C4183683ab71653C4cdc9B02D44b700000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000
+```
+
+### After execution
+
+Two permissionless follow-up steps move the TLDs across. ENS Labs will run both for every TLD on the public suffix list as soon as the proposal executes.
+
+* On ENSv1, calling `enableNode(tld)` on the new `DNSRegistrar` takes over a TLD owned by any previous registrar and sets its resolver to the new `OffchainDNSResolver`. Until a TLD has been moved, imports and gasless resolution under it continue to fail.
+* On ENSv2, calling `syncTLDs(labels)` on `TemporaryDNSRegistrar` registers each TLD to the DAO token safe with `DNSTLDResolver` as its resolver.
+
+Names that have already been imported onchain keep their owner, resolver and records throughout.
+
+The current registrar, oracle and offchain resolver are left in place but unused. The 2021 registrar is not touched by this proposal.
 
 ## Verifying this proposal
 
-* The root DNSKEY RRset is signed by key tag 38696: `dig +dnssec . DNSKEY @a.root-servers.net`.
-* The KSK-2024 DS record in the new oracle's anchors matches IANA's published trust anchors: [https://data.iana.org/root-anchors/root-anchors.xml](https://data.iana.org/root-anchors/root-anchors.xml)
-* `DNSSECImpl.owner()` returns the DAO timelock, and `algorithms(id)` / `digests(id)` match the tables above.
-* `DNSRegistrar.oracle()` and `DNSRegistrar.resolver()` return the new oracle and resolver, and `wasRegistrar(0xB32cB5677a7C971689228EC835800432B339bA2B)` returns `true`.
+* The root zone is signed by KSK-2024 alone: `dig @a.root-servers.net . DNSKEY +dnssec +multi` shows one RRSIG over the DNSKEY RRset, with key tag 38696.
+* The KSK-2024 DS record in the new oracle's `anchors()` matches IANA's published trust anchors at [https://data.iana.org/root-anchors/root-anchors.xml](https://data.iana.org/root-anchors/root-anchors.xml) (digest `683D2D0ACB8C9B712A1948B27F741219298D0A450D612C483AF444A4C0FB2B16`).
+* `DNSSECImpl.owner()` returns the timelock, and `algorithms()` and `digests()` return the addresses listed above.
+* `DNSRegistrar.oracle()` and `DNSRegistrar.resolver()` return the new oracle and resolver, and `wasRegistrar(0xB32cB5677a7C971689228EC835800432B339bA2B)` returns true.
 * `OffchainDNSResolver.oracle()` returns the new oracle.
-* A mainnet-fork test (`TEST_REMOTE=1`, `test/dnsregistrar/TestDNSRegistrar.remote.ts`) migrates names imported under the current registrar and confirms their stored inceptions carry over.
+* `TemporaryDNSRegistrar.owner()` returns the timelock, `TOKEN_OWNER()` returns the DAO token safe, and `defaultResolver()` returns `0x6695327EE70F41151d2cBADC3ABBb6e4a58e739c`, whose `DNSSEC_ORACLE()` is the new oracle.
+* The fork tests in [contracts-v2#504](https://github.com/ensdomains/contracts-v2/pull/504) (`test/fork/DNSRegistrarV1.test.ts` and `test/fork/TemporaryDNSRegistrar.test.ts`) execute these four calls as the timelock against mainnet state, then call `enableNode` and `syncTLD` and resolve known DNS names through the result.

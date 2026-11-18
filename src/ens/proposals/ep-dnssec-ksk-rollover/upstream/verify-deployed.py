@@ -15,8 +15,8 @@ import sys
 
 DEPLOYED = {
     "DNSSECImpl": "0x668ad4467129d49ecbe6274d95197797c0e262aa",
-    "DNSRegistrar": "0x8284c9d6e7882fe1de49c79062a4c797f0988b3d",
-    "OffchainDNSResolver": "0xebbcbfbe4a8f3357e7d1d444406c28cfa34f1261",
+    "DNSRegistrar": "0x084462610a20efbdb686b30fe587eca0e234d2ef",
+    "OffchainDNSResolver": "0xa4a2d86b30896fe5c4f2a7f2ee0bde3dbff26924",
 }
 
 
