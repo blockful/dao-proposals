@@ -1,9 +1,5 @@
 #!/usr/bin/env bash
-# Rebuilds the DNSSECImpl / OffchainDNSResolver / DNSRegistrar artifacts in ./artifacts from
-# ensdomains/ens-contracts at the merge of PR #585, which the deployed contracts were built from.
-# upstream/verify-deployed.py compares them with mainnet.
-#
-# Usage: src/ens/proposals/ep-dnssec-ksk-rollover/upstream/build.sh
+# Builds the deployed DNSSEC contracts from ens-contracts #585 into ./artifacts
 set -euo pipefail
 
 COMMIT=767cd3748e6f3d66a8280e44c1d31782705ceb62
@@ -11,17 +7,11 @@ OUT="$(cd "$(dirname "$0")" && pwd)/artifacts"
 WORK="$(mktemp -d)"
 trap 'rm -rf "$WORK"' EXIT
 
-# 1. Upstream source at the pinned commit
 git -C "$WORK" init -q src
 git -C "$WORK/src" fetch -q --depth 1 https://github.com/ensdomains/ens-contracts.git "$COMMIT"
 git -C "$WORK/src" checkout -q FETCH_HEAD
 test "$(git -C "$WORK/src" rev-parse HEAD)" = "$COMMIT"
 
-# 2. Build directory: its own config, the upstream `contracts/` tree copied in (so source unit
-#    names match hardhat's, `contracts/...`), and the three Solidity dependencies the contracts
-#    import, at the versions in upstream's bun.lock. No install scripts run. Every path the
-#    compiler sees is relative to this directory, so the metadata hash does not depend on where
-#    it was built. The build never runs from inside the downloaded tree.
 B="$WORK/build"
 mkdir -p "$B"
 cp -R "$WORK/src/contracts" "$B/contracts"
@@ -31,9 +21,7 @@ npm install --prefix "$B" --ignore-scripts --no-audit --no-fund --silent \
     "@openzeppelin/contracts-v5@npm:@openzeppelin/contracts@5.1.0" \
     @ensdomains/buffer@0.1.3
 
-# 3. Compile with upstream's settings (hardhat.config.ts: 0.8.26, optimizer 1_000_000 runs,
-#    evmVersion paris, ipfs metadata hash, literal content). Only the three files passed to
-#    `forge build` and their imports are compiled, not the whole tree.
+# same settings as upstream hardhat.config.ts
 cat > "$B/foundry.toml" <<'TOML'
 [profile.default]
 src = "contracts"
@@ -57,7 +45,6 @@ forge build --root "$B" \
     contracts/dnsregistrar/OffchainDNSResolver.sol \
     contracts/dnsregistrar/DNSRegistrar.sol
 
-# 4. Keep only what the test and a later bytecode diff need.
 mkdir -p "$OUT"
 for c in DNSSECImpl OffchainDNSResolver DNSRegistrar; do
     src="$(find "$B/out" -path "*/$c.sol/$c.json" | head -1)"

@@ -1,12 +1,5 @@
 #!/usr/bin/env python3
-"""Snapshot the DNSSEC proofs calldataCheck.t.sol replays on a fork.
-
-For each name, stores what https://dnssec-oracle.ens.domains/ returns for its TXT RRset, as
-ABI-encoded DNSSEC.RRSetWithSignature[], plus the key tag and validity of the proof's root
-DNSKEY signature. RRSIGs expire, so the test pins its fork to `forkBlock`.
-
-Usage: python3 -I fixtures/fetch_proofs.py <RPC_URL> > fixtures/proofs.json
-"""
+"""Usage: python3 -I fixtures/fetch_proofs.py <RPC_URL> > fixtures/proofs.json"""
 
 import json
 import subprocess
@@ -15,7 +8,6 @@ import time
 import urllib.request
 
 GATEWAY = "https://dnssec-oracle.ens.domains/"
-# OffchainDNSResolver, sent as the CCIP-Read `sender`
 RESOLVER = "0xA4A2d86B30896fe5c4f2A7F2Ee0BDE3dbff26924"
 TYPE_TXT = 16
 NAMES = {
@@ -47,7 +39,6 @@ def gateway_proof(name):
     req = urllib.request.Request(
         GATEWAY,
         data=json.dumps({"data": calldata, "sender": RESOLVER}).encode(),
-        # the gateway rejects urllib's default User-Agent
         headers={"content-type": "application/json", "user-agent": "dao-proposals/fetch_proofs"},
     )
     with urllib.request.urlopen(req, timeout=30) as r:

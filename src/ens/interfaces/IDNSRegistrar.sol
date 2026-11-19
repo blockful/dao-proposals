@@ -3,9 +3,6 @@ pragma solidity >=0.8.25 <0.9.0;
 
 import { IDNSSEC } from "./IDNSSEC.sol";
 
-/// @notice ENS DNS registrar (`DNSRegistrar`), ensdomains/ens-contracts `contracts/dnsregistrar`.
-/// @dev `wasRegistrar`, `getInception` and `StaleProof`'s arguments exist from PR #572 onwards. The
-///      2021 deployment has no `previousRegistrar` either.
 interface IDNSRegistrar {
     error StaleProof(bytes name, uint16 typeCovered, uint32 lastTime, uint32 time);
     error PreconditionNotMet();
@@ -23,9 +20,6 @@ interface IDNSRegistrar {
     function proveAndClaim(bytes memory name, IDNSSEC.RRSetWithSignature[] memory input) external;
 }
 
-/// @notice The 2021 DNSRegistrar (0x58774Bb8...), built on the stateful oracle of that era: claims read
-///         TXT records previously submitted to the oracle. It has no external `enableNode`; `claim`
-///         enables the parent name before checking the proof.
 interface IDNSRegistrar2021 {
     function oracle() external view returns (address);
     function suffixes() external view returns (address);
