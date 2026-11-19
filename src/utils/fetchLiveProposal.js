@@ -29,7 +29,7 @@ function usage() {
 
 function parseOnchainId(input) {
     // Accept full Tally proposal URL or raw on-chain ID
-    const urlMatch = input.match(/\/proposal\/(\d+)/);
+    const urlMatch = input.match(/\/proposals?\/(\d+)/);
     if (urlMatch) return urlMatch[1];
     if (/^\d+$/.test(input)) return input;
     console.error(`Error: Cannot parse on-chain proposal ID from "${input}"`);
@@ -38,7 +38,7 @@ function parseOnchainId(input) {
 
 function extractSlugFromUrl(input) {
     // Extract DAO slug from Tally URL: /gov/<slug>/proposal/...
-    const slugMatch = input.match(/\/gov\/([^/]+)\/proposal\//);
+    const slugMatch = input.match(/\/gov\/([^/]+)\/proposal\//) || input.match(/\/\/([^./]+)\.gov\.blockful\.io\//);
     if (slugMatch) return slugMatch[1];
     return null;
 }

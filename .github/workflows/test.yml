@@ -27,6 +27,8 @@ jobs:
       # so this resolves forge-std from the package.json tag on every run.
       - run: npm install
 
+      - run: node --test src/utils/review.test.js
+
       # Every proposal test forks mainnet at a pinned historical block, so the suite needs an
       # ARCHIVE endpoint. There is deliberately no public fallback: free endpoints prune the
       # historical state these tests pin, and they rate-limit or go down under a fork-heavy
