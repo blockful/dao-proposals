@@ -1,9 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.25 <0.9.0;
 
-/// @notice ENS DNSSEC oracle (`DNSSECImpl`), ensdomains/ens-contracts `contracts/dnssec-oracle`.
-/// @dev `setAnchors` and the OZ `Ownable` surface exist from PR #572 onwards; earlier deployments
-///      expose `setOwner` instead and have immutable anchors.
 interface IDNSSEC {
     struct RRSetWithSignature {
         bytes rrset;

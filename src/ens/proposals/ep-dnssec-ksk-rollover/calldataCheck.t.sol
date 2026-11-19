@@ -166,7 +166,6 @@ contract Proposal_ENS_EP_DNSSEC_KSK_Rollover_Draft_Test is ENS_Governance, SafeH
         vm.expectRevert(bytes(""));
         root.setSubnodeOwner(labelhash(UNOWNED_LABEL), address(currentRegistrar));
 
-        // the 2021 registrar stays a Root controller, so anyone can still make it take an unowned TLD
         vm.prank(makeAddr("anyone"));
         registrar2021.claim(_dnsName(string.concat("x.", UNOWNED_LABEL)), "");
         assertEq(registry.owner(namehash(bytes(UNOWNED_LABEL))), address(registrar2021));

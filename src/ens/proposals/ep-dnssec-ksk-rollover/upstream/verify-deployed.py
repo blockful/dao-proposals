@@ -1,12 +1,5 @@
 #!/usr/bin/env python3
-"""Compare the mainnet runtime bytecode of the deployed contracts with upstream/artifacts.
-
-Immutables (from each artifact's immutableReferences) and the CBOR metadata tail are masked
-on both sides, so a match means the executable code is identical to the pinned build.
-
-Usage: python3 -I upstream/verify-deployed.py <RPC_URL>
-Needs `cast`.
-"""
+"""Usage: python3 -I upstream/verify-deployed.py <RPC_URL>"""
 
 import json
 import os
