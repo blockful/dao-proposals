@@ -26,7 +26,10 @@ interface IRootRegistryV2 {
 }
 
 interface IDNSTLDResolverV2 {
+    error OffchainLookup(address sender, string[] urls, bytes callData, bytes4 callbackFunction, bytes extraData);
+
     function DNSSEC_ORACLE() external view returns (address);
+    function getResolver(bytes calldata name) external view returns (address, bool);
 }
 
 interface ITemporaryDNSRegistrar {
@@ -39,6 +42,7 @@ interface ITemporaryDNSRegistrar {
     function defaultResolver() external view returns (address);
     function setDefaultResolver(address resolver) external;
     function syncTLD(string calldata label) external;
+    function syncTLDs(string[] calldata labels) external;
 }
 
 /// forge-config: default.evm_version = "osaka"
@@ -80,6 +84,8 @@ contract Proposal_ENS_EP_DNSSEC_KSK_Rollover_Draft_Test is ENS_Governance, SafeH
     uint32 constant ANCHOR_TTL = 3600;
     uint8 constant ALG_RSASHA256 = 8;
     uint8 constant DIGEST_SHA256 = 2;
+    uint16 constant KSK_2010_TAG = 19_036;
+    bytes32 constant KSK_2010_DIGEST = 0x49AAC11D7B6F6446702E54A1607371607A1A41855200FD2CE1CDDE32F24E8FB5;
     uint16 constant KSK_2017_TAG = 20_326;
     bytes32 constant KSK_2017_DIGEST = 0xE06D44B80B8F1D39A95C0B0D7C65D08458E880409BBC683457104237C7F8EC8D;
     uint16 constant KSK_2024_TAG = 38_696;
@@ -88,8 +94,10 @@ contract Proposal_ENS_EP_DNSSEC_KSK_Rollover_Draft_Test is ENS_Governance, SafeH
     address constant ENS_DOMAINS_OWNER = 0xb8c2C29ee19D8307cb7255e1Cd9CbDE883A267d5;
     address constant TAYTEMS_ADDR = 0x8e8Db5CcEF88cca9d624701Db544989C996E3216;
     string constant UNOWNED_LABEL = "notarealtldzz";
+    uint256 constant SLICES = 8;
 
     string proofs;
+    string suffixList;
     uint256 proofTime;
 
     function setUp() public override {
@@ -97,6 +105,7 @@ contract Proposal_ENS_EP_DNSSEC_KSK_Rollover_Draft_Test is ENS_Governance, SafeH
         proofs = vm.readFile(string.concat(dirPath(), "/fixtures/proofs.json"));
         assertEq(vm.parseJsonUint(proofs, ".forkBlock"), block.number);
         proofTime = vm.parseJsonUint(proofs, ".forkTimestamp");
+        suffixList = vm.readFile(string.concat(dirPath(), "/fixtures/suffixes.json"));
     }
 
     function _selectFork() public override {
@@ -169,9 +178,15 @@ contract Proposal_ENS_EP_DNSSEC_KSK_Rollover_Draft_Test is ENS_Governance, SafeH
         vm.prank(makeAddr("anyone"));
         registrar2021.claim(_dnsName(string.concat("x.", UNOWNED_LABEL)), "");
         assertEq(registry.owner(namehash(bytes(UNOWNED_LABEL))), address(registrar2021));
+        assertEq(registry.owner(namehash(bytes(string.concat("x.", UNOWNED_LABEL)))), address(0));
+        assertEq(
+            IDNSSEC(registrar2021.oracle()).anchors(),
+            bytes.concat(_rootAnchor(KSK_2010_TAG, KSK_2010_DIGEST), _rootAnchor(KSK_2017_TAG, KSK_2017_DIGEST))
+        );
 
         _assertV1Migration();
         _assertV2Sync();
+        _assertThirdPartyTlds();
         _assertDaoControlsAnchors();
 
         vm.warp(proofTime);
@@ -180,6 +195,88 @@ contract Proposal_ENS_EP_DNSSEC_KSK_Rollover_Draft_Test is ENS_Governance, SafeH
 
     function _isProposalSubmitted() public pure override returns (bool) {
         return false;
+    }
+
+    function test_suffixList0() public {
+        _assertSuffixList(0);
+    }
+
+    function test_suffixList1() public {
+        _assertSuffixList(1);
+    }
+
+    function test_suffixList2() public {
+        _assertSuffixList(2);
+    }
+
+    function test_suffixList3() public {
+        _assertSuffixList(3);
+    }
+
+    function test_suffixList4() public {
+        _assertSuffixList(4);
+    }
+
+    function test_suffixList5() public {
+        _assertSuffixList(5);
+    }
+
+    function test_suffixList6() public {
+        _assertSuffixList(6);
+    }
+
+    function test_suffixList7() public {
+        _assertSuffixList(7);
+    }
+
+    function test_revokingRegistrar2021() public {
+        _executeAsTimelock();
+        vm.prank(address(timelock));
+        root.setController(address(registrar2021), false);
+        vm.expectRevert(bytes(""));
+        registrar2021.claim(_dnsName(string.concat("x.", UNOWNED_LABEL)), "");
+
+        _assertV1Migration();
+        _assertV2Sync();
+        _assertThirdPartyTlds();
+        vm.warp(proofTime);
+        _assertClaimAndResolution();
+    }
+
+    function _executeAsTimelock() internal {
+        (targets, values, signatures, calldatas, description) = _generateCallData();
+        vm.warp(block.timestamp + 9 days);
+        for (uint256 i; i < targets.length; ++i) {
+            vm.prank(address(timelock));
+            (bool ok,) = targets[i].call{ value: values[i] }(calldatas[i]);
+            assertTrue(ok);
+        }
+    }
+
+    function _assertSuffixList(uint256 slice) internal {
+        _executeAsTimelock();
+        string[] memory all = vm.parseJsonStringArray(suffixList, ".labels");
+        string[] memory tlds = new string[]((all.length + SLICES - 1 - slice) / SLICES);
+        vm.startPrank(makeAddr("anyone"));
+        for (uint256 i; i < tlds.length; ++i) {
+            tlds[i] = all[slice + i * SLICES];
+            bytes memory name = _dnsName(tlds[i]);
+            assertTrue(suffixes.isPublicSuffix(name));
+            address owner = registry.owner(namehash(bytes(tlds[i])));
+            if (owner == address(0) || newRegistrar.wasRegistrar(owner)) {
+                newRegistrar.enableNode(name);
+                _assertTld(tlds[i], address(newRegistrar), address(newResolver));
+            } else {
+                assertTrue(_isThirdParty(tlds[i]));
+            }
+        }
+        temporaryRegistrar.syncTLDs(tlds);
+        vm.stopPrank();
+        for (uint256 i; i < tlds.length; ++i) {
+            assertEq(rootRegistryV2.getStatus(_labelId(tlds[i])), REGISTERED);
+            assertEq(rootRegistryV2.getOwner(_labelId(tlds[i])), DAO_TOKEN_SAFE);
+            assertEq(rootRegistryV2.getResolver(tlds[i]), address(newTldResolverV2));
+        }
     }
 
     function _assertNewV1Contracts() internal view {
@@ -284,6 +381,42 @@ contract Proposal_ENS_EP_DNSSEC_KSK_Rollover_Draft_Test is ENS_Governance, SafeH
         assertEq(abi.decode(newResolver.resolveCallback(response, extraData), (address)), TAYTEMS_ADDR);
         vm.expectRevert(abi.encodeWithSelector(IDNSSEC.NoMatchingProof.selector, _dnsName("")));
         currentResolver.resolveCallback(response, extraData);
+    }
+
+    function _assertThirdPartyTlds() internal {
+        string[7] memory tlds = _thirdPartyTlds();
+        for (uint256 i; i < tlds.length; ++i) {
+            address owner = registry.owner(namehash(bytes(tlds[i])));
+            assertTrue(owner != address(0) && !newRegistrar.wasRegistrar(owner));
+            vm.expectRevert(IDNSRegistrar.PreconditionNotMet.selector);
+            newRegistrar.enableNode(_dnsName(tlds[i]));
+            temporaryRegistrar.syncTLD(tlds[i]);
+            assertEq(rootRegistryV2.getResolver(tlds[i]), address(newTldResolverV2));
+            assertEq(_resolvesWithOldOracle(tlds[i]), keccak256(bytes(tlds[i])) == keccak256("hiphop"));
+        }
+        assertEq(registry.owner(namehash("hiphop")).code.length, 0);
+        assertEq(currentResolver.oracle(), address(currentOracle));
+    }
+
+    function _resolvesWithOldOracle(string memory tld) internal view returns (bool) {
+        try newTldResolverV2.getResolver(_dnsName(string.concat("test.", tld))) returns (address resolver, bool) {
+            return resolver == address(currentResolver);
+        } catch (bytes memory err) {
+            assertEq(bytes4(err), IDNSTLDResolverV2.OffchainLookup.selector);
+            return false;
+        }
+    }
+
+    function _thirdPartyTlds() internal pure returns (string[7] memory) {
+        return ["art", "box", "club", "hiphop", "kred", "locker", "luxe"];
+    }
+
+    function _isThirdParty(string memory tld) internal pure returns (bool) {
+        string[7] memory tlds = _thirdPartyTlds();
+        for (uint256 i; i < tlds.length; ++i) {
+            if (keccak256(bytes(tlds[i])) == keccak256(bytes(tld))) return true;
+        }
+        return false;
     }
 
     function _assertTld(string memory tld, address owner, address resolver) internal view {
