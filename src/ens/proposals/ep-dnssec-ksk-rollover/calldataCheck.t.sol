@@ -45,6 +45,12 @@ interface ITemporaryDNSRegistrar {
     function syncTLDs(string[] calldata labels) external;
 }
 
+interface ITLDToken {
+    function owner() external view returns (address);
+    function mintTLD(string memory name, address owner, string memory tokenURI) external;
+    function claim(uint256 tokenId, address ensowner) external;
+}
+
 /// forge-config: default.evm_version = "osaka"
 contract Proposal_ENS_EP_DNSSEC_KSK_Rollover_Draft_Test is ENS_Governance, SafeHelper {
     IENSRoot constant root = IENSRoot(ENSConstants.ENS_ROOT);
@@ -55,6 +61,8 @@ contract Proposal_ENS_EP_DNSSEC_KSK_Rollover_Draft_Test is ENS_Governance, SafeH
     IDNSRegistrar constant currentRegistrar = IDNSRegistrar(0xB32cB5677a7C971689228EC835800432B339bA2B);
     IOffchainDNSResolver constant currentResolver = IOffchainDNSResolver(0xF142B308cF687d4358410a4cB885513b30A42025);
     IDNSRegistrar2021 constant registrar2021 = IDNSRegistrar2021(0x58774Bb8acD458A640aF0B88238369A167546ef2);
+    ITLDToken constant tldToken = ITLDToken(0xF5823a1BB20d01F1b9d17d27882C5EAcA7C510bd);
+    address constant LEGACY_MULTISIG = 0xCF60916b6CB4753f58533808fA610FcbD4098Ec0;
 
     IDNSSEC constant newOracle = IDNSSEC(0x668ad4467129d49ECbe6274d95197797C0E262AA);
     IDNSRegistrar constant newRegistrar = IDNSRegistrar(0x084462610A20eFbDB686b30fe587ecA0E234D2EF);
@@ -241,6 +249,32 @@ contract Proposal_ENS_EP_DNSSEC_KSK_Rollover_Draft_Test is ENS_Governance, SafeH
         _assertThirdPartyTlds();
         vm.warp(proofTime);
         _assertClaimAndResolution();
+    }
+
+    function test_tldTokenTakeover() public {
+        _executeAsTimelock();
+        assertTrue(root.controllers(address(tldToken)));
+        assertEq(tldToken.owner(), LEGACY_MULTISIG);
+        assertEq(registry.owner(namehash("reverse")), address(timelock));
+
+        vm.startPrank(LEGACY_MULTISIG);
+        string[2] memory tlds = ["reverse", "xyz"];
+        for (uint256 i; i < tlds.length; ++i) {
+            tldToken.mintTLD(tlds[i], LEGACY_MULTISIG, "");
+            tldToken.claim(_labelId(tlds[i]), LEGACY_MULTISIG);
+            assertEq(registry.owner(namehash(bytes(tlds[i]))), LEGACY_MULTISIG);
+        }
+        tldToken.mintTLD("eth", LEGACY_MULTISIG, "");
+        vm.expectRevert(bytes("TLDToken: Cannot change .eth"));
+        tldToken.claim(_labelId("eth"), LEGACY_MULTISIG);
+        tldToken.mintTLD("box", LEGACY_MULTISIG, "");
+        vm.stopPrank();
+
+        vm.prank(address(timelock));
+        root.setController(address(tldToken), false);
+        vm.prank(LEGACY_MULTISIG);
+        vm.expectRevert(bytes(""));
+        tldToken.claim(_labelId("box"), LEGACY_MULTISIG);
     }
 
     function _executeAsTimelock() internal {
