@@ -92,8 +92,6 @@ contract Proposal_ENS_EP_DNSSEC_KSK_Rollover_Draft_Test is ENS_Governance, SafeH
     uint32 constant ANCHOR_TTL = 3600;
     uint8 constant ALG_RSASHA256 = 8;
     uint8 constant DIGEST_SHA256 = 2;
-    uint16 constant KSK_2010_TAG = 19_036;
-    bytes32 constant KSK_2010_DIGEST = 0x49AAC11D7B6F6446702E54A1607371607A1A41855200FD2CE1CDDE32F24E8FB5;
     uint16 constant KSK_2017_TAG = 20_326;
     bytes32 constant KSK_2017_DIGEST = 0xE06D44B80B8F1D39A95C0B0D7C65D08458E880409BBC683457104237C7F8EC8D;
     uint16 constant KSK_2024_TAG = 38_696;
@@ -128,6 +126,7 @@ contract Proposal_ENS_EP_DNSSEC_KSK_Rollover_Draft_Test is ENS_Governance, SafeH
         assertEq(root.owner(), address(timelock));
         assertTrue(root.controllers(address(currentRegistrar)));
         assertTrue(root.controllers(address(registrar2021)));
+        assertTrue(root.controllers(address(tldToken)));
         assertFalse(root.controllers(address(newRegistrar)));
         _assertTld("xyz", address(currentRegistrar), address(currentResolver));
 
@@ -146,10 +145,10 @@ contract Proposal_ENS_EP_DNSSEC_KSK_Rollover_Draft_Test is ENS_Governance, SafeH
         override
         returns (address[] memory, uint256[] memory, string[] memory, bytes[] memory, string memory)
     {
-        targets = new address[](4);
-        values = new uint256[](4);
-        calldatas = new bytes[](4);
-        signatures = new string[](4);
+        targets = new address[](6);
+        values = new uint256[](6);
+        calldatas = new bytes[](6);
+        signatures = new string[](6);
 
         targets[0] = address(root);
         calldatas[0] = abi.encodeCall(IENSRoot.setController, (address(currentRegistrar), false));
@@ -169,6 +168,12 @@ contract Proposal_ENS_EP_DNSSEC_KSK_Rollover_Draft_Test is ENS_Governance, SafeH
             address(timelock)
         );
 
+        targets[4] = address(root);
+        calldatas[4] = abi.encodeCall(IENSRoot.setController, (address(registrar2021), false));
+
+        targets[5] = address(root);
+        calldatas[5] = abi.encodeCall(IENSRoot.setController, (address(tldToken), false));
+
         description = getDescriptionFromMarkdown();
         return (targets, values, signatures, calldatas, description);
     }
@@ -183,14 +188,19 @@ contract Proposal_ENS_EP_DNSSEC_KSK_Rollover_Draft_Test is ENS_Governance, SafeH
         vm.expectRevert(bytes(""));
         root.setSubnodeOwner(labelhash(UNOWNED_LABEL), address(currentRegistrar));
 
+        assertFalse(root.controllers(address(registrar2021)));
         vm.prank(makeAddr("anyone"));
+        vm.expectRevert(bytes(""));
         registrar2021.claim(_dnsName(string.concat("x.", UNOWNED_LABEL)), "");
-        assertEq(registry.owner(namehash(bytes(UNOWNED_LABEL))), address(registrar2021));
-        assertEq(registry.owner(namehash(bytes(string.concat("x.", UNOWNED_LABEL)))), address(0));
-        assertEq(
-            IDNSSEC(registrar2021.oracle()).anchors(),
-            bytes.concat(_rootAnchor(KSK_2010_TAG, KSK_2010_DIGEST), _rootAnchor(KSK_2017_TAG, KSK_2017_DIGEST))
-        );
+
+        assertFalse(root.controllers(address(tldToken)));
+        assertEq(tldToken.owner(), LEGACY_MULTISIG);
+        vm.startPrank(LEGACY_MULTISIG);
+        tldToken.mintTLD("reverse", LEGACY_MULTISIG, "");
+        vm.expectRevert(bytes(""));
+        tldToken.claim(_labelId("reverse"), LEGACY_MULTISIG);
+        vm.stopPrank();
+        assertEq(registry.owner(namehash("reverse")), address(timelock));
 
         _assertV1Migration();
         _assertV2Sync();
@@ -235,46 +245,6 @@ contract Proposal_ENS_EP_DNSSEC_KSK_Rollover_Draft_Test is ENS_Governance, SafeH
 
     function test_suffixList7() public {
         _assertSuffixList(7);
-    }
-
-    function test_revokingRegistrar2021() public {
-        _executeAsTimelock();
-        vm.prank(address(timelock));
-        root.setController(address(registrar2021), false);
-        vm.expectRevert(bytes(""));
-        registrar2021.claim(_dnsName(string.concat("x.", UNOWNED_LABEL)), "");
-
-        _assertV1Migration();
-        _assertV2Sync();
-        _assertThirdPartyTlds();
-        vm.warp(proofTime);
-        _assertClaimAndResolution();
-    }
-
-    function test_tldTokenTakeover() public {
-        _executeAsTimelock();
-        assertTrue(root.controllers(address(tldToken)));
-        assertEq(tldToken.owner(), LEGACY_MULTISIG);
-        assertEq(registry.owner(namehash("reverse")), address(timelock));
-
-        vm.startPrank(LEGACY_MULTISIG);
-        string[2] memory tlds = ["reverse", "xyz"];
-        for (uint256 i; i < tlds.length; ++i) {
-            tldToken.mintTLD(tlds[i], LEGACY_MULTISIG, "");
-            tldToken.claim(_labelId(tlds[i]), LEGACY_MULTISIG);
-            assertEq(registry.owner(namehash(bytes(tlds[i]))), LEGACY_MULTISIG);
-        }
-        tldToken.mintTLD("eth", LEGACY_MULTISIG, "");
-        vm.expectRevert(bytes("TLDToken: Cannot change .eth"));
-        tldToken.claim(_labelId("eth"), LEGACY_MULTISIG);
-        tldToken.mintTLD("box", LEGACY_MULTISIG, "");
-        vm.stopPrank();
-
-        vm.prank(address(timelock));
-        root.setController(address(tldToken), false);
-        vm.prank(LEGACY_MULTISIG);
-        vm.expectRevert(bytes(""));
-        tldToken.claim(_labelId("box"), LEGACY_MULTISIG);
     }
 
     function _executeAsTimelock() internal {
